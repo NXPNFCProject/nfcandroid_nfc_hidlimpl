@@ -1,23 +1,5 @@
 /******************************************************************************
  *
- *  Copyright (C) 2011-2012 Broadcom Corporation
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at:
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
- ******************************************************************************/
-/******************************************************************************
- *
- *  The original Work has been changed by NXP Semiconductors.
  *
  *  Copyright (C) 2015 NXP Semiconductors
  *
@@ -37,10 +19,8 @@
 #pragma once
 #include <pthread.h>
 
-//#include "ese_target.h"
 #include "ese_hal_api.h"
 #include "hal_nxpese.h"
-//#include <hardware/secure_element.h>
 #include <utils/RefBase.h>
 #include <android/hardware/secure_element/1.0/ISecureElement.h>
 #include <android/hardware/secure_element/1.0/ISecureElementHalCallback.h>
@@ -107,7 +87,6 @@ class EseAdaptation {
   tHAL_ESE_ENTRY* GetHalEntryFuncs();
   ese_nxp_IoctlInOutData_t* mCurrentIoctlData;
   tHAL_ESE_ENTRY mSpiHalEntryFuncs;  // function pointers for HAL entry points
-  //int sendIoctlData(long arg,void *p_data);
 
  private:
   EseAdaptation();
@@ -116,7 +95,6 @@ class EseAdaptation {
   static ThreadMutex sLock;
   static ThreadMutex sIoctlLock;
   ThreadCondVar mCondVar;
-  //static ese_nxp_device_t* mHalDeviceContext;
   static nxpese_nxp_device_t* mHalDeviceContext;
   static tHAL_ESE_CBACK* mHalCallback;
   static tHAL_ESE_DATA_CBACK* mHalDataCallback;
@@ -125,7 +103,6 @@ class EseAdaptation {
   static ThreadCondVar mHalIoctlEvent;
   static android::sp<android::hardware::secure_element::V1_0::ISecureElement> mHal;
   static android::sp<vendor::nxp::nxpese::V1_0::INxpEse> mHalNxpEse;
-  //static android::hardware::secure_element::V1_0::IEseClientCallback* mCallback;
 #if (NXP_EXTNS == TRUE)
   pthread_t mThreadId;
   static ThreadCondVar mHalCoreResetCompletedEvent;
@@ -133,8 +110,6 @@ class EseAdaptation {
   static ThreadCondVar mHalInitCompletedEvent;
 #endif
   static uint32_t Thread(uint32_t arg);
-  //static void HalDeviceContextCallback(ese_event_t event,
-    //                                   ese_status_t event_status);
   static void HalDeviceContextDataCallback(uint16_t data_len, uint8_t* p_data);
 
   static void HalOpen(tHAL_ESE_CBACK* p_hal_cback,

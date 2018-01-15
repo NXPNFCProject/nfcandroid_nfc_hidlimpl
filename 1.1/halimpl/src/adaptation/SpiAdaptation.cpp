@@ -1,23 +1,5 @@
 /******************************************************************************
  *
- *  Copyright (C) 1999-2012 Broadcom Corporation
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at:
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
- ******************************************************************************/
-/******************************************************************************
- *
- *  The original Work has been changed by NXP Semiconductors.
  *
  *  Copyright (C) 2015 NXP Semiconductors
  *
@@ -34,7 +16,6 @@
  *  limitations under the License.
  *
  ******************************************************************************/
-//#include "_OverrideLog.h"
 
 #include <android/hardware/secure_element/1.0/ISecureElement.h>
 #include <android/hardware/secure_element/1.0/ISecureElementHalCallback.h>
@@ -42,16 +23,6 @@
 #include <hwbinder/ProcessState.h>
 #include <pthread.h>
 #include "EseAdaptation.h"
-//#include "hal_nxpese.h"
-//extern "C" {
-//#include "gki.h"
-//#include "nfa_api.h"
-//#include "ese_int.h"
-//#include "ese_target.h"
-//#include "vendor_cfg.h"
-//}
-//#include "config.h"
-//#include "android_logmsg.h"
 
 #undef LOG_TAG
 #define LOG_TAG "EseAdaptation"
@@ -72,7 +43,6 @@ extern "C" void GKI_shutdown();
 extern void resetConfig();
 extern "C" void verify_stack_non_volatile_store();
 extern "C" void delete_stack_non_volatile_store(bool forceDelete);
-//extern "C" int sendIoctlData(long arg, void* p_data);
 
 extern "C" void call_Initialize(EseAdaptation* p)
 {
@@ -88,7 +58,6 @@ ThreadMutex EseAdaptation::sLock;
 ThreadMutex EseAdaptation::sIoctlLock;
 sp<INxpEse> EseAdaptation::mHalNxpEse;
 sp<ISecureElement> EseAdaptation::mHal;
-//IEseClientCallback* EseAdaptation::mCallback;
 tHAL_ESE_CBACK* EseAdaptation::mHalCallback = NULL;
 tHAL_ESE_DATA_CBACK* EseAdaptation::mHalDataCallback = NULL;
 ThreadCondVar EseAdaptation::mHalOpenCompletedEvent;
@@ -104,32 +73,6 @@ static uint8_t isSignaled = SIGNAL_NONE;
 static uint8_t evt_status;
 #endif
 
-/*class EseClientCallback : public IEseClientCallback {
- public:
-  EseClientCallback(tHAL_ESE_CBACK* eventCallback,
-                    tHAL_ESE_DATA_CBACK dataCallback) {
-    mEventCallback = eventCallback;
-    mDataCallback = dataCallback;
-  };
-  virtual ~EseClientCallback() = default;
-  Return<void> sendEvent(
-      ::android::hardware::ese::V1_0::EseEvent event,
-      ::android::hardware::ese::V1_0::EseStatus event_status) override {
-    mEventCallback((uint8_t)event, (tHAL_ESE_STATUS)event_status);
-    return Void();
-  };
-  Return<void> sendData(
-      const ::android::hardware::ese::V1_0::EseData& data) override {
-    ::android::hardware::ese::V1_0::EseData copy = data;
-    mDataCallback(copy.size(), &copy[0]);
-    return Void();
-  };
-
- private:
-  tHAL_ESE_CBACK* mEventCallback;
-  tHAL_ESE_DATA_CBACK* mDataCallback;
-};
-*/
 /*******************************************************************************
 **
 ** Function:    EseAdaptation::EseAdaptation()
@@ -224,15 +167,10 @@ uint32_t EseAdaptation::Thread(uint32_t arg) {
   arg=0;
   {
     ThreadCondVar CondVar;
-    //AutoThreadMutex guard(CondVar);
-    //GKI_create_task((TASKPTR)ese_task, ESE_TASK, (int8_t*)"ESE_TASK", 0, 0,
-     //               (pthread_cond_t*)CondVar, (pthread_mutex_t*)CondVar);
-    //CondVar.wait();
   }
 
   EseAdaptation::GetInstance().signal();
 
-  //GKI_exit_task(GKI_get_taskid());
   ALOGD("%s: exit", func);
   return 0;
 }
@@ -264,14 +202,6 @@ tHAL_ESE_ENTRY* EseAdaptation::GetHalEntryFuncs() {
 void EseAdaptation::InitializeHalDeviceContext() {
   const char* func = "EseAdaptation::InitializeHalDeviceContext";
   ALOGD("%s: enter", func);
-  //int ret = 0;  // 0 means success
-  //const hw_module_t* hw_module = NULL;
-
-  //mSpiHalEntryFuncs.open = HalOpen;
-  //mSpiHalEntryFuncs.write = HalWrite;
-  //mSpiHalEntryFuncs.write = HalRead;
-  //mSpiHalEntryFuncs.close = HalClose;
-   //mSpiHalEntryFuncs.ioctl = HalIoctl;
   ALOGI("%s: mSpiHalEntryFuncs is  NULL", func);
   ALOGI("%s: IEse::getService()", func);
   mHal = ISecureElement::getService();
@@ -286,54 +216,6 @@ void EseAdaptation::InitializeHalDeviceContext() {
       /*Transceive NCI_INIT_CMD*/
   ALOGD("%s: exit", func);
 }
-/*******************************************************************************
-**
-** Function:    EseAdaptation::HalOpen
-**
-** Description: Turn on controller, download firmware.
-**
-** Returns:     None.
-**
-*******************************************************************************/
-/*void EseAdaptation::HalOpen(tHAL_ESE_CBACK* p_hal_cback,
-                            tHAL_ESE_DATA_CBACK* p_data_cback) {
-  const char* func = "EseAdaptation::HalOpen";
-  ALOGD("%s", func);
-  mCallback = new EseClientCallback(p_hal_cback, p_data_cback);
-  mHal->open(mCallback);
-}*/
-/*******************************************************************************
-**
-** Function:    EseAdaptation::HalClose
-**
-** Description: Turn off controller.
-**
-** Returns:     None.
-**
-*******************************************************************************/
-/*void EseAdaptation::HalClose() {
-  const char* func = "EseAdaptation::HalClose";
-  ALOGD("%s", func);
-  mHal->close();
-}
-*/
-/*******************************************************************************
-**
-** Function:    EseAdaptation::HalDeviceContextCallback
-**
-** Description: Translate generic Android HAL's callback into Broadcom-specific
-**              callback function.
-**
-** Returns:     None.
-**
-*******************************************************************************/
-/*void EseAdaptation::HalDeviceContextCallback(ese_event_t event,
-                                             ese_status_t event_status) {
-  const char* func = "EseAdaptation::HalDeviceContextCallback";
-  ALOGD("%s: event=%u", func, event);
-  if (mHalCallback) mHalCallback(event, (tHAL_ESE_STATUS)event_status);
-}
-*/
 /*******************************************************************************
 **
 ** Function:    EseAdaptation::HalDeviceContextDataCallback
@@ -351,39 +233,6 @@ void EseAdaptation::HalDeviceContextDataCallback(uint16_t data_len,
   if (mHalDataCallback) mHalDataCallback(data_len, p_data);
 }
 
-/*******************************************************************************
-**
-** Function:    EseAdaptation::HalWrite
-**
-** Description: Write NXP message to the controller.
-**
-** Returns:     None.
-**
-*******************************************************************************/
-/*void EseAdaptation::HalWrite(uint16_t data_len, uint8_t* p_data) {
-  const char* func = "EseAdaptation::HalWrite";
-  ALOGD("%s", func);
-  ::android::hardware::secure_element::V1_0::EseData data;
-  data.setToExternal(p_data, data_len);
-  mHal->write(data);
-}*/
-
-/*******************************************************************************
-**
-** Function:    EseAdaptation::HalRead
-**
-** Description: Write NXP message to the controller.
-**
-** Returns:     None.
-**
-*******************************************************************************/
-/*void EseAdaptation::HalRead(uint16_t data_len, uint8_t* p_data) {
-  const char* func = "EseAdaptation::HalRead";
-  ALOGD("%s", func);
-  ::android::hardware::ese::V1_0::EseData data;
-  data.setToExternal(p_data, data_len);
-  mHal->write(data);
-}*/
 /*******************************************************************************
 **
 ** Function:    IoctlCallback
@@ -426,7 +275,6 @@ int EseAdaptation::HalIoctl(long arg, void* p_data) {
   ::android::hardware::secure_element::V1_0::EseData data;
   AutoThreadMutex a(sIoctlLock);
   ese_nxp_IoctlInOutData_t* pInpOutData = (ese_nxp_IoctlInOutData_t*)p_data;
-  //int status = 0;
   ALOGD("%s arg=%ld", func, arg);
   pInpOutData->inp.context = &EseAdaptation::GetInstance();
   EseAdaptation::GetInstance().mCurrentIoctlData = pInpOutData;
