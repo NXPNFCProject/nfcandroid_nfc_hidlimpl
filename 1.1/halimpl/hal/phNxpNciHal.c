@@ -458,7 +458,7 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
   NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
   NFCSTATUS status = NFCSTATUS_SUCCESS;
    nfc_hal_status=1;
-  ALOGD("Manju phNxpNciHal_open enter................");
+  ALOGD("phNxpNciHal_open enter................");
   /*NCI_INIT_CMD*/
   static uint8_t cmd_init_nci[] = {0x20, 0x01, 0x00};
   /*NCI_RESET_CMD*/

@@ -22,20 +22,17 @@ sp<INfcClientCallback> Nfc::mCallback = nullptr;
 
 // Methods from ::android::hardware::nfc::V1_0::INfc follow.
 Return<V1_0::NfcStatus> Nfc::open(const sp<INfcClientCallback>& clientCallback) {
+    ALOGD("Nfc::open Enter");
     HALSTATUS status = HALSTATUS_FAILED;
-    ALOGD("Manju OPen enter...........");
     if (clientCallback == nullptr) {
-    ALOGD("call back null enter...........");
         return V1_0::NfcStatus::FAILED;
     } else {
-    ALOGD("call back notnull enter...........");
         mCallback = clientCallback;
         mCallback->linkToDeath(this, 0 /*cookie*/);
     }
 
-    ALOGD("Manju before halopen enter...........");
     status = phNxpNciHal_open(eventCallback, dataCallback);
-    ALOGD("Manju after halopen enter...........");
+    ALOGD("Nfc::open Exit");
     if(status != HALSTATUS_SUCCESS) {
         return V1_0::NfcStatus::FAILED;
     } else {
