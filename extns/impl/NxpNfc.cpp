@@ -68,14 +68,6 @@ Return<void> NxpNfc::ioctl(uint64_t ioctlType, const hidl_vec<uint8_t>& inOutDat
     return Void();
 }
 
-
-// Methods from ::android::hidl::base::V1_0::IBase follow.
-
-INxpNfc* HIDL_FETCH_INxpNfc(const char* /* name */) {
-     ALOGE ("HIDL_FETCH_INxpNfc");
-return new NxpNfc();
-}
-
 }  // namespace implementation
 }  // namespace V1_0
 }  // namespace nxpnfc

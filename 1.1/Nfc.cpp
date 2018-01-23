@@ -20,6 +20,8 @@ namespace implementation {
 
 sp<INfcClientCallback> Nfc::mCallback = nullptr;
 
+Nfc::Nfc() {}
+
 // Methods from ::android::hardware::nfc::V1_0::INfc follow.
 Return<V1_0::NfcStatus> Nfc::open(const sp<INfcClientCallback>& clientCallback) {
     ALOGD("Nfc::open Enter");
@@ -108,13 +110,6 @@ Return<void> Nfc::factoryReset() {
 Return<V1_0::NfcStatus> Nfc::closeForPowerOffCase() {
     // TODO implement
     return V1_0::NfcStatus {};
-}
-
-
-// Methods from ::android::hidl::base::V1_0::IBase follow.
-
-INfc* HIDL_FETCH_INfc(const char* /* name */) {
-    return new Nfc();
 }
 
 }  // namespace implementation

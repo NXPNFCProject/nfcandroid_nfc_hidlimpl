@@ -25,6 +25,7 @@ using ::android::sp;
 
 struct Nfc : public V1_1::INfc, public hidl_death_recipient {
 public:
+    Nfc();
     // Methods from ::android::hardware::nfc::V1_0::INfc follow.
     Return<V1_0::NfcStatus> open(const sp<INfcClientCallback>& clientCallback) override;
     Return<uint32_t> write(const hidl_vec<uint8_t>& data) override;
@@ -69,9 +70,6 @@ public:
 private:
     static sp<INfcClientCallback> mCallback;
 };
-
-// FIXME: most likely delete, this is only for passthrough implementations
- extern "C" INfc* HIDL_FETCH_INfc(const char* name);
 
 }  // namespace implementation
 }  // namespace V1_1
