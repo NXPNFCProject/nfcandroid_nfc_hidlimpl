@@ -30,6 +30,8 @@ struct NxpNfc : public INxpNfc {
     Return<void> ioctl(uint64_t ioctlType, const hidl_vec<uint8_t>& inOutData, ioctl_cb _hidl_cb) override;
 };
 
+extern "C" INxpNfc* HIDL_FETCH_INxpNfc(const char* name);
+
 }  // namespace implementation
 }  // namespace V1_0
 }  // namespace nxpnfc
