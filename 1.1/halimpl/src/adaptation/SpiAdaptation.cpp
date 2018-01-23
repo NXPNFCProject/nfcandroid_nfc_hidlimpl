@@ -243,7 +243,7 @@ void EseAdaptation::HalDeviceContextDataCallback(uint16_t data_len,
 ** Returns:     None.
 **
 *******************************************************************************/
-void IoctlCallback(::android::hardware::secure_element::V1_0::EseData outputData) {
+void IoctlCallback(::vendor::nxp::nxpese::V1_0::EseData  outputData) {
   const char* func = "IoctlCallback";
   ese_nxp_ExtnOutputData_t* pOutData =
       (ese_nxp_ExtnOutputData_t*)&outputData[0];
@@ -272,7 +272,7 @@ void IoctlCallback(::android::hardware::secure_element::V1_0::EseData outputData
 *******************************************************************************/
 int EseAdaptation::HalIoctl(long arg, void* p_data) {
   const char* func = "EseAdaptation::HalIoctl";
-  ::android::hardware::secure_element::V1_0::EseData data;
+  ::vendor::nxp::nxpese::V1_0::EseData data;
   AutoThreadMutex a(sIoctlLock);
   ese_nxp_IoctlInOutData_t* pInpOutData = (ese_nxp_IoctlInOutData_t*)p_data;
   ALOGD("%s arg=%ld", func, arg);
