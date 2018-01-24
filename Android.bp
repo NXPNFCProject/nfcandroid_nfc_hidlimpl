@@ -12,80 +12,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 hal = "1.1/"
-
-cc_library_shared {
-    name: "nfc_nci_nxp",
-    defaults: ["hidl_defaults"],
-    proprietary: true,
-
-    cflags: [
-        "-DNFC_NXP_CHIP_TYPE=PN553",
-        "-DPN553=1",
-        "-Wall",
-        "-Werror",
-        "-Wextra",
-    ],
-
-    srcs: [
-        hal + "halimpl/dnld/phDnldNfc.c",
-        hal + "halimpl/dnld/phDnldNfc_Internal.c",
-        hal + "halimpl/dnld/phDnldNfc_Utils.c",
-        hal + "halimpl/dnld/phNxpNciHal_Dnld.c",
-        hal + "halimpl/hal/phNxpNciHal.c",
-        hal + "halimpl/hal/phNxpNciHal_NfcDepSWPrio.c",
-        hal + "halimpl/hal/phNxpNciHal_dta.c",
-        hal + "halimpl/hal/phNxpNciHal_ext.c",
-        hal + "halimpl/log/phNxpLog.c",
-        hal + "halimpl/nfc_nci.c",
-        hal + "halimpl/self-test/phNxpNciHal_SelfTest.c",
-        hal + "halimpl/src/adaptation/SpiAdaptation.cpp",
-        hal + "halimpl/tml/phDal4Nfc_messageQueueLib.c",
-        hal + "halimpl/tml/phOsalNfc_Timer.c",
-        hal + "halimpl/tml/phTmlNfc.c",
-        hal + "halimpl/tml/phTmlNfc_i2c.c",
-        hal + "halimpl/tml/spi_spm.c",
-        hal + "halimpl/utils/phNxpConfig.cpp",
-        hal + "halimpl/utils/phNxpNciHal_utils.c",
-        hal + "halimpl/utils/sparse_crc32.c",
-    ],
-
-    local_include_dirs: [
-        hal + "halimpl/common",
-        hal + "halimpl/dnld",
-        hal + "halimpl/hal",
-        hal + "halimpl/inc",
-        hal + "halimpl/log",
-        hal + "halimpl/self-test",
-        hal + "halimpl/src/include",
-        hal + "halimpl/tml",
-        hal + "halimpl/utils",
-    ],
-
-    include_dirs: [
-        "hardware/nxp/nfc/extns/impl",
-        "hardware/nxp/secure_element/extns/impl",
-    ],
-
-    shared_libs: [
-        "android.hardware.nfc@1.0",
-        "android.hardware.nfc@1.1",
-        "android.hardware.secure_element@1.0",
-        "libbase",
-        "libcutils",
-        "libdl",
-        "libhardware",
-        "libhardware_legacy",
-        "libhidlbase",
-        "libhidltransport",
-        "liblog",
-        "libutils",
-        "vendor.nxp.nxpese@1.0",
-
-    ],
-}
 
 cc_binary {
     relative_install_path: "hw",
@@ -117,15 +45,15 @@ cc_binary {
     ],
 
     local_include_dirs: [
-        hal + "halimpl/common",
-        hal + "halimpl/dnld",
-        hal + "halimpl/hal",
-        hal + "halimpl/inc",
-        hal + "halimpl/log",
-        hal + "halimpl/self-test",
-        hal + "halimpl/src/include",
-        hal + "halimpl/tml",
-        hal + "halimpl/utils",
+        "halimpl/common",
+        "halimpl/dnld",
+        "halimpl/hal",
+        "halimpl/inc",
+        "halimpl/log",
+        "halimpl/self-test",
+        "halimpl/src/include",
+        "halimpl/tml",
+        "halimpl/utils",
     ],
 
     include_dirs: [
