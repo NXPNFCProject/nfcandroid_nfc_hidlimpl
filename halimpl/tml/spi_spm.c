@@ -26,7 +26,6 @@
 #define debug
 #ifdef debug
 #include <cutils/log.h>
-//#define LOG_TAG "ESE_SPM"
 #else
 #define ALOGE
 #define ALOGD

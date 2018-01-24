@@ -17,7 +17,6 @@
 #ifndef _PHNXPNCIHAL_ADAPTATION_H_
 #define _PHNXPNCIHAL_ADAPTATION_H_
 
-//#include <hardware/hardware.h>
 #include <hardware/nfc.h>
 
 typedef struct {
@@ -27,7 +26,6 @@ typedef struct {
 } pn547_dev_t;
 
 /* NXP HAL functions */
-
 int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
                      nfc_stack_data_callback_t* p_data_cback);
 int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data);

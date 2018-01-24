@@ -33,6 +33,4 @@
 typedef uint16_t        ESESTATUS;        /* Return values */
 #define STATIC static
 
-//#define UNUSED(X) (void)X;
-
 #endif /* PHESETYPES_H */

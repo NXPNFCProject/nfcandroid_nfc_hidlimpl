@@ -42,10 +42,7 @@
  ******************************************************************************/
 #ifndef ESE_HAL_API_H
 #define ESE_HAL_API_H
-//#include <hardware/ese.h>
 #include "data_types.h"
-//#include "ese_hal_target.h"
-//#include "hal_nxpese.h"
 /*******************************************************************************
 ** tHAL_HCI_NETWK_CMD Definitions
 *******************************************************************************/

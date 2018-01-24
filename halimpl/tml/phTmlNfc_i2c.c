@@ -282,7 +282,6 @@ int phTmlNfc_i2c_write(void* pDevHandle, uint8_t* pBuffer,
 **                  -1   - reset operation failure
 **
 *******************************************************************************/
-//#define PN544_SET_PWR _IOW(0xe9, 0x01, long)
 int phTmlNfc_i2c_reset(void* pDevHandle, long level) {
   int ret;
   NXPLOG_TML_D("phTmlNfc_i2c_reset(), VEN level %ld", level);

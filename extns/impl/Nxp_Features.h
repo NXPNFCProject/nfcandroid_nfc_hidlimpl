@@ -1,22 +1,21 @@
-/*
- * Copyright (C) 2012-2016 NXP Semiconductors
+/******************************************************************************
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Copyright 2018 NXP
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ ******************************************************************************/
 
-/*
- * NXP features declarations
- */
 #include <unistd.h>
 #include <string.h>
 #ifndef NXP_FEATURES_H
@@ -50,9 +49,6 @@ typedef enum {
     pn81T
 }tNFC_chipType;
 
-/*
- * TODO renaming
- * */
 typedef struct {
     /*Flags common to all chip types*/
     uint8_t _NXP_NFCC_EMPTY_DATA_PACKET                     : 1;
@@ -76,9 +72,7 @@ typedef struct {
     uint8_t _NXP_NFC_UICC_ETSI12                            : 1;
     uint8_t _NFA_EE_MAX_EE_SUPPORTED                        : 3;
 }tNfc_nfccFeatureList;
-/*
- * TODO renaming
- * */
+
 typedef struct {
     uint8_t _ESE_EXCLUSIVE_WIRED_MODE                    : 2;
     uint8_t _ESE_WIRED_MODE_RESUME                       : 2;
@@ -112,10 +106,8 @@ typedef struct {
     uint8_t _NXP_LDR_SVC_VER_2                           : 1;
     uint8_t _NXP_ESE_VER                                 : 3;
 }tNfc_eseFeatureList;
-/*
- * TODO renaming
- * */
 typedef struct {
+
     uint8_t _NFCC_RESET_RSP_LEN;
 }tNfc_platformFeatureList;
 
@@ -133,9 +125,7 @@ typedef struct {
     uint16_t _PHDNLDNFC_USERDATA_EEPROM_LEN;
     uint8_t  _FW_MOBILE_MAJOR_NUMBER;
 }tNfc_nfcMwFeatureList;
-/*
- * TODO renaming
- * */
+
 typedef struct {
     uint8_t nfcNxpEse : 1;
     tNFC_chipType chipType;
