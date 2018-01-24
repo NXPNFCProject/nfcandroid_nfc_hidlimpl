@@ -110,13 +110,6 @@ Return<V1_0::NfcStatus> Nfc::closeForPowerOffCase() {
     return V1_0::NfcStatus {};
 }
 
-
-// Methods from ::android::hidl::base::V1_0::IBase follow.
-
-INfc* HIDL_FETCH_INfc(const char* /* name */) {
-    return new Nfc();
-}
-
 }  // namespace implementation
 }  // namespace V1_1
 }  // namespace nfc

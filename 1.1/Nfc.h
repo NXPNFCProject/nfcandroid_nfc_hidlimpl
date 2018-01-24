@@ -70,9 +70,6 @@ private:
     static sp<INfcClientCallback> mCallback;
 };
 
-// FIXME: most likely delete, this is only for passthrough implementations
- extern "C" INfc* HIDL_FETCH_INfc(const char* name);
-
 }  // namespace implementation
 }  // namespace V1_1
 }  // namespace nfc
