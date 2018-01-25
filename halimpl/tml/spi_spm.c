@@ -58,26 +58,29 @@ int phPalEse_spi_ioctl(phPalEse_ControlCode_t eControlCode,void *pDevHandle, lon
     {
 
     case phPalEse_e_ChipRst:
+        if(level == 1 || level == 0)
         ret = ioctl((intptr_t)pDevHandle, P61_SET_SPI_PWR, level);
+        else
+        ret=0;
         break;
 
     case phPalEse_e_GetSPMStatus:
-        ret = ioctl((intptr_t)pDevHandle, P61_GET_PWR_STATUS, level);
+        ret=0;
         break;
 
     case phPalEse_e_SetPowerScheme:
-        ret = ioctl((intptr_t)pDevHandle, P544_SET_POWER_SCHEME, level);
+         ret=0;
         break;
    case phPalEse_e_GetEseAccess:
-        ret = ioctl((intptr_t)pDevHandle, P544_GET_ESE_ACCESS, level);
+         ret=0;
         break;
 #if(NXP_ESE_JCOP_DWNLD_PROTECTION == TRUE)
     case phPalEse_e_SetJcopDwnldState:
-        ret = ioctl((intptr_t)pDevHandle, PN544_SET_DWNLD_STATUS, level);
+        ret=0;
         break;
 #endif
     case phPalEse_e_DisablePwrCntrl:
-        ret = ioctl((intptr_t)pDevHandle, P544_SECURE_TIMER_SESSION, level);
+        ret=0;
         break;
     default:
         ret=-1;
