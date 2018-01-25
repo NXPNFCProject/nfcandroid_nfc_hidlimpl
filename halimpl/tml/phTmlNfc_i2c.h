@@ -41,7 +41,7 @@ phTmlNfc_i2cfragmentation_t fragmentation_enabled;
  * PN544_SET_PWR(1): power on
  * PN544_SET_PWR(2): reset and power on with firmware download enabled
  */
-#define PN544_SET_PWR _IOW(PN544_MAGIC, 0x01, long)
+#define PN544_SET_PWR _IOW(PN544_MAGIC, 0x01, unsigned int)
 
 NFCSTATUS phTmlNfc_i2c_get_p61_power_state(void* pDevHandle);
 NFCSTATUS phTmlNfc_i2c_set_p61_power_state(void* pDevHandle, long arg);
