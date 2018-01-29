@@ -41,6 +41,7 @@ cc_binary {
         "libhidltransport",
         "libhwbinder",
         "vendor.nxp.nxpese@1.0",
+        "ese_spi_nxp",
         "vendor.nxp.nxpnfc@1.0",
     ],
 

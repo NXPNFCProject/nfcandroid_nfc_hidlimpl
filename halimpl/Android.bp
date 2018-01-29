@@ -80,6 +80,7 @@ cc_library_shared {
         "libhidltransport",
         "liblog",
         "libutils",
+        "ese_spi_nxp",
         "vendor.nxp.nxpese@1.0",
 
     ],

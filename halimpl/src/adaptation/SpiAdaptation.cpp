@@ -202,12 +202,6 @@ tHAL_ESE_ENTRY* EseAdaptation::GetHalEntryFuncs() {
 void EseAdaptation::InitializeHalDeviceContext() {
   const char* func = "EseAdaptation::InitializeHalDeviceContext";
   ALOGD("%s: enter", func);
-  ALOGI("%s: mSpiHalEntryFuncs is  NULL", func);
-  ALOGI("%s: IEse::getService()", func);
-  mHal = ISecureElement::getService();
-  LOG_FATAL_IF(mHal == nullptr, "Failed to retrieve the ESE HAL!");
-  ALOGI("%s: ISecureElement::getService() returned %p (%s)", func, mHal.get(),
-        (mHal->isRemote() ? "remote" : "local"));
   ALOGI("%s: INxpEse::getService()", func);
   mHalNxpEse = INxpEse::getService();
   LOG_FATAL_IF(mHalNxpEse == nullptr, "Failed to retrieve the NXP ESE HAL!");
