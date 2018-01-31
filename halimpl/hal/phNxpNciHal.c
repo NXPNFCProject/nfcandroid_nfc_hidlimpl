@@ -117,6 +117,7 @@ static NFCSTATUS phNxpNciHal_set_mw_eeprom(void);
 static int phNxpNciHal_fw_mw_ver_check();
 NFCSTATUS phNxpNciHal_check_clock_config(void);
 NFCSTATUS phNxpNciHal_china_tianjin_rf_setting(void);
+static void phNxpNciHal_gpio_restore(phNxpNciHal_GpioInfoState state);
 #if (NFC_NXP_CHIP_TYPE != PN547C2)
 static NFCSTATUS phNxpNciHalRFConfigCmdRecSequence();
 static NFCSTATUS phNxpNciHal_CheckRFCmdRespStatus();
@@ -273,8 +274,9 @@ static NFCSTATUS phNxpNciHal_fw_download(void) {
   NFCSTATUS status = NFCSTATUS_FAILED;
   /*NCI_RESET_CMD*/
   static uint8_t cmd_reset_nci[] = {0x20, 0x00, 0x01, 0x00};
-
   phNxpNciHal_get_clk_freq();
+  nxpncihal_ctrl.phNxpNciGpioInfo.state = GPIO_UNKNOWN;
+  phNxpNciHal_gpio_restore(GPIO_STORE);
   status = phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadMode);
   if (NFCSTATUS_SUCCESS == status) {
     /* Set the obtained device handle to download module */
@@ -292,7 +294,7 @@ static NFCSTATUS phNxpNciHal_fw_download(void) {
   } else {
     status = NFCSTATUS_FAILED;
   }
-
+  phNxpNciHal_gpio_restore(GPIO_RESTORE);
   return status;
 }
 
@@ -2440,6 +2442,63 @@ retry_send_ext:
   return status;
 }
 
+/******************************************************************************
+ * Function         phNxpNciHal_gpio_restore
+ *
+ * Description      This function restores the gpio values into eeprom
+ *
+ * Returns          void
+ *
+ ******************************************************************************/
+static void phNxpNciHal_gpio_restore(phNxpNciHal_GpioInfoState state) {
+  NFCSTATUS status = NFCSTATUS_SUCCESS;
+  static uint8_t get_gpio_values_cmd[] = {0x20, 0x03, 0x03, 0x01, 0xA0, 0x00};
+  static uint8_t set_gpio_values_cmd[] = {0x20, 0x02, 0x24, 0x01, 0xA0, 0x00, 0x20,
+                                          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,};
+  if(state == GPIO_STORE) {
+    nxpncihal_ctrl.phNxpNciGpioInfo.state = GPIO_STORE;
+    get_gpio_values_cmd[5] = 0x08;
+    status = phNxpNciHal_send_ext_cmd(sizeof(get_gpio_values_cmd), get_gpio_values_cmd);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("Failed to get GPIO values!!!\n");
+      return;
+    }
+
+    nxpncihal_ctrl.phNxpNciGpioInfo.state = GPIO_STORE_DONE;
+    set_gpio_values_cmd[5] = 0x14;
+    set_gpio_values_cmd[7] = nxpncihal_ctrl.phNxpNciGpioInfo.values[0];
+    set_gpio_values_cmd[8] = nxpncihal_ctrl.phNxpNciGpioInfo.values[1];
+    status = phNxpNciHal_send_ext_cmd(sizeof(set_gpio_values_cmd), set_gpio_values_cmd);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("Failed to set GPIO values!!!\n");
+      return;
+    }
+  } else if(state == GPIO_RESTORE) {
+    nxpncihal_ctrl.phNxpNciGpioInfo.state = GPIO_RESTORE;
+    get_gpio_values_cmd[5] = 0x14;
+    status = phNxpNciHal_send_ext_cmd(sizeof(get_gpio_values_cmd), get_gpio_values_cmd);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("Failed to get GPIO values!!!\n");
+      return;
+    }
+
+    nxpncihal_ctrl.phNxpNciGpioInfo.state = GPIO_RESTORE_DONE;
+    set_gpio_values_cmd[5] = 0x08;
+    set_gpio_values_cmd[7] = nxpncihal_ctrl.phNxpNciGpioInfo.values[0];
+    set_gpio_values_cmd[8] = nxpncihal_ctrl.phNxpNciGpioInfo.values[1];
+    status = phNxpNciHal_send_ext_cmd(sizeof(set_gpio_values_cmd), set_gpio_values_cmd);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("Failed to set GPIO values!!!\n");
+      return;
+    }
+  } else {
+      NXPLOG_NCIHAL_E("GPIO Restore Invalid Option!!!\n");
+  }
+}
+
 int check_config_parameter() {
   uint8_t param_clock_src = CLK_SRC_PLL;
   if (nxpprofile_ctrl.bClkSrcVal == CLK_SRC_PLL) {
@@ -2650,8 +2709,16 @@ static void phNxpNciHal_print_res_status(uint8_t* p_rx_data, uint16_t* p_len) {
       for (i = 8; i < *p_len; i++) {
         phNxpNciMwEepromArea.p_rx_data[i - 8] = p_rx_data[i];
       }
+    } else if (nxpncihal_ctrl.phNxpNciGpioInfo.state == GPIO_STORE) {
+        NXPLOG_NCIHAL_D("%s: Storing GPIO Values...", __func__);
+        nxpncihal_ctrl.phNxpNciGpioInfo.values[0] = p_rx_data[9];
+        nxpncihal_ctrl.phNxpNciGpioInfo.values[1] = p_rx_data[8];
+    } else if (nxpncihal_ctrl.phNxpNciGpioInfo.state == GPIO_RESTORE) {
+        NXPLOG_NCIHAL_D("%s: Restoring GPIO Values...", __func__);
+        nxpncihal_ctrl.phNxpNciGpioInfo.values[0] = p_rx_data[9];
+        nxpncihal_ctrl.phNxpNciGpioInfo.values[1] = p_rx_data[8];
     }
-  }
+}
 
   if (p_rx_data[2] && (config_access == true)) {
     if (p_rx_data[3] != NFCSTATUS_SUCCESS) {

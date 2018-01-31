@@ -65,6 +65,20 @@ typedef struct nci_data {
 
 typedef enum { HAL_STATUS_CLOSE = 0, HAL_STATUS_OPEN } phNxpNci_HalStatus;
 
+typedef enum {
+  GPIO_UNKNOWN      = 0x00,
+  GPIO_STORE        = 0x01,
+  GPIO_STORE_DONE   = 0x02,
+  GPIO_RESTORE      = 0x10,
+  GPIO_RESTORE_DONE = 0x20,
+  GPIO_CLEAR        = 0xFF
+} phNxpNciHal_GpioInfoState;
+
+typedef struct phNxpNciGpioInfo {
+  phNxpNciHal_GpioInfoState state;
+  uint8_t values[2];
+} phNxpNciGpioInfo_t;
+
 /* Macros to enable and disable extensions */
 #define HAL_ENABLE_EXT() (nxpncihal_ctrl.hal_ext_enabled = 1)
 #define HAL_DISABLE_EXT() (nxpncihal_ctrl.hal_ext_enabled = 0)
@@ -108,6 +122,9 @@ typedef struct phNxpNciHal_Control {
   uint16_t retry_cnt;
   uint8_t read_retry_cnt;
   phNxpNciInfo_t nci_info;
+
+  /* to store and restore gpio values */
+  phNxpNciGpioInfo_t phNxpNciGpioInfo;
 } phNxpNciHal_Control_t;
 
 typedef struct phNxpNciClock {
