@@ -44,14 +44,20 @@ extern void resetConfig();
 extern "C" void verify_stack_non_volatile_store();
 extern "C" void delete_stack_non_volatile_store(bool forceDelete);
 
-extern "C" void call_Initialize(EseAdaptation* p)
+extern "C" void InitializeEseAdaptation(EseAdaptation** pEseAdapt)
 {
-    p->Initialize();
+    *pEseAdapt = &EseAdaptation::GetInstance();
+    if(*pEseAdapt)
+      (*pEseAdapt)->Initialize();
 }
-extern "C" int sendIoctlData(EseAdaptation* p,long arg, void* p_data)
+extern "C" int sendIoctlData(EseAdaptation* pEseAdapt,long arg, void* p_data)
 {
-    p->Initialize();
-    return p->HalIoctl(arg,p_data);
+    return pEseAdapt->HalIoctl(arg,p_data);
+}
+extern "C" void DeInitializeEseAdaptation(EseAdaptation* pEseAdapt)
+{
+    if(!pEseAdapt)
+    delete pEseAdapt;
 }
 EseAdaptation* EseAdaptation::mpInstance = NULL;
 ThreadMutex EseAdaptation::sLock;

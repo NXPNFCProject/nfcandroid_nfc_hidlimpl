@@ -70,8 +70,8 @@ extern void phTmlNfc_set_fragmentation_enabled(
 uint32_t wFwVerRsp;
 /* External global variable to get FW version */
 extern uint16_t wFwVer;
-struct EseAdaptation{};
-struct EseAdaptation *p;
+struct EseAdaptation;
+static struct EseAdaptation *gspEseAdapt;
 extern uint16_t fw_maj_ver;
 extern uint16_t rom_version;
 #if (NFC_NXP_CHIP_TYPE != PN547C2)
@@ -123,7 +123,8 @@ static NFCSTATUS phNxpNciHalRFConfigCmdRecSequence();
 static NFCSTATUS phNxpNciHal_CheckRFCmdRespStatus();
 #endif
 int check_config_parameter();
-
+extern void InitializeEseAdaptation(struct EseAdaptation** gspEseAdapt);
+extern void DeInitializeEseAdaptation(struct EseAdaptation* gspEseAdapt);
 /******************************************************************************
  * Function         phNxpNciHal_client_thread
  *
@@ -496,7 +497,7 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
 
   /* By default HAL status is HAL_STATUS_OPEN */
   nxpncihal_ctrl.halStatus = HAL_STATUS_OPEN;
-
+  InitializeEseAdaptation(&gspEseAdapt);
   nxpncihal_ctrl.p_nfc_stack_cback = p_cback;
   nxpncihal_ctrl.p_nfc_stack_data_cback = p_data_cback;
   /*nci version NCI_VERSION_UNKNOWN version by default*/
@@ -1911,6 +1912,7 @@ int phNxpNciHal_close(void) {
 
   nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
 
+  DeInitializeEseAdaptation(gspEseAdapt);
   status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed");
@@ -2113,7 +2115,7 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
   NXPLOG_NCIHAL_D("%s : enter - arg = %ld", __func__, arg);
   ALOGD("phNxpNciHal_ioctl enter................");
   nfc_nci_IoctlInOutData_t* pInpOutData = (nfc_nci_IoctlInOutData_t*)p_data;
-  int ret = -1,value;
+  int ret = -1;
   long level;
   ALOGD("phNxpNciHal_ioctl enter1................");
   level=pInpOutData->inp.level;
@@ -2182,7 +2184,8 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
          break;
     case HAL_NFC_IOCTL_RF_STATUS_UPDATE:
         NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_RF_STATUS_UPDATE Enter value is %d: \n",pInpOutData->inp.data.nciCmd.p_cmd[0]);
-        value=sendIoctlData(p,HAL_NFC_IOCTL_RF_STATUS_UPDATE,pInpOutData);
+        if(gspEseAdapt !=  NULL)
+        ret = sendIoctlData(gspEseAdapt,HAL_NFC_IOCTL_RF_STATUS_UPDATE,pInpOutData);
         break;
     default:
       ALOGD("case not matched.....................");
