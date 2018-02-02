@@ -2608,6 +2608,27 @@ void phNxpNciHal_enable_i2c_fragmentation() {
   }
 }
 /******************************************************************************
+ * Function         phNxpNciHal_do_factory_reset
+ *
+ * Description      This function is called during factory reset to set
+ *                  the session id to default value.
+ *
+ * Returns          void.
+ *
+ ******************************************************************************/
+void phNxpNciHal_do_factory_reset(void) {
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  static uint8_t reset_ese_session_identity_set[] = {
+      0x20, 0x02, 0x17, 0x02, 0xA0, 0xEA, 0x08, 0xFF, 0xFF,
+      0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xA0, 0xEB, 0x08,
+      0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+      status = phNxpNciHal_send_ext_cmd(sizeof(reset_ese_session_identity_set),
+                                      reset_ese_session_identity_set);
+      if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("NXP reset_ese_session_identity_set command failed");
+    }
+}
+/******************************************************************************
  * Function         phNxpNciHal_check_factory_reset
  *
  * Description      This function is called at init time to check

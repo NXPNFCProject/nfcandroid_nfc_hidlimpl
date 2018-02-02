@@ -35,4 +35,5 @@ int phNxpNciHal_close(void);
 int phNxpNciHal_control_granted(void);
 int phNxpNciHal_power_cycle(void);
 int phNxpNciHal_ioctl(long arg, void* p_data);
+void phNxpNciHal_do_factory_reset(void);
 #endif /* _PHNXPNCIHAL_ADAPTATION_H_ */
