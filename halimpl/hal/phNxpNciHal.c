@@ -2006,18 +2006,11 @@ int phNxpNciHal_close(void) {
   /*NCI_RESET_CMD*/
   static uint8_t cmd_reset_nci[] = {0x20, 0x00, 0x01, 0x00};
 
-  static uint8_t cmd_ce_disc_nci[] = {0x21, 0x03, 0x07, 0x03, 0x80,
-                                      0x01, 0x81, 0x01, 0x82, 0x01};
-
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
     NXPLOG_NCIHAL_E("phNxpNciHal_close is already closed, ignoring close");
     return NFCSTATUS_FAILED;
   }
   CONCURRENCY_LOCK();
-  status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_disc_nci), cmd_ce_disc_nci);
-  if (status != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("CMD_CE_DISC_NCI: Failed");
-  }
 
   nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
 
@@ -2076,6 +2069,46 @@ void phNxpNciHal_close_complete(NFCSTATUS status) {
 
   return;
 }
+
+/******************************************************************************
+ * Function         phNxpNciHal_shutdown
+ *
+ * Description      Enable the CE and VEN config during shutdown.
+ *
+ * Returns          Always return NFCSTATUS_SUCCESS (0).
+ *
+ ******************************************************************************/
+int phNxpNciHal_shutdown(void) {
+  NFCSTATUS status;
+  /*NCI_RESET_CMD*/
+  static uint8_t cmd_reset_nci[] = {0x20, 0x00, 0x01, 0x00};
+
+  static uint8_t cmd_ce_disc_nci[] = {0x21, 0x03, 0x07, 0x03, 0x80,
+                                      0x01, 0x81, 0x01, 0x82, 0x01};
+
+  static uint8_t cmd_ven_enable_nci[] = {0x20, 0x02, 0x05, 0x01,
+                                         0xA0, 0x07, 0x01, 0x03};
+  CONCURRENCY_LOCK();
+  status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_disc_nci), cmd_ce_disc_nci);
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("CMD_CE_DISC_NCI: Failed");
+  }
+
+  status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ven_enable_nci), cmd_ven_enable_nci);
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("CMD_VEN_ENABLE_NCI: Failed");
+  }
+
+  status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed");
+  }
+  CONCURRENCY_UNLOCK();
+
+  /* Return success always */
+  return NFCSTATUS_SUCCESS;
+}
+
 /******************************************************************************
  * Function         phNxpNciHal_notify_i2c_fragmentation
  *

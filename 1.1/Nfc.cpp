@@ -124,8 +124,13 @@ Return<void> Nfc::factoryReset() {
 }
 
 Return<V1_0::NfcStatus> Nfc::closeForPowerOffCase() {
-    // TODO implement
-    return V1_0::NfcStatus {};
+    HALSTATUS status = HALSTATUS_FAILED;
+    status = phNxpNciHal_shutdown();
+    if(status != HALSTATUS_SUCCESS) {
+        return V1_0::NfcStatus::FAILED;
+    } else {
+        return V1_0::NfcStatus::OK;
+    }
 }
 
 }  // namespace implementation
