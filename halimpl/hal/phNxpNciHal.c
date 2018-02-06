@@ -49,7 +49,6 @@
 extern uint8_t icode_send_eof;
 extern uint8_t icode_detected;
 static uint8_t cmd_icode_eof[] = {0x00, 0x00, 0x00};
-static int nfc_hal_status;
 
 /* FW download success flag */
 static uint8_t fw_download_success = 0;
@@ -96,6 +95,7 @@ phNxpNciMwEepromArea_t phNxpNciMwEepromArea = {false, {0}};
 /**************** local methods used in this file only ************************/
 static NFCSTATUS phNxpNciHal_fw_download(void);
 static void phNxpNciHal_open_complete(NFCSTATUS status);
+static void phNxpNciHal_MinOpen_complete(NFCSTATUS status);
 static void phNxpNciHal_write_complete(void* pContext,
                                        phTmlNfc_TransactInfo_t* pInfo);
 static void phNxpNciHal_read_complete(void* pContext,
@@ -439,37 +439,33 @@ static void phNxpNciHal_get_clk_freq(void) {
 }
 
 /******************************************************************************
- * Function         phNxpNciHal_open
+ * Function         phNxpNciHal_MinOpen
  *
- * Description      This function is called by libnfc-nci during the
- *                  initialization of the NFCC. It opens the physical connection
- *                  with NFCC (PN54X) and creates required client thread for
- *                  operation.
- *                  After open is complete, status is informed to libnfc-nci
- *                  through callback function.
+ * Description      This function initializes the least required resources to
+ *                  communicate to NFCC.This is mainly used to communicate to
+ *                  NFCC when NFC service is not available.
+ *
  *
  * Returns          This function return NFCSTATUS_SUCCES (0) in case of success
  *                  In case of failure returns other failure value.
  *
  ******************************************************************************/
-int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
-                     nfc_stack_data_callback_t* p_data_cback) {
+int phNxpNciHal_MinOpen (){
   phOsalNfc_Config_t tOsalConfig;
   phTmlNfc_Config_t tTmlConfig;
   char* nfc_dev_node = NULL;
   const uint16_t max_len = 260;
   NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
   NFCSTATUS status = NFCSTATUS_SUCCESS;
-   nfc_hal_status=1;
-  ALOGD("phNxpNciHal_open enter................");
+  ALOGD("phNxpNci_MinOpen enter................");
   /*NCI_INIT_CMD*/
   static uint8_t cmd_init_nci[] = {0x20, 0x01, 0x00};
   /*NCI_RESET_CMD*/
   static uint8_t cmd_reset_nci[] = {0x20, 0x00, 0x01, 0x00};
   /*NCI2_0_INIT_CMD*/
   static uint8_t cmd_init_nci2_0[] = {0x20, 0x01, 0x02, 0x00, 0x00};
-  if (nxpncihal_ctrl.halStatus == HAL_STATUS_OPEN) {
-    NXPLOG_NCIHAL_E("phNxpNciHal_open already open");
+  if (nxpncihal_ctrl.halStatus == HAL_STATUS_MIN_OPEN) {
+    NXPLOG_NCIHAL_E("phNxpNciHal_MinOpen already open");
     return NFCSTATUS_SUCCESS;
   }
   /* reset config cache */
@@ -498,8 +494,6 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
   /* By default HAL status is HAL_STATUS_OPEN */
   nxpncihal_ctrl.halStatus = HAL_STATUS_OPEN;
   InitializeEseAdaptation(&gspEseAdapt);
-  nxpncihal_ctrl.p_nfc_stack_cback = p_cback;
-  nxpncihal_ctrl.p_nfc_stack_data_cback = p_data_cback;
   /*nci version NCI_VERSION_UNKNOWN version by default*/
   nxpncihal_ctrl.nci_info.nci_version = NCI_VERSION_UNKNOWN;
   /* Read the nfc device node name */
@@ -566,6 +560,112 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
     goto clean_and_return;
   }
 
+init_retry:
+
+  phNxpNciHal_ext_init();
+
+  status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
+  if ((status != NFCSTATUS_SUCCESS) &&
+      (nxpncihal_ctrl.retry_cnt >= MAX_RETRY_COUNT)) {
+    NXPLOG_NCIHAL_E("Force FW Download, NFCC not coming out from Standby");
+    wConfigStatus = NFCSTATUS_FAILED;
+  } else if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed");
+    if (init_retry_cnt < 3) {
+      init_retry_cnt++;
+      (void)phNxpNciHal_power_cycle();
+      goto init_retry;
+    } else
+      init_retry_cnt = 0;
+    wConfigStatus = phTmlNfc_Shutdown();
+    wConfigStatus = NFCSTATUS_FAILED;
+    goto clean_and_return;
+  }
+
+  status = phNxpNciHal_send_ext_cmd(sizeof(cmd_init_nci2_0), cmd_init_nci2_0);
+  if (status == NFCSTATUS_SUCCESS) {
+    if (nxpncihal_ctrl.nci_info.nci_version != NCI_VERSION_2_0) {
+      NXPLOG_NCIHAL_E("Chip is in NCI1.0 mode reset the chip again");
+      status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
+      if (status == NFCSTATUS_SUCCESS) {
+        if (nxpncihal_ctrl.nci_info.nci_version == NCI_VERSION_2_0) {
+          status = phNxpNciHal_send_ext_cmd(sizeof(cmd_init_nci2_0),
+                                            cmd_init_nci2_0);
+        } else {
+          status = phNxpNciHal_send_ext_cmd(sizeof(cmd_init_nci), cmd_init_nci);
+        }
+      }
+    }
+  }
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("NCI_CORE_INIT : Failed");
+    if (init_retry_cnt < 3) {
+      init_retry_cnt++;
+      (void)phNxpNciHal_power_cycle();
+      goto init_retry;
+    } else
+      init_retry_cnt = 0;
+    wConfigStatus = phTmlNfc_Shutdown();
+    wConfigStatus = NFCSTATUS_FAILED;
+    goto clean_and_return;
+  }
+  /* Call open complete */
+  phNxpNciHal_MinOpen_complete(wConfigStatus);
+
+  return wConfigStatus;
+
+clean_and_return:
+  CONCURRENCY_UNLOCK();
+  if (nfc_dev_node != NULL) {
+    free(nfc_dev_node);
+    nfc_dev_node = NULL;
+  }
+  /* Report error status */
+  phNxpNciHal_cleanup_monitor();
+  nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
+  return NFCSTATUS_FAILED;
+}
+
+
+/******************************************************************************
+ * Function         phNxpNciHal_open
+ *
+ * Description      This function is called by libnfc-nci during the
+ *                  initialization of the NFCC. It opens the physical connection
+ *                  with NFCC (PN54X) and creates required client thread for
+ *                  operation.
+ *                  After open is complete, status is informed to libnfc-nci
+ *                  through callback function.
+ *
+ * Returns          This function return NFCSTATUS_SUCCES (0) in case of success
+ *                  In case of failure returns other failure value.
+ *
+ ******************************************************************************/
+int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
+                     nfc_stack_data_callback_t* p_data_cback) {
+  int init_retry_cnt = 0;
+  NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
+  NFCSTATUS status = NFCSTATUS_SUCCESS;
+  /*NCI_INIT_CMD*/
+  static uint8_t cmd_init_nci[] = {0x20, 0x01, 0x00};
+  /*NCI_RESET_CMD*/
+  static uint8_t cmd_reset_nci[] = {0x20, 0x00, 0x01, 0x00};
+  /*NCI2_0_INIT_CMD*/
+  static uint8_t cmd_init_nci2_0[] = {0x20, 0x01, 0x02, 0x00, 0x00};
+
+  ALOGD("phNxpNciHal_open enter................");
+  if (nxpncihal_ctrl.halStatus == HAL_STATUS_OPEN) {
+    NXPLOG_NCIHAL_E("phNxpNciHal_open already open");
+    return NFCSTATUS_SUCCESS;
+  }else if(nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE){
+    status = phNxpNciHal_MinOpen();
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("phNxpNciHal_MinOpen failed");
+      goto clean_and_return;
+    }
+  }/*else its already in MIN_OPEN state. continue with rest of functionality*/
+  nxpncihal_ctrl.p_nfc_stack_cback = p_cback;
+  nxpncihal_ctrl.p_nfc_stack_data_cback = p_data_cback;
 init_retry:
 
   phNxpNciHal_ext_init();
@@ -667,10 +767,6 @@ init_retry:
 
 clean_and_return:
   CONCURRENCY_UNLOCK();
-  if (nfc_dev_node != NULL) {
-    free(nfc_dev_node);
-    nfc_dev_node = NULL;
-  }
   /* Report error status */
   (*nxpncihal_ctrl.p_nfc_stack_cback)(HAL_NFC_OPEN_CPLT_EVT,
                                       HAL_NFC_STATUS_FAILED);
@@ -713,6 +809,24 @@ int phNxpNciHal_fw_mw_ver_check() {
   return status;
 }
 /******************************************************************************
+ * Function         phNxpNciHal_MinOpen_complete
+ *
+ * Description      This function updates the status of phNxpNciHal_MinOpen_complete
+ *                  to halstatus.
+ *
+ * Returns          void.
+ *
+ ******************************************************************************/
+static void phNxpNciHal_MinOpen_complete(NFCSTATUS status) {
+
+  if (status == NFCSTATUS_SUCCESS) {
+    nxpncihal_ctrl.halStatus = HAL_STATUS_MIN_OPEN;
+  }
+
+  return;
+}
+
+/******************************************************************************
  * Function         phNxpNciHal_open_complete
  *
  * Description      This function inform the status of phNxpNciHal_open
@@ -727,6 +841,7 @@ static void phNxpNciHal_open_complete(NFCSTATUS status) {
   if (status == NFCSTATUS_SUCCESS) {
     msg.eMsgType = NCI_HAL_OPEN_CPLT_MSG;
     nxpncihal_ctrl.hal_open_status = true;
+    nxpncihal_ctrl.halStatus = HAL_STATUS_OPEN;
   } else {
     msg.eMsgType = NCI_HAL_ERROR_MSG;
   }
@@ -822,15 +937,12 @@ int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t* p_data) {
   nxpncihal_ctrl.retry_cnt = 0;
   static uint8_t reset_ntf[] = {0x60, 0x00, 0x06, 0xA0, 0x00,
                                 0xC7, 0xD4, 0x00, 0x00};
-ALOGD("phNxpNciHal_write_unlocked enter");
   /* Create the local semaphore */
   if (phNxpNciHal_init_cb_data(&cb_data, NULL) != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_D("phNxpNciHal_write_unlocked Create cb data failed");
-ALOGD("phNxpNciHal_write_unlocked init cb failed enter");
     data_len = 0;
     goto clean_and_return;
   }
-ALOGD("phNxpNciHal_write_unlocked init cb after enter");
 
   /* Create local copy of cmd_data */
   memcpy(nxpncihal_ctrl.p_cmd_data, p_data, data_len);
@@ -839,7 +951,6 @@ ALOGD("phNxpNciHal_write_unlocked init cb after enter");
 retry:
 
   data_len = nxpncihal_ctrl.cmd_len;
-ALOGD("phNxpNciHal_write_unlocked before write");
 
   status = phTmlNfc_Write(
       (uint8_t*)nxpncihal_ctrl.p_cmd_data, (uint16_t)nxpncihal_ctrl.cmd_len,
@@ -851,7 +962,6 @@ ALOGD("phNxpNciHal_write_unlocked before write");
     goto clean_and_return;
   }
 
-ALOGD("phNxpNciHal_write_unlocked after write");
   /* Wait for callback response */
   if (SEM_WAIT(cb_data)) {
     NXPLOG_NCIHAL_E("write_unlocked semaphore error");
@@ -1898,7 +2008,6 @@ int phNxpNciHal_close(void) {
 
   static uint8_t cmd_ce_disc_nci[] = {0x21, 0x03, 0x07, 0x03, 0x80,
                                       0x01, 0x81, 0x01, 0x82, 0x01};
-  nfc_hal_status=0;
 
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
     NXPLOG_NCIHAL_E("phNxpNciHal_close is already closed, ignoring close");
@@ -2117,18 +2226,17 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
   nfc_nci_IoctlInOutData_t* pInpOutData = (nfc_nci_IoctlInOutData_t*)p_data;
   int ret = -1;
   long level;
-  ALOGD("phNxpNciHal_ioctl enter1................");
   level=pInpOutData->inp.level;
-  ALOGD("phNxpNciHal_ioctl enter2   nfc_hal_status is %d................",nfc_hal_status);
-  //NFCSTATUS status = NFCSTATUS_FAILED;
-  //phNxpNciHal_FwRfupdateInfo_t* FwRfInfo;
-  //NFCSTATUS fm_mw_ver_check = NFCSTATUS_FAILED;
-  if(nfc_hal_status != 1)
+  ALOGD("phNxpNciHal_ioctl nxpncihal_ctrl.halStatus is %d................",nxpncihal_ctrl.halStatus);
+  if(nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE)
    {
-       ALOGD("nfc_hal_status is 0................");
-       NXPLOG_NCIHAL_D("%s : NFC Disabled not allowed to open SPI = %ld", __func__, arg);
-       pInpOutData->out.data.nciRsp.p_rsp[3]=1;
-       return -1;
+       NFCSTATUS status = NFCSTATUS_FAILED;
+       status = phNxpNciHal_MinOpen();
+       if(status != NFCSTATUS_SUCCESS )
+       {
+         pInpOutData->out.data.nciRsp.p_rsp[3]=1;
+         return -1;
+       }
    }
   switch (arg) {
     case HAL_NFC_IOCTL_SPI_DWP_SYNC:

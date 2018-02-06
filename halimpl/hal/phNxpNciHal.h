@@ -63,7 +63,7 @@ typedef struct nci_data {
   uint8_t p_data[NCI_MAX_DATA_LEN];
 } nci_data_t;
 
-typedef enum { HAL_STATUS_CLOSE = 0, HAL_STATUS_OPEN } phNxpNci_HalStatus;
+typedef enum { HAL_STATUS_CLOSE = 0, HAL_STATUS_OPEN,HAL_STATUS_MIN_OPEN } phNxpNci_HalStatus;
 
 typedef enum {
   GPIO_UNKNOWN      = 0x00,
