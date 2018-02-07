@@ -26,7 +26,5 @@ interface INxpNfc {
      *
      * @return output data as stream of bytes
      */
-    @callflow(next={"ioctl", "write", "prediscover", "coreInitialized", "close", "powerCycle",
-                    "controlGranted"})
     ioctl(uint64_t ioctlType,NfcData inputData) generates(NfcData outputData);
 };
