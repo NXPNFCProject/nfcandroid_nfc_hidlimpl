@@ -460,18 +460,6 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
 *******************************************************************************/
 
 void phNxpNciHal_emergency_recovery(void) {
-#if (NFC_NXP_CHIP_TYPE == PN548C2)
-  if (nfcdep_detected && discovery_cmd_len != 0) {
-    pthread_t pthread;
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    if (pthread_create(&pthread, &attr, (void*)phNxpNciHal_core_reset_recovery,
-                       NULL) == 0) {
-      return;
-    }
-  }
-#endif
   NXPLOG_NCIHAL_E("%s: abort()", __func__);
-  abort();
+  //    abort();
 }

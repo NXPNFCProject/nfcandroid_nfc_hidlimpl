@@ -23,7 +23,7 @@
 #include <phNxpNciHal_Adaptation.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include "hal_nxpnfc.h"
 /*****************************************************************************
  * NXP NCI HAL Function implementations.
  *****************************************************************************/

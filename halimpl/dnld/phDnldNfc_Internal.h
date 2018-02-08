@@ -150,8 +150,8 @@ typedef struct phDnldNfc_RspTimerInfo {
  */
 typedef struct phDnldNfc_RWInfo {
   uint32_t dwAddr;    /* current Addr updated for read/write */
-  uint16_t wOffset;   /* current offset within the user buffer to read/write */
-  uint16_t wRemBytes; /* Remaining bytes to read/write */
+  uint32_t wOffset;   /* current offset within the user buffer to read/write */
+  uint32_t wRemBytes; /* Remaining bytes to read/write */
   uint16_t wRemChunkBytes; /* Remaining bytes within the chunked frame */
   uint16_t wRWPldSize;     /* Size of the read/write payload per transaction */
   uint16_t wBytesToSendRecv; /* Num of Bytes being written/read currently */
@@ -171,8 +171,8 @@ typedef struct phDnldNfc_DlContext {
   const uint8_t* nxp_nfc_fw; /* Pointer to firmware version from image */
   const uint8_t*
       nxp_nfc_fwp; /* Pointer to firmware version from get_version cmd */
-  uint16_t nxp_nfc_fwp_len; /* Length of firmware image length */
-  uint16_t nxp_nfc_fw_len;  /* Firmware image length */
+  uint32_t nxp_nfc_fwp_len; /* Length of firmware image length */
+  uint32_t nxp_nfc_fw_len;  /* Firmware image length */
   bool_t bResendLastFrame;  /* Flag to resend the last write frame after MEM_BSY
                                status */
   phDnldNfc_Transition_t

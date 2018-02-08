@@ -35,6 +35,18 @@
 
 #define FW_DLL_ROOT_DIR "/system/vendor/lib/"
 #define FW_DLL_EXTENSION ".so"
+/* HAL Version number (Updated as per release) */
+#define NXP_MW_VERSION_MAJ (0x03)
+#define NXP_MW_VERSION_MIN (0x02)
+
+#define GET_EEPROM_DATA (1U)
+#define SET_EEPROM_DATA (2U)
+
+#define BITWISE (1U)
+#define BYTEWISE (2U)
+
+#define GET_FW_DWNLD_FLAG (1U)
+#define RESET_FW_DWNLD_FLAG (2U)
 
 #if (NFC_NXP_CHIP_TYPE == PN548C2)
 
@@ -81,9 +93,6 @@
 #define COMPILATION_MW "PN547C2"
 #endif
 
-/* HAL Version number (Updated as per release) */
-#define NXP_MW_VERSION_MAJ (3U)
-#define NXP_MW_VERSION_MIN (5U)
 
 /*
  *****************************************************************
@@ -95,6 +104,7 @@
 #define CLK_SRC_XTAL 1
 #define CLK_SRC_PLL 2
 #define CLK_SRC_PADDIRECT 3
+#define CLK_CFG_XTAL 8
 
 /*Extern crystal clock source*/
 /* Use one of CLK_SRC_<value> */
@@ -107,19 +117,62 @@
  * If Clk_Src is set to PLL, make sure to set the Clk_Freq also*
  *****************************************************************
  */
-#define CLK_FREQ_UNDEF 0
-#define CLK_FREQ_13MHZ 1
-#define CLK_FREQ_19_2MHZ 2
-#define CLK_FREQ_24MHZ 3
-#define CLK_FREQ_26MHZ 4
-#define CLK_FREQ_38_4MHZ 5
-#define CLK_FREQ_52MHZ 6
+#define CLK_FREQ_UNDEF         0
+#define CLK_FREQ_13MHZ         1
+#define CLK_FREQ_19_2MHZ       2
+#define CLK_FREQ_24MHZ         3
+#define CLK_FREQ_26MHZ         4
+#define CLK_FREQ_32MHZ         5
+#define CLK_FREQ_38_4MHZ       6
+#define CLK_FREQ_52MHZ         7
+
+#define SET_CONFIG_CMD_PLL_13MHZ        {0x20, 0x02, 0x0C, 0x01, 0xA0, 0x20, 0x08, 0x08,\
+                                        0x52, 0xA2, 0x02, 0x30, 0x01, 0xE1, 0x02}
+
+#define SET_CONFIG_CMD_DPLL_13MHZ       {0x20, 0x02, 0x0C, 0x01, 0xA0, 0x26, 0x08, 0x40,\
+                                        0x42, 0xA3, 0x02, 0x88, 0x01, 0xE2, 0x02}
+
+#define SET_CONFIG_CMD_PLL_19_2MHZ      {0x20, 0x02, 0x0C, 0x01, 0xA0, 0x20, 0x08, 0x88,\
+                                        0x51, 0xE3, 0x02, 0xB8, 0x21, 0xE1, 0x02}
+
+#define SET_CONFIG_CMD_DPLL_19_2MHZ     {0x20, 0x02, 0x0C, 0x01, 0xA0, 0x26, 0x08, 0x88,\
+                                        0x01, 0xE2, 0x02, 0xF0, 0x00, 0xA2, 0x01}
+
+#define SET_CONFIG_CMD_PLL_24MHZ        {0x20, 0x02, 0x0C, 0x01, 0xA0, 0x20, 0x08, 0x28,\
+                                         0xC2, 0xA2, 0x83, 0x88, 0x11, 0xE1, 0x02}
+
+#define SET_CONFIG_CMD_DPLL_24MHZ       {0x20, 0x02, 0x0C, 0x01, 0xA0, 0x26, 0x08, 0x38,\
+                                         0x41, 0xD3, 0x02, 0x88, 0x01, 0xE2, 0x02}
+
+#define SET_CONFIG_CMD_PLL_26MHZ        {0x20, 0x02, 0x0C, 0x01, 0xA0, 0x20, 0x08, 0x08,\
+                                         0x52, 0xA2, 0x82, 0x30, 0x01, 0xE1, 0x02}
+
+#define SET_CONFIG_CMD_DPLL_26MHZ       {0x20, 0x02, 0x0C, 0x01, 0xA0, 0x26, 0x08, 0x20,\
+                                         0x41, 0xA3, 0x01, 0x88, 0x01, 0xE2, 0x02}
+
+#define SET_CONFIG_CMD_PLL_32MHZ        {0x20, 0x02, 0x0C, 0x01, 0xA0, 0x20, 0x08, 0xB8, 0x51, 0xA3, 0x82, 0x88, 0xF1, 0xF0, 0x02}
+
+#define SET_CONFIG_CMD_DPLL_32MHZ       {0x20, 0x02, 0x0C, 0x01, 0xA0, 0x26, 0x08, 0xB0,\
+                                         0x01, 0xA3, 0x82, 0x88, 0x01, 0xE2, 0x02}
+
+#define SET_CONFIG_CMD_PLL_38_4MHZ      {0x20, 0x02, 0x0C, 0x01, 0xA0, 0x20, 0x08, 0x88,\
+                                         0x51, 0xE3, 0x82, 0x88, 0x21, 0xE1, 0x02}
+
+#define SET_CONFIG_CMD_DPLL_38_4MHZ     {0x20, 0x02, 0x0C, 0x01, 0xA0, 0x26, 0x08, 0x88,\
+                                        0x01, 0xE2, 0x82, 0xF0, 0x00, 0xA2, 0x01}
 
 /* Set to one of CLK_FREQ_<value> */
 #define NXP_SYS_CLK_FREQ_SEL CLK_FREQ_19_2MHZ
 
 #define CLK_TO_CFG_DEF 1
 #define CLK_TO_CFG_MAX 6
+
+#define CLK_REQ_DELAY_MIN 1
+#define CLK_REQ_DELAY_MAX 31
+#define CLK_REQ_DELAY_DEF 22
+#define CLK_REQ_DELAY_MASK 0x1F
+#define CLK_REQ_DELAY_PLL_OFFSET 13
+#define CLK_REQ_DELAY_XTAL_OFFSET 14
 /*
  *  information to configure OSAL
  */

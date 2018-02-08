@@ -284,7 +284,8 @@ int phTmlNfc_i2c_write(void* pDevHandle, uint8_t* pBuffer,
 *******************************************************************************/
 #define PN544_SET_PWR _IOW(0xe9, 0x01, unsigned int)
 int phTmlNfc_i2c_reset(void* pDevHandle, long level) {
-  int ret;
+  int ret = -1;
+
   NXPLOG_TML_D("phTmlNfc_i2c_reset(), VEN level %ld", level);
 
   if (NULL == pDevHandle) {
@@ -292,7 +293,15 @@ int phTmlNfc_i2c_reset(void* pDevHandle, long level) {
   }
 
   ret = ioctl((intptr_t)pDevHandle, PN544_SET_PWR, level);
-  if (level == 2 && ret == 0) {
+  if (ret < 0) {
+    NXPLOG_TML_E("%s :failed errno = 0x%x", __func__, errno);
+    if ((level == 2 || level == 4) && errno == EBUSY) {
+      notifyFwrequest = true;
+    } else {
+      notifyFwrequest = false;
+    }
+  }
+  if ((level == 2 || level == 4) && ret == 0) {
     bFwDnldFlag = true;
   } else {
     bFwDnldFlag = false;

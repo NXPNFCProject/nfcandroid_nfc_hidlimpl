@@ -584,7 +584,7 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
       } else {
         if ((pDlContext->tRWInfo.bFramesSegmented) == false) {
           NXPLOG_FWDNLD_D("Verifying RspBuffInfo for Read Request..");
-          wFrameLen = (pDlContext->tRspBuffInfo.wLen) + PHDNLDNFC_MIN_PLD_LEN;
+          wFrameLen = (uint16_t)(pDlContext->tRspBuffInfo.wLen) + PHDNLDNFC_MIN_PLD_LEN;
 
           (pDlContext->tRWInfo.wRWPldSize) =
               (PHDNLDNFC_CMDRESP_MAX_PLD_SIZE - PHDNLDNFC_MIN_PLD_LEN);
@@ -614,6 +614,10 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
     if (NFCSTATUS_SUCCESS == wStatus) {
       wFrameLen = 0;
       wFrameLen = (pDlContext->tCmdRspFrameInfo.dwSendlength);
+      if (wFrameLen > PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE) {
+        NXPLOG_FWDNLD_D("wFrameLen exceeds the limit");
+        return NFCSTATUS_FAILED;
+      }
 
       if (phDnldNfc_FTRaw != (pDlContext->FrameInp.Type)) {
         if (phDnldNfc_FTWrite != (pDlContext->FrameInp.Type)) {
@@ -649,7 +653,8 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
             wFrameLen += PHDNLDNFC_FRAME_HDR_LEN;
           }
         }
-        if (wFrameLen > PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE) {
+        /*Check whether enough space is left for 2 bytes of CRC append*/
+        if (wFrameLen > (PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE - 2)) {
           NXPLOG_FWDNLD_D("wFrameLen exceeds the limit");
           return NFCSTATUS_FAILED;
         }
@@ -690,8 +695,7 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
 *******************************************************************************/
 static NFCSTATUS phDnldNfc_CreateFramePld(pphDnldNfc_DlContext_t pDlContext) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
-  uint16_t wBuffIdx = 0;
-  uint16_t wChkIntgVal = 0;
+  uint32_t wBuffIdx = 0;
   uint16_t wFrameLen = 0;
 
   if (NULL == pDlContext) {
@@ -706,7 +710,7 @@ static NFCSTATUS phDnldNfc_CreateFramePld(pphDnldNfc_DlContext_t pDlContext) {
       (pDlContext->tCmdRspFrameInfo.dwSendlength) += PHDNLDNFC_MIN_PLD_LEN;
     } else if (phDnldNfc_ChkIntg == (pDlContext->FrameInp.Type)) {
       (pDlContext->tCmdRspFrameInfo.dwSendlength) += PHDNLDNFC_MIN_PLD_LEN;
-
+#if 0 /*Commented for SN100*/
       wChkIntgVal = PHDNLDNFC_USERDATA_EEPROM_OFFSET;
       memcpy(&(pDlContext->tCmdRspFrameInfo
                    .aFrameBuff[PHDNLDNFC_FRAME_RDDATA_OFFSET]),
@@ -722,6 +726,7 @@ static NFCSTATUS phDnldNfc_CreateFramePld(pphDnldNfc_DlContext_t pDlContext) {
           PHDNLDNFC_USERDATA_EEPROM_LENSIZE;
       (pDlContext->tCmdRspFrameInfo.dwSendlength) +=
           PHDNLDNFC_USERDATA_EEPROM_OFFSIZE;
+#endif
     } else if (phDnldNfc_FTWrite == (pDlContext->FrameInp.Type)) {
       wBuffIdx = (pDlContext->tRWInfo.wOffset);
 
@@ -770,7 +775,7 @@ static NFCSTATUS phDnldNfc_CreateFramePld(pphDnldNfc_DlContext_t pDlContext) {
       (pDlContext->tRWInfo.wBytesToSendRecv) =
           ((pDlContext->tRWInfo.wRemBytes) > (pDlContext->tRWInfo.wRWPldSize))
               ? (pDlContext->tRWInfo.wRWPldSize)
-              : (pDlContext->tRWInfo.wRemBytes);
+              : (uint16_t)(pDlContext->tRWInfo.wRemBytes);
 
       wBuffIdx = (PHDNLDNFC_PLD_OFFSET +
                   ((sizeof(pDlContext->tRWInfo.wBytesToSendRecv)) %
@@ -797,7 +802,7 @@ static NFCSTATUS phDnldNfc_CreateFramePld(pphDnldNfc_DlContext_t pDlContext) {
              (pDlContext->tUserData.pBuff), (pDlContext->tUserData.wLen));
 
       (pDlContext->tCmdRspFrameInfo.dwSendlength) +=
-          (pDlContext->tUserData.wLen);
+              (uint16_t)(pDlContext->tUserData.wLen);
     } else if (phDnldNfc_FTForce == (pDlContext->FrameInp.Type)) {
       (pDlContext->tCmdRspFrameInfo.dwSendlength) += PHDNLDNFC_MIN_PLD_LEN;
 
@@ -815,7 +820,7 @@ static NFCSTATUS phDnldNfc_CreateFramePld(pphDnldNfc_DlContext_t pDlContext) {
                (pDlContext->tUserData.pBuff), (pDlContext->tUserData.wLen));
 
         (pDlContext->tCmdRspFrameInfo.dwSendlength) +=
-            (pDlContext->tUserData.wLen);
+                (uint16_t)(pDlContext->tUserData.wLen);
       }
     } else {
     }

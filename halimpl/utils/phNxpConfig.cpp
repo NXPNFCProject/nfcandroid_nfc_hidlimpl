@@ -54,6 +54,7 @@ const char alternative_config_path[] = "";
 
 #if 1
 const char* transport_config_paths[] = {"/odm/etc/", "/vendor/etc/", "/etc/"};
+const char transit_config_path[] = "/data/vendor/nfc/libnfc-nxpTransit.conf";
 #else
 const char* transport_config_paths[] = {"res/"};
 #endif
@@ -61,12 +62,22 @@ const int transport_config_path_size =
     (sizeof(transport_config_paths) / sizeof(transport_config_paths[0]));
 
 #define config_name "libnfc-nxp.conf"
-#define extra_config_base "libnfc-nxp-"
+#define extra_config_base "libnfc-"
 #define extra_config_ext ".conf"
 #define IsStringValue 0x80000000
 
+const char rf_config_timestamp_path[] =
+        "/data/vendor/nfc/libnfc-nxpRFConfigState.bin";
+const char tr_config_timestamp_path[] =
+    "/data/vendor/nfc/libnfc-nxpTransitConfigState.bin";
 const char config_timestamp_path[] =
-    "/data/vendor/nfc/libnfc-nxpConfigState.bin";
+        "/data/vendor/nfc/libnfc-nxpConfigState.bin";
+/*const char default_nxp_config_path[] =
+        "/vendor/etc/libnfc-nxp.conf";*/
+const char nxp_rf_config_path[] =
+        "/system/vendor/libnfc-nxp_RF.conf";
+
+void readOptionalConfig(const char* optional);
 
 namespace {
 
@@ -117,12 +128,16 @@ class CNfcConfig : public vector<const CNfcParam*> {
   friend void readOptionalConfig(const char* optional);
   bool isModified();
   void resetModified();
+  int updateTimestamp();
+  int checkTimestamp(const char* fileName, const char* fileTimeStamp);
 
   bool getValue(const char* name, char* pValue, size_t len) const;
   bool getValue(const char* name, unsigned long& rValue) const;
   bool getValue(const char* name, unsigned short& rValue) const;
   bool getValue(const char* name, char* pValue, long len, long* readlen) const;
   const CNfcParam* find(const char* p_name) const;
+  void readNxpTransitConfig(const char* fileName) const;
+  void readNxpRFConfig(const char* fileName) const;
   void clean();
 
  private:
@@ -131,9 +146,15 @@ class CNfcConfig : public vector<const CNfcParam*> {
   void moveFromList();
   void moveToList();
   void add(const CNfcParam* pParam);
+  void dump();
+  bool isAllowed(const char* name);
   list<const CNfcParam*> m_list;
   bool mValidFile;
   uint32_t config_crc32_;
+  unsigned long m_timeStamp;
+  unsigned long m_timeStampRF;
+  unsigned long m_timeStampTransit;
+  string mCurrentFile;
 
   unsigned long state;
 
@@ -409,7 +430,12 @@ bool CNfcConfig::readConfig(const char* name, bool bResetContent) {
 ** Returns:     none
 **
 *******************************************************************************/
-CNfcConfig::CNfcConfig() : mValidFile(true), state(0) {}
+CNfcConfig::CNfcConfig()
+    : mValidFile(true),
+      m_timeStamp(0),
+      m_timeStampRF(0),
+      m_timeStampTransit(0),
+      state(0) {}
 
 /*******************************************************************************
 **
@@ -446,6 +472,11 @@ CNfcConfig& CNfcConfig::GetInstance() {
     }
     findConfigFilePathFromTransportConfigPaths(config_name, strPath);
     theInstance.readConfig(strPath.c_str(), true);
+#if (NXP_EXTNS == TRUE)
+    readOptionalConfig("brcm");
+    theInstance.readNxpTransitConfig(transit_config_path);
+    theInstance.readNxpRFConfig(nxp_rf_config_path);
+#endif
   }
 
   return theInstance;
@@ -566,6 +597,34 @@ const CNfcParam* CNfcConfig::find(const char* p_name) const {
 
 /*******************************************************************************
 **
+** Function:    CNfcConfig::readNxpTransitConfig()
+**
+** Description: read Config settings from transit conf file
+**
+** Returns:     none
+**
+*******************************************************************************/
+void CNfcConfig::readNxpTransitConfig(const char* fileName) const {
+  ALOGD("readNxpTransitConfig-Enter..Reading %s", fileName);
+  CNfcConfig::GetInstance().readConfig(fileName, false);
+}
+
+/*******************************************************************************
+**
+** Function:    CNfcConfig::readNxpRFConfig()
+**
+** Description: read Config settings from RF conf file
+**
+** Returns:     none
+**
+*******************************************************************************/
+void CNfcConfig::readNxpRFConfig(const char* fileName) const {
+  ALOGD("readNxpRFConfig-Enter..Reading %s", fileName);
+  CNfcConfig::GetInstance().readConfig(fileName, false);
+}
+
+/*******************************************************************************
+**
 ** Function:    CNfcConfig::clean()
 **
 ** Description: reset the setting array
@@ -594,16 +653,73 @@ void CNfcConfig::add(const CNfcParam* pParam) {
     m_list.push_back(pParam);
     return;
   }
-  for (list<const CNfcParam *>::iterator it = m_list.begin(),
-                                         itEnd = m_list.end();
+  if ((mCurrentFile.find("nxpTransit") != std::string::npos) &&
+      !isAllowed(pParam->c_str())) {
+    ALOGD("%s Token restricted. Returning", __func__);
+    return;
+  }
+  for (list<const CNfcParam*>::iterator it = m_list.begin(),
+                                        itEnd = m_list.end();
        it != itEnd; ++it) {
     if (**it < pParam->c_str()) continue;
-    m_list.insert(it, pParam);
+    if (**it == pParam->c_str())
+      m_list.insert(m_list.erase(it), pParam);
+    else
+      m_list.insert(it, pParam);
+
     return;
   }
   m_list.push_back(pParam);
 }
+/*******************************************************************************
+**
+** Function:    CNfcConfig::dump()
+**
+** Description: prints all elements in the list
+**
+** Returns:     none
+**
+*******************************************************************************/
+void CNfcConfig::dump() {
+  ALOGD("%s Enter", __func__);
 
+  for (list<const CNfcParam*>::iterator it = m_list.begin(),
+                                        itEnd = m_list.end();
+       it != itEnd; ++it) {
+    if ((*it)->str_len() > 0)
+      ALOGD("%s %s \t= %s", __func__, (*it)->c_str(), (*it)->str_value());
+    else
+      ALOGD("%s %s \t= (0x%0lX)\n", __func__, (*it)->c_str(),
+            (*it)->numValue());
+  }
+}
+/*******************************************************************************
+**
+** Function:    CNfcConfig::isAllowed()
+**
+** Description: checks if token update is allowed
+**
+** Returns:     true if allowed else false
+**
+*******************************************************************************/
+bool CNfcConfig::isAllowed(const char* name) {
+  string token(name);
+  bool stat = false;
+  if ((token.find("P2P_LISTEN_TECH_MASK") != std::string::npos) ||
+      (token.find("HOST_LISTEN_TECH_MASK") != std::string::npos) ||
+      (token.find("UICC_LISTEN_TECH_MASK") != std::string::npos) ||
+      (token.find("NXP_ESE_LISTEN_TECH_MASK") != std::string::npos) ||
+      (token.find("POLLING_TECH_MASK") != std::string::npos) ||
+      (token.find("NXP_RF_CONF_BLK") != std::string::npos) ||
+      (token.find("NXP_CN_TRANSIT_BLK_NUM_CHECK_ENABLE") !=
+       std::string::npos) ||
+      (token.find("NXP_FWD_FUNCTIONALITY_ENABLE") != std::string::npos))
+
+  {
+    stat = true;
+  }
+  return stat;
+}
 /*******************************************************************************
 **
 ** Function:    CNfcConfig::moveFromList()
@@ -638,6 +754,94 @@ void CNfcConfig::moveToList() {
   for (iterator it = begin(), itEnd = end(); it != itEnd; ++it)
     m_list.push_back(*it);
   clear();
+}
+/*******************************************************************************
+**
+** Function:    CNfcConfig::checkTimestamp(const char* fileName,const char*
+*fileNameTime)
+**
+** Description: check if config file has modified
+**
+** Returns:     0 if not modified, 1 otherwise.
+**
+*******************************************************************************/
+int CNfcConfig::checkTimestamp(const char* fileName, const char* fileNameTime) {
+  FILE* fd;
+  struct stat st;
+  unsigned long value = 0, timeStamp = 0;
+  int ret = 0;
+  if (strcmp(config_timestamp_path, fileNameTime) == 0) {
+    timeStamp = m_timeStamp;
+  } else if (strcmp(rf_config_timestamp_path, fileNameTime) == 0) {
+    timeStamp = m_timeStampRF;
+  } else if (strcmp(tr_config_timestamp_path, fileNameTime) == 0) {
+    timeStamp = m_timeStampTransit;
+  } else
+    ALOGD("Invalid file \n");
+
+  if (stat(fileNameTime, &st) != 0) {
+    ALOGD("%s file not exist.\n", __func__);
+    if ((fd = fopen(fileNameTime, "w+")) != NULL) {
+      fwrite(&timeStamp, sizeof(unsigned long), 1, fd);
+      fclose(fd);
+    }
+    return 1;
+  } else {
+    fd = fopen(fileNameTime, "r+");
+    if (fd == NULL) {
+      ALOGE("%s Cannot open file %s\n", __func__, fileName);
+      return 1;
+    }
+    fread(&value, sizeof(unsigned long), 1, fd);
+    ret = (value != timeStamp) ? 1 : 0;
+    if (ret) {
+      ALOGD("Config File Modified Update timestamp");
+      fseek(fd, 0, SEEK_SET);
+      fwrite(&timeStamp, sizeof(unsigned long), 1, fd);
+    }
+    fclose(fd);
+  }
+  return ret;
+}
+/*******************************************************************************
+**
+** Function:    CNfcConfig::updateTimestamp()
+**
+** Description: update if config file has modified
+**
+** Returns:     0 if not modified, 1 otherwise.
+**
+*******************************************************************************/
+int CNfcConfig::updateTimestamp() {
+  FILE* fd;
+  struct stat st;
+  unsigned long value = 0;
+  int ret = 0;
+
+  if (stat(config_timestamp_path, &st) != 0) {
+    ALOGD("%s file %s not exist, creat it.\n", __func__, config_timestamp_path);
+    fd = fopen(config_timestamp_path, "w+");
+    if (fd != NULL) {
+      fwrite(&m_timeStamp, sizeof(unsigned long), 1, fd);
+      fclose(fd);
+    }
+    return 1;
+  } else {
+    fd = fopen(config_timestamp_path, "r+");
+    if (fd == NULL) {
+      ALOGE("%s Cannot open file %s\n", __func__, config_timestamp_path);
+      return 1;
+    }
+
+    fread(&value, sizeof(unsigned long), 1, fd);
+    ret = (value != m_timeStamp);
+    if (ret) {
+      fseek(fd, 0, SEEK_SET);
+      fwrite(&m_timeStamp, sizeof(unsigned long), 1, fd);
+    }
+    fclose(fd);
+  }
+  return ret;
 }
 
 bool CNfcConfig::isModified() {
@@ -712,6 +916,31 @@ CNfcParam::CNfcParam(const char* name, const string& value)
 *******************************************************************************/
 CNfcParam::CNfcParam(const char* name, unsigned long value)
     : string(name), m_numValue(value) {}
+
+/*******************************************************************************
+**
+** Function:    readOptionalConfig()
+**
+** Description: read Config settings from an optional conf file
+**
+** Returns:     none
+**
+*******************************************************************************/
+void readOptionalConfig(const char* extra) {
+  string strPath;
+  string configName(extra_config_base);
+  configName += extra;
+  configName += extra_config_ext;
+
+  if (alternative_config_path[0] != '\0') {
+    strPath.assign(alternative_config_path);
+    strPath += configName;
+  } else {
+    findConfigFilePathFromTransportConfigPaths(configName, strPath);
+  }
+
+  CNfcConfig::GetInstance().readConfig(strPath.c_str(), false);
+}
 
 /*******************************************************************************
 **
@@ -813,31 +1042,6 @@ extern "C" void resetNxpConfig()
 
 /*******************************************************************************
 **
-** Function:    readOptionalConfig()
-**
-** Description: read Config settings from an optional conf file
-**
-** Returns:     none
-**
-*******************************************************************************/
-void readOptionalConfig(const char* extra) {
-  string strPath;
-  string configName(extra_config_base);
-  configName += extra;
-  configName += extra_config_ext;
-
-  if (alternative_config_path[0] != '\0') {
-    strPath.assign(alternative_config_path);
-    strPath += configName;
-  } else {
-    findConfigFilePathFromTransportConfigPaths(configName, strPath);
-  }
-
-  CNfcConfig::GetInstance().readConfig(strPath.c_str(), false);
-}
-
-/*******************************************************************************
-**
 ** Function:    isNxpConfigModified()
 **
 ** Description: check if config file has modified
@@ -848,6 +1052,26 @@ void readOptionalConfig(const char* extra) {
 extern "C" int isNxpConfigModified() {
   CNfcConfig& rConfig = CNfcConfig::GetInstance();
   return rConfig.isModified();
+}
+
+/*******************************************************************************
+**
+** Function:    isNxpRFConfigModified()
+**
+** Description: check if config file has modified
+**
+** Returns:     0 if not modified, 1 otherwise.
+**
+*******************************************************************************/
+extern "C" int isNxpRFConfigModified() {
+  int retRF = 0, rettransit = 0, ret = 0;
+  CNfcConfig& rConfig = CNfcConfig::GetInstance();
+  retRF = rConfig.checkTimestamp(nxp_rf_config_path, rf_config_timestamp_path);
+  rettransit =
+      rConfig.checkTimestamp(transit_config_path, tr_config_timestamp_path);
+  ret = retRF | rettransit;
+  ALOGD("ret RF or Transit value %d", ret);
+  return ret;
 }
 
 /*******************************************************************************

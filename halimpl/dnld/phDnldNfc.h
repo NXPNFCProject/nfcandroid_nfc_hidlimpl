@@ -55,6 +55,8 @@ typedef void (*pphDnldNfc_RspCb_t)(void* pContext, NFCSTATUS wStatus,
    PN80T A0 -> 0x50
    PN80T B0 -> 0x51 */
 #define PHDNLDNFC_HWVER_PN553_MRA1_0_UPDATED (0x40U)
+#define PHDNLDNFC_HWVER_PN557_MRA1_0 (0x01U)
+#define PHDNLDNFC_HWVER_VENUS_MRA1_0 (0xA0U)
 /*
  * Enum definition contains Download Life Cycle States
  */
@@ -91,9 +93,16 @@ typedef enum phDnldNfc_ClkFreq {
  */
 typedef struct phDnldNfc_Buff {
   uint8_t* pBuff; /*pointer to the buffer where user payload shall be stored*/
-  uint16_t wLen;  /*Buffer length*/
+  uint32_t wLen;  /*Buffer length*/
 } phDnldNfc_Buff_t, *pphDnldNfc_Buff_t; /* pointer to #phDnldNfc_Buff_t */
 
+typedef struct phDnldChkIntegrityRsp_Buff {
+  uint8_t* pBuff;        /* pointer to the buffer where chk integrity rsp is stored*/
+  uint32_t wLen;         /* check integrity rsp Buffer length*/
+  uint8_t  data_len;     /* length of data area whose CRC is checked, maximum 28 bits*/
+  uint8_t  code_len;     /* length of code area whose CRC is checked, maximum 4 bits*/
+  uint32_t crc_status;   /* crc info of all the sections*/
+} phDnldChkIntegrityRsp_Buff_t;
 /*
 *********************** Function Prototype Declaration *************************
 */
@@ -131,11 +140,9 @@ extern NFCSTATUS phDnldNfc_LoadRecInfo(void);
 extern NFCSTATUS phDnldNfc_LoadPKInfo(void);
 extern void phDnldNfc_CloseFwLibHandle(void);
 extern NFCSTATUS phDnldNfc_LoadFW(const char* pathName, uint8_t** pImgInfo,
-                                  uint16_t* pImgInfoLen);
-#if (NFC_NXP_CHIP_TYPE != PN547C2)
+                                  uint32_t* pImgInfoLen);
 extern NFCSTATUS phDnldNfc_LoadRecoveryFW(const char* pathName,
                                           uint8_t** pImgInfo,
-                                          uint16_t* pImgInfoLen);
-#endif
+                                          uint32_t* pImgInfoLen);
 extern NFCSTATUS phDnldNfc_UnloadFW(void);
 #endif /* PHDNLDNFC_H */

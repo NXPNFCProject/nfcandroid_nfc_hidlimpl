@@ -46,10 +46,12 @@ cc_library_shared {
         "utils/phNxpConfig.cpp",
         "utils/phNxpNciHal_utils.c",
         "utils/sparse_crc32.c",
+        "configs/NxpNfcCapability.cpp",
     ],
 
     local_include_dirs: [
         "common",
+        "configs",
         "dnld",
         "hal",
         "inc",
@@ -77,7 +79,6 @@ cc_library_shared {
         "libhidltransport",
         "liblog",
         "libutils",
-        "ese_spi_nxp",
         "vendor.nxp.nxpese@1.0",
 
     ],

@@ -471,6 +471,7 @@ void* tmp_thread(void* tmp) {
   }
 
   NXPLOG_NCIHAL_E("tmp_thread: exit");
+  pthread_exit(NULL);
   return NULL;
 }
 /*******************************************************************************
