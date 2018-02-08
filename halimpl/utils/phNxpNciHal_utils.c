@@ -93,11 +93,10 @@ int listAdd(struct listHead* pList, void* pData) {
     NXPLOG_NCIHAL_E("Failed to malloc");
     goto clean_and_return;
   }
-  ALOGD("listadd enter.................");
   pNode->pData = pData;
   pNode->pNext = NULL;
+
   pthread_mutex_lock(&pList->mutex);
-  ALOGD("listadd enter after thread");
 
   /* Add the node to the list */
   if (pList->pFirst == NULL) {
@@ -344,10 +343,6 @@ void phNxpNciHal_cleanup_monitor(void) {
 **
 *******************************************************************************/
 phNxpNciHal_Monitor_t* phNxpNciHal_get_monitor(void) {
- if(nxpncihal_monitor == NULL)
- {
-    ALOGD("nxpncihal_monitor is null");
- }
   return nxpncihal_monitor;
 }
 

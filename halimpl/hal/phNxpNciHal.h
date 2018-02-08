@@ -18,14 +18,6 @@
 
 #include <hardware/nfc.h>
 #include <phNxpNciHal_utils.h>
-#ifdef __cplusplus
-extern "C" {
-#endif
-struct EseAdaptation;
-int sendIoctlData(struct EseAdaptation* p,long arg,void* data);
-#ifdef __cplusplus
-};
-#endif
 
 /********************* Definitions and structures *****************************/
 #define MAX_RETRY_COUNT 5
@@ -42,7 +34,6 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 /*ROM CODE VERSION FW*/
 #define FW_MOBILE_ROM_VERSION_PN551 0x10
 #define FW_MOBILE_ROM_VERSION_PN553 0x11
-#define FW_MOBILE_ROM_VERSION_PN557 0x12
 #define FW_MOBILE_ROM_VERSION_PN548AD 0x10
 #define FW_MOBILE_ROM_VERSION_PN547C2 0x08
 /* NCI Data */
@@ -57,27 +48,12 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 #define NCI_MSG_CORE_INIT 0x01
 #define NCI_MT_MASK 0xE0
 #define NCI_OID_MASK 0x3F
-#define NXP_NFC_CHIP_PN81T
 typedef struct nci_data {
   uint16_t len;
   uint8_t p_data[NCI_MAX_DATA_LEN];
 } nci_data_t;
 
-typedef enum { HAL_STATUS_CLOSE = 0, HAL_STATUS_OPEN,HAL_STATUS_MIN_OPEN } phNxpNci_HalStatus;
-
-typedef enum {
-  GPIO_UNKNOWN      = 0x00,
-  GPIO_STORE        = 0x01,
-  GPIO_STORE_DONE   = 0x02,
-  GPIO_RESTORE      = 0x10,
-  GPIO_RESTORE_DONE = 0x20,
-  GPIO_CLEAR        = 0xFF
-} phNxpNciHal_GpioInfoState;
-
-typedef struct phNxpNciGpioInfo {
-  phNxpNciHal_GpioInfoState state;
-  uint8_t values[2];
-} phNxpNciGpioInfo_t;
+typedef enum { HAL_STATUS_CLOSE = 0, HAL_STATUS_OPEN } phNxpNci_HalStatus;
 
 /* Macros to enable and disable extensions */
 #define HAL_ENABLE_EXT() (nxpncihal_ctrl.hal_ext_enabled = 1)
@@ -122,9 +98,6 @@ typedef struct phNxpNciHal_Control {
   uint16_t retry_cnt;
   uint8_t read_retry_cnt;
   phNxpNciInfo_t nci_info;
-
-  /* to store and restore gpio values */
-  phNxpNciGpioInfo_t phNxpNciGpioInfo;
 } phNxpNciHal_Control_t;
 
 typedef struct phNxpNciClock {

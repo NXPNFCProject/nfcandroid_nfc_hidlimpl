@@ -52,7 +52,6 @@ cc_binary {
         "halimpl/inc",
         "halimpl/log",
         "halimpl/self-test",
-        "halimpl/src/include",
         "halimpl/tml",
         "halimpl/utils",
     ],
