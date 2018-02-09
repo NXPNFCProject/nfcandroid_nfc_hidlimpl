@@ -184,10 +184,6 @@ static NFCSTATUS phNxpNciHal_fw_seq_handler(
 static NFCSTATUS (*phNxpNciHal_dwnld_seqhandler[])(void* pContext,
                                                    NFCSTATUS status,
                                                    void* pInfo) = {
-#if (NFC_NXP_CHIP_TYPE == PN547C2)
-    phNxpNciHal_fw_dnld_normal,
-    phNxpNciHal_fw_dnld_normal,
-#endif
     phNxpNciHal_fw_dnld_get_sessn_state,
     phNxpNciHal_fw_dnld_get_version,
     phNxpNciHal_fw_dnld_log_read,

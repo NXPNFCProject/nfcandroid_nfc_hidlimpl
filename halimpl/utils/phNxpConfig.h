@@ -112,6 +112,7 @@ int updateNxpConfigTimestamp();
 #define NAME_NXP_CORE_PROP_SYSTEM_DEBUG "NXP_CORE_PROP_SYSTEM_DEBUG"
 #define NAME_NXP_NCI_PARSER_LIBRARY "NXP_NCI_PARSER_LIBRARY"
 #define NAME_NXP_DEFAULT_UICC2_SELECT "NXP_DEFAULT_UICC2_SELECT"
+#define NAME_NXP_ALWAYS_FW_UPDATE   "NXP_ALWAYS_FW_UPDATE"
 
 /* default configuration */
 #define default_storage_location "/data/vendor/nfc"
