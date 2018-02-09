@@ -941,7 +941,7 @@ retry:
       NXPLOG_NCIHAL_E(
           "write_unlocked failed - PN54X Maybe in Standby Mode - Retry");
       /* 10ms delay to give NFCC wake up delay */
-      usleep(1000 * 10);
+      usleep(1000 * 5);
       goto retry;
     } else {
       NXPLOG_NCIHAL_E(
@@ -3228,7 +3228,7 @@ static void phNxpNciHal_check_factory_reset(void) {
   struct stat st;
   int ret = 0;
   NFCSTATUS status = NFCSTATUS_FAILED;
-  const char config_eseinfo_path[] = "/data/vendor/nfc/nfaStorage.bin1";
+  const char config_eseinfo_path[] = "/data/nfc/nfaStorage.bin1";
   uint8_t *reset_ese_session_identity_set;
   uint8_t ese_session_dyn_uicc_nv[] = {
             0x20, 0x02, 0x17, 0x02,0xA0, 0xEA, 0x08, 0xFF, 0xFF, 0xFF,
