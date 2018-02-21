@@ -1,0 +1,85 @@
+//
+// Copyright (C) 2018 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+cc_library_shared {
+    name: "nfc_nci_nxp",
+    defaults: ["hidl_defaults"],
+    proprietary: true,
+
+    cflags: [
+        "-DNFC_NXP_CHIP_TYPE=PN553",
+        "-DPN553=1",
+        "-Wall",
+        "-Werror",
+        "-Wextra",
+    ],
+
+    srcs: [
+        "dnld/phDnldNfc.c",
+        "dnld/phDnldNfc_Internal.c",
+        "dnld/phDnldNfc_Utils.c",
+        "dnld/phNxpNciHal_Dnld.c",
+        "hal/phNxpNciHal.c",
+        "hal/phNxpNciHal_NfcDepSWPrio.c",
+        "hal/phNxpNciHal_dta.c",
+        "hal/phNxpNciHal_ext.c",
+        "log/phNxpLog.c",
+        "nfc_nci.c",
+        "self-test/phNxpNciHal_SelfTest.c",
+        "tml/phDal4Nfc_messageQueueLib.c",
+        "tml/phOsalNfc_Timer.c",
+        "tml/phTmlNfc.c",
+        "tml/phTmlNfc_i2c.c",
+        "utils/phNxpConfig.cpp",
+        "utils/phNxpNciHal_utils.c",
+        "utils/sparse_crc32.c",
+        "configs/NxpNfcCapability.cpp",
+    ],
+
+    local_include_dirs: [
+        "common",
+        "configs",
+        "dnld",
+        "hal",
+        "inc",
+        "log",
+        "self-test",
+        "tml",
+        "utils",
+    ],
+
+    include_dirs: [
+        "hardware/nxp/nfc/extns/impl",
+        "hardware/nxp/secure_element/extns/impl",
+    ],
+
+    shared_libs: [
+        "android.hardware.nfc@1.0",
+        "android.hardware.nfc@1.1",
+        "android.hardware.secure_element@1.0",
+        "libbase",
+        "libcutils",
+        "libdl",
+        "libhardware",
+        "libhardware_legacy",
+        "libhidlbase",
+        "libhidltransport",
+        "liblog",
+        "libutils",
+        "vendor.nxp.nxpese@1.0",
+
+    ],
+}
