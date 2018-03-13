@@ -1837,8 +1837,14 @@ int phNxpNciHal_close(void) {
     eseListenMask = 0x07;
     NXPLOG_NCIHAL_D ("NXP_ESE_LISTEN_TECH_MASK = 0x%0lX", eseListenMask);
   }
+    /* Avoiding sending flush RAM to flash during NFC close.
+       This is called during recovery sequence also.
+       To be taken up after all discussion.
+     */
+#if 0
   if(nfcFL.chipType == sn100u)
       status = phNxpNciHal_ext_send_sram_config_to_flash();
+#endif
   CONCURRENCY_LOCK();
   if (nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT &&
           read_failed_disable_nfc) {
