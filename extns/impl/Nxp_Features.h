@@ -40,6 +40,11 @@
 #define JCOP_VER_5_0    5
 
 typedef enum {
+    NFCC_DWNLD_WITH_VEN_RESET,
+    NFCC_DWNLD_WITH_NCI_CMD
+} tNFCC_DnldType;
+
+typedef enum {
     pn547C2 = 0x01,
     pn65T,
     pn548C2,
@@ -76,8 +81,6 @@ typedef struct {
     uint8_t _NXP_NFC_UICC_ETSI12                            : 1;
     uint8_t _NFA_EE_MAX_EE_SUPPORTED                        : 3;
     uint8_t _NFCC_DWNLD_MODE                                : 1;
-    uint8_t _NFCC_DWNLD_WITH_NCI_CMD                        : 1;
-    uint8_t _NFCC_DWNLD_WITH_VEN_RESET                      : 1;
 }tNfc_nfccFeatureList;
 
 typedef struct {
@@ -347,14 +350,12 @@ extern tNfc_featureList nfcFL;
         nfcFL.nfcMwFL._PHDNLDNFC_USERDATA_EEPROM_LEN = 0x0C80U;             \
         nfcFL.nfcMwFL._FW_MOBILE_MAJOR_NUMBER =                             \
         FW_MOBILE_MAJOR_NUMBER_PN48AD;                                      \
-        nfcFL.nfccFL._NFCC_DWNLD_WITH_VEN_RESET = 0x00;                     \
-        nfcFL.nfccFL._NFCC_DWNLD_WITH_NCI_CMD   = 0x01;                       \
-        nfcFL.nfccFL._NFCC_DWNLD_MODE = nfcFL.nfccFL._NFCC_DWNLD_WITH_VEN_RESET;\
+        nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_VEN_RESET;          \
         \
         \
         if (chipType == sn100u)                                              \
         {                                                                   \
-            nfcFL.nfccFL._NFCC_DWNLD_MODE = nfcFL.nfccFL._NFCC_DWNLD_WITH_NCI_CMD;\
+            nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_NCI_CMD;         \
             nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;           \
             nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = false;                      \
             nfcFL.nfccFL._NFCC_MW_RCVRY_BLK_FW_DNLD = true;                 \

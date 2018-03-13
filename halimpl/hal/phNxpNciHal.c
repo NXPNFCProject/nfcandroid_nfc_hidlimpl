@@ -295,7 +295,7 @@ static NFCSTATUS phNxpNciHal_fw_download(void) {
   /*phNxpNciHal_get_clk_freq();*/
   phNxpNciHal_nfccClockCfgRead();
   status = phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadMode);
-  if(nfcFL.nfccFL._NFCC_DWNLD_MODE == nfcFL.nfccFL._NFCC_DWNLD_WITH_NCI_CMD)
+  if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD)
   /*NCI_RESET_CMD*/
   {
       static uint8_t cmd_reset_nci[] = {0x20,0x00,0x01,0x80};
@@ -309,7 +309,7 @@ static NFCSTATUS phNxpNciHal_fw_download(void) {
     NXPLOG_NCIHAL_D("Calling Seq handler for FW Download \n");
     status = phNxpNciHal_fw_download_seq(nxpprofile_ctrl.bClkSrcVal,
                                          nxpprofile_ctrl.bClkFreqVal);
-    if(nfcFL.nfccFL._NFCC_DWNLD_MODE == nfcFL.nfccFL._NFCC_DWNLD_WITH_NCI_CMD)
+    if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD)
     {
       nxpncihal_ctrl.hal_ext_enabled = TRUE;
       nxpncihal_ctrl.nci_info.wait_for_ntf = TRUE;
@@ -326,7 +326,7 @@ static NFCSTATUS phNxpNciHal_fw_download(void) {
     wConfigStatus = phTmlNfc_Read(
         nxpncihal_ctrl.p_cmd_data, NCI_MAX_DATA_LEN,
         (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete, NULL);
-    if(nfcFL.nfccFL._NFCC_DWNLD_MODE == nfcFL.nfccFL._NFCC_DWNLD_WITH_NCI_CMD) usleep(100 * 1000);
+    if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD) usleep(100 * 1000);
     if (wConfigStatus != NFCSTATUS_PENDING) {
       NXPLOG_NCIHAL_E("TML Read status error status B= %x", status);
       nxpncihal_ctrl.hal_ext_enabled = FALSE;

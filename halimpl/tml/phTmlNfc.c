@@ -869,14 +869,14 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
           read_flag = true;
         }
         gpphTmlNfc_Context->tReadInfo.bEnable = 0;
-        if(nfcFL.nfccFL._NFCC_DWNLD_MODE == nfcFL.nfccFL._NFCC_DWNLD_WITH_VEN_RESET) {
+        if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_VEN_RESET) {
             NXPLOG_TML_D(" phTmlNfc_e_EnableNormalMode complete with VEN RESET ");
           phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, 0);
           usleep(10 * 1000);
           phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, 1);
           usleep(100 * 1000);
         }
-        else if(nfcFL.nfccFL._NFCC_DWNLD_MODE == nfcFL.nfccFL._NFCC_DWNLD_WITH_NCI_CMD) {
+        else if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD) {
           NXPLOG_TML_D(" phTmlNfc_e_EnableNormalMode complete with NCI CMD ");
           phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, 1);
           usleep(100 * 1000);
@@ -890,11 +890,11 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
       case phTmlNfc_e_EnableDownloadMode: {
         phTmlNfc_ConfigNciPktReTx(phTmlNfc_e_DisableRetrans, 0);
         gpphTmlNfc_Context->tReadInfo.bEnable = 0;
-        if(nfcFL.nfccFL._NFCC_DWNLD_MODE == nfcFL.nfccFL._NFCC_DWNLD_WITH_VEN_RESET) {
+        if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_VEN_RESET) {
             NXPLOG_TML_D(" phTmlNfc_e_EnableDownloadMode complete with VEN RESET ");
           wStatus = phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, 2);
         }
-        else if(nfcFL.nfccFL._NFCC_DWNLD_MODE == nfcFL.nfccFL._NFCC_DWNLD_WITH_NCI_CMD) {
+        else if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD) {
             NXPLOG_TML_D(" phTmlNfc_e_EnableDownloadMode complete with NCI CMD ");
           wStatus = phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, 4);
         }
