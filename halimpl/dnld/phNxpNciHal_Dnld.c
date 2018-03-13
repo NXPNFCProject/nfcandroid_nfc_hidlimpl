@@ -558,8 +558,13 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
         }
       } else if ((bHwVer >= PHDNLDNFC_HWVER_MRA1_0) &&
                  (bHwVer <= PHDNLDNFC_HWVER_MRA2_0)) {
-        bExpectedLen = PHLIBNFC_IOCTL_DNLD_GETVERLEN;
-        (gphNxpNciHal_fw_IoctlCtx.bChipVer) = bHwVer;
+          bExpectedLen = PHLIBNFC_IOCTL_DNLD_GETVERLEN;
+          if(PHDNLDNFC_HWVER_VENUS_MRA1_0 & pRespBuff->pBuff[0])
+          {
+           (gphNxpNciHal_fw_IoctlCtx.bChipVer) = pRespBuff->pBuff[0];
+          } else {
+            (gphNxpNciHal_fw_IoctlCtx.bChipVer) = bHwVer;
+          }
       } else {
         wStatus = NFCSTATUS_FAILED;
         NXPLOG_FWDNLD_E(
@@ -1665,7 +1670,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
     if (gphNxpNciHal_fw_IoctlCtx.bSendNciCmd == false) {
       /* Call Tml Ioctl to enable/restore normal mode */
       wStatus = phTmlNfc_IoCtl(phTmlNfc_e_EnableNormalMode);
-      if(nfcFL.nfccFL._NFCC_DWNLD_MODE == nfcFL.nfccFL._NFCC_DWNLD_WITH_NCI_CMD){
+      if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD || (gphNxpNciHal_fw_IoctlCtx.bChipVer & PHDNLDNFC_HWVER_VENUS_MRA1_0)){
         wStatus = phNxpNciHal_fw_dnld_reset(pContext, wStatus, &pInfo);
       }
       if (NFCSTATUS_SUCCESS != wStatus) {
