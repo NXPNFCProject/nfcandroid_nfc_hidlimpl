@@ -376,7 +376,7 @@ extern tNfc_featureList nfcFL;
             \
             \
             nfcFL.eseFL._ESE_ETSI12_PROP_INIT = true;                       \
-            nfcFL.eseFL._EXCLUDE_NV_MEM_DEPENDENCY = false;                 \
+            nfcFL.eseFL._EXCLUDE_NV_MEM_DEPENDENCY = true;                 \
             \
             \
             nfcFL.platformFL._NFCC_RESET_RSP_LEN = 0x10U;                   \
