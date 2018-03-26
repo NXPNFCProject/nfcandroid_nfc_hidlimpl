@@ -1442,12 +1442,12 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
         }
         for(loopcnt = 0; loopcnt < maxBlocks; loopcnt++)
         {
-            char rf_conf_block[20] = {'\0'};
+            char rf_conf_block[22] = {'\0'};
             strcpy(rf_conf_block, rf_block_name);
             isfound = GetNxpByteArrayValue(strcat(rf_conf_block, rf_block_num[loopcnt]), (char*)buffer,
                     bufflen, &retlen);
             if (retlen > 0) {
-              NXPLOG_NCIHAL_D("Performing RF Settings BLK %ld", loopcnt);
+              NXPLOG_NCIHAL_D("Performing RF Settings BLK %ld", loopcnt+1);
               status = phNxpNciHal_send_ext_cmd(retlen, buffer);
 #if (NFC_NXP_CHIP_TYPE != PN547C2)
               if (status == NFCSTATUS_SUCCESS) {
