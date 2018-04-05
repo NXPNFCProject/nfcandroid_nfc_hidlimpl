@@ -551,8 +551,7 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
                   (PHDNLDNFC_HWVER_PN553_MRA1_0_UPDATED & pRespBuff->pBuff[0]))) {
               (gphNxpNciHal_fw_IoctlCtx.bChipVer) = pRespBuff->pBuff[0];
           }
-          else if ((nfcFL.chipType == sn100u) &&
-                  (PHDNLDNFC_HWVER_VENUS_MRA1_0 & pRespBuff->pBuff[0])) {
+          else if ((PHDNLDNFC_HWVER_VENUS_MRA1_0 & pRespBuff->pBuff[0])) {
               (gphNxpNciHal_fw_IoctlCtx.bChipVer) = pRespBuff->pBuff[0];
               bExpectedLen = PHLIBNFC_IOCTL_DNLD_SN100U_GETVERLEN;
         }

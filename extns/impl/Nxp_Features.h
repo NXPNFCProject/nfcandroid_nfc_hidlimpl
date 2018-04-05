@@ -45,6 +45,7 @@ typedef enum {
 } tNFCC_DnldType;
 
 typedef enum {
+    DEFAULT_CHIP_TYPE = 0x00,
     pn547C2 = 0x01,
     pn65T,
     pn548C2,
@@ -571,6 +572,9 @@ extern tNfc_featureList nfcFL;
             \
             \
         }                                                                   \
+        else if(chipType == DEFAULT_CHIP_TYPE) {                            \
+            nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                   \
+        }                                                                  \
 }
 #ifdef __cplusplus
 #define SRTCPY_FW(str1,str2,str3)

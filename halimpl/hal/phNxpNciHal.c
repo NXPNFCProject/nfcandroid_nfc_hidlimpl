@@ -378,6 +378,8 @@ static NFCSTATUS phNxpNciHal_CheckValidFwVersion(void) {
   else if (wFwVerRsp == 0) {
     NXPLOG_NCIHAL_E(
         "FW Version not received by NCI command >>> Force Firmware download");
+    tNFC_chipType chipType = DEFAULT_CHIP_TYPE;
+    CONFIGURE_FEATURELIST(chipType);
     status = NFCSTATUS_SUCCESS;
   } else {
     NXPLOG_NCIHAL_E("Wrong FW Version >>> Firmware download not allowed");
