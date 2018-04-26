@@ -53,8 +53,8 @@ typedef struct phDal4Nfc_message_queue {
 *******************************************************************************/
 intptr_t phDal4Nfc_msgget(key_t key, int msgflg) {
   phDal4Nfc_message_queue_t* pQueue;
-  UNUSED(key);
-  UNUSED(msgflg);
+  UNUSED_PROP(key);
+  UNUSED_PROP(msgflg);
   pQueue =
       (phDal4Nfc_message_queue_t*)malloc(sizeof(phDal4Nfc_message_queue_t));
   if (pQueue == NULL) return -1;
@@ -116,8 +116,8 @@ void phDal4Nfc_msgrelease(intptr_t msqid) {
 int phDal4Nfc_msgctl(intptr_t msqid, int cmd, void* buf) {
   phDal4Nfc_message_queue_t* pQueue;
   phDal4Nfc_message_queue_item_t* p;
-  UNUSED(cmd);
-  UNUSED(buf);
+  UNUSED_PROP(cmd);
+  UNUSED_PROP(buf);
   if (msqid == 0) return -1;
 
   pQueue = (phDal4Nfc_message_queue_t*)msqid;
@@ -162,7 +162,7 @@ intptr_t phDal4Nfc_msgsnd(intptr_t msqid, phLibNfc_Message_t* msg, int msgflg) {
   phDal4Nfc_message_queue_t* pQueue;
   phDal4Nfc_message_queue_item_t* p;
   phDal4Nfc_message_queue_item_t* pNew;
-  UNUSED(msgflg);
+  UNUSED_PROP(msgflg);
   if ((msqid == 0) || (msg == NULL)) return -1;
 
   pQueue = (phDal4Nfc_message_queue_t*)msqid;
@@ -212,8 +212,8 @@ int phDal4Nfc_msgrcv(intptr_t msqid, phLibNfc_Message_t* msg, long msgtyp,
                      int msgflg) {
   phDal4Nfc_message_queue_t* pQueue;
   phDal4Nfc_message_queue_item_t* p;
-  UNUSED(msgflg);
-  UNUSED(msgtyp);
+  UNUSED_PROP(msgflg);
+  UNUSED_PROP(msgtyp);
   if ((msqid == 0) || (msg == NULL)) return -1;
 
   pQueue = (phDal4Nfc_message_queue_t*)msqid;

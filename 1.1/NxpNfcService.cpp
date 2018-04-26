@@ -23,7 +23,7 @@
 #include <hidl/LegacySupport.h>
 #include "Nfc.h"
 #include "NxpNfc.h"
-
+#include "eSEClient.h"
 // Generated HIDL files
 using android::hardware::nfc::V1_1::INfc;
 using android::hardware::nfc::V1_1::implementation::Nfc;
@@ -72,7 +72,9 @@ int main() {
         goto shutdown;
     }
     ALOGI("NFC service is ready");
-
+    ALOGE("Before calling JCOP JCOS_doDownload");
+    JCOS_doDownload();
+    ALOGE("After calling JCOS_doDownload");
 
     joinRpcThreadpool();
     //Should not pass this line

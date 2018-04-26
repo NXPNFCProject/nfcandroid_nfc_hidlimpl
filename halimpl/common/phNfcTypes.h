@@ -305,33 +305,7 @@ typedef struct phNfc_sTransceiveInfo {
   uint8_t bWordCount;  /* Number of words to be read or written */
 } phNfc_sTransceiveInfo_t;
 
-#define UNUSED(X) (void)(X);
+#define UNUSED_PROP(X) (void)(X);
 
-/*****************************************************************************
-** Macros to get and put bytes to and from a stream (Little Endian format).
-*****************************************************************************/
-#define STREAM_TO_UINT8(u8, p) \
-  {                            \
-    u8 = (uint8_t)(*(p));      \
-    (p) += 1;                  \
-  }
-#define STREAM_TO_UINT16(u16, p)                                \
-  {                                                             \
-    u16 = ((uint16_t)(*(p)) + (((uint16_t)(*((p) + 1))) << 8)); \
-    (p) += 2;                                                   \
-  }
-#define STREAM_TO_UINT24(u32, p)                                    \
-  {                                                                 \
-    u32 = (((uint32_t)(*(p))) + ((((uint32_t)(*((p) + 1)))) << 8) + \
-           ((((uint32_t)(*((p) + 2)))) << 16));                     \
-    (p) += 3;                                                       \
-  }
-#define STREAM_TO_UINT32(u32, p)                                    \
-  {                                                                 \
-    u32 = (((uint32_t)(*(p))) + ((((uint32_t)(*((p) + 1)))) << 8) + \
-           ((((uint32_t)(*((p) + 2)))) << 16) +                     \
-           ((((uint32_t)(*((p) + 3)))) << 24));                     \
-    (p) += 4;                                                       \
-  }
 /* PHNFCTYPES_H */
 #endif

@@ -623,8 +623,8 @@ static void hal_read_cb(void* pContext, phTmlNfc_TransactInfo_t* pInfo);
 *******************************************************************************/
 static uint8_t st_validator_null(nci_data_t* exp,
                                  phTmlNfc_TransactInfo_t* act) {
-  UNUSED(exp);
-  UNUSED(act);
+  UNUSED_PROP(exp);
+  UNUSED_PROP(act);
   return 1;
 }
 
@@ -934,7 +934,7 @@ static uint8_t st_validator_testEquals(nci_data_t* exp,
 **
 *******************************************************************************/
 static void hal_write_rsp_timeout_cb(uint32_t timerId, void* pContext) {
-  UNUSED(timerId);
+  UNUSED_PROP(timerId);
   NXPLOG_NCIHAL_E("hal_write_rsp_timeout_cb - write timeout!!!");
   hal_write_timer_fired = 1;
   hal_read_cb(pContext, NULL);
@@ -1042,7 +1042,7 @@ static void hal_read_cb(void* pContext, phTmlNfc_TransactInfo_t* pInfo) {
 *******************************************************************************/
 static void* phNxpNciHal_test_rx_thread(void* arg) {
   phLibNfc_Message_t msg;
-  UNUSED(arg);
+  UNUSED_PROP(arg);
   NXPLOG_NCIHAL_D("Self test thread started");
 
   thread_running = 1;

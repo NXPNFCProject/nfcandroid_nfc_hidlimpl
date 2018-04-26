@@ -123,7 +123,7 @@ int phTmlNfc_i2c_read(void* pDevHandle, uint8_t* pBuffer, int nNbBytesToRead) {
   fd_set rfds;
   uint16_t totalBtyesToRead = 0;
 
-  UNUSED(nNbBytesToRead);
+  UNUSED_PROP(nNbBytesToRead);
   if (NULL == pDevHandle) {
     return -1;
   }
