@@ -994,7 +994,7 @@ static void phDnldNfc_RspTimeOutCb(uint32_t TimerId, void* pContext) {
   pphDnldNfc_DlContext_t pDlCtxt = (pphDnldNfc_DlContext_t)pContext;
 
   if (NULL != pDlCtxt) {
-    UNUSED(TimerId);
+    UNUSED_PROP(TimerId);
 
     if (1 == pDlCtxt->TimerInfo.TimerStatus) {
       /* No response received and the timer expired */
@@ -1043,7 +1043,7 @@ static void phDnldNfc_ResendTimeOutCb(uint32_t TimerId, void* pContext) {
   pphDnldNfc_DlContext_t pDlCtxt = (pphDnldNfc_DlContext_t)pContext;
 
   if (NULL != pDlCtxt) {
-    UNUSED(TimerId);
+    UNUSED_PROP(TimerId);
 
     if (1 == pDlCtxt->TimerInfo.TimerStatus) {
       /* No response received and the timer expired */

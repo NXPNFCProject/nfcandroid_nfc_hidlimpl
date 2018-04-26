@@ -1219,7 +1219,7 @@ NFCSTATUS phDnldNfc_ReadMem(void* pHwRef, pphDnldNfc_RspCb_t pNotify,
 static void phDnldNfc_ReadComplete(void* pContext, NFCSTATUS status,
                                    void* pInfo) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
-  UNUSED(pContext);
+  UNUSED_PROP(pContext);
 
   /* Call Tml Ioctl to enable/restore normal mode */
   wStatus = phTmlNfc_IoCtl(phTmlNfc_e_EnableNormalMode);

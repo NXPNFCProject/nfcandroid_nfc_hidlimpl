@@ -59,14 +59,14 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 #define UICC3_ID 0x08
 /* NCI Data */
 
-#define NCI_MT_CMD 0x20
-#define NCI_MT_RSP 0x40
-#define NCI_MT_NTF 0x60
+//#define NCI_MT_CMD 0x20
+//#define NCI_MT_RSP 0x40
+//#define NCI_MT_NTF 0x60
 
 #define CORE_RESET_TRIGGER_TYPE_CORE_RESET_CMD_RECEIVED 0x02
 #define CORE_RESET_TRIGGER_TYPE_POWERED_ON              0x01
-#define NCI_MSG_CORE_RESET           0x00
-#define NCI_MSG_CORE_INIT            0x01
+//#define NCI_MSG_CORE_RESET           0x00
+//#define NCI_MSG_CORE_INIT            0x01
 #define NCI_MT_MASK                  0xE0
 #define NCI_OID_MASK                 0x3F
 #define NXP_PROPCMD_GID              0x2F
@@ -164,9 +164,9 @@ typedef struct phNxpNciMwEepromArea {
 static const uint8_t get_cfg_arr[] = {TOTAL_DURATION, ATR_REQ_GEN_BYTES_POLL,
                                       ATR_REQ_GEN_BYTES_LIS, LEN_WT};
 
-#define NXP_NFC_SET_CONFIG_PARAM_EXT 0xA0
-#define NXP_NFC_PARAM_ID_SWP2        0xD4
-#define NXP_NFC_PARAM_ID_SWPUICC3    0xDC
+//#define NXP_NFC_SET_CONFIG_PARAM_EXT 0xA0
+//#define NXP_NFC_PARAM_ID_SWP2        0xD4
+//#define NXP_NFC_PARAM_ID_SWPUICC3    0xDC
 typedef enum {
   EEPROM_RF_CFG,
   EEPROM_FW_DWNLD,

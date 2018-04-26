@@ -20,7 +20,7 @@
 #include <phNxpNciHal_Dnld.h>
 #include <phNxpNciHal_utils.h>
 #include <phTmlNfc.h>
-
+#include "nfc_types.h"
 /* Macro */
 #define PHLIBNFC_IOCTL_DNLD_MAX_ATTEMPTS 3
 #define PHLIBNFC_IOCTL_DNLD_GETVERLEN (0x0BU)
@@ -230,7 +230,7 @@ static NFCSTATUS (*phNxpNciHal_dwnld_log_seqhandler[])(void* pContext,
 static void phNxpNciHal_fw_dnld_reset_cb(void* pContext, NFCSTATUS status,
                                          void* pInfo) {
   phNxpNciHal_Sem_t* p_cb_data = (phNxpNciHal_Sem_t*)pContext;
-  UNUSED(pInfo);
+  UNUSED_PROP(pInfo);
   if (NFCSTATUS_SUCCESS == status) {
     NXPLOG_FWDNLD_D("phNxpNciHal_fw_dnld_reset_cb - Request Successful");
   } else {
@@ -256,9 +256,9 @@ static NFCSTATUS phNxpNciHal_fw_dnld_reset(void* pContext, NFCSTATUS status,
                                            void* pInfo) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   phNxpNciHal_Sem_t cb_data;
-  UNUSED(pContext);
-  UNUSED(status);
-  UNUSED(pInfo);
+  UNUSED_PROP(pContext);
+  UNUSED_PROP(status);
+  UNUSED_PROP(pInfo);
   if (((gphNxpNciHal_fw_IoctlCtx.bSkipSeq) == true) ||
       ((gphNxpNciHal_fw_IoctlCtx.bSkipReset) == true)) {
     if ((gphNxpNciHal_fw_IoctlCtx.bSkipReset) == true) {
@@ -313,7 +313,7 @@ clean_and_return:
 static void phNxpNciHal_fw_dnld_normal_cb(void* pContext, NFCSTATUS status,
                                           void* pInfo) {
   phNxpNciHal_Sem_t* p_cb_data = (phNxpNciHal_Sem_t*)pContext;
-  UNUSED(pInfo);
+  UNUSED_PROP(pInfo);
   if (NFCSTATUS_SUCCESS == status) {
     NXPLOG_FWDNLD_D("phNxpNciHal_fw_dnld_normal_cb - Request Successful");
   } else {
@@ -342,7 +342,7 @@ static void phNxpNciHal_fw_dnld_normal_cb(void* pContext, NFCSTATUS status,
 static void phNxpNciHal_fw_dnld_force_cb(void* pContext, NFCSTATUS status,
                                          void* pInfo) {
   phNxpNciHal_Sem_t* p_cb_data = (phNxpNciHal_Sem_t*)pContext;
-  UNUSED(pInfo);
+  UNUSED_PROP(pInfo);
   if (NFCSTATUS_SUCCESS == status) {
     NXPLOG_FWDNLD_D("phLibNfc_DnldForceCb - Request Successful");
     (gphNxpNciHal_fw_IoctlCtx.bDnldRecovery) = false;
@@ -377,9 +377,9 @@ static NFCSTATUS phNxpNciHal_fw_dnld_normal(void* pContext, NFCSTATUS status,
   uint8_t bClkVal[2];
   phDnldNfc_Buff_t tData;
   phNxpNciHal_Sem_t cb_data;
-  UNUSED(pContext);
-  UNUSED(status);
-  UNUSED(pInfo);
+  UNUSED_PROP(pContext);
+  UNUSED_PROP(status);
+  UNUSED_PROP(pInfo);
   if ((gphNxpNciHal_fw_IoctlCtx.bSkipForce) == true) {
     return NFCSTATUS_SUCCESS;
   } else {
@@ -449,9 +449,9 @@ static NFCSTATUS phNxpNciHal_fw_dnld_force(void* pContext, NFCSTATUS status,
   uint8_t bClkVal[2];
   phDnldNfc_Buff_t tData;
   phNxpNciHal_Sem_t cb_data;
-  UNUSED(pContext);
-  UNUSED(status);
-  UNUSED(pInfo);
+  UNUSED_PROP(pContext);
+  UNUSED_PROP(status);
+  UNUSED_PROP(pInfo);
   if ((gphNxpNciHal_fw_IoctlCtx.bSkipForce) == true) {
     return NFCSTATUS_SUCCESS;
   } else {
@@ -664,9 +664,9 @@ static NFCSTATUS phNxpNciHal_fw_dnld_get_version(void* pContext,
   phNxpNciHal_Sem_t cb_data;
   static uint8_t bGetVerRes[11];
   phDnldNfc_Buff_t tDnldBuff;
-  UNUSED(pContext);
-  UNUSED(status);
-  UNUSED(pInfo);
+  UNUSED_PROP(pContext);
+  UNUSED_PROP(status);
+  UNUSED_PROP(pInfo);
   if (((gphNxpNciHal_fw_IoctlCtx.bSkipSeq) == true) ||
       ((gphNxpNciHal_fw_IoctlCtx.bPrevSessnOpen) == true)) {
     return NFCSTATUS_SUCCESS;
@@ -796,9 +796,9 @@ static NFCSTATUS phNxpNciHal_fw_dnld_get_sessn_state(void* pContext,
   static uint8_t bGSnStateRes[3];
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   phNxpNciHal_Sem_t cb_data;
-  UNUSED(pContext);
-  UNUSED(status);
-  UNUSED(pInfo);
+  UNUSED_PROP(pContext);
+  UNUSED_PROP(status);
+  UNUSED_PROP(pInfo);
   if (gphNxpNciHal_fw_IoctlCtx.bSkipSeq == true) {
     return NFCSTATUS_SUCCESS;
   }
@@ -880,9 +880,9 @@ static NFCSTATUS phNxpNciHal_fw_dnld_log_read(void* pContext, NFCSTATUS status,
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   phNxpNciHal_Sem_t cb_data;
   phDnldNfc_Buff_t Data;
-  UNUSED(pContext);
-  UNUSED(status);
-  UNUSED(pInfo);
+  UNUSED_PROP(pContext);
+  UNUSED_PROP(status);
+  UNUSED_PROP(pInfo);
   if ((((((gphNxpNciHal_fw_IoctlCtx.bSkipSeq) == true) ||
         ((gphNxpNciHal_fw_IoctlCtx.bForceDnld) == true)) &&
        ((gphNxpNciHal_fw_IoctlCtx.bPrevSessnOpen) == false)) ||
@@ -943,7 +943,7 @@ clean_and_return:
 static void phNxpNciHal_fw_dnld_write_cb(void* pContext, NFCSTATUS status,
                                          void* pInfo) {
   phNxpNciHal_Sem_t* p_cb_data = (phNxpNciHal_Sem_t*)pContext;
-  UNUSED(pInfo);
+  UNUSED_PROP(pInfo);
   if (NFCSTATUS_SUCCESS == status) {
     NXPLOG_FWDNLD_D("phNxpNciHal_fw_dnld_write_cb - Request Successful");
     (gphNxpNciHal_fw_IoctlCtx.bDnldEepromWrite) = false;
@@ -1001,9 +1001,9 @@ static NFCSTATUS phNxpNciHal_fw_dnld_write(void* pContext, NFCSTATUS status,
                                            void* pInfo) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   phNxpNciHal_Sem_t cb_data;
-  UNUSED(pContext);
-  UNUSED(status);
-  UNUSED(pInfo);
+  UNUSED_PROP(pContext);
+  UNUSED_PROP(status);
+  UNUSED_PROP(pInfo);
   if ((gphNxpNciHal_fw_IoctlCtx.bRetryDnld) == true) {
     (gphNxpNciHal_fw_IoctlCtx.bRetryDnld) = false;
   }
@@ -1123,9 +1123,9 @@ static NFCSTATUS phNxpNciHal_fw_dnld_chk_integrity(void* pContext,
   phNxpNciHal_Sem_t cb_data;
   phDnldNfc_Buff_t tDnldBuff;
   static uint8_t bChkIntgRes[255];
-  UNUSED(pInfo);
-  UNUSED(pContext);
-  UNUSED(status);
+  UNUSED_PROP(pInfo);
+  UNUSED_PROP(pContext);
+  UNUSED_PROP(status);
   if (gphNxpNciHal_fw_IoctlCtx.bPrevSessnOpen == true) {
     NXPLOG_FWDNLD_D(
         "Previous Upload session is open..Cannot issue ChkIntegrity Cmd!!");
@@ -1193,9 +1193,9 @@ static NFCSTATUS phNxpNciHal_fw_dnld_recover(void* pContext, NFCSTATUS status,
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   phNxpNciHal_Sem_t cb_data;
 
-  UNUSED(pInfo);
-  UNUSED(status);
-  UNUSED(pContext);
+  UNUSED_PROP(pInfo);
+  UNUSED_PROP(status);
+  UNUSED_PROP(pContext);
   if ((gphNxpNciHal_fw_IoctlCtx.bDnldRecovery) == true) {
     if (phNxpNciHal_init_cb_data(&cb_data, NULL) != NFCSTATUS_SUCCESS) {
       NXPLOG_FWDNLD_E("phNxpNciHal_fw_dnld_recover cb_data creation failed");
@@ -1250,8 +1250,8 @@ static void phNxpNciHal_fw_dnld_recover_cb(void* pContext, NFCSTATUS status,
                                            void* pInfo) {
   phNxpNciHal_Sem_t* p_cb_data = (phNxpNciHal_Sem_t*)pContext;
   NFCSTATUS wStatus = status;
-  UNUSED(pContext);
-  UNUSED(pInfo);
+  UNUSED_PROP(pContext);
+  UNUSED_PROP(pInfo);
 
   if (NFCSTATUS_SUCCESS == wStatus) {
     if ((gphNxpNciHal_fw_IoctlCtx.bSkipForce) == false) {
@@ -1295,7 +1295,7 @@ static void phNxpNciHal_fw_dnld_send_ncicmd_cb(void* pContext, NFCSTATUS status,
   phNxpNciHal_Sem_t* p_cb_data = (phNxpNciHal_Sem_t*)pContext;
   NFCSTATUS wStatus = status;
   pphDnldNfc_Buff_t pRespBuff;
-  UNUSED(pContext);
+  UNUSED_PROP(pContext);
 
   if (NFCSTATUS_SUCCESS == wStatus) {
     NXPLOG_FWDNLD_D("phNxpNciHal_fw_dnld_send_ncicmdCb - Request Successful");
@@ -1353,9 +1353,9 @@ static NFCSTATUS phNxpNciHal_fw_dnld_send_ncicmd(void* pContext,
   phDnldNfc_Buff_t trData;
   phNxpNciHal_Sem_t cb_data;
 
-  UNUSED(pInfo);
-  UNUSED(status);
-  UNUSED(pContext);
+  UNUSED_PROP(pInfo);
+  UNUSED_PROP(status);
+  UNUSED_PROP(pContext);
   if ((gphNxpNciHal_fw_IoctlCtx.bSendNciCmd) == false) {
     return NFCSTATUS_SUCCESS;
   } else {
@@ -1419,8 +1419,8 @@ static void phNxpNciHal_fw_dnld_log_cb(void* pContext, NFCSTATUS status,
                                        void* pInfo) {
   phNxpNciHal_Sem_t* p_cb_data = (phNxpNciHal_Sem_t*)pContext;
   NFCSTATUS wStatus = status;
-  UNUSED(pContext);
-  UNUSED(pInfo);
+  UNUSED_PROP(pContext);
+  UNUSED_PROP(pInfo);
 
   if (NFCSTATUS_SUCCESS == wStatus) {
     NXPLOG_FWDNLD_D("phLibNfc_DnldLogCb - Request Successful");
@@ -1450,9 +1450,9 @@ static NFCSTATUS phNxpNciHal_fw_dnld_log(void* pContext, NFCSTATUS status,
   phNxpNciHal_Sem_t cb_data;
   phDnldNfc_Buff_t tData;
 
-  UNUSED(pInfo);
-  UNUSED(status);
-  UNUSED(pContext);
+  UNUSED_PROP(pInfo);
+  UNUSED_PROP(status);
+  UNUSED_PROP(pContext);
 
   if(nfcFL.chipType == sn100u)
   {
@@ -1549,8 +1549,8 @@ static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
                                               void* pInfo) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   NFCSTATUS fStatus = status;
-  UNUSED(pInfo);
-  UNUSED(pContext);
+  UNUSED_PROP(pInfo);
+  UNUSED_PROP(pContext);
 
   if (NFCSTATUS_WRITE_FAILED == status) {
     if ((gphNxpNciHal_fw_IoctlCtx.bDnldAttempts) <

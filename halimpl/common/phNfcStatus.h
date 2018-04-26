@@ -91,7 +91,7 @@
 /*
  * The function indicates given module not initialized
  */
-#define NFC_STATUS_NOT_INITIALIZED (0x0004)
+#define NFC_STATUS_NOT_INITIALIZED_PROP (0x0004)
 
 /*
 

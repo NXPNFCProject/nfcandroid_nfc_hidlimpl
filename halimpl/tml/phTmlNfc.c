@@ -311,7 +311,7 @@ static void phTmlNfc_TmlThread(void* pParam) {
   static phLibNfc_DeferredCall_t tDeferredInfo;
   /* Initialize Message structure to post message onto Callback Thread */
   static phLibNfc_Message_t tMsg;
-  UNUSED(pParam);
+  UNUSED_PROP(pParam);
   NXPLOG_TML_D("PN54X - Tml Reader Thread Started................\n");
 
   /* Writer thread loop shall be running till shutdown is invoked */
@@ -435,7 +435,7 @@ static void phTmlNfc_TmlWriterThread(void* pParam) {
   static phLibNfc_Message_t tMsg;
   /* In case of I2C Write Retry */
   static uint16_t retry_cnt;
-  UNUSED(pParam);
+  UNUSED_PROP(pParam);
   NXPLOG_TML_D("PN54X - Tml Writer Thread Started................\n");
 
   /* Writer thread loop shall be running till shutdown is invoked */
@@ -929,7 +929,7 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
 void phTmlNfc_DeferredCall(uintptr_t dwThreadId,
                            phLibNfc_Message_t* ptWorkerMsg) {
   intptr_t bPostStatus;
-  UNUSED(dwThreadId);
+  UNUSED_PROP(dwThreadId);
   /* Post message on the user thread to invoke the callback function */
   sem_wait(&gpphTmlNfc_Context->postMsgSemaphore);
   bPostStatus =

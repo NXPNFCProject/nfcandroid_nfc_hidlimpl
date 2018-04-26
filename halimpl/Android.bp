@@ -25,6 +25,7 @@ cc_library_shared {
         "-Wall",
         "-Werror",
         "-Wextra",
+        "-DNXP_EXTNS=TRUE"
     ],
 
     srcs: [
@@ -32,21 +33,26 @@ cc_library_shared {
         "dnld/phDnldNfc_Internal.c",
         "dnld/phDnldNfc_Utils.c",
         "dnld/phNxpNciHal_Dnld.c",
-        "hal/phNxpNciHal.c",
+        "hal/phNxpNciHal.cc",
         "hal/phNxpNciHal_NfcDepSWPrio.c",
         "hal/phNxpNciHal_dta.c",
         "hal/phNxpNciHal_ext.c",
+        "src/adaptation/EseAdaptation.cpp",
         "log/phNxpLog.c",
         "nfc_nci.c",
         "self-test/phNxpNciHal_SelfTest.c",
         "tml/phDal4Nfc_messageQueueLib.c",
         "tml/phOsalNfc_Timer.c",
         "tml/phTmlNfc.c",
+        "eseClient/phNxpNfc_IntfApi.cc",
         "tml/phTmlNfc_i2c.c",
         "utils/phNxpConfig.cpp",
         "utils/phNxpNciHal_utils.c",
         "utils/sparse_crc32.c",
         "configs/NxpNfcCapability.cpp",
+        "ese-clients/src/eSEClient.cpp",
+        "ese-clients/src/JcDnld.cpp",
+        "ese-clients/src/JcopOsDownload.cpp",
     ],
 
     local_include_dirs: [
@@ -59,11 +65,19 @@ cc_library_shared {
         "self-test",
         "tml",
         "utils",
+        "eseClient",
+        "ese-clients/inc",
+        "src/include"
     ],
 
     include_dirs: [
         "hardware/nxp/nfc/extns/impl",
         "hardware/nxp/secure_element/extns/impl",
+        "system/nfc/src/nfa/include",
+        "system/nfc/src/nfc/include",
+        "system/nfc/src/include",
+        "system/nfc/src/gki/common",
+        "system/nfc/src/gki/ulinux",
     ],
 
     shared_libs: [
@@ -80,6 +94,8 @@ cc_library_shared {
         "liblog",
         "libutils",
         "vendor.nxp.nxpese@1.0",
-
+        "libnfc-nci",
+        "libicuuc",
+        "libchrome"
     ],
 }
