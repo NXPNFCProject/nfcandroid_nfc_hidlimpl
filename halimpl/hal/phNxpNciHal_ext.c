@@ -1057,8 +1057,8 @@ bool_t phNxpNciHal_check_wait_for_ntf() {
  *
  ******************************************************************************/
 static void hal_extns_write_rsp_timeout_cb(uint32_t timerId, void* pContext) {
-  UNUSED(timerId);
-  UNUSED(pContext);
+  UNUSED_PROP(timerId);
+  UNUSED_PROP(pContext);
   NXPLOG_NCIHAL_E("hal_extns_write_rsp_timeout_cb - write timeout!!!");
   nxpncihal_ctrl.ext_cb_data.status = NFCSTATUS_FAILED;
   usleep(1);
@@ -1296,7 +1296,7 @@ retryget:
 int phNxpNciHal_CheckFwRegFlashRequired(uint8_t* fw_update_req,
                                         uint8_t* rf_update_req) {
   int status = NFCSTATUS_OK;
-  UNUSED(rf_update_req);
+  UNUSED_PROP(rf_update_req);
   NXPLOG_NCIHAL_D("phNxpNciHal_CheckFwRegFlashRequired() : enter");
   status = phDnldNfc_InitImgInfo();
   NXPLOG_NCIHAL_D("FW version of the libpn5xx.so binary = 0x%x", wFwVer);

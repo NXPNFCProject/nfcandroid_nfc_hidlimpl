@@ -54,6 +54,7 @@ cc_binary {
         "halimpl/self-test",
         "halimpl/tml",
         "halimpl/utils",
+        "halimpl/ese-clients/inc"
     ],
 
     include_dirs: [
