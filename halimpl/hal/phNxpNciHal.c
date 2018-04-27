@@ -400,7 +400,7 @@ static NFCSTATUS phNxpNciHal_CheckValidFwVersion(void) {
 static NFCSTATUS phNxpNciHal_FwDwnld(uint16_t aType) {
    NFCSTATUS status = NFCSTATUS_SUCCESS;
 
-   if(aType != NFC_STATUS_NOT_INITIALIZED) {
+   if(aType != NFC_STATUS_NOT_INITIALIZED_PROP) {
      if (wFwVerRsp == 0) {
        phDnldNfc_InitImgInfo();
      }
@@ -1005,7 +1005,7 @@ static void phNxpNciHal_write_complete(void* pContext,
 static void phNxpNciHal_read_complete(void* pContext,
                                       phTmlNfc_TransactInfo_t* pInfo) {
   NFCSTATUS status = NFCSTATUS_FAILED;
-  UNUSED(pContext);
+  UNUSED_PROP(pContext);
   if (nxpncihal_ctrl.read_retry_cnt == 1) {
     nxpncihal_ctrl.read_retry_cnt = 0;
   }

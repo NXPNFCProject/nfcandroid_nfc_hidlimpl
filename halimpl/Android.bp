@@ -33,7 +33,7 @@ cc_library_shared {
         "dnld/phDnldNfc_Internal.c",
         "dnld/phDnldNfc_Utils.c",
         "dnld/phNxpNciHal_Dnld.c",
-        "hal/phNxpNciHal.cc",
+        "hal/phNxpNciHal.c",
         "hal/phNxpNciHal_NfcDepSWPrio.c",
         "hal/phNxpNciHal_dta.c",
         "hal/phNxpNciHal_ext.c",
