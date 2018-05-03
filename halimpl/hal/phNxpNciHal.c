@@ -2328,7 +2328,7 @@ int   phNxpNciHal_determineConfiguredClockSrc()
     }
     else
     {
-        NXPLOG_NCIHAL_E("Wrong clock source. Dont apply any modification")
+        NXPLOG_NCIHAL_E("Wrong clock source. Dont apply any modification");
     }
     return param_clock_src;
   }
@@ -2738,7 +2738,7 @@ int check_config_parameter() {
     param_clock_src = 0x08;
 
   } else {
-    NXPLOG_NCIHAL_E("Wrong clock source. Dont apply any modification")
+        NXPLOG_NCIHAL_E("Wrong clock source. Dont apply any modification");
   }
   return param_clock_src;
 }

@@ -22,7 +22,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if (NXP_EXTNS == FALSE)
 #include <unistd.h>
+#endif
 #include "Nxp_Features.h"
 
 #ifndef true

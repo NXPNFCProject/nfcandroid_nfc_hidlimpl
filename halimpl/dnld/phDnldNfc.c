@@ -624,7 +624,7 @@ void phDnldNfc_SetHwDevHandle(void) {
       (void)memset((void*)psDnldContext, 0, sizeof(phDnldNfc_DlContext_t));
       gpphDnldContext = psDnldContext;
     } else {
-      NXPLOG_FWDNLD_E("Error Allocating Mem for Dnld Context..")
+        NXPLOG_FWDNLD_E("Error Allocating Mem for Dnld Context..");
     }
   } else {
     (void)memset((void*)gpphDnldContext, 0, sizeof(phDnldNfc_DlContext_t));
@@ -645,7 +645,7 @@ void phDnldNfc_SetHwDevHandle(void) {
 *******************************************************************************/
 void phDnldNfc_ReSetHwDevHandle(void) {
   if (gpphDnldContext != NULL) {
-    NXPLOG_FWDNLD_E("Freeing Mem for Dnld Context..")
+    NXPLOG_FWDNLD_E("Freeing Mem for Dnld Context..");
     free(gpphDnldContext);
     gpphDnldContext = NULL;
   }
