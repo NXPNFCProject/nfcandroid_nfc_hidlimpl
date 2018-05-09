@@ -119,7 +119,6 @@ static void phNxpNciHal_read_complete(void* pContext,
                                       phTmlNfc_TransactInfo_t* pInfo);
 static void phNxpNciHal_close_complete(NFCSTATUS status);
 static void phNxpNciHal_core_initialized_complete(NFCSTATUS status);
-static void phNxpNciHal_pre_discover_complete(NFCSTATUS status);
 static void phNxpNciHal_power_cycle_complete(NFCSTATUS status);
 static void phNxpNciHal_kill_client_thread(
     phNxpNciHal_Control_t* p_nxpncihal_ctrl);
@@ -138,7 +137,6 @@ NFCSTATUS phNxpNciHal_set_china_region_configs(void);
 static void phNxpNciHal_configNciParser(void);
 static NFCSTATUS phNxpNciHalRFConfigCmdRecSequence();
 static NFCSTATUS phNxpNciHal_CheckRFCmdRespStatus();
-int check_config_parameter();
 static NFCSTATUS phNxpNciHal_uicc_baud_rate();
 
 //static tNfc_featureList phNxpNciHal_getFeatureList();
@@ -476,7 +474,6 @@ int phNxpNciHal_MinOpen(nfc_stack_callback_t* p_cback,
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   phOsalNfc_Config_t tOsalConfig;
   phTmlNfc_Config_t tTmlConfig;
-  static phLibNfc_Message_t msg;
   int init_retry_cnt = 0;
   /*NCI_RESET_CMD*/
   uint8_t cmd_reset_nci[] = {0x20, 0x00, 0x01, 0x01};
@@ -1898,7 +1895,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   if ((*p_core_init_rsp_params > 0) && (*p_core_init_rsp_params < 4)) {
     static phLibNfc_Message_t msg;
     uint16_t tmp_len = 0;
-    uint8_t uicc_set_mode[] = {0x22, 0x01, 0x02, 0x02, 0x01};
     uint8_t set_screen_state[] = {0x2F, 0x15, 01, 00};  // SCREEN ON
     uint8_t set_screen_state_nci2[] = {0x20,0x09,0x01,0x00};
     uint8_t nfcc_core_conn_create[] = {0x20, 0x04, 0x06, 0x03, 0x01,
@@ -2105,20 +2101,17 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
  ******************************************************************************/
 static NFCSTATUS phNxpNciHal_check_eSE_Session_Identity(void) {
   struct stat st;
-  int ret = 0;
   NFCSTATUS status = NFCSTATUS_FAILED;
   const char config_eseinfo_path[] = "/data/vendor/nfc/nfaStorage.bin1";
   static uint8_t session_identity[8] = {0x00};
   uint8_t default_session[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
   uint8_t swp2_intf_status = 0x00;
-  long retlen = 0;
   static uint8_t disable_dual_swp_intf[] = {0x20, 0x02, 0x09, 0x02, 0xA0, 0xEC,
                                        0x01, 0x00, 0xA0, 0xD4, 0x01, 0x00};
   static uint8_t disable_swp_intf[] = {0x20, 0x02, 0x05, 0x01,
                                        0xA0, 0xEC, 0x01, 0x00};
 
   phNxpNci_EEPROM_info_t swp_intf_info;
-  uint8_t swp_info_buff[32] = {0};
 
   memset(&swp_intf_info, 0, sizeof(swp_intf_info));
   swp_intf_info.request_mode = GET_EEPROM_DATA;
@@ -2409,9 +2402,7 @@ static void phNxpNciHal_core_MinInitialized_complete(NFCSTATUS status) {
  * Function         phNxpNciHal_pre_discover
  *
  * Description      This function is called by libnfc-nci to perform any
- *                  proprietary exchange before RF discovery. When proprietary
- *                  exchange is over completion is informed to libnfc-nci
- *                  through phNxpNciHal_pre_discover_complete function.
+ *                  proprietary exchange before RF discovery.
  *
  * Returns          It always returns NFCSTATUS_SUCCESS (0).
  *
@@ -2419,31 +2410,6 @@ static void phNxpNciHal_core_MinInitialized_complete(NFCSTATUS status) {
 int phNxpNciHal_pre_discover(void) {
   /* Nothing to do here for initial version */
   return NFCSTATUS_SUCCESS;
-}
-
-/******************************************************************************
- * Function         phNxpNciHal_pre_discover_complete
- *
- * Description      This function informs libnfc-nci about completion and
- *                  status of phNxpNciHal_pre_discover through callback.
- *
- * Returns          void.
- *
- ******************************************************************************/
-static void phNxpNciHal_pre_discover_complete(NFCSTATUS status) {
-  static phLibNfc_Message_t msg;
-
-  if (status == NFCSTATUS_SUCCESS) {
-    msg.eMsgType = NCI_HAL_PRE_DISCOVER_CPLT_MSG;
-  } else {
-    msg.eMsgType = NCI_HAL_ERROR_MSG;
-  }
-  msg.pMsgData = NULL;
-  msg.Size = 0;
-
-  phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &msg);
-
-  return;
 }
 
 /******************************************************************************
@@ -3338,7 +3304,6 @@ retrySetclock:
  *****************************************************************************/
 int   phNxpNciHal_determineConfiguredClockSrc()
 {
-    NFCSTATUS status = NFCSTATUS_FAILED;
     uint8_t param_clock_src = CLK_SRC_PLL;
     if (nxpprofile_ctrl.bClkSrcVal == CLK_SRC_PLL)
     {
@@ -3565,11 +3530,10 @@ retry_send_ext:
  * Returns          void.
  *
  ******************************************************************************/
-void phNxpNciHal_enable_i2c_fragmentation() {
+__attribute__((unused)) void phNxpNciHal_enable_i2c_fragmentation() {
   NFCSTATUS status = NFCSTATUS_FAILED;
   static uint8_t fragmentation_enable_config_cmd[] = {0x20, 0x02, 0x05, 0x01,
                                                       0xA0, 0x05, 0x01, 0x10};
-  int isfound = 0;
   unsigned long i2c_status = 0x00;
   unsigned long config_i2c_value = 0xff;
   /*NCI_RESET_CMD*/
@@ -3579,7 +3543,7 @@ void phNxpNciHal_enable_i2c_fragmentation() {
   static uint8_t cmd_init_nci2_0[] = {0x20,0x01,0x02,0x00,0x00};
   static uint8_t get_i2c_fragmentation_cmd[] = {0x20, 0x03, 0x03,
                                                 0x01, 0xA0, 0x05};
-  isfound = (GetNxpNumValue(NAME_NXP_I2C_FRAGMENTATION_ENABLED,
+  (GetNxpNumValue(NAME_NXP_I2C_FRAGMENTATION_ENABLED,
                             (void*)&i2c_status, sizeof(i2c_status)));
   status = phNxpNciHal_send_ext_cmd(sizeof(get_i2c_fragmentation_cmd),
                                     get_i2c_fragmentation_cmd);
@@ -3593,9 +3557,8 @@ void phNxpNciHal_enable_i2c_fragmentation() {
     } else if (nxpncihal_ctrl.p_rx_data[8] == 0x00) {
       config_i2c_value = 0x00;
     }
-    if (config_i2c_value == i2c_status) {
-      NXPLOG_NCIHAL_E("i2c_fragmentation_status existing");
-    } else {
+    // if the value already matches, nothing to be done
+    if (config_i2c_value != i2c_status) {
       if (i2c_status == 0x01) {
         /* NXP I2C fragmenation enabled*/
         status =

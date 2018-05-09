@@ -42,7 +42,6 @@ static uint32_t RfDiscID = 1;
 static uint32_t RfProtocolType = 4;
 /* NFCEE Set mode */
 static uint8_t setEEModeDone = 0x00;
-static uint8_t cmd_nfcee_setmode_enable[] = {0x22, 0x01, 0x02, 0x01, 0x01};
 
 /* External global variable to get FW version from NCI response*/
 extern uint32_t wFwVerRsp;
@@ -460,6 +459,15 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf, uint16_t* 
           rom_version = p_ntf[len - 2];
           NXPLOG_NCIHAL_D ("NxpNci> FW Version: %x.%x.%x", p_ntf[len-2], p_ntf[len-1], p_ntf[len]);
           }else {
+            uint32_t i;
+            char print_buffer[*p_len * 3 + 1];
+
+            memset(print_buffer, 0, sizeof(print_buffer));
+            for (i = 0; i < *p_len; i++) {
+              snprintf(&print_buffer[i * 2], 3, "%02X", p_ntf[i]);
+            }
+            NXPLOG_NCIHAL_E("CORE_RESET_NTF received !");
+            NXPLOG_NCIR_E("len = %3d > %s", *p_len, print_buffer);
               if(nfcFL.chipType == pn548C2) {
                   if (nfcdep_detected &&
                           !(p_ntf[2] == 0x06 && p_ntf[3] == 0xA0 && p_ntf[4] == 0x00 &&
@@ -656,8 +664,7 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
   NFCSTATUS status = NFCSTATUS_SUCCESS;
 
   unsigned long retval = 0;
-  int isfound =
-      GetNxpNumValue(NAME_MIFARE_READER_ENABLE, &retval, sizeof(unsigned long));
+  GetNxpNumValue(NAME_MIFARE_READER_ENABLE, &retval, sizeof(unsigned long));
 
   phNxpNciHal_NfcDep_cmd_ext(p_cmd_data, cmd_len);
 

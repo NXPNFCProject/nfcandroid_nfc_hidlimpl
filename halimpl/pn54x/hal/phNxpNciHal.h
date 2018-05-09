@@ -19,7 +19,7 @@
 #include <hardware/nfc.h>
 #include <phNxpNciHal_utils.h>
 #include "NxpNfcCapability.h"
-#include "nfc_hal_api.h"
+#include "hal_nxpnfc.h"
 
 /********************* Definitions and structures *****************************/
 #define MAX_RETRY_COUNT 5
@@ -220,7 +220,7 @@ void phNxpNciHal_request_control(void);
 void phNxpNciHal_release_control(void);
 NFCSTATUS phNxpNciHal_send_get_cfgs();
 int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t* p_data);
-static int phNxpNciHal_fw_mw_ver_check();
+static __attribute__((unused)) int phNxpNciHal_fw_mw_ver_check();
 NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info);
 NFCSTATUS phNxpNciHal_send_nfcee_pwr_cntl_cmd(uint8_t type);
 
