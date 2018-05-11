@@ -522,9 +522,6 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
   /* initialize trace level */
   phNxpLog_InitializeLogLevel();
 
-  /*Create the timer for extns write response*/
-  timeoutTimerId = phOsalNfc_Timer_Create();
-
   if (phNxpNciHal_init_monitor() == NULL) {
     NXPLOG_NCIHAL_E("Init monitor failed");
     return NFCSTATUS_FAILED;
@@ -576,6 +573,8 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
   tOsalConfig.pLogFile = NULL;
   tTmlConfig.dwGetMsgThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
 
+  /*Create the timer for extns write response*/
+  timeoutTimerId = phOsalNfc_Timer_Create();
   /* Initialize TML layer */
   wConfigStatus = phTmlNfc_Init(&tTmlConfig);
   if (wConfigStatus != NFCSTATUS_SUCCESS) {
