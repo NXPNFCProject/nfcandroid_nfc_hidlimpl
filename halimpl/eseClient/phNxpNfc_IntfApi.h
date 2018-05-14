@@ -21,10 +21,10 @@
 #include "nfa_hci_api.h"
 #include <phNxpLog.h>
 
-extern "C" {
+
 #include "phNxpNciHal_Adaptation.h"
 #include <phNxpNciHal_utils.h>
-}
+
 #ifndef _PHNXPNFC_INTF_API_H_
 #define _PHNXPNFC_INTF_API_H_
 

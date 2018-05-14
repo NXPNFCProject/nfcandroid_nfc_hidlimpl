@@ -253,7 +253,7 @@ void nfaEeCallback(tNFA_EE_EVT event,
 }
 
 void HalClose() {
-  phNxpNciHal_close();
+  phNxpNciHal_close(false);
 }
 /*******************************************************************************
 **

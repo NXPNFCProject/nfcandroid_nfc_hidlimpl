@@ -16,12 +16,13 @@
  *
  ******************************************************************************/
 
-#include "NxpNfc.h"
+#include <log/log.h>
 
-extern "C"
-{
+#include "NxpNfc.h"
 #include "phNxpNciHal_Adaptation.h"
-}
+
+extern bool nfc_debug_enabled;
+
 namespace vendor {
 namespace nxp {
 namespace nxpnfc {

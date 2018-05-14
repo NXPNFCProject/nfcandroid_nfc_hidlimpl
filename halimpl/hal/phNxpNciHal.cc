@@ -1810,7 +1810,7 @@ int phNxpNciHal_close(bool bShutdown) {
     NXPLOG_NCIHAL_D("UICC_LISTEN_TECH_MASK = 0x%0lX", uiccListenMask);
   }
 
-  if (!(GetNxpNumValue(NAME_NXP_ESE_LISTEN_TECH_MASK, &eseListenMask, 
+  if (!(GetNxpNumValue(NAME_NXP_ESE_LISTEN_TECH_MASK, &eseListenMask,
                       sizeof(eseListenMask)))) {
     eseListenMask = 0x07;
     NXPLOG_NCIHAL_D ("NXP_ESE_LISTEN_TECH_MASK = 0x%0lX", eseListenMask);

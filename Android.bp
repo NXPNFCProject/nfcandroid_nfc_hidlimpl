@@ -12,18 +12,103 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+cc_library_shared {
+    name: "nfc_nci_nxp",
+    defaults: ["hidl_defaults"],
+    proprietary: true,
 
-hal = "1.1/"
+    cflags: [
+        "-DNFC_NXP_CHIP_TYPE=PN553",
+        "-DPN553=1",
+        "-Wall",
+        "-Werror",
+        "-Wextra",
+        "-DNXP_EXTNS=TRUE"
+    ],
+
+    srcs: [
+        "halimpl/dnld/phDnldNfc.cc",
+        "halimpl/dnld/phDnldNfc_Internal.cc",
+        "halimpl/dnld/phDnldNfc_Utils.cc",
+        "halimpl/dnld/phNxpNciHal_Dnld.cc",
+        "halimpl/hal/phNxpNciHal.cc",
+        "halimpl/hal/phNxpNciHal_NfcDepSWPrio.cc",
+        "halimpl/hal/phNxpNciHal_dta.cc",
+        "halimpl/hal/phNxpNciHal_ext.cc",
+        "halimpl/log/phNxpLog.cc",
+        "halimpl/self-test/phNxpNciHal_SelfTest.cc",
+        "halimpl/src/adaptation/EseAdaptation.cpp",
+        "halimpl/tml/phDal4Nfc_messageQueueLib.cc",
+        "halimpl/tml/phOsalNfc_Timer.cc",
+        "halimpl/tml/phTmlNfc.cc",
+        "halimpl/eseClient/phNxpNfc_IntfApi.cc",
+        "halimpl/tml/phTmlNfc_i2c.cc",
+        "halimpl/utils/phNxpConfig.cpp",
+        "halimpl/utils/phNxpNciHal_utils.cc",
+        "halimpl/utils/sparse_crc32.cc",
+        "halimpl/configs/NxpNfcCapability.cpp",
+        "halimpl/ese-clients/src/eSEClient.cpp",
+        "halimpl/ese-clients/src/JcDnld.cpp",
+        "halimpl/ese-clients/src/JcopOsDownload.cpp",
+    ],
+
+    local_include_dirs: [
+        "halimpl/common",
+        "halimpl/configs",
+        "halimpl/dnld",
+        "halimpl/hal",
+        "halimpl/inc",
+        "halimpl/log",
+        "halimpl/self-test",
+        "halimpl/tml",
+        "halimpl/utils",
+        "halimpl/eseClient",
+        "halimpl/ese-clients/inc",
+        "halimpl/src/include"
+    ],
+
+    include_dirs: [
+        "hardware/nxp/nfc/extns/impl",
+        "hardware/nxp/secure_element/extns/impl",
+        "system/nfc/src/nfa/include",
+        "system/nfc/src/nfc/include",
+        "system/nfc/src/include",
+        "system/nfc/src/gki/common",
+        "system/nfc/src/gki/ulinux",
+    ],
+
+    shared_libs: [
+        "android.hardware.nfc@1.0",
+        "android.hardware.nfc@1.1",
+        "android.hardware.secure_element@1.0",
+        "libbase",
+        "libcutils",
+        "libdl",
+        "libhardware",
+        "libhardware_legacy",
+        "libhidlbase",
+        "libhidltransport",
+        "liblog",
+        "libutils",
+        "vendor.nxp.nxpese@1.0",
+        "libnfc-nci",
+        "libicuuc",
+        "libchrome"
+    ],
+    static_libs: [
+        "libnfcutils",
+    ],
+}
 
 cc_binary {
-    relative_install_path: "hw",
     name: "android.hardware.nfc@1.1-service",
     defaults: ["hidl_defaults"],
     proprietary: true,
-    init_rc: [hal + "android.hardware.nfc@1.1-service.rc"],
+    init_rc: ["1.1/android.hardware.nfc@1.1-service.rc"],
+    relative_install_path: "hw",
     srcs: [
-        hal + "NxpNfcService.cpp",
-        hal + "Nfc.cpp",
+        "1.1/NxpNfcService.cpp",
+        "1.1/Nfc.cpp",
         "extns/impl/NxpNfc.cpp",
     ],
 

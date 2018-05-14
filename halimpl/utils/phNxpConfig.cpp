@@ -45,7 +45,6 @@
 #include <phNxpConfig.h>
 #include <phNxpLog.h>
 #include "sparse_crc32.h"
-
 #if GENERIC_TARGET
 const char alternative_config_path[] = "/data/vendor/nfc/";
 #else
@@ -280,7 +279,7 @@ bool CNfcConfig::readConfig(const char* name, bool bResetContent) {
   int bflag = 0;
   state = BEGIN_LINE;
 
-  config_crc32_ = sparse_crc32(0, p_config, config_size);
+  config_crc32_ = sparse_crc32(0, (const void*)p_config, (int)config_size);
   mValidFile = true;
   if (size() > 0) {
     if (bResetContent)

@@ -17,18 +17,15 @@
  ******************************************************************************/
 
 #define LOG_TAG "android.hardware.nfc@1.1-impl"
-
 #include <log/log.h>
 #include "Nfc.h"
-extern "C" {
 #include "halimpl/inc/phNxpNciHal_Adaptation.h"
-}
+#include "phNfcStatus.h"
 
-#define UNUSED(x) (void)(x)
-#define HALSTATUS_SUCCESS (0x0000)
-#define HALSTATUS_FAILED  (0x00FF)
+#define CHK_STATUS(x) ((x) == NFCSTATUS_SUCCESS) \
+      ? (V1_0::NfcStatus::OK) : (V1_0::NfcStatus::FAILED)
 
-typedef uint32_t HALSTATUS;
+extern bool nfc_debug_enabled;
 
 namespace android {
 namespace hardware {
@@ -36,102 +33,104 @@ namespace nfc {
 namespace V1_1 {
 namespace implementation {
 
-sp<INfcClientCallback> Nfc::mCallback = nullptr;
+sp<V1_1::INfcClientCallback> Nfc::mCallbackV1_1 = nullptr;
+sp<V1_0::INfcClientCallback> Nfc::mCallbackV1_0 = nullptr;
+
+Return<V1_0::NfcStatus> Nfc::open_1_1(
+    const sp<V1_1::INfcClientCallback>& clientCallback) {
+  if (clientCallback == nullptr) {
+    ALOGD_IF(nfc_debug_enabled, "Nfc::open null callback");
+    return V1_0::NfcStatus::FAILED;
+  } else {
+    mCallbackV1_1 = clientCallback;
+    mCallbackV1_1->linkToDeath(this, 0 /*cookie*/);
+  }
+  return open(clientCallback);
+}
 
 // Methods from ::android::hardware::nfc::V1_0::INfc follow.
-Return<V1_0::NfcStatus> Nfc::open(const sp<INfcClientCallback>& clientCallback) {
-    ALOGD("Nfc::open Enter");
-    HALSTATUS status = HALSTATUS_FAILED;
-    if (clientCallback == nullptr) {
-        return V1_0::NfcStatus::FAILED;
-    } else {
-        mCallback = clientCallback;
-        mCallback->linkToDeath(this, 0 /*cookie*/);
-    }
+Return<V1_0::NfcStatus> Nfc::open(
+    const sp<V1_0::INfcClientCallback>& clientCallback) {
+  ALOGD_IF(nfc_debug_enabled, "Nfc::open Enter");
+  if (clientCallback == nullptr) {
+    ALOGD_IF(nfc_debug_enabled, "Nfc::open null callback");
+    return V1_0::NfcStatus::FAILED;
+  } else {
+    mCallbackV1_0 = clientCallback;
+    mCallbackV1_0->linkToDeath(this, 0 /*cookie*/);
+  }
 
-    status = phNxpNciHal_open(eventCallback, dataCallback);
-    ALOGD("Nfc::open Exit");
-    if(status != HALSTATUS_SUCCESS) {
-        return V1_0::NfcStatus::FAILED;
-    } else {
-        return V1_0::NfcStatus::OK;
-    }
+  NFCSTATUS status = phNxpNciHal_open(eventCallback, dataCallback);
+  ALOGD_IF(nfc_debug_enabled, "Nfc::open Exit");
+  return CHK_STATUS(status);
 }
 
 Return<uint32_t> Nfc::write(const hidl_vec<uint8_t>& data) {
-    hidl_vec<uint8_t> copy = data;
-    return phNxpNciHal_write(copy.size(), &copy[0]);
+  hidl_vec<uint8_t> copy = data;
+  return phNxpNciHal_write(copy.size(), &copy[0]);
 }
 
 Return<V1_0::NfcStatus> Nfc::coreInitialized(const hidl_vec<uint8_t>& data) {
-    HALSTATUS status = HALSTATUS_FAILED;
-    hidl_vec<uint8_t> copy = data;
-    status = phNxpNciHal_core_initialized(&copy[0]);
-    if(status != HALSTATUS_SUCCESS) {
-        return V1_0::NfcStatus::FAILED;
-    } else {
-        return V1_0::NfcStatus::OK;
-    }
+  hidl_vec<uint8_t> copy = data;
+  NFCSTATUS status = phNxpNciHal_core_initialized(&copy[0]);
+  return CHK_STATUS(status);
 }
 
 Return<V1_0::NfcStatus> Nfc::prediscover() {
-    HALSTATUS status = HALSTATUS_FAILED;
-    status = phNxpNciHal_pre_discover();
-    return V1_0::NfcStatus {};
+  NFCSTATUS status = phNxpNciHal_pre_discover();
+  return CHK_STATUS(status);
 }
 
 Return<V1_0::NfcStatus> Nfc::close() {
-    HALSTATUS status = HALSTATUS_FAILED;
+  if (mCallbackV1_1 == nullptr && mCallbackV1_0 == nullptr) {
+    return V1_0::NfcStatus::FAILED;
+  }
+  NFCSTATUS status = phNxpNciHal_close(false);
 
-    if (mCallback == nullptr) {
-        return V1_0::NfcStatus::FAILED;
-    } else {
-        mCallback->unlinkToDeath(this);
-    }
-
-    status = phNxpNciHal_close();
-    if(status != HALSTATUS_SUCCESS) {
-        return V1_0::NfcStatus::FAILED;
-    } else {
-        return V1_0::NfcStatus::OK;
-    }
+  if (mCallbackV1_1 != nullptr) {
+    mCallbackV1_1->unlinkToDeath(this);
+    mCallbackV1_1 = nullptr;
+  }
+  if (mCallbackV1_0 != nullptr) {
+    mCallbackV1_0->unlinkToDeath(this);
+    mCallbackV1_0 = nullptr;
+  }
+  return CHK_STATUS(status);
 }
 
 Return<V1_0::NfcStatus> Nfc::controlGranted() {
-    HALSTATUS status = HALSTATUS_FAILED;
-    status = phNxpNciHal_control_granted();
-    if(status != HALSTATUS_SUCCESS) {
-        return V1_0::NfcStatus::FAILED;
-    } else {
-        return V1_0::NfcStatus::OK;
-    }
+  NFCSTATUS status = phNxpNciHal_control_granted();
+  return CHK_STATUS(status);
 }
 
 Return<V1_0::NfcStatus> Nfc::powerCycle() {
-    HALSTATUS status = HALSTATUS_FAILED;
-    status = phNxpNciHal_power_cycle();
-    if(status != HALSTATUS_SUCCESS) {
-        return V1_0::NfcStatus::FAILED;
-    } else {
-        return V1_0::NfcStatus::OK;
-    }
+  NFCSTATUS status = phNxpNciHal_power_cycle();
+  return CHK_STATUS(status);
 }
 
 // Methods from ::android::hardware::nfc::V1_1::INfc follow.
 Return<void> Nfc::factoryReset() {
-    phNxpNciHal_do_factory_reset();
-    return Void();
+  phNxpNciHal_do_factory_reset();
+  return Void();
 }
 
 Return<V1_0::NfcStatus> Nfc::closeForPowerOffCase() {
-    HALSTATUS status = HALSTATUS_FAILED;
-    status = phNxpNciHal_shutdown();
-    if(status != HALSTATUS_SUCCESS) {
-        return V1_0::NfcStatus::FAILED;
-    } else {
-        return V1_0::NfcStatus::OK;
-    }
+  if (mCallbackV1_1 == nullptr && mCallbackV1_0 == nullptr) {
+    return V1_0::NfcStatus::FAILED;
+  }
+  NFCSTATUS status = phNxpNciHal_configDiscShutdown();
+
+  if (mCallbackV1_1 != nullptr) {
+    mCallbackV1_1->unlinkToDeath(this);
+    mCallbackV1_1 = nullptr;
+  }
+  if (mCallbackV1_0 != nullptr) {
+    mCallbackV1_0->unlinkToDeath(this);
+    mCallbackV1_0 = nullptr;
+  }
+  return CHK_STATUS(status);
 }
+
 
 }  // namespace implementation
 }  // namespace V1_1

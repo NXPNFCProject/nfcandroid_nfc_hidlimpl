@@ -23,7 +23,10 @@ interface INxpNfc {
      *
      * Based on the ioctlType, input data bytes are processed and
      * Output data bytes are generated.
-     *
+     * @param ioctlType contains type of functionality as below
+     *         HAL_NFC_IOCTL_SPI_DWP_SYNC to synchronize access to eSE
+     *         HAL_NFC_INHIBIT_PWR_CNTRL to disable eSE power
+     *         HAL_NFC_SET_SPM_PWR to toggle eSE power
      * @return output data as stream of bytes
      */
     ioctl(uint64_t ioctlType,NfcData inputData) generates(NfcData outputData);
