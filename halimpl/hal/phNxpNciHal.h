@@ -78,6 +78,8 @@ typedef struct nci_data {
   uint8_t p_data[NCI_MAX_DATA_LEN];
 } nci_data_t;
 
+#define NXP_MAX_CONFIG_STRING_LEN 260
+
 typedef enum { HAL_STATUS_CLOSE = 0, HAL_STATUS_OPEN } phNxpNci_HalStatus;
 
 /* Macros to enable and disable extensions */

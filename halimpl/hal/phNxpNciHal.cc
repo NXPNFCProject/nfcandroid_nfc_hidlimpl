@@ -28,6 +28,8 @@
 
 #include <sys/stat.h>
 #include <string.h>
+#include <EseAdaptation.h>
+using namespace android::hardware::nfc::V1_1;
 /*********************** Global Variables *************************************/
 #define PN547C2_CLOCK_SETTING
 #undef PN547C2_FACTORY_RESET_DEBUG
@@ -1990,6 +1992,70 @@ int phNxpNciHal_configDiscShutdown(void) {
 
   /* Return success always */
   return NFCSTATUS_SUCCESS;
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_getVendorConfig
+ *
+ * Description      This function can be used by HAL to inform
+ *                 to update vendor configuration parametres
+ *
+ * Returns          void.
+ *
+ ******************************************************************************/
+
+void phNxpNciHal_getVendorConfig(NfcConfig& config) {
+  unsigned long num = 0;
+  std::array<uint8_t, NXP_MAX_CONFIG_STRING_LEN> buffer;
+  buffer.fill(0);
+  long retlen = 0;
+  memset(&config, 0x00, sizeof(NfcConfig));
+
+  if (GetNxpNumValue(NAME_ISO_DEP_MAX_TRANSCEIVE, &num, sizeof(num))) {
+    config.maxIsoDepTransceiveLength = num;
+  }
+  if (GetNxpNumValue(NAME_NFA_POLL_BAIL_OUT_MODE, &num, sizeof(num))
+       && (num == 1)) {
+    config.nfaPollBailOutMode = true;
+  }
+  if (GetNxpNumValue(NAME_ACTIVE_SE, &num, sizeof(num))) {
+    config.defaultOffHostRoute = num;
+  }
+  if (GetNxpNumValue(NAME_ACTIVE_SE_NFCF, &num, sizeof(num))) {
+    config.defaultOffHostRouteFelica = num;
+  }
+  if (GetNxpNumValue(NAME_DEFAULT_FELICA_SYS_CODE_ROUTE, &num, sizeof(num))) {
+    config.defaultSystemCodeRoute = num;
+  }
+  if (GetNxpNumValue(NAME_DEFAULT_ISODEP_ROUTE, &num, sizeof(num))) {
+    config.defaultRoute = num;
+  }
+  if (GetNxpByteArrayValue(NAME_DEVICE_HOST_WHITE_LIST, (char*)buffer.data(), buffer.size(), &retlen)) {
+    config.hostWhitelist.setToExternal(buffer.data(),retlen);
+  }
+  if (GetNxpNumValue(NAME_NFA_HCI_STATIC_PIPE_ID_ESE, &num, sizeof(num))) {
+    config.offHostESEPipeId = num;
+  }
+  if (GetNxpNumValue(NAME_NFA_HCI_STATIC_PIPE_ID_SIM, &num, sizeof(num))) {
+    config.offHostSIMPipeId = num;
+  }
+  if ((GetNxpByteArrayValue(NAME_NFA_PROPRIETARY_CFG, (char*)buffer.data(), buffer.size(), &retlen))
+         && (retlen == 9)) {
+    config.nfaProprietaryCfg.protocol18092Active = (uint8_t) buffer[0];
+    config.nfaProprietaryCfg.protocolBPrime = (uint8_t) buffer[1];
+    config.nfaProprietaryCfg.protocolDual = (uint8_t) buffer[2];
+    config.nfaProprietaryCfg.protocol15693 = (uint8_t) buffer[3];
+    config.nfaProprietaryCfg.protocolKovio = (uint8_t) buffer[4];
+    config.nfaProprietaryCfg.protocolMifare = (uint8_t) buffer[5];
+    config.nfaProprietaryCfg.discoveryPollKovio = (uint8_t) buffer[6];
+    config.nfaProprietaryCfg.discoveryPollBPrime = (uint8_t) buffer[7];
+    config.nfaProprietaryCfg.discoveryListenBPrime = (uint8_t) buffer[8];
+  } else {
+    memset(&config.nfaProprietaryCfg, 0xFF, sizeof(ProtocolDiscoveryConfig));
+  }
+  if ((GetNxpNumValue(NAME_PRESENCE_CHECK_ALGORITHM, &num, sizeof(num))) && (num <= 2) ) {
+      config.presenceCheckAlgorithm = (PresenceCheckAlgorithm)num;
+  }
 }
 
 /******************************************************************************
