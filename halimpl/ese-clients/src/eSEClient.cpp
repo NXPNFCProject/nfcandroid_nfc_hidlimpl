@@ -31,7 +31,7 @@
 #include <phNxpNfc_IntfApi.h>
 #include <phNxpNciHal.h>
 #include <phNxpConfig.h>
-bool nfc_debug_enabled = true;
+
 /*static char gethex(const char *s, char **endptr);
 char *convert(const char *s, int *length);*/
 uint8_t datahex(char c);

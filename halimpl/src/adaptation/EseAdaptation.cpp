@@ -51,15 +51,12 @@ tHAL_ESE_DATA_CBACK* EseAdaptation::mHalDataCallback = NULL;
 ThreadCondVar EseAdaptation::mHalOpenCompletedEvent;
 ThreadCondVar EseAdaptation::mHalCloseCompletedEvent;
 
-#if (NXP_EXTNS == TRUE)
+
 ThreadCondVar EseAdaptation::mHalCoreResetCompletedEvent;
 ThreadCondVar EseAdaptation::mHalCoreInitCompletedEvent;
 ThreadCondVar EseAdaptation::mHalInitCompletedEvent;
 #define SIGNAL_NONE 0
 #define SIGNAL_SIGNALED 1
-static uint8_t isSignaled = SIGNAL_NONE;
-static uint8_t evt_status;
-#endif
 
 /*******************************************************************************
 **
