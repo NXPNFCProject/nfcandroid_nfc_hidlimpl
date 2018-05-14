@@ -64,7 +64,6 @@ int main() {
     status = nxp_nfc_service->registerAsService();
     if (status != OK) {
         ALOGE("Could not register service for NXP NFC Extn Iface (%d).", status);
-        return -1;
     }
     ALOGI("NFC service is ready");
     ALOGE("Before calling JCOP JCOS_doDownload");
