@@ -51,7 +51,7 @@ tHAL_ESE_DATA_CBACK* EseAdaptation::mHalDataCallback = NULL;
 ThreadCondVar EseAdaptation::mHalOpenCompletedEvent;
 ThreadCondVar EseAdaptation::mHalCloseCompletedEvent;
 
-#if (0)
+#if (NXP_EXTNS == TRUE)
 ThreadCondVar EseAdaptation::mHalCoreResetCompletedEvent;
 ThreadCondVar EseAdaptation::mHalCoreInitCompletedEvent;
 ThreadCondVar EseAdaptation::mHalInitCompletedEvent;
