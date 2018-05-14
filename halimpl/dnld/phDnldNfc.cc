@@ -1013,7 +1013,7 @@ NFCSTATUS phDnldNfc_LoadFW(const char* pathName, uint8_t** pImgInfo,
   return NFCSTATUS_SUCCESS;
 }
 
-#if (NFC_NXP_CHIP_TYPE != PN547C2)
+
 /*******************************************************************************
 **
 ** Function         phDnldNfc_LoadRecoveryFW
@@ -1088,7 +1088,6 @@ NFCSTATUS phDnldNfc_LoadRecoveryFW(const char* pathName, uint8_t** pImgInfo,
 
   return NFCSTATUS_SUCCESS;
 }
-#endif
 
 /*******************************************************************************
 **

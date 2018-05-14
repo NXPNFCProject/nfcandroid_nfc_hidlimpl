@@ -34,19 +34,7 @@ using namespace android::hardware::nfc::V1_1;
 #define PN547C2_CLOCK_SETTING
 #undef PN547C2_FACTORY_RESET_DEBUG
 #define CORE_RES_STATUS_BYTE 3
-/* FW Mobile major number */
-#define FW_MOBILE_MAJOR_NUMBER_PN553 0x01
-#define FW_MOBILE_MAJOR_NUMBER_PN81A 0x02
-#define FW_MOBILE_MAJOR_NUMBER_PN551 0x05
-#define FW_MOBILE_MAJOR_NUMBER_PN48AD 0x01
 
-#if (NFC_NXP_CHIP_TYPE == PN551)
-#define FW_MOBILE_MAJOR_NUMBER FW_MOBILE_MAJOR_NUMBER_PN551
-#elif (NFC_NXP_CHIP_TYPE == PN553)
-#define FW_MOBILE_MAJOR_NUMBER FW_MOBILE_MAJOR_NUMBER_PN553
-#else
-#define FW_MOBILE_MAJOR_NUMBER FW_MOBILE_MAJOR_NUMBER_PN48AD
-#endif
 /* Processing of ISO 15693 EOF */
 extern uint8_t icode_send_eof;
 extern uint8_t icode_detected;
@@ -88,17 +76,17 @@ extern uint16_t wFwVer;
 
 extern uint16_t fw_maj_ver;
 extern uint16_t rom_version;
-#if (NFC_NXP_CHIP_TYPE != PN547C2)
+
 extern uint8_t gRecFWDwnld;
 static uint8_t gRecFwRetryCount;  // variable to hold dummy FW recovery count
-#endif
 static uint8_t write_unlocked_status = NFCSTATUS_SUCCESS;
 static uint8_t Rx_data[NCI_MAX_DATA_LEN];
 
-#if (NFC_NXP_CHIP_TYPE == PN548C2)
+
+EseAdaptation *gpEseAdapt = NULL;
+
 uint8_t discovery_cmd[50] = {0};
 uint8_t discovery_cmd_len = 0;
-#endif
 uint32_t timeoutTimerId = 0;
 #ifndef FW_DWNLD_FLAG
 uint8_t fw_dwnld_flag = false;
@@ -138,10 +126,10 @@ static NFCSTATUS phNxpNciHal_CheckValidFwVersion(void);
 static int phNxpNciHal_fw_mw_ver_check();
 NFCSTATUS phNxpNciHal_check_clock_config(void);
 NFCSTATUS phNxpNciHal_china_tianjin_rf_setting(void);
-#if (NFC_NXP_CHIP_TYPE != PN547C2)
+
 static NFCSTATUS phNxpNciHalRFConfigCmdRecSequence();
 static NFCSTATUS phNxpNciHal_CheckRFCmdRespStatus();
-#endif
+
 int check_config_parameter();
 
 /******************************************************************************
@@ -1299,7 +1287,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     retlen = 0;
     fw_download_success = 0;
 
-#if (NFC_NXP_CHIP_TYPE != PN547C2)
     NXPLOG_NCIHAL_D("Performing TVDD Settings");
     isfound = GetNxpNumValue(NAME_NXP_EXT_TVDD_CFG, &num, sizeof(num));
     if (isfound > 0) {
@@ -1340,7 +1327,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
         NXPLOG_NCIHAL_E("Wrong Configuration Value %ld", num);
       }
     }
-#endif
   if(phNxpNciHal_lastResetNtfReason() == FW_DBG_REASON_AVAILABLE){
 
     phNxpNciHal_send_ext_cmd(sizeof(cmd_get_cfg_dbg_info), cmd_get_cfg_dbg_info);
@@ -1408,9 +1394,9 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
 
   //if (config_success == false) return NFCSTATUS_FAILED;
 
-#if (NFC_NXP_CHIP_TYPE != PN547C2)
+
     config_access = false;
-#endif
+
     {
         unsigned long maxBlocks = 0;
         unsigned long loopcnt = 0;
@@ -1429,7 +1415,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
             if (retlen > 0) {
               NXPLOG_NCIHAL_D("Performing RF Settings BLK %ld", loopcnt+1);
               status = phNxpNciHal_send_ext_cmd(retlen, buffer);
-#if (NFC_NXP_CHIP_TYPE != PN547C2)
+
               if (status == NFCSTATUS_SUCCESS) {
                 status = phNxpNciHal_CheckRFCmdRespStatus();
                 /*STATUS INVALID PARAM 0x09*/
@@ -1439,7 +1425,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
                   goto retry_core_init;
                 }
               } else
-#endif
                   if (status != NFCSTATUS_SUCCESS) {
                 NXPLOG_NCIHAL_E("RF Settings BLK %ld failed", loopcnt);
                 retry_core_init_cnt++;
@@ -1450,9 +1435,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
         }
     }
     retlen = 0;
-#if (NFC_NXP_CHIP_TYPE != PN547C2)
     config_access = true;
-#endif
 
     isfound = GetNxpByteArrayValue(NAME_NXP_CORE_MFCKEY_SETTING, (char*)buffer,
                                    bufflen, &retlen);
@@ -1475,7 +1458,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     if (retlen > 0) {
       /* NXP ACT Proprietary Ext */
       status = phNxpNciHal_send_ext_cmd(retlen, buffer);
-#if (NFC_NXP_CHIP_TYPE != PN547C2)
       if (status == NFCSTATUS_SUCCESS) {
         status = phNxpNciHal_CheckRFCmdRespStatus();
         /*STATUS INVALID PARAM 0x09*/
@@ -1485,19 +1467,15 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
           goto retry_core_init;
         }
       } else
-#endif
           if (status != NFCSTATUS_SUCCESS) {
         NXPLOG_NCIHAL_E("Setting NXP_CORE_RF_FIELD status failed");
         retry_core_init_cnt++;
         goto retry_core_init;
       }
     }
-#if (NFC_NXP_CHIP_TYPE != PN547C2)
     config_access = true;
-#endif
 
     retlen = 0;
-#if (NFC_NXP_CHIP_TYPE != PN547C2)
     /* NXP SWP switch timeout Setting*/
     if (GetNxpNumValue(NAME_NXP_SWP_SWITCH_TIMEOUT, (void*)&retlen,
                        sizeof(retlen))) {
@@ -1532,7 +1510,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       NXPLOG_NCIHAL_E("phNxpNciHal_china_tianjin_rf_setting failed");
       return NFCSTATUS_FAILED;
     }
-#endif
     fw_dwnld_flag = false;
   }
 
@@ -1636,17 +1613,14 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     free(buffer);
     buffer = NULL;
   }
-#if (NFC_NXP_CHIP_TYPE != PN547C2)
   // initialize dummy FW recovery variables
   gRecFWDwnld = 0;
   gRecFwRetryCount = 0;
-#endif
 
   phNxpNciHal_core_initialized_complete(status);
 
   return NFCSTATUS_SUCCESS;
 }
-#if (NFC_NXP_CHIP_TYPE != PN547C2)
 /******************************************************************************
  * Function         phNxpNciHal_CheckRFCmdRespStatus
  *
@@ -1722,7 +1696,6 @@ NFCSTATUS phNxpNciHalRFConfigCmdRecSequence() {
   }
   return status;
 }
-#endif
 /******************************************************************************
  * Function         phNxpNciHal_core_initialized_complete
  *
@@ -2644,12 +2617,11 @@ retrySetclock:
   if (nxpprofile_ctrl.bClkSrcVal == CLK_SRC_PLL) {
     static uint8_t set_clock_cmd[] = {0x20, 0x02, 0x09, 0x02, 0xA0, 0x03,
                                       0x01, 0x11, 0xA0, 0x04, 0x01, 0x01};
-#if (NFC_NXP_CHIP_TYPE == PN553)
     uint8_t param_clock_src = 0x00;
-#else
-    uint8_t param_clock_src = CLK_SRC_PLL;
-    param_clock_src = param_clock_src << 3;
-#endif
+    if((nfcFL.chipType != pn553)&&(nfcFL.chipType != pn557)) {
+      uint8_t param_clock_src = CLK_SRC_PLL;
+      param_clock_src = param_clock_src << 3;
+    }
 
     if (nxpprofile_ctrl.bClkFreqVal == CLK_FREQ_13MHZ) {
       param_clock_src |= 0x00;
@@ -2665,11 +2637,11 @@ retrySetclock:
       param_clock_src |= 0x05;
     } else {
       NXPLOG_NCIHAL_E("Wrong clock freq, send default PLL@19.2MHz");
-#if (NFC_NXP_CHIP_TYPE == PN553)
-      param_clock_src = 0x01;
-#else
-      param_clock_src = 0x11;
-#endif
+      if((nfcFL.chipType == pn553) || (nfcFL.chipType == pn557)) {
+        param_clock_src = 0x01;
+      } else {
+        param_clock_src = 0x11;
+      }
     }
 
     set_clock_cmd[7] = param_clock_src;
@@ -2808,9 +2780,9 @@ retry_send_ext:
 int check_config_parameter() {
   uint8_t param_clock_src = CLK_SRC_PLL;
   if (nxpprofile_ctrl.bClkSrcVal == CLK_SRC_PLL) {
-#if (NFC_NXP_CHIP_TYPE != PN553)
-    param_clock_src = param_clock_src << 3;
-#endif
+    if((nfcFL.chipType != pn553)&&(nfcFL.chipType != pn557)) {
+      param_clock_src = param_clock_src << 3;
+    }
     if (nxpprofile_ctrl.bClkFreqVal == CLK_FREQ_13MHZ) {
       param_clock_src |= 0x00;
     } else if (nxpprofile_ctrl.bClkFreqVal == CLK_FREQ_19_2MHZ) {
@@ -3059,7 +3031,7 @@ int phNxpNciHal_getFWDownloadFlag(uint8_t* fwDnldRequest) {
 ** Returns          none
 *******************************************************************************/
 void phNxpNciHal_configFeatureList(uint8_t* init_rsp, uint16_t rsp_len) {
-    nxpncihal_ctrl.chipType = configChipType(init_rsp,rsp_len);
+    nxpncihal_ctrl.chipType = pConfigFL->processChipType(init_rsp,rsp_len);
     tNFC_chipType chipType = nxpncihal_ctrl.chipType;
     CONFIGURE_FEATURELIST(chipType);
     NXPLOG_NCIHAL_D("phNxpNciHal_configFeatureList ()chipType = %d", chipType);
@@ -3079,9 +3051,6 @@ tNFC_chipType phNxpNciHal_getChipType() {
     return nxpncihal_ctrl.chipType;
 }
 
-
-
-#if (NFC_NXP_CHIP_TYPE == PN548C2)
 NFCSTATUS phNxpNciHal_core_reset_recovery() {
   NFCSTATUS status = NFCSTATUS_FAILED;
 
@@ -3149,4 +3118,3 @@ void phNxpNciHal_discovery_cmd_ext(uint8_t* p_cmd_data, uint16_t cmd_len) {
     discovery_cmd_len = cmd_len;
   }
 }
-#endif

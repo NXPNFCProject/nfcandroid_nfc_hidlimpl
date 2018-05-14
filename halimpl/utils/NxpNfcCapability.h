@@ -15,47 +15,23 @@
  *  limitations under the License.
  *
  ******************************************************************************/
-#include "Nxp_Features.h"
 #ifndef __CAP_H__
 #define __CAP_H__
+#include "Nxp_Features.h"
 #define pConfigFL       (capability::getInstance())
-#ifdef __cplusplus
-extern "C" {
-#endif
 
-/*******************************************************************************
-**
-** Function         getChipType
-**
-** Description      Gets the chipType which is configured during bootup
-**
-** Parameters       none
-**
-** Returns          chipType
-*******************************************************************************/
-tNFC_chipType getChipType ();
-
-/*******************************************************************************
-**
-** Function         configChipType
-**
-** Description      Finds chiptType by processing msg buffer
-**
-** Parameters       msg, len
-**                  msg : CORE_INIT_RESPONSE (NCI 1.0)
-**                           CORE_RST_NTF (NCI 2.0)
-**
-** Returns          chipType
-*******************************************************************************/
-tNFC_chipType configChipType(uint8_t* msg, uint16_t msg_len);
-#ifdef __cplusplus
-};
 
 class capability {
 private:
     static capability* instance;
     const uint16_t offsetHwVersion = 24;
-    //const uint16_t offsetFwVersion = 25;
+    const uint16_t offsetInitFwVersion = 25;
+    //const uint16_t offsetRstFwVersion = 9;
+  /*product[] will be used to print product version and
+  should be kept in accordance with tNFC_chipType*/
+  const char* product[12] = {"UNKNOWN", "PN547C2", "PN65T", "PN548C2",
+                             "PN66T",   "PN551",   "PN67T", "PN553",
+                             "PN80T",   "PN557",   "PN81T",  "sn100u"};
     capability();
 public:
     static tNFC_chipType chipType;
@@ -64,6 +40,3 @@ public:
 };
 
 #endif
-
-#endif
-

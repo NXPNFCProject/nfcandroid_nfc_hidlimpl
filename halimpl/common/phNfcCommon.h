@@ -34,6 +34,11 @@
 #include <semaphore.h>
 
 #define FW_DLL_EXTENSION ".so"
+#define FW_LIB_ROOT_DIR "/vendor/firmware/"
+#define FW_BIN_ROOT_DIR "/vendor/firmware/"
+#define FW_LIB_EXTENSION ".so"
+#define FW_BIN_EXTENSION ".bin"
+
 /* HAL Version number (Updated as per release) */
 #define NXP_MW_VERSION_MAJ (0x03)
 #define NXP_MW_VERSION_MIN (0x02)
@@ -47,50 +52,11 @@
 #define GET_FW_DWNLD_FLAG (1U)
 #define RESET_FW_DWNLD_FLAG (2U)
 
-#if (NFC_NXP_CHIP_TYPE == PN548C2)
 
-/* Actual FW library name*/
-#define FW_LIB_PATH FW_DLL_ROOT_DIR "libpn548ad_fw" FW_DLL_EXTENSION
-/* Restore Corrupted PLL Setttings/etc */
-#define PLATFORM_LIB_PATH \
-  FW_DLL_ROOT_DIR "libpn548ad_fw_platform" FW_DLL_EXTENSION
-/* Upgrade the public Key */
-#define PKU_LIB_PATH FW_DLL_ROOT_DIR "libpn548ad_fw_pku" FW_DLL_EXTENSION
-#elif (NFC_NXP_CHIP_TYPE == PN551)
-/* Actual FW library name*/
-#define FW_LIB_PATH FLASH_CONF_ROOT_DIR "libpn551_fw" FW_DLL_EXTENSION
-/* Restore Corrupted PLL Settings/etc */
-#define PLATFORM_LIB_PATH \
-  FW_DLL_ROOT_DIR "libpn551_fw_platform" FW_DLL_EXTENSION
-/* Upgrade the public Key */
-#define PKU_LIB_PATH FW_DLL_ROOT_DIR "libpn551_fw_pku" FW_DLL_EXTENSION
-#elif (NFC_NXP_CHIP_TYPE == PN553)
-/* Actual FW library name*/
-#define FW_LIB_PATH FLASH_CONF_ROOT_DIR "libpn553_fw" FW_DLL_EXTENSION
-/* Restore Corrupted PLL Settings/etc */
-#define PLATFORM_LIB_PATH \
-  FW_DLL_ROOT_DIR "libpn553_fw_platform" FW_DLL_EXTENSION
-/* Upgrade the public Key */
-#define PKU_LIB_PATH FW_DLL_ROOT_DIR "libpn553_fw_pku" FW_DLL_EXTENSION
-#else
-/* Actual FW library name*/
-#define FW_LIB_PATH FW_DLL_ROOT_DIR "libpn547_fw" FW_DLL_EXTENSION
-/* Restore Corrupted PLL Settings/etc */
-#define PLATFORM_LIB_PATH \
-  FW_DLL_ROOT_DIR "libpn547_fw_platform" FW_DLL_EXTENSION
-/* Upgrade the public Key */
-#define PKU_LIB_PATH FW_DLL_ROOT_DIR "libpn547_fw_pku" FW_DLL_EXTENSION
-#endif
 
-#if (NFC_NXP_CHIP_TYPE == PN548C2)
-#define COMPILATION_MW "PN548C2"
-#elif (NFC_NXP_CHIP_TYPE == PN551)
-#define COMPILATION_MW "PN551"
-#elif (NFC_NXP_CHIP_TYPE == PN553)
-#define COMPILATION_MW "PN553"
-#else
-#define COMPILATION_MW "PN547C2"
-#endif
+
+
+
 
 
 /*

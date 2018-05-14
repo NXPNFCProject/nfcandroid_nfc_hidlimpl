@@ -18,8 +18,6 @@ cc_library_shared {
     proprietary: true,
 
     cflags: [
-        "-DNFC_NXP_CHIP_TYPE=PN553",
-        "-DPN553=1",
         "-Wall",
         "-Werror",
         "-Wextra",
@@ -46,7 +44,7 @@ cc_library_shared {
         "halimpl/utils/phNxpConfig.cpp",
         "halimpl/utils/phNxpNciHal_utils.cc",
         "halimpl/utils/sparse_crc32.cc",
-        "halimpl/configs/NxpNfcCapability.cpp",
+        "halimpl/utils/NxpNfcCapability.cpp",
         "halimpl/ese-clients/src/eSEClient.cpp",
         "halimpl/ese-clients/src/JcDnld.cpp",
         "halimpl/ese-clients/src/JcopOsDownload.cpp",
@@ -54,7 +52,6 @@ cc_library_shared {
 
     local_include_dirs: [
         "halimpl/common",
-        "halimpl/configs",
         "halimpl/dnld",
         "halimpl/hal",
         "halimpl/inc",
@@ -131,7 +128,6 @@ cc_binary {
 
     local_include_dirs: [
         "halimpl/common",
-        "halimpl/configs",
         "halimpl/dnld",
         "halimpl/hal",
         "halimpl/inc",
