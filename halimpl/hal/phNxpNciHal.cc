@@ -19,6 +19,7 @@
 #include <phDnldNfc.h>
 #include <phNxpConfig.h>
 #include <phNxpLog.h>
+#include <cutils/properties.h>
 #include <phNxpNciHal.h>
 #include <phNxpNciHal_Adaptation.h>
 #include <phNxpNciHal_Dnld.h>
@@ -31,9 +32,10 @@
 #include <string.h>
 #include <EseAdaptation.h>
 using namespace android::hardware::nfc::V1_1;
+using android::hardware::nfc::V1_1::NfcEvent;
+
 /*********************** Global Variables *************************************/
 #define PN547C2_CLOCK_SETTING
-#undef PN547C2_FACTORY_RESET_DEBUG
 #define CORE_RES_STATUS_BYTE 3
 
 /* Processing of ISO 15693 EOF */
@@ -118,8 +120,8 @@ static void phNxpNciHal_get_clk_freq(void);
 static void phNxpNciHal_nfccClockCfgRead(void);
 static NFCSTATUS phNxpNciHal_nfccClockCfgApply(void);
 //static void phNxpNciHal_txNfccClockSetCmd(void);
-
-static void phNxpNciHal_check_factory_reset(void);
+static void phNxpNciHal_hci_network_reset(void);
+static NFCSTATUS phNxpNciHal_do_se_session_reset(void);
 static void phNxpNciHal_print_res_status(uint8_t* p_rx_data, uint16_t* p_len);
 static NFCSTATUS phNxpNciHal_CheckValidFwVersion(void);
 //static NFCSTATUS phNxpNciHal_get_mw_eeprom(void);
@@ -213,6 +215,17 @@ static void* phNxpNciHal_client_thread(void* arg) {
         if (nxpncihal_ctrl.p_nfc_stack_cback != NULL) {
           /* Send the event */
           (*nxpncihal_ctrl.p_nfc_stack_cback)(HAL_NFC_PRE_DISCOVER_CPLT_EVT,
+                                              HAL_NFC_STATUS_OK);
+        }
+        REENTRANCE_UNLOCK();
+        break;
+      }
+
+      case NCI_HAL_HCI_NETWORK_RESET_MSG: {
+        REENTRANCE_LOCK();
+        if (nxpncihal_ctrl.p_nfc_stack_cback != NULL) {
+          /* Send the event */
+          (*nxpncihal_ctrl.p_nfc_stack_cback)((uint32_t)NfcEvent::HCI_NETWORK_RESET,
                                               HAL_NFC_STATUS_OK);
         }
         REENTRANCE_UNLOCK();
@@ -1274,10 +1287,10 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   }
 
   config_access = false;
-  if(nfcFL.eseFL._EXCLUDE_NV_MEM_DEPENDENCY == false) {
-  phNxpNciHal_check_factory_reset();
-  }
 
+    if (fw_download_success == 1) {
+      phNxpNciHal_hci_network_reset();
+    }
   if(nfcFL.chipType == sn100u) {
     uint8_t flash_update_done = FALSE;
     fw_dwnld_flag = fw_download_success;
@@ -2884,38 +2897,36 @@ int check_config_parameter() {
   return param_clock_src;
 }
 /******************************************************************************
+ * Function         phNxpNciHal_do_se_session_reset
+ *
+ * Description      This function is called to set the session id to default
+ *                  value.
+ *
+ * Returns          NFCSTATUS.
+ *
+ ******************************************************************************/
+static NFCSTATUS phNxpNciHal_do_se_session_reset(void) {
+  static uint8_t reset_se_session_identity_set[] = {
+      0x20, 0x02, 0x17, 0x02, 0xA0, 0xEA, 0x08, 0xFF, 0xFF,
+      0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xA0, 0xEB, 0x08,
+      0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+      NFCSTATUS status = phNxpNciHal_send_ext_cmd(sizeof(reset_se_session_identity_set),
+                                      reset_se_session_identity_set);
+      if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("NXP reset_ese_session_identity_set command failed");
+    }
+    return status;
+}
+/******************************************************************************
  * Function         phNxpNciHal_do_factory_reset
  *
- * Description      This function is called during factory reset to set
- *                  the session id to default value.
+ * Description      This function is called during factory reset to clear/reset
+ *                  nfc sub-system persistant data.
  *
  * Returns          void.
  *
  ******************************************************************************/
 void phNxpNciHal_do_factory_reset(void) {
-  NFCSTATUS status = NFCSTATUS_FAILED;
-  static uint8_t reset_ese_session_identity_set[] = {
-      0x20, 0x02, 0x17, 0x02, 0xA0, 0xEA, 0x08, 0xFF, 0xFF,
-      0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xA0, 0xEB, 0x08,
-      0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-      status = phNxpNciHal_send_ext_cmd(sizeof(reset_ese_session_identity_set),
-                                      reset_ese_session_identity_set);
-      if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("NXP reset_ese_session_identity_set command failed");
-    }
-}
-/******************************************************************************
- * Function         phNxpNciHal_check_factory_reset
- *
- * Description      This function is called at init time to check
- *                  the presence of ese related info. If file are not
- *                  present set the SWP_INT_SESSION_ID_CFG to FF to
- *                  force the NFCEE to re-run its initialization sequence.
- *
- * Returns          void.
- *
- ******************************************************************************/
-static void phNxpNciHal_check_factory_reset(void) {
   NFCSTATUS status = NFCSTATUS_FAILED;
   uint8_t *reset_ese_session_identity_set;
   uint8_t ese_session_dyn_uicc_nv[] = {
@@ -2964,7 +2975,30 @@ static void phNxpNciHal_check_factory_reset(void) {
       NXPLOG_NCIHAL_E("NXP reset_ese_session_identity_set command failed");
     }
 }
+/******************************************************************************
+ * Function         phNxpNciHal_hci_network_reset
+ *
+ * Description      This function resets the session id's of all the se's
+ *                  in the HCI network and notify to HCI_NETWORK_RESET event to
+ *                  NFC HAL Client.
+ *
+ * Returns          void.
+ *
+ ******************************************************************************/
+static void phNxpNciHal_hci_network_reset(void) {
+  static phLibNfc_Message_t msg;
+  msg.pMsgData = NULL;
+  msg.Size = 0;
 
+  NFCSTATUS status = phNxpNciHal_do_se_session_reset();
+
+  if (status != NFCSTATUS_SUCCESS) {
+    msg.eMsgType = NCI_HAL_ERROR_MSG;
+  } else {
+    msg.eMsgType = NCI_HAL_HCI_NETWORK_RESET_MSG;
+  }
+  phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &msg);
+}
 /******************************************************************************
  * Function         phNxpNciHal_print_res_status
  *
