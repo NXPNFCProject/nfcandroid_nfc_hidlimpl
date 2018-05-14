@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <log/log.h>
 #include <phDal4Nfc_messageQueueLib.h>
 #include <phDnldNfc.h>
 #include <phNxpConfig.h>
@@ -129,7 +130,7 @@ NFCSTATUS phNxpNciHal_china_tianjin_rf_setting(void);
 
 static NFCSTATUS phNxpNciHalRFConfigCmdRecSequence();
 static NFCSTATUS phNxpNciHal_CheckRFCmdRespStatus();
-
+NFCSTATUS phNxpNciHal_nfcc_core_reset_init();
 int check_config_parameter();
 
 /******************************************************************************
@@ -697,6 +698,7 @@ init_retry:
           nxpncihal_ctrl.nci_info.wait_for_ntf = FALSE;
           wConfigStatus = NFCSTATUS_SUCCESS;
         }
+        //status = phNxpNciHal_nfcc_core_reset_init();//Aleady handled from libnfc-nci
       }
     } else {
       if (wFwVerRsp == 0) phDnldNfc_ReSetHwDevHandle();
@@ -2772,6 +2774,52 @@ retry_send_ext:
         goto retry_send_ext;
       }
     }
+  }
+
+  return status;
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_nfcc_core_reset_init
+ *
+ * Description      Helper function to do nfcc core reset & core init
+ *
+ * Returns          Status
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_nfcc_core_reset_init() {
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  uint8_t retry_cnt = 0;
+  uint8_t cmd_reset_nci[] = {0x20, 0x00, 0x01, 0x01};
+
+retry_core_reset:
+  status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
+  if ((status != NFCSTATUS_SUCCESS) && (retry_cnt < 3)) {
+    NXPLOG_NCIHAL_E("Retry: NCI_CORE_RESET");
+    retry_cnt++;
+    goto retry_core_reset;
+  } else if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("NCI_CORE_RESET failed!!!\n");
+      return status;
+  }
+
+  retry_cnt = 0;
+  uint8_t cmd_init_nci[] = {0x20, 0x01, 0x00};
+  uint8_t cmd_init_nci2_0[] = {0x20, 0x01, 0x02, 0x00, 0x00};
+retry_core_init:
+  if (nxpncihal_ctrl.nci_info.nci_version == NCI_VERSION_2_0) {
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_init_nci2_0), cmd_init_nci2_0);
+  } else {
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_init_nci), cmd_init_nci);
+  }
+
+  if ((status != NFCSTATUS_SUCCESS) && (retry_cnt < 3)) {
+    NXPLOG_NCIHAL_E("Retry: NCI_CORE_INIT\n");
+    retry_cnt++;
+    goto retry_core_init;
+  } else if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("NCI_CORE_INIT failed!!!\n");
+    return status;
   }
 
   return status;
