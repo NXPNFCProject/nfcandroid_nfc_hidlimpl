@@ -127,7 +127,7 @@ static NFCSTATUS phNxpNciHal_CheckValidFwVersion(void);
 static int phNxpNciHal_fw_mw_ver_check();
 NFCSTATUS phNxpNciHal_check_clock_config(void);
 NFCSTATUS phNxpNciHal_china_tianjin_rf_setting(void);
-
+static void phNxpNciHal_initialize_debug_enabled_flag();
 static NFCSTATUS phNxpNciHalRFConfigCmdRecSequence();
 static NFCSTATUS phNxpNciHal_CheckRFCmdRespStatus();
 NFCSTATUS phNxpNciHal_nfcc_core_reset_init();
@@ -245,6 +245,33 @@ static void* phNxpNciHal_client_thread(void* arg) {
   NXPLOG_NCIHAL_D("NxpNciHal thread stopped");
 
   return NULL;
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_initialize_debug_enabled_flag
+ *
+ * Description      This function gets the value for nfc_debug_enabled
+ *
+ * Returns          void
+ *
+ ******************************************************************************/
+static void phNxpNciHal_initialize_debug_enabled_flag() {
+  unsigned long num = 0;
+  char valueStr[PROPERTY_VALUE_MAX] = {0};
+  if(GetNxpNumValue(NAME_NFC_DEBUG_ENABLED, &num, sizeof(num))) {
+    nfc_debug_enabled = (num == 0) ? false : true;
+
+  }
+
+  int len = property_get("nfc.debug_enabled", valueStr, "");
+  if (len > 0) {
+        // let Android property override .conf variable
+    unsigned debug_enabled = 0;
+    sscanf(valueStr, "%u", &debug_enabled);
+    nfc_debug_enabled = (debug_enabled == 0) ? false : true;
+  }
+  NXPLOG_NCIHAL_D("nfc_debug_enabled : %d",nfc_debug_enabled);
+
 }
 
 /******************************************************************************
@@ -512,6 +539,7 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
   int init_retry_cnt = 0;
   int8_t ret_val = 0x00;
 
+  phNxpNciHal_initialize_debug_enabled_flag();
   /* initialize trace level */
   phNxpLog_InitializeLogLevel();
 
