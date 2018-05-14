@@ -22,8 +22,6 @@
 #include <vendor/nxp/nxpnfc/1.0/INxpNfc.h>
 #include <hidl/MQDescriptor.h>
 #include <hidl/Status.h>
-#include <hardware/hardware.h>
-#include "utils/Log.h"
 #include "hal_nxpnfc.h"
 
 namespace vendor {
@@ -32,19 +30,15 @@ namespace nxpnfc {
 namespace V1_0 {
 namespace implementation {
 
-using ::android::hidl::base::V1_0::DebugInfo;
 using ::android::hidl::base::V1_0::IBase;
 using ::vendor::nxp::nxpnfc::V1_0::INxpNfc;
-using ::android::hardware::hidl_array;
-using ::android::hardware::hidl_memory;
-using ::android::hardware::hidl_string;
 using ::android::hardware::hidl_vec;
 using ::android::hardware::Return;
 using ::android::hardware::Void;
-using ::android::sp;
 
 struct NxpNfc : public INxpNfc {
-    Return<void> ioctl(uint64_t ioctlType, const hidl_vec<uint8_t>& inOutData, ioctl_cb _hidl_cb) override;
+  Return<void> ioctl(uint64_t ioctlType, const hidl_vec<uint8_t>& inOutData,
+                     ioctl_cb _hidl_cb) override;
 };
 
 }  // namespace implementation

@@ -27,49 +27,44 @@
 // Generated HIDL files
 using android::hardware::nfc::V1_1::INfc;
 using android::hardware::nfc::V1_1::implementation::Nfc;
-using vendor::nxp::nxpnfc::V1_0::INxpNfc;
-using vendor::nxp::nxpnfc::V1_0::implementation::NxpNfc;
-using android::hardware::defaultPassthroughServiceImplementation;
 using android::hardware::configureRpcThreadpool;
-using android::hardware::registerPassthroughServiceImplementation;
 using android::hardware::joinRpcThreadpool;
-
 using android::sp;
 using android::status_t;
 using android::OK;
+using vendor::nxp::nxpnfc::V1_0::INxpNfc;
+using vendor::nxp::nxpnfc::V1_0::implementation::NxpNfc;
 
 int main() {
     status_t status;
 
-    android::sp<INfc> nfc_service = nullptr;
-    android::sp<INxpNfc> nxp_nfc_service = nullptr;
+    sp<INfc> nfc_service = nullptr;
+    sp<INxpNfc> nxp_nfc_service = nullptr;
 
-    ALOGI("NFC HAL Service 1.0 is starting.");
+    ALOGD("NFC HAL Service 1.1 is starting.");
     nfc_service = new Nfc();
     if (nfc_service == nullptr) {
         ALOGE("Can not create an instance of NFC HAL Iface, exiting.");
-        goto shutdown;
+        return -1;
     }
 
     configureRpcThreadpool(1, true /*callerWillJoin*/);
     status = nfc_service->registerAsService();
     if (status != OK) {
-        ALOGE("Could not register service for NFC HAL Iface (%d).", status);
-        goto shutdown;
+        LOG_ALWAYS_FATAL("Could not register service for NFC HAL Iface (%d).", status);
+        return -1;
     }
-    ALOGI("Secure Element Service is ready");
-
 
     ALOGI("NXP NFC Extn Service 1.0 is starting.");
     nxp_nfc_service = new NxpNfc();
     if (nxp_nfc_service == nullptr) {
         ALOGE("Can not create an instance of NXP NFC Extn Iface, exiting.");
-        goto shutdown;
+        return -1;
     }
     status = nxp_nfc_service->registerAsService();
     if (status != OK) {
         ALOGE("Could not register service for NXP NFC Extn Iface (%d).", status);
-        goto shutdown;
+        return -1;
     }
     ALOGI("NFC service is ready");
     ALOGE("Before calling JCOP JCOS_doDownload");
@@ -77,9 +72,5 @@ int main() {
     ALOGE("After calling JCOS_doDownload");
 
     joinRpcThreadpool();
-    //Should not pass this line
-shutdown:
-    // In normal operation, we don't expect the thread pool to exit
-    ALOGE("NFC Service is shutting down");
     return 1;
 }

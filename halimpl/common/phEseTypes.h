@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Android Open Source Project
+ * Copyright (C) 2010-2014 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,22 @@
  * limitations under the License.
  */
 
-#ifndef _LIBSPARSE_SPARSE_CRC32_H_
-#define _LIBSPARSE_SPARSE_CRC32_H_
-
+#ifndef PHESETYPES_H
+#define PHESETYPES_H
 #include <stdint.h>
-
-uint32_t sparse_crc32(uint32_t crc, const void* buf, int size);
-
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#ifndef TRUE
+#define TRUE (0x01) /* Logical True Value */
 #endif
+#ifndef FALSE
+#define FALSE (0x00) /* Logical False Value */
+#endif
+// typedef uint8_t             utf8_t;       /* UTF8 Character String */
+// typedef uint8_t             bool_t;       /* boolean data type */
+typedef uint16_t ESESTATUS; /* Return values */
+#define STATIC static
+
+#endif /* PHESETYPES_H */

@@ -27,14 +27,13 @@ typedef struct {
 } pn547_dev_t;
 
 /* NXP HAL functions */
-
 int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
                      nfc_stack_data_callback_t* p_data_cback);
 int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data);
 int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params);
 int phNxpNciHal_pre_discover(void);
-int phNxpNciHal_close(void);
-int phNxpNciHal_shutdown(void);
+int phNxpNciHal_close(bool);
+int phNxpNciHal_configDiscShutdown(void);
 int phNxpNciHal_control_granted(void);
 int phNxpNciHal_power_cycle(void);
 int phNxpNciHal_ioctl(long arg, void* p_data);

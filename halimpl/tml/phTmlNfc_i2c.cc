@@ -43,7 +43,7 @@
 #define FRAGMENTSIZE_MAX PHNFC_I2C_FRAGMENT_SIZE
 static bool_t bFwDnldFlag = false;
 extern phTmlNfc_i2cfragmentation_t fragmentation_enabled;
-
+bool_t notifyFwrequest;
 /*******************************************************************************
 **
 ** Function         phTmlNfc_i2c_close

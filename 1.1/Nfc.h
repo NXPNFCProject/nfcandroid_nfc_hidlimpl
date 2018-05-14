@@ -23,6 +23,7 @@
 #include <android/hardware/nfc/1.1/types.h>
 #include <hidl/MQDescriptor.h>
 #include <hidl/Status.h>
+#include <log/log.h>
 
 namespace android {
 namespace hardware {
@@ -31,8 +32,7 @@ namespace V1_1 {
 namespace implementation {
 
 using ::android::hidl::base::V1_0::IBase;
-using ::android::hardware::nfc::V1_0::INfc;
-using ::android::hardware::nfc::V1_0::INfcClientCallback;
+using ::android::hardware::nfc::V1_1::INfc;
 using ::android::hardware::hidl_array;
 using ::android::hardware::hidl_memory;
 using ::android::hardware::hidl_string;
@@ -40,52 +40,66 @@ using ::android::hardware::hidl_vec;
 using ::android::hardware::Return;
 using ::android::hardware::Void;
 using ::android::sp;
-
 struct Nfc : public V1_1::INfc, public hidl_death_recipient {
-public:
-    // Methods from ::android::hardware::nfc::V1_0::INfc follow.
-    Return<V1_0::NfcStatus> open(const sp<INfcClientCallback>& clientCallback) override;
-    Return<uint32_t> write(const hidl_vec<uint8_t>& data) override;
-    Return<V1_0::NfcStatus> coreInitialized(const hidl_vec<uint8_t>& data) override;
-    Return<V1_0::NfcStatus> prediscover() override;
-    Return<V1_0::NfcStatus> close() override;
-    Return<V1_0::NfcStatus> controlGranted() override;
-    Return<V1_0::NfcStatus> powerCycle() override;
+ public:
+  // Methods from ::android::hardware::nfc::V1_0::INfc follow.
+  Return<V1_0::NfcStatus> open(
+      const sp<V1_0::INfcClientCallback>& clientCallback) override;
+  Return<V1_0::NfcStatus> open_1_1(
+      const sp<V1_1::INfcClientCallback>& clientCallback) override;
+  Return<uint32_t> write(const hidl_vec<uint8_t>& data) override;
+  Return<V1_0::NfcStatus> coreInitialized(
+      const hidl_vec<uint8_t>& data) override;
+  Return<V1_0::NfcStatus> prediscover() override;
+  Return<V1_0::NfcStatus> close() override;
+  Return<V1_0::NfcStatus> controlGranted() override;
+  Return<V1_0::NfcStatus> powerCycle() override;
 
-    // Methods from ::android::hardware::nfc::V1_1::INfc follow.
-    Return<void> factoryReset();
-    Return<V1_0::NfcStatus> closeForPowerOffCase();
+  // Methods from ::android::hardware::nfc::V1_1::INfc follow.
+  Return<void> factoryReset();
+  Return<V1_0::NfcStatus> closeForPowerOffCase();
 
-    // Methods from ::android::hidl::base::V1_0::IBase follow.
+  // Methods from ::android::hidl::base::V1_0::IBase follow.
 
-
-    static void eventCallback(uint8_t event, uint8_t status) {
-        if (mCallback != nullptr) {
-            auto ret = mCallback->sendEvent((V1_0::NfcEvent)event,
-                                            (V1_0::NfcStatus)status);
-            if (!ret.isOk()) {
-                ALOGW("failed to send event!!!");
-            }
-        }
+  static void eventCallback(uint8_t event, uint8_t status) {
+    if (mCallbackV1_1 != nullptr) {
+      auto ret = mCallbackV1_1->sendEvent_1_1((V1_1::NfcEvent)event,
+                                              (V1_0::NfcStatus)status);
+      if (!ret.isOk()) {
+        ALOGW("failed to send event!!!");
+      }
+    } else if (mCallbackV1_0 != nullptr) {
+      auto ret = mCallbackV1_0->sendEvent((V1_0::NfcEvent)event,
+                                          (V1_0::NfcStatus)status);
+      if (!ret.isOk()) {
+        ALOGE("failed to send event!!!");
+      }
     }
+  }
 
-    static void dataCallback(uint16_t data_len, uint8_t* p_data) {
-        hidl_vec<uint8_t> data;
-        data.setToExternal(p_data, data_len);
-        if (mCallback != nullptr) {
-            auto ret = mCallback->sendData(data);
-            if (!ret.isOk()) {
-                ALOGW("failed to send data!!!");
-            }
-        }
+  static void dataCallback(uint16_t data_len, uint8_t* p_data) {
+    hidl_vec<uint8_t> data;
+    data.setToExternal(p_data, data_len);
+    if (mCallbackV1_1 != nullptr) {
+      auto ret = mCallbackV1_1->sendData(data);
+      if (!ret.isOk()) {
+        ALOGW("failed to send data!!!");
+      }
+    } else if (mCallbackV1_0 != nullptr) {
+      auto ret = mCallbackV1_0->sendData(data);
+      if (!ret.isOk()) {
+        ALOGE("failed to send data!!!");
+      }
     }
+  }
 
-    virtual void serviceDied(uint64_t /*cookie*/, const wp<IBase>& /*who*/) {
-        close();
-    }
+  virtual void serviceDied(uint64_t /*cookie*/, const wp<IBase>& /*who*/) {
+    close();
+  }
 
-private:
-    static sp<INfcClientCallback> mCallback;
+ private:
+  static sp<V1_1::INfcClientCallback> mCallbackV1_1;
+  static sp<V1_0::INfcClientCallback> mCallbackV1_0;
 };
 
 }  // namespace implementation

@@ -898,7 +898,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_log_read(void* pContext, NFCSTATUS status,
     return NFCSTATUS_FAILED;
   }
 
-  (Data.pBuff) = (void*)&(gphNxpNciHal_fw_IoctlCtx.tLogParams);
+  (Data.pBuff) = (uint8_t*)&(gphNxpNciHal_fw_IoctlCtx.tLogParams);
   (Data.wLen) = sizeof(phLibNfc_EELogParams_t);
 
   wStatus = phDnldNfc_ReadLog(
@@ -1467,7 +1467,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_log(void* pContext, NFCSTATUS status,
       NXPLOG_FWDNLD_E("phNxpNciHal_fw_dnld_log cb_data creation failed");
       return NFCSTATUS_FAILED;
     }
-    (tData.pBuff) = (void*)&(gphNxpNciHal_fw_IoctlCtx.tLogParams);
+    (tData.pBuff) = (uint8_t*)&(gphNxpNciHal_fw_IoctlCtx.tLogParams);
     (tData.wLen) = sizeof(gphNxpNciHal_fw_IoctlCtx.tLogParams);
 
     wStatus =
@@ -1513,7 +1513,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_log(void* pContext, NFCSTATUS status,
 *******************************************************************************/
 static NFCSTATUS phNxpNciHal_fw_seq_handler(
     NFCSTATUS (*seq_handler[])(void* pContext, NFCSTATUS status, void* pInfo)) {
-  char* pContext = "FW-Download";
+  const char* pContext = "FW-Download";
   int16_t seq_counter = 0;
   phDnldNfc_Buff_t pInfo;
   NFCSTATUS status = NFCSTATUS_FAILED;
@@ -1526,7 +1526,7 @@ static NFCSTATUS phNxpNciHal_fw_seq_handler(
 
   while (seq_handler[seq_counter] != NULL) {
     status = NFCSTATUS_FAILED;
-    status = (seq_handler[seq_counter])(pContext, status, &pInfo);
+    status = (seq_handler[seq_counter])((void*)pContext, status, &pInfo);
     if (NFCSTATUS_SUCCESS != status) {
       NXPLOG_FWDNLD_E(" phNxpNciHal_fw_seq_handler : FAILED");
       break;
@@ -1716,7 +1716,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
 NFCSTATUS phNxpNciHal_fw_download_seq(uint8_t bClkSrcVal, uint8_t bClkFreqVal) {
   NFCSTATUS status = NFCSTATUS_FAILED;
   phDnldNfc_Buff_t pInfo;
-  char* pContext = "FW-Download";
+  const char* pContext = "FW-Download";
 
   /* reset the global flags */
   gphNxpNciHal_fw_IoctlCtx.IoctlCode = NFC_FW_DOWNLOAD;
@@ -1750,7 +1750,7 @@ NFCSTATUS phNxpNciHal_fw_download_seq(uint8_t bClkSrcVal, uint8_t bClkFreqVal) {
   }
 
   /* Chage to normal mode */
-  status = phNxpNciHal_fw_dnld_complete(pContext, status, &pInfo);
+  status = phNxpNciHal_fw_dnld_complete((void*)pContext, status, &pInfo);
   /*if (NFCSTATUS_SUCCESS == status)
   {
       NXPLOG_FWDNLD_D(" phNxpNciHal_fw_dnld_complete : SUCCESS");
