@@ -68,35 +68,6 @@
 /* size of EEPROM offset */
 #define PHDNLDNFC_USERDATA_EEPROM_OFFSIZE (0x02U)
 
-#ifdef NXP_PN547C1_DOWNLOAD
-/* EEPROM offset and length value for PN547C1 */
-/* 16 bits offset indicating user data area start location */
-#define PHDNLDNFC_USERDATA_EEPROM_OFFSET (0x003CU)
-/* 16 bits length of user data area */
-#define PHDNLDNFC_USERDATA_EEPROM_LEN (0x0DC0U)
-#else
-
-#if (NFC_NXP_CHIP_TYPE == PN548C2)
-/* EEPROM offset and length value for PN548AD */
-/* 16 bits offset indicating user data area start location */
-#define PHDNLDNFC_USERDATA_EEPROM_OFFSET (0x02BCU)
-/* 16 bits length of user data area */
-#define PHDNLDNFC_USERDATA_EEPROM_LEN (0x0C00U)
-#elif (NFC_NXP_CHIP_TYPE == PN551)
-/* EEPROM offset and length value for PN551 */
-/* 16 bits offset indicating user data area start location */
-#define PHDNLDNFC_USERDATA_EEPROM_OFFSET (0x02BCU)
-/* 16 bits length of user data area */
-#define PHDNLDNFC_USERDATA_EEPROM_LEN (0x0C00U)
-#else
-/* EEPROM offset and length value for PN547C2 */
-/* 16 bits offset indicating user data area start location */
-#define PHDNLDNFC_USERDATA_EEPROM_OFFSET (0x023CU)
-/* 16 bits length of user data area */
-#define PHDNLDNFC_USERDATA_EEPROM_LEN (0x0C80U)
-#endif
-
-#endif
 #define PH_LIBNFC_VEN_RESET_ON_DOWNLOAD_TIMEOUT (1)
 
 /* Function prototype declarations */

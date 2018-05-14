@@ -264,8 +264,7 @@ void phNxpNciHal_configFeatureList(uint8_t* init_rsp, uint16_t rsp_len);
 ** Returns          chipType
 *******************************************************************************/
 tNFC_chipType phNxpNciHal_getChipType();
-#if (NFC_NXP_CHIP_TYPE == PN548C2)
+
 NFCSTATUS phNxpNciHal_core_reset_recovery();
 void phNxpNciHal_discovery_cmd_ext(uint8_t* p_cmd_data, uint16_t cmd_len);
-#endif
 #endif /* _PHNXPNCIHAL_H_ */

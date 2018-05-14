@@ -22,11 +22,10 @@
 #include <phNxpNciHal.h>
 #include <phNxpNciHal_utils.h>
 
-#if (NFC_NXP_CHIP_TYPE == PN548C2)
+
 extern uint8_t discovery_cmd[50];
 extern uint8_t discovery_cmd_len;
 extern uint8_t nfcdep_detected;
-#endif
 
 /*********************** Link list functions **********************************/
 

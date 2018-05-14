@@ -35,9 +35,7 @@ extern phNxpNci_getCfg_info_t* mGetCfg_info;
 extern uint32_t cleanup_timer;
 uint8_t icode_detected = 0x00;
 uint8_t icode_send_eof = 0x00;
-#if (NFC_NXP_CHIP_TYPE == PN548C2)
 uint8_t nfcdep_detected = 0x00;
-#endif
 static uint8_t ee_disc_done = 0x00;
 uint8_t EnableP2P_PrioLogic = false;
 static uint32_t RfDiscID = 1;
@@ -59,7 +57,7 @@ static uint32_t iCoreInitRspLen;
 extern uint32_t timeoutTimerId;
 
 extern NFCSTATUS read_retry();
-tNfc_featureList nfcFL;
+
 /************** HAL extension functions ***************************************/
 static void hal_extns_write_rsp_timeout_cb(uint32_t TimerId, void* pContext);
 
@@ -118,9 +116,8 @@ NFCSTATUS phNxpNciHal_ext_send_sram_config_to_flash() {
 *******************************************************************************/
 NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
-#if (NFC_NXP_CHIP_TYPE == PN547C2)
+
   uint16_t rf_technology_length_param = 0;
-#endif
 
   if (p_ntf[0] == 0x61 && p_ntf[1] == 0x05 && p_ntf[4] == 0x03 &&
       p_ntf[5] == 0x05 && nxpprofile_ctrl.profile_type == EMV_CO_PROFILE) {
@@ -204,11 +201,8 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
       case 0x80:
         NXPLOG_NCIHAL_D("NxpNci: Protocol = MIFARE");
         break;
-#if (NFC_NXP_CHIP_TYPE != PN547C2)
       case 0x81:
-#else
-      case 0x8A:
-#endif
+      case 0x8A: //PN547C2
         NXPLOG_NCIHAL_D("NxpNci: Protocol = Kovio");
         break;
       default:
@@ -235,11 +229,8 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
       case 0x06:
         NXPLOG_NCIHAL_D("NxpNci: Mode = 15693 Passive Poll");
         break;
-#if (NFC_NXP_CHIP_TYPE != PN547C2)
       case 0x70:
-#else
-      case 0x77:
-#endif
+      case 0x77: //PN547C2
         NXPLOG_NCIHAL_D("NxpNci: Mode = Kovio");
         break;
       case 0x80:
@@ -339,8 +330,7 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
   } else if (p_ntf[0] == 0x41 && p_ntf[1] == 0x04 && cleanup_timer != 0) {
     status = NFCSTATUS_FAILED;
     return status;
-  }
-#if (NFC_NXP_CHIP_TYPE == PN547C2)
+  }// Code for PN547C2
   else if (p_ntf[0] == 0x61 && p_ntf[1] == 0x05 && p_ntf[4] == 0x02 &&
            p_ntf[5] == 0x80 && p_ntf[6] == 0x00) {
     NXPLOG_NCIHAL_D(
@@ -351,7 +341,6 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
       p_ntf[4] = 0x80;
     }
   }
-#endif
   else if (*p_len == 4 && p_ntf[0] == 0x4F && p_ntf[1] == 0x11 &&
            p_ntf[2] == 0x01) {
     if (p_ntf[3] == 0x00) {

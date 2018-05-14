@@ -15,11 +15,13 @@
  *  limitations under the License.
  *
  ******************************************************************************/
+#define LOG_TAG "NxpHal"
 #include "NxpNfcCapability.h"
 #include <phNxpLog.h>
 
 capability* capability::instance = NULL;
-tNFC_chipType capability::chipType = pn80T;
+tNFC_chipType capability::chipType = pn81T;
+tNfc_featureList nfcFL;
 
 capability::capability(){}
 
@@ -33,10 +35,15 @@ capability* capability::getInstance() {
 tNFC_chipType capability::processChipType(uint8_t* msg, uint16_t msg_len) {
     if((msg != NULL) && (msg_len != 0)) {
         if(msg[0] == 0x60 && msg[1] == 0x00) {
-           if(msg[msg_len-3] == 0x12)
+           if(msg[msg_len-3] == 0x12 && msg[msg_len-2] == 0x01)
              chipType = pn81T;
+           else if(msg[msg_len-3] == 0x11 && msg[msg_len-2] == 0x02)
+             chipType = pn553;
            else if(msg[msg_len-3] == 0x01)
              chipType = sn100u;/*Need to be updated*/
+        }  else if ((offsetInitFwVersion < msg_len) &&
+             (msg[offsetInitFwVersion] == 0x12)) {
+             chipType = pn81T;
         }
         else if(offsetHwVersion < msg_len) {
             ALOGD ("%s HwVersion : 0x%02x", __func__,msg[msg_len-4]);
@@ -57,14 +64,17 @@ tNFC_chipType capability::processChipType(uint8_t* msg, uint16_t msg_len) {
                 break;
 
             case 0xA8 :
+            case 0x08 :
                 chipType = pn67T;
                 break;
 
             case 0x28 :
+            case 0x48:  // NQ210
                 chipType = pn548C2;
                 break;
 
             case 0x18 :
+            case 0x58:  // NQ220
                 chipType = pn66T;
                 break;
             case 0xA0 :
@@ -77,19 +87,9 @@ tNFC_chipType capability::processChipType(uint8_t* msg, uint16_t msg_len) {
         }
         else {
             ALOGD ("%s Wrong msg_len. Setting Default ChiptType pn80T",__func__);
-            chipType = pn80T;
+            chipType = pn81T;
         }
     }
+    ALOGD("%s Product : %s", __func__, product[chipType]);
     return chipType;
 }
-
-extern "C" tNFC_chipType configChipType(uint8_t* msg, uint16_t msg_len) {
-    return pConfigFL->processChipType(msg,msg_len);
-}
-
-extern "C" tNFC_chipType getChipType() {
-    ALOGD ("%s", __FUNCTION__);
-    return capability::chipType;
-}
-
-
