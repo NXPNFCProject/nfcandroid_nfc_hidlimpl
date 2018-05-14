@@ -730,8 +730,10 @@ clean_and_return:
     mGetCfg_info = NULL;
   }
   /* Report error status */
-  (*nxpncihal_ctrl.p_nfc_stack_cback)(HAL_NFC_OPEN_CPLT_EVT,
+  if (p_cback != NULL) {
+    (*nxpncihal_ctrl.p_nfc_stack_cback)(HAL_NFC_OPEN_CPLT_EVT,
                                       HAL_NFC_STATUS_FAILED);
+  }
 
   nxpncihal_ctrl.p_nfc_stack_cback = NULL;
   nxpncihal_ctrl.p_nfc_stack_data_cback = NULL;
