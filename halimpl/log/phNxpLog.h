@@ -16,7 +16,6 @@
 
 #if !defined(NXPLOG__H_INCLUDED)
 #define NXPLOG__H_INCLUDED
-
 #include <log/log.h>
 
 typedef struct nci_log_level {
@@ -31,7 +30,7 @@ typedef struct nci_log_level {
 
 /* global log level Ref */
 extern nci_log_level_t gLog_level;
-
+extern bool nfc_debug_enabled;
 /* define log module included when compile */
 #define ENABLE_EXTNS_TRACES TRUE
 #define ENABLE_HAL_TRACES TRUE
@@ -111,12 +110,14 @@ extern const char* NXPLOG_ITEM_HCPR; /* Android logging tag for NxpHcpR   */
 #if (ENABLE_EXTNS_TRACES == TRUE)
 #define NXPLOG_EXTNS_D(...)                                       \
   {                                                               \
-    if (gLog_level.extns_log_level >= NXPLOG_LOG_DEBUG_LOGLEVEL)  \
+     if ((nfc_debug_enabled) ||                                   \
+      (gLog_level.extns_log_level >= NXPLOG_LOG_DEBUG_LOGLEVEL))  \
       LOG_PRI(ANDROID_LOG_DEBUG, NXPLOG_ITEM_EXTNS, __VA_ARGS__); \
   }
 #define NXPLOG_EXTNS_W(...)                                      \
   {                                                              \
-    if (gLog_level.extns_log_level >= NXPLOG_LOG_WARN_LOGLEVEL)  \
+     if ((nfc_debug_enabled) ||                                  \
+      (gLog_level.extns_log_level >= NXPLOG_LOG_WARN_LOGLEVEL))  \
       LOG_PRI(ANDROID_LOG_WARN, NXPLOG_ITEM_EXTNS, __VA_ARGS__); \
   }
 #define NXPLOG_EXTNS_E(...)                                       \
@@ -134,12 +135,14 @@ extern const char* NXPLOG_ITEM_HCPR; /* Android logging tag for NxpHcpR   */
 #if (ENABLE_HAL_TRACES == TRUE)
 #define NXPLOG_NCIHAL_D(...)                                       \
   {                                                                \
-    if (gLog_level.hal_log_level >= NXPLOG_LOG_DEBUG_LOGLEVEL)     \
+    if ((nfc_debug_enabled) ||                                     \
+      (gLog_level.hal_log_level >= NXPLOG_LOG_DEBUG_LOGLEVEL))     \
       LOG_PRI(ANDROID_LOG_DEBUG, NXPLOG_ITEM_NCIHAL, __VA_ARGS__); \
   }
 #define NXPLOG_NCIHAL_W(...)                                      \
   {                                                               \
-    if (gLog_level.hal_log_level >= NXPLOG_LOG_WARN_LOGLEVEL)     \
+    if ((nfc_debug_enabled) ||                                    \
+      (gLog_level.hal_log_level >= NXPLOG_LOG_WARN_LOGLEVEL))     \
       LOG_PRI(ANDROID_LOG_WARN, NXPLOG_ITEM_NCIHAL, __VA_ARGS__); \
   }
 #define NXPLOG_NCIHAL_E(...)                                       \
@@ -157,12 +160,14 @@ extern const char* NXPLOG_ITEM_HCPR; /* Android logging tag for NxpHcpR   */
 #if (ENABLE_NCIX_TRACES == TRUE)
 #define NXPLOG_NCIX_D(...)                                       \
   {                                                              \
-    if (gLog_level.ncix_log_level >= NXPLOG_LOG_DEBUG_LOGLEVEL)  \
+    if ((nfc_debug_enabled) ||                                   \
+      (gLog_level.ncix_log_level >= NXPLOG_LOG_DEBUG_LOGLEVEL))  \
       LOG_PRI(ANDROID_LOG_DEBUG, NXPLOG_ITEM_NCIX, __VA_ARGS__); \
   }
 #define NXPLOG_NCIX_W(...)                                      \
   {                                                             \
-    if (gLog_level.ncix_log_level >= NXPLOG_LOG_WARN_LOGLEVEL)  \
+     if ((nfc_debug_enabled) ||                                 \
+      (gLog_level.ncix_log_level >= NXPLOG_LOG_WARN_LOGLEVEL))  \
       LOG_PRI(ANDROID_LOG_WARN, NXPLOG_ITEM_NCIX, __VA_ARGS__); \
   }
 #define NXPLOG_NCIX_E(...)                                       \
@@ -180,12 +185,14 @@ extern const char* NXPLOG_ITEM_HCPR; /* Android logging tag for NxpHcpR   */
 #if (ENABLE_NCIR_TRACES == TRUE)
 #define NXPLOG_NCIR_D(...)                                       \
   {                                                              \
-    if (gLog_level.ncir_log_level >= NXPLOG_LOG_DEBUG_LOGLEVEL)  \
+     if ((nfc_debug_enabled) ||                                  \
+      (gLog_level.ncir_log_level >= NXPLOG_LOG_DEBUG_LOGLEVEL))  \
       LOG_PRI(ANDROID_LOG_DEBUG, NXPLOG_ITEM_NCIR, __VA_ARGS__); \
   }
 #define NXPLOG_NCIR_W(...)                                      \
   {                                                             \
-    if (gLog_level.ncir_log_level >= NXPLOG_LOG_WARN_LOGLEVEL)  \
+     if ((nfc_debug_enabled) ||                                 \
+      (gLog_level.ncir_log_level >= NXPLOG_LOG_WARN_LOGLEVEL))  \
       LOG_PRI(ANDROID_LOG_WARN, NXPLOG_ITEM_NCIR, __VA_ARGS__); \
   }
 #define NXPLOG_NCIR_E(...)                                       \
@@ -203,12 +210,14 @@ extern const char* NXPLOG_ITEM_HCPR; /* Android logging tag for NxpHcpR   */
 #if (ENABLE_FWDNLD_TRACES == TRUE)
 #define NXPLOG_FWDNLD_D(...)                                       \
   {                                                                \
-    if (gLog_level.dnld_log_level >= NXPLOG_LOG_DEBUG_LOGLEVEL)    \
+     if ((nfc_debug_enabled) ||                                    \
+      (gLog_level.dnld_log_level >= NXPLOG_LOG_DEBUG_LOGLEVEL))    \
       LOG_PRI(ANDROID_LOG_DEBUG, NXPLOG_ITEM_FWDNLD, __VA_ARGS__); \
   }
 #define NXPLOG_FWDNLD_W(...)                                      \
   {                                                               \
-    if (gLog_level.dnld_log_level >= NXPLOG_LOG_WARN_LOGLEVEL)    \
+     if ((nfc_debug_enabled) ||                                   \
+      (gLog_level.dnld_log_level >= NXPLOG_LOG_WARN_LOGLEVEL))    \
       LOG_PRI(ANDROID_LOG_WARN, NXPLOG_ITEM_FWDNLD, __VA_ARGS__); \
   }
 #define NXPLOG_FWDNLD_E(...)                                       \
@@ -226,12 +235,14 @@ extern const char* NXPLOG_ITEM_HCPR; /* Android logging tag for NxpHcpR   */
 #if (ENABLE_TML_TRACES == TRUE)
 #define NXPLOG_TML_D(...)                                       \
   {                                                             \
-    if (gLog_level.tml_log_level >= NXPLOG_LOG_DEBUG_LOGLEVEL)  \
+     if ((nfc_debug_enabled) ||                                 \
+      (gLog_level.tml_log_level >= NXPLOG_LOG_DEBUG_LOGLEVEL))  \
       LOG_PRI(ANDROID_LOG_DEBUG, NXPLOG_ITEM_TML, __VA_ARGS__); \
   }
 #define NXPLOG_TML_W(...)                                      \
   {                                                            \
-    if (gLog_level.tml_log_level >= NXPLOG_LOG_WARN_LOGLEVEL)  \
+     if ((nfc_debug_enabled) ||                                \
+      (gLog_level.tml_log_level >= NXPLOG_LOG_WARN_LOGLEVEL))  \
       LOG_PRI(ANDROID_LOG_WARN, NXPLOG_ITEM_TML, __VA_ARGS__); \
   }
 #define NXPLOG_TML_E(...)                                       \
@@ -250,12 +261,14 @@ extern const char* NXPLOG_ITEM_HCPR; /* Android logging tag for NxpHcpR   */
 #if (ENABLE_HCPX_TRACES == TRUE)
 #define NXPLOG_HCPX_D(...)                                         \
   {                                                                \
-    if (gLog_level.dnld_log_level >= NXPLOG_LOG_DEBUG_LOGLEVEL)    \
+     if ((nfc_debug_enabled) ||                                    \
+      (gLog_level.dnld_log_level >= NXPLOG_LOG_DEBUG_LOGLEVEL))    \
       LOG_PRI(ANDROID_LOG_DEBUG, NXPLOG_ITEM_FWDNLD, __VA_ARGS__); \
   }
 #define NXPLOG_HCPX_W(...)                                        \
   {                                                               \
-    if (gLog_level.dnld_log_level >= NXPLOG_LOG_WARN_LOGLEVEL)    \
+     if ((nfc_debug_enabled) ||                                   \
+      (gLog_level.dnld_log_level >= NXPLOG_LOG_WARN_LOGLEVEL))    \
       LOG_PRI(ANDROID_LOG_WARN, NXPLOG_ITEM_FWDNLD, __VA_ARGS__); \
   }
 #define NXPLOG_HCPX_E(...)                                         \
@@ -273,12 +286,14 @@ extern const char* NXPLOG_ITEM_HCPR; /* Android logging tag for NxpHcpR   */
 #if (ENABLE_HCPR_TRACES == TRUE)
 #define NXPLOG_HCPR_D(...)                                         \
   {                                                                \
-    if (gLog_level.dnld_log_level >= NXPLOG_LOG_DEBUG_LOGLEVEL)    \
+     if ((nfc_debug_enabled) ||                                    \
+      (gLog_level.dnld_log_level >= NXPLOG_LOG_DEBUG_LOGLEVEL))    \
       LOG_PRI(ANDROID_LOG_DEBUG, NXPLOG_ITEM_FWDNLD, __VA_ARGS__); \
   }
 #define NXPLOG_HCPR_W(...)                                        \
   {                                                               \
-    if (gLog_level.dnld_log_level >= NXPLOG_LOG_WARN_LOGLEVEL)    \
+     if ((nfc_debug_enabled) ||                                   \
+      (gLog_level.dnld_log_level >= NXPLOG_LOG_WARN_LOGLEVEL))    \
       LOG_PRI(ANDROID_LOG_WARN, NXPLOG_ITEM_FWDNLD, __VA_ARGS__); \
   }
 #define NXPLOG_HCPR_E(...)                                         \
