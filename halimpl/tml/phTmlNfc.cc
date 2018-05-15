@@ -43,15 +43,15 @@ static uint8_t bCurrentRetryCount = (2000 / PHTMLNFC_MAXTIME_RETRANSMIT) + 1;
 #define PH_TMLNFC_VALUE_ONE (0x01)
 
 /* Initialize Context structure pointer used to access context structure */
+phTmlNfc_i2cfragmentation_t fragmentation_enabled;
 phTmlNfc_Context_t* gpphTmlNfc_Context = NULL;
-extern phTmlNfc_i2cfragmentation_t fragmentation_enabled;
 /* Local Function prototypes */
 static NFCSTATUS phTmlNfc_StartThread(void);
 static void phTmlNfc_CleanUp(void);
 static void phTmlNfc_ReadDeferredCb(void* pParams);
 static void phTmlNfc_WriteDeferredCb(void* pParams);
-static void phTmlNfc_TmlThread(void* pParam);
-static void phTmlNfc_TmlWriterThread(void* pParam);
+static void* phTmlNfc_TmlThread(void* pParam);
+static void* phTmlNfc_TmlWriterThread(void* pParam);
 static void phTmlNfc_ReTxTimerCb(uint32_t dwTimerId, void* pContext);
 static NFCSTATUS phTmlNfc_InitiateTimer(void);
 static void phTmlNfc_WaitWriteComplete(void);
@@ -96,7 +96,7 @@ NFCSTATUS phTmlNfc_Init(pphTmlNfc_Config_t pConfig) {
     wInitStatus = PHNFCSTVAL(CID_NFC_TML, NFCSTATUS_INVALID_PARAMETER);
   } else {
     /* Allocate memory for TML context */
-    gpphTmlNfc_Context = malloc(sizeof(phTmlNfc_Context_t));
+    gpphTmlNfc_Context = (phTmlNfc_Context_t *)malloc(sizeof(phTmlNfc_Context_t));
 
     if (NULL == gpphTmlNfc_Context) {
       wInitStatus = PHNFCSTVAL(CID_NFC_TML, NFCSTATUS_FAILED);
@@ -224,14 +224,14 @@ static NFCSTATUS phTmlNfc_StartThread(void) {
   /* Create Reader and Writer threads */
   pthread_create_status =
       pthread_create(&gpphTmlNfc_Context->readerThread, NULL,
-                     (void*)&phTmlNfc_TmlThread, (void*)h_threadsEvent);
+                     phTmlNfc_TmlThread, (void*)h_threadsEvent);
   if (0 != pthread_create_status) {
     wStartStatus = NFCSTATUS_FAILED;
   } else {
     /*Start Writer Thread*/
     pthread_create_status =
         pthread_create(&gpphTmlNfc_Context->writerThread, NULL,
-                       (void*)&phTmlNfc_TmlWriterThread, (void*)h_threadsEvent);
+                       phTmlNfc_TmlWriterThread, (void*)h_threadsEvent);
     if (0 != pthread_create_status) {
       wStartStatus = NFCSTATUS_FAILED;
     }
@@ -303,7 +303,7 @@ static NFCSTATUS phTmlNfc_InitiateTimer(void) {
 ** Returns          None
 **
 *******************************************************************************/
-static void phTmlNfc_TmlThread(void* pParam) {
+static void* phTmlNfc_TmlThread(void* pParam) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   int32_t dwNoBytesWrRd = PH_TMLNFC_RESET_VALUE;
   uint8_t temp[260];
@@ -368,7 +368,7 @@ static void phTmlNfc_TmlThread(void* pParam) {
                     NXPLOG_TML_D("PN54X - Posting read failure message.....\n");
                     phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId,
                             &tMsg);
-                    return;
+                    return NULL;
                 }
             }
           sem_post(&gpphTmlNfc_Context->rxSemaphore);
@@ -448,7 +448,7 @@ static void phTmlNfc_TmlThread(void* pParam) {
     }
   } /* End of While loop */
 
-  return;
+  return NULL;
 }
 
 /*******************************************************************************
@@ -462,7 +462,7 @@ static void phTmlNfc_TmlThread(void* pParam) {
 ** Returns          None
 **
 *******************************************************************************/
-static void phTmlNfc_TmlWriterThread(void* pParam) {
+static void* phTmlNfc_TmlWriterThread(void* pParam) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   int32_t dwNoBytesWrRd = PH_TMLNFC_RESET_VALUE;
   /* Transaction info buffer to be passed to Callback Thread */
@@ -592,7 +592,7 @@ static void phTmlNfc_TmlWriterThread(void* pParam) {
 
   } /* End of While loop */
 
-  return;
+  return NULL;
 }
 
 /*******************************************************************************

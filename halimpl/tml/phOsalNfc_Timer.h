@@ -21,10 +21,6 @@
 #ifndef PHOSALNFC_TIMER_H
 #define PHOSALNFC_TIMER_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*
 ************************* Include Files ****************************************
 */
@@ -80,7 +76,4 @@ void phOsalNfc_Timer_Cleanup(void);
 uint32_t phUtilNfc_CheckForAvailableTimer(void);
 NFCSTATUS phOsalNfc_CheckTimerPresence(void* pObjectHandle);
 
-#ifdef __cplusplus
-}
-#endif /*  C++ Compilation guard */
 #endif /* PHOSALNFC_TIMER_H */

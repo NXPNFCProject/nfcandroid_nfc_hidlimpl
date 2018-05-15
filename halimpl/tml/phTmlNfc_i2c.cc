@@ -42,6 +42,7 @@
 #define NORMAL_MODE_LEN_OFFSET 2
 #define FRAGMENTSIZE_MAX PHNFC_I2C_FRAGMENT_SIZE
 static bool_t bFwDnldFlag = false;
+bool_t notifyFwrequest;
 
 /*******************************************************************************
 **

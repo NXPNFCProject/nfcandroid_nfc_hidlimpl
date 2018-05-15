@@ -84,11 +84,11 @@ tNFC_chipType capability::processChipType(uint8_t* msg, uint16_t msg_len) {
     return chipType;
 }
 
-extern "C" tNFC_chipType configChipType(uint8_t* msg, uint16_t msg_len) {
+extern tNFC_chipType configChipType(uint8_t* msg, uint16_t msg_len) {
     return pConfigFL->processChipType(msg,msg_len);
 }
 
-extern "C" tNFC_chipType getChipType() {
+extern tNFC_chipType getChipType() {
     ALOGD ("%s", __FUNCTION__);
     return capability::chipType;
 }

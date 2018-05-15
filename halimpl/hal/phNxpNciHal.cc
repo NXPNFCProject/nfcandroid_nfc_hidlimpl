@@ -27,6 +27,10 @@
 #include <phNxpNciHal_NfcDepSWPrio.h>
 #include <phTmlNfc_i2c.h>
 #include "phNxpNciHal_nciParser.h"
+
+using namespace android::hardware::nfc::V1_1;
+
+
 /*********************** Global Variables *************************************/
 #define PN547C2_CLOCK_SETTING
 #undef PN547C2_FACTORY_RESET_DEBUG
@@ -88,6 +92,7 @@ phNxpNci_getCfg_info_t* mGetCfg_info = NULL;
 uint32_t gSvddSyncOff_Delay = 10;
 bool_t force_fw_download_req = false;
 bool_t gParserCreated = FALSE;
+bool nfc_debug_enabled = true;
 /* global variable to get FW version from NCI response*/
 uint32_t wFwVerRsp;
 /* External global variable to get FW version */
@@ -135,10 +140,37 @@ static void phNxpNciHal_core_MinInitialized_complete(NFCSTATUS status);
 static NFCSTATUS phNxpNciHal_set_Boot_Mode(uint8_t mode);
 NFCSTATUS phNxpNciHal_set_china_region_configs(void);
 static void phNxpNciHal_configNciParser(void);
+static void phNxpNciHal_initialize_debug_enabled_flag();
 static NFCSTATUS phNxpNciHalRFConfigCmdRecSequence();
 static NFCSTATUS phNxpNciHal_CheckRFCmdRespStatus();
 static NFCSTATUS phNxpNciHal_uicc_baud_rate();
 
+/******************************************************************************
+ * Function         phNxpNciHal_initialize_debug_enabled_flag
+ *
+ * Description      This function gets the value for nfc_debug_enabled
+ *
+ * Returns          void
+ *
+ ******************************************************************************/
+static void phNxpNciHal_initialize_debug_enabled_flag() {
+  unsigned long num = 0;
+  //char valueStr[PROPERTY_VALUE_MAX] = {0};
+  if(GetNxpNumValue(NAME_NFC_DEBUG_ENABLED, &num, sizeof(num))) {
+    nfc_debug_enabled = (num == 0) ? false : true;
+
+  }
+
+  /*int len = property_get("nfc.debug_enabled", valueStr, "");
+  if (len > 0) {
+        // let Android property override .conf variable
+    unsigned debug_enabled = 0;
+    sscanf(valueStr, "%u", &debug_enabled);
+    nfc_debug_enabled = (debug_enabled == 0) ? false : true;
+  }*/
+  NXPLOG_NCIHAL_D("nfc_debug_enabled : %d",nfc_debug_enabled);
+
+}
 //static tNfc_featureList phNxpNciHal_getFeatureList();
 /******************************************************************************
  * Function         phNxpNciHal_client_thread
@@ -483,6 +515,7 @@ int phNxpNciHal_MinOpen(nfc_stack_callback_t* p_cback,
   char* nfc_dev_node = NULL;
   const uint16_t max_len = 260;
 
+  phNxpNciHal_initialize_debug_enabled_flag();
   phNxpLog_InitializeLogLevel();
 
   /*Create the timer for extns write response*/
@@ -646,6 +679,7 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
   }
   /* reset config cache */
   resetNxpConfig();
+  phNxpNciHal_initialize_debug_enabled_flag();
   phNxpLog_InitializeLogLevel();
 
   /*Create the timer for extns write response*/
@@ -678,7 +712,7 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
 
   /*Structure related to set config management*/
   mGetCfg_info = NULL;
-  mGetCfg_info = nxp_malloc(sizeof(phNxpNci_getCfg_info_t));
+  mGetCfg_info = (phNxpNci_getCfg_info_t*) nxp_malloc(sizeof(phNxpNci_getCfg_info_t));
   if (mGetCfg_info == NULL) {
     goto clean_and_return;
   }
@@ -2843,7 +2877,7 @@ static void phNxpNciHal_power_cycle_complete(NFCSTATUS status) {
  ******************************************************************************/
 int phNxpNciHal_ioctl(long arg, void* p_data) {
   NXPLOG_NCIHAL_D("%s : enter - arg = %ld", __func__, arg);
-  nfc_nci_IoctlInOutData_t* pInpOutData = p_data;
+  nfc_nci_IoctlInOutData_t* pInpOutData = (nfc_nci_IoctlInOutData_t*)p_data;
   int ret = -1;
   NFCSTATUS status = NFCSTATUS_FAILED;
   phNxpNciHal_FwRfupdateInfo_t* FwRfInfo;
@@ -3173,7 +3207,7 @@ if(nfcFL.chipType == pn553) {
         switch(frequency)
         {
             case CLK_FREQ_13MHZ:
-
+            {
                 NXPLOG_NCIHAL_D("PLL setting for CLK_FREQ_13MHZ");
                 uint8_t cmd4PllSetting13MHz[] = SET_CONFIG_CMD_PLL_13MHZ;
                 pCmd4PllSetting = cmd4PllSetting13MHz;
@@ -3182,73 +3216,63 @@ if(nfcFL.chipType == pn553) {
                 uint8_t cmd4DpllSetting13MHz[] = SET_CONFIG_CMD_DPLL_13MHZ;
                 pCmd4DpllSetting = cmd4DpllSetting13MHz;
                 dpllCmdLen = sizeof(cmd4DpllSetting13MHz);
-
-            break;
-
+                break;
+            }
             case CLK_FREQ_19_2MHZ:
-
+            {
                 NXPLOG_NCIHAL_D("PLL setting for CLK_FREQ_19_2MHZ");
                 uint8_t cmd4PllSetting19_2MHz[] = SET_CONFIG_CMD_PLL_19_2MHZ;
                 pCmd4PllSetting = cmd4PllSetting19_2MHz;
                 pllCmdLen = sizeof(cmd4PllSetting19_2MHz);
-
                 uint8_t cmd4DpllSetting19_2MHz[] = SET_CONFIG_CMD_DPLL_19_2MHZ;
                 pCmd4DpllSetting = cmd4DpllSetting19_2MHz;
                 dpllCmdLen = sizeof(cmd4DpllSetting19_2MHz);
-
-            break;
-
+                break;
+            }
             case CLK_FREQ_24MHZ:
-
+            {
                 NXPLOG_NCIHAL_D("PLL setting for CLK_FREQ_24MHZ");
                 uint8_t cmd4PllSetting24MHz[] = SET_CONFIG_CMD_PLL_24MHZ;
                 pCmd4PllSetting = cmd4PllSetting24MHz;
                 pllCmdLen = sizeof(cmd4PllSetting24MHz);
-
                 uint8_t cmd4DpllSetting24MHz[] = SET_CONFIG_CMD_DPLL_24MHZ;
                 pCmd4DpllSetting = cmd4DpllSetting24MHz;
                 dpllCmdLen = sizeof(cmd4DpllSetting24MHz);
-
-            break;
-
+                break;
+            }
             case CLK_FREQ_26MHZ:
-
+            {
                 NXPLOG_NCIHAL_D("PLL setting for CLK_FREQ_26MHZ");
                 uint8_t cmd4PllSetting26MHz[] = SET_CONFIG_CMD_PLL_26MHZ;
                 pCmd4PllSetting = cmd4PllSetting26MHz;
                 pllCmdLen = sizeof(cmd4PllSetting26MHz);
-
                 uint8_t cmd4DpllSetting26MHz[] = SET_CONFIG_CMD_DPLL_26MHZ;
                 pCmd4DpllSetting = cmd4DpllSetting26MHz;
                 dpllCmdLen = sizeof(cmd4DpllSetting26MHz);
-
-            break;
+                break;
+            }
             case CLK_FREQ_32MHZ:
-
+            {
                 NXPLOG_NCIHAL_D("PLL setting for CLK_FREQ_32MHZ");
                 uint8_t cmd4PllSetting32MHz[] = SET_CONFIG_CMD_PLL_32MHZ;
                 pCmd4PllSetting = cmd4PllSetting32MHz;
                 pllCmdLen = sizeof(cmd4PllSetting32MHz);
-
                 uint8_t cmd4DpllSetting32MHz[] = SET_CONFIG_CMD_DPLL_32MHZ;
                 pCmd4DpllSetting = cmd4DpllSetting32MHz;
                 dpllCmdLen = sizeof(cmd4DpllSetting32MHz);
-
-            break;
-
+                break;
+            }
             case CLK_FREQ_38_4MHZ:
-
+            {
                 NXPLOG_NCIHAL_D("PLL setting for CLK_FREQ_38_4MHZ");
                 uint8_t cmd4PllSetting38_4MHz[] = SET_CONFIG_CMD_PLL_38_4MHZ;
                 pCmd4PllSetting = cmd4PllSetting38_4MHz;
                 pllCmdLen = sizeof(cmd4PllSetting38_4MHz);
-
                 uint8_t cmd4DpllSetting38_4MHz[] = SET_CONFIG_CMD_DPLL_38_4MHZ;
                 pCmd4DpllSetting = cmd4DpllSetting38_4MHz;
                 dpllCmdLen = sizeof(cmd4DpllSetting38_4MHz);
-
-            break;
-
+                break;
+            }
             default:
                 phNxpNciClock.isClockSet = FALSE;
                 NXPLOG_NCIHAL_E("ERROR: Invalid clock frequency!!");
@@ -3258,6 +3282,7 @@ if(nfcFL.chipType == pn553) {
     switch(clockSource)
     {
         case CLK_SRC_PLL:
+        {
             set_clock_cmd[setClkCmdLen -1] = 0x00;
             while(status != NFCSTATUS_SUCCESS && setClockCmdWriteRetryCnt++ < MAX_RETRY_COUNT)
             status = phNxpNciHal_send_ext_cmd(setClkCmdLen, set_clock_cmd);
@@ -3273,17 +3298,19 @@ if(nfcFL.chipType == pn553) {
                 status = phNxpNciHal_send_ext_cmd(dpllCmdLen, pCmd4DpllSetting);
 
             break;
-
+        }
         case CLK_SRC_XTAL:
+        {
             status = phNxpNciHal_send_ext_cmd(setClkCmdLen, set_clock_cmd);
             if (status != NFCSTATUS_SUCCESS)
             {
                 NXPLOG_NCIHAL_E("XTAL clock setting failed !!");
             }
             break;
-
-        default:            NXPLOG_NCIHAL_E("Wrong clock source. Dont apply any modification");
-                            return;
+        }
+        default:
+            NXPLOG_NCIHAL_E("Wrong clock source. Dont apply any modification");
+            return;
     }
     phNxpNciClock.isClockSet = FALSE;
     if(status == NFCSTATUS_SUCCESS && phNxpNciClock.p_rx_data[3] == NFCSTATUS_SUCCESS)

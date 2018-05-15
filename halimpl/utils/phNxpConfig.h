@@ -38,9 +38,6 @@
 
 #ifndef __CONFIG_H
 #define __CONFIG_H
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 int GetNxpStrValue(const char* name, char* p_value, unsigned long len);
 int GetNxpNumValue(const char* name, void* p_value, unsigned long len);
@@ -51,17 +48,13 @@ int isNxpRFConfigModified();
 int isNxpConfigModified();
 int updateNxpConfigTimestamp();
 
-#ifdef __cplusplus
-};
-#endif
-
 #define NAME_NXPLOG_EXTNS_LOGLEVEL "NXPLOG_EXTNS_LOGLEVEL"
 #define NAME_NXPLOG_NCIHAL_LOGLEVEL "NXPLOG_NCIHAL_LOGLEVEL"
 #define NAME_NXPLOG_NCIX_LOGLEVEL "NXPLOG_NCIX_LOGLEVEL"
 #define NAME_NXPLOG_NCIR_LOGLEVEL "NXPLOG_NCIR_LOGLEVEL"
 #define NAME_NXPLOG_FWDNLD_LOGLEVEL "NXPLOG_FWDNLD_LOGLEVEL"
 #define NAME_NXPLOG_TML_LOGLEVEL "NXPLOG_TML_LOGLEVEL"
-
+#define NAME_NFC_DEBUG_ENABLED "NFC_DEBUG_ENABLED"
 #define NAME_MIFARE_READER_ENABLE "MIFARE_READER_ENABLE"
 #define NAME_FW_STORAGE "FW_STORAGE"
 #define NAME_NXP_NFC_DEV_NODE "NXP_NFC_DEV_NODE"

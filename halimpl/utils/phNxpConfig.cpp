@@ -919,7 +919,7 @@ void readOptionalConfig(const char* extra) {
 ** Returns:     True if found, otherwise False.
 **
 *******************************************************************************/
-extern "C" int GetNxpStrValue(const char* name, char* pValue,
+extern int GetNxpStrValue(const char* name, char* pValue,
                               unsigned long len) {
   nxp::CNfcConfig& rConfig = nxp::CNfcConfig::GetInstance();
 
@@ -943,7 +943,7 @@ extern "C" int GetNxpStrValue(const char* name, char* pValue,
 **              false[0]
 **
 *******************************************************************************/
-extern "C" int GetNxpByteArrayValue(const char* name, char* pValue,
+extern int GetNxpByteArrayValue(const char* name, char* pValue,
                                     long bufflen, long* len) {
   nxp::CNfcConfig& rConfig = nxp::CNfcConfig::GetInstance();
 
@@ -959,7 +959,7 @@ extern "C" int GetNxpByteArrayValue(const char* name, char* pValue,
 ** Returns:     true, if successful
 **
 *******************************************************************************/
-extern "C" int GetNxpNumValue(const char* name, void* pValue,
+extern int GetNxpNumValue(const char* name, void* pValue,
                               unsigned long len) {
   if (!pValue) return false;
 
@@ -1000,7 +1000,7 @@ extern "C" int GetNxpNumValue(const char* name, void* pValue,
 ** Returns:     none
 **
 *******************************************************************************/
-extern "C" void resetNxpConfig()
+extern void resetNxpConfig()
 
 {
   nxp::CNfcConfig& rConfig = nxp::CNfcConfig::GetInstance();
@@ -1017,7 +1017,7 @@ extern "C" void resetNxpConfig()
 ** Returns:     0 if not modified, 1 otherwise.
 **
 *******************************************************************************/
-extern "C" int isNxpConfigModified() {
+extern int isNxpConfigModified() {
   nxp::CNfcConfig& rConfig = nxp::CNfcConfig::GetInstance();
   return rConfig.isModified();
 }
@@ -1030,7 +1030,7 @@ extern "C" int isNxpConfigModified() {
 ** Returns:     0 if not modified, 1 otherwise.
 **
 *******************************************************************************/
-extern "C" int isNxpRFConfigModified() {
+extern int isNxpRFConfigModified() {
   int retRF = 0, rettransit = 0, ret = 0;
   nxp::CNfcConfig& rConfig = nxp::CNfcConfig::GetInstance();
   retRF = rConfig.isModified(nxp_rf_config_path);
@@ -1049,7 +1049,7 @@ extern "C" int isNxpRFConfigModified() {
 ** Returns:     0 if not modified, 1 otherwise.
 **
 *******************************************************************************/
-extern "C" int updateNxpConfigTimestamp() {
+extern int updateNxpConfigTimestamp() {
   nxp::CNfcConfig& rConfig = nxp::CNfcConfig::GetInstance();
   rConfig.resetModified();
   return 0;

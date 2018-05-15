@@ -19,9 +19,6 @@
 #ifndef __CAP_H__
 #define __CAP_H__
 #define pConfigFL       (capability::getInstance())
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*******************************************************************************
 **
@@ -48,8 +45,6 @@ tNFC_chipType getChipType ();
 ** Returns          chipType
 *******************************************************************************/
 tNFC_chipType configChipType(uint8_t* msg, uint16_t msg_len);
-#ifdef __cplusplus
-};
 
 class capability {
 private:
@@ -67,6 +62,6 @@ public:
     tNFC_chipType processChipType(uint8_t* msg, uint16_t msg_len);
 };
 
-#endif
 
 #endif
+

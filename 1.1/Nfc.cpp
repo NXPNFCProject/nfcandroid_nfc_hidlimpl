@@ -85,7 +85,7 @@ Return<V1_0::NfcStatus> Nfc::close() {
   if (mCallbackV1_1 == nullptr && mCallbackV1_0 == nullptr) {
     return V1_0::NfcStatus::FAILED;
   }
-  NFCSTATUS status = phNxpNciHal_close(false);
+  NFCSTATUS status = phNxpNciHal_close();
 
   if (mCallbackV1_1 != nullptr) {
     mCallbackV1_1->unlinkToDeath(this);
@@ -110,7 +110,7 @@ Return<V1_0::NfcStatus> Nfc::powerCycle() {
 
 // Methods from ::android::hardware::nfc::V1_1::INfc follow.
 Return<void> Nfc::factoryReset() {
-  phNxpNciHal_do_factory_reset();
+  //phNxpNciHal_do_factory_reset();
   return Void();
 }
 
@@ -118,7 +118,7 @@ Return<V1_0::NfcStatus> Nfc::closeForPowerOffCase() {
   if (mCallbackV1_1 == nullptr && mCallbackV1_0 == nullptr) {
     return V1_0::NfcStatus::FAILED;
   }
-  NFCSTATUS status = phNxpNciHal_configDiscShutdown();
+  //NFCSTATUS status = phNxpNciHal_configDiscShutdown();
 
   if (mCallbackV1_1 != nullptr) {
     mCallbackV1_1->unlinkToDeath(this);
@@ -128,7 +128,7 @@ Return<V1_0::NfcStatus> Nfc::closeForPowerOffCase() {
     mCallbackV1_0->unlinkToDeath(this);
     mCallbackV1_0 = nullptr;
   }
-  return CHK_STATUS(status);
+  return CHK_STATUS(0);
 }
 
 Return<void> Nfc::getConfig(getConfig_cb hidl_cb) {

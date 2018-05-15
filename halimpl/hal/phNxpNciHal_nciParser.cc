@@ -55,35 +55,35 @@ phNxpNciHal_initParser() {
         return FALSE;
     }
 
-    psContext->sEntryFuncs.createParser = dlsym(psContext->pvHandle, "native_createParser");
+    psContext->sEntryFuncs.createParser = (tHAL_API_NATIVE_CREATE_PARSER)dlsym(psContext->pvHandle, "native_createParser");
     if (psContext->sEntryFuncs.createParser == NULL)
     {
         NXPLOG_NCIHAL_E("%s: dlsym native_createParser failed !!!", __FUNCTION__);
         return FALSE;
     }
 
-    psContext->sEntryFuncs.destroyParser = dlsym(psContext->pvHandle, "native_destroyParser");
+    psContext->sEntryFuncs.destroyParser = (tHAL_API_NATIVE_INIT_PARSER)dlsym(psContext->pvHandle, "native_destroyParser");
     if (psContext->sEntryFuncs.destroyParser == NULL)
     {
         NXPLOG_NCIHAL_E("%s: dlsym native_destroyParser failed !!!", __FUNCTION__);
         return FALSE;
     }
 
-    psContext->sEntryFuncs.initParser = dlsym(psContext->pvHandle, "native_initParser");
+    psContext->sEntryFuncs.initParser = (tHAL_API_NATIVE_INIT_PARSER)dlsym(psContext->pvHandle, "native_initParser");
     if (psContext->sEntryFuncs.initParser == NULL)
     {
         NXPLOG_NCIHAL_E("%s: dlsym native_initParser failed !!!", __FUNCTION__);
         return FALSE;
     }
 
-    psContext->sEntryFuncs.deinitParser = dlsym(psContext->pvHandle, "native_deinitParser");
+    psContext->sEntryFuncs.deinitParser = (tHAL_API_NATIVE_INIT_PARSER)dlsym(psContext->pvHandle, "native_deinitParser");
     if (psContext->sEntryFuncs.deinitParser == NULL)
     {
         NXPLOG_NCIHAL_E("%s: dlsym native_deinitParser failed !!!", __FUNCTION__);
         return FALSE;
     }
 
-    psContext->sEntryFuncs.parsePacket = dlsym(psContext->pvHandle, "native_parseNciMsg");
+    psContext->sEntryFuncs.parsePacket = (tHAL_API_NATIVE_PARSE_PACKET)dlsym(psContext->pvHandle, "native_parseNciMsg");
     if (psContext->sEntryFuncs.parsePacket == NULL)
     {
         NXPLOG_NCIHAL_E("%s: dlsym native_parseNciMsg failed !!!", __FUNCTION__);
