@@ -87,31 +87,32 @@ typedef union {
  * nfc_nci_ExtnInputData_t :Apart from InputData_t, there are context data
  * which is required during callback from stub to proxy.
  * To avoid additional copy of data while propagating from libnfc to Adaptation
- * and Nfcstub to ncihal, common structure is used. As a sideeffect, context data
+ * and Nfcstub to ncihal, common structure is used. As a sideeffect, context
+ * data
  * is exposed to libnfc (Not encapsulated).
  */
 typedef struct {
-    /*context to be used/updated only by users of proxy & stub of Nfc.hal
-    * i.e, NfcAdaptation & hardware/interface/Nfc.
-    */
-    void*       context;
-    InputData_t data;
-}nfc_nci_ExtnInputData_t;
+  /*context to be used/updated only by users of proxy & stub of Nfc.hal
+  * i.e, NfcAdaptation & hardware/interface/Nfc.
+  */
+  void* context;
+  InputData_t data;
+} nfc_nci_ExtnInputData_t;
 
 /*
  * outputData_t :ioctl has multiple commands/responses
  * This contains the output types for each ioctl.
  */
-typedef union{
-    uint32_t            status;
-    nfc_nci_ExtnRsp_t   nciRsp;
-    uint8_t             nxpNciAtrInfo[MAX_ATR_INFO_LEN];
-    uint32_t            p61CurrentState;
-    uint16_t            fwUpdateInf;
-    uint16_t            fwDwnldStatus;
-    uint16_t            fwMwVerStatus;
-    uint8_t             chipType;
-}outputData_t;
+typedef union {
+  uint32_t status;
+  nfc_nci_ExtnRsp_t nciRsp;
+  uint8_t nxpNciAtrInfo[MAX_ATR_INFO_LEN];
+  uint32_t p61CurrentState;
+  uint16_t fwUpdateInf;
+  uint16_t fwDwnldStatus;
+  uint16_t fwMwVerStatus;
+  uint8_t chipType;
+} outputData_t;
 
 /*
  * nfc_nci_ExtnOutputData_t :Apart from outputData_t, there are other
@@ -150,8 +151,8 @@ typedef struct {
  * -ioctl(manage sync between  and DWP & SPI)
  * -check request for fw download
  */
-typedef struct nxpnfc_nci_device{
-    nfc_nci_device_t nci_device;
+typedef struct nxpnfc_nci_device {
+  // nfc_nci_device_t nci_device;
   /*
   * (*ioctl)() For P61 power management synchronization
   * between NFC Wired and SPI.
@@ -162,6 +163,6 @@ typedef struct nxpnfc_nci_device{
   */
   int (*check_fw_dwnld_flag)(const struct nxpnfc_nci_device* p_dev,
                              uint8_t* param1);
-}nxpnfc_nci_device_t;
+} nxpnfc_nci_device_t;
 
 #endif  // ANDROID_HARDWARE_HAL_NXPNFC_V1_0_H
