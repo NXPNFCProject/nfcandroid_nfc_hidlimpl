@@ -575,8 +575,10 @@ int phNxpNciHal_MinOpen(nfc_stack_callback_t* p_cback,
     phNxpNciHal_core_MinInitialized_complete(status);
   } else {
     phTmlNfc_Shutdown();
-    (*nxpncihal_ctrl.p_nfc_stack_cback)(HAL_NFC_POST_MIN_INIT_CPLT_EVT,
-                                        HAL_NFC_STATUS_FAILED);
+  if (p_cback != NULL) {
+    (*p_cback)(HAL_NFC_OPEN_CPLT_EVT,
+               HAL_NFC_STATUS_FAILED);
+  }
     /* Report error status */
     nxpncihal_ctrl.p_nfc_stack_cback = NULL;
     nxpncihal_ctrl.p_nfc_stack_data_cback = NULL;
@@ -809,8 +811,10 @@ clean_and_return:
     mGetCfg_info = NULL;
   }
   /* Report error status */
-  (*nxpncihal_ctrl.p_nfc_stack_cback)(HAL_NFC_OPEN_CPLT_EVT,
-                                      HAL_NFC_STATUS_FAILED);
+  if (p_cback != NULL) {
+    (*p_cback)(HAL_NFC_OPEN_CPLT_EVT,
+               HAL_NFC_STATUS_FAILED);
+  }
   nxpncihal_ctrl.p_nfc_stack_cback = NULL;
   nxpncihal_ctrl.p_nfc_stack_data_cback = NULL;
   phNxpNciHal_cleanup_monitor();
