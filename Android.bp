@@ -82,31 +82,3 @@ cc_binary {
         "vendor.nxp.nxpnfc@1.0",
     ],
 }
-
-cc_binary {
-    name: "android.hardware.nfc@1.0-service",
-    defaults: ["hidl_defaults"],
-    relative_install_path: "hw",
-    proprietary: true,
-    init_rc: ["1.0/android.hardware.nfc@1.0-service.rc"],
-    srcs: [
-        "1.0/service.cpp",
-        "1.0/Nfc.cpp",
-        "extns/impl/NxpNfc.cpp",
-    ],
-
-    shared_libs: [
-        "nfc_nci_nxp",
-        "liblog",
-        "libcutils",
-        "libdl",
-        "libbase",
-        "libutils",
-        "libhardware",
-        "libhidlbase",
-        "libhidltransport",
-        "android.hardware.nfc@1.0",
-        "vendor.nxp.nxpnfc@1.0",
-    ],
-
-}
