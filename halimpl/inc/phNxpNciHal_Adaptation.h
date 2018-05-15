@@ -19,6 +19,10 @@
 
 #include <hardware/hardware.h>
 #include <hardware/nfc.h>
+#include <android/hardware/nfc/1.1/INfc.h>
+#include <android/hardware/nfc/1.1/types.h>
+
+using ::android::hardware::nfc::V1_1::NfcConfig;
 
 /* NXP HAL functions */
 
@@ -31,6 +35,7 @@ int phNxpNciHal_pre_discover(void);
 int phNxpNciHal_close(void);
 int phNxpNciHal_control_granted(void);
 int phNxpNciHal_power_cycle(void);
+void phNxpNciHal_getVendorConfig(NfcConfig& config);
 int phNxpNciHal_MinOpen(nfc_stack_callback_t* p_cback,
                         nfc_stack_data_callback_t* p_data_cback);
 int phNxpNciHal_Minclose(void);
