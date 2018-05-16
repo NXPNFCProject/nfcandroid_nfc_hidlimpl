@@ -3226,51 +3226,17 @@ void phNxpNciHal_enable_i2c_fragmentation() {
  *
  ******************************************************************************/
 static NFCSTATUS phNxpNciHal_do_se_session_reset(void) {
-  uint8_t *reset_ese_session_identity_set;
-  uint8_t ese_session_dyn_uicc_nv[] = {
-            0x20, 0x02, 0x17, 0x02,0xA0, 0xEA, 0x08, 0xFF, 0xFF, 0xFF,
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF,0xA0, 0x1E, 0x08, 0xFF, 0xFF,
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-  uint8_t ese_session_dyn_uicc[] = {
-            0x20, 0x02, 0x22, 0x03, 0xA0, 0xEA, 0x08, 0xFF, 0xFF, 0xFF,
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xA0, 0x1E, 0x08, 0xFF, 0xFF,
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xA0, 0xEB, 0x08, 0xFF,
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-  uint8_t ese_session_nv[] = {
-            0x20, 0x02, 0x0C, 0x01, 0xA0, 0xEA, 0x08, 0xFF, 0xFF,
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-  uint8_t ese_session[] = {
-            0x20, 0x02, 0x17, 0x02, 0xA0, 0xEA, 0x08, 0xFF, 0xFF,
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xA0, 0xEB, 0x08,
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-  uint8_t len = 0;
-  if(nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_WO_EXT_SWITCH || nfcFL.nfccFL._NFCC_DYNAMIC_DUAL_UICC) {
-    if(nfcFL.eseFL._EXCLUDE_NV_MEM_DEPENDENCY) {
-      reset_ese_session_identity_set = ese_session_dyn_uicc_nv;
-      len = sizeof(ese_session_dyn_uicc_nv);
-    }
-    else {
-      reset_ese_session_identity_set = ese_session_dyn_uicc;
-      len = sizeof(ese_session_dyn_uicc);
-    }
-  }
-  else {
-    if(nfcFL.eseFL._EXCLUDE_NV_MEM_DEPENDENCY) {
-      reset_ese_session_identity_set = ese_session_nv;
-      len = sizeof(ese_session_nv);
-    }
-    else {
-      reset_ese_session_identity_set = ese_session;
-      len = sizeof(ese_session);
-    }
-  }
-
-   NFCSTATUS status = phNxpNciHal_send_ext_cmd(sizeof(reset_ese_session_identity_set),
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  static uint8_t reset_ese_session_identity_set[] = {
+      0x20, 0x02, 0x17, 0x02, 0xA0, 0xEA, 0x08, 0xFF, 0xFF,
+      0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xA0, 0xEB, 0x08,
+      0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+      status = phNxpNciHal_send_ext_cmd(sizeof(reset_ese_session_identity_set),
                                       reset_ese_session_identity_set);
       if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("NXP reset_ese_session_identity_set command failed");
-    }
-    return status;
+  }
+  return status;
 }
 /******************************************************************************
  * Function         phNxpNciHal_do_factory_reset
