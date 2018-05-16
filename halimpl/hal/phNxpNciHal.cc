@@ -3212,68 +3212,55 @@ if(nfcFL.chipType == pn553) {
             case CLK_FREQ_13MHZ:
             {
                 NXPLOG_NCIHAL_D("PLL setting for CLK_FREQ_13MHZ");
-                uint8_t cmd4PllSetting13MHz[] = SET_CONFIG_CMD_PLL_13MHZ;
-                pCmd4PllSetting = cmd4PllSetting13MHz;
-                pllCmdLen = sizeof(cmd4PllSetting13MHz);
-
-                uint8_t cmd4DpllSetting13MHz[] = SET_CONFIG_CMD_DPLL_13MHZ;
-                pCmd4DpllSetting = cmd4DpllSetting13MHz;
-                dpllCmdLen = sizeof(cmd4DpllSetting13MHz);
+                pCmd4PllSetting = (uint8_t*) SET_CONFIG_CMD_PLL_13MHZ;
+                pllCmdLen = sizeof(SET_CONFIG_CMD_PLL_13MHZ);
+                pCmd4DpllSetting = (uint8_t*) SET_CONFIG_CMD_DPLL_13MHZ;
+                dpllCmdLen = sizeof(SET_CONFIG_CMD_DPLL_13MHZ);
                 break;
             }
             case CLK_FREQ_19_2MHZ:
             {
                 NXPLOG_NCIHAL_D("PLL setting for CLK_FREQ_19_2MHZ");
-                uint8_t cmd4PllSetting19_2MHz[] = SET_CONFIG_CMD_PLL_19_2MHZ;
-                pCmd4PllSetting = cmd4PllSetting19_2MHz;
-                pllCmdLen = sizeof(cmd4PllSetting19_2MHz);
-                uint8_t cmd4DpllSetting19_2MHz[] = SET_CONFIG_CMD_DPLL_19_2MHZ;
-                pCmd4DpllSetting = cmd4DpllSetting19_2MHz;
-                dpllCmdLen = sizeof(cmd4DpllSetting19_2MHz);
+                pCmd4PllSetting = (uint8_t*)SET_CONFIG_CMD_PLL_19_2MHZ;
+                pllCmdLen = sizeof(SET_CONFIG_CMD_PLL_19_2MHZ);
+                pCmd4DpllSetting = (uint8_t*) SET_CONFIG_CMD_DPLL_19_2MHZ;
+                dpllCmdLen = sizeof(SET_CONFIG_CMD_DPLL_19_2MHZ);
                 break;
-            }
+              }
             case CLK_FREQ_24MHZ:
             {
                 NXPLOG_NCIHAL_D("PLL setting for CLK_FREQ_24MHZ");
-                uint8_t cmd4PllSetting24MHz[] = SET_CONFIG_CMD_PLL_24MHZ;
-                pCmd4PllSetting = cmd4PllSetting24MHz;
-                pllCmdLen = sizeof(cmd4PllSetting24MHz);
-                uint8_t cmd4DpllSetting24MHz[] = SET_CONFIG_CMD_DPLL_24MHZ;
-                pCmd4DpllSetting = cmd4DpllSetting24MHz;
-                dpllCmdLen = sizeof(cmd4DpllSetting24MHz);
+                pCmd4PllSetting = (uint8_t*)SET_CONFIG_CMD_PLL_24MHZ;
+                pllCmdLen = sizeof(SET_CONFIG_CMD_PLL_24MHZ);
+                pCmd4DpllSetting = (uint8_t*) SET_CONFIG_CMD_DPLL_24MHZ;
+                dpllCmdLen = sizeof(SET_CONFIG_CMD_DPLL_24MHZ);
                 break;
             }
             case CLK_FREQ_26MHZ:
             {
                 NXPLOG_NCIHAL_D("PLL setting for CLK_FREQ_26MHZ");
-                uint8_t cmd4PllSetting26MHz[] = SET_CONFIG_CMD_PLL_26MHZ;
-                pCmd4PllSetting = cmd4PllSetting26MHz;
-                pllCmdLen = sizeof(cmd4PllSetting26MHz);
-                uint8_t cmd4DpllSetting26MHz[] = SET_CONFIG_CMD_DPLL_26MHZ;
-                pCmd4DpllSetting = cmd4DpllSetting26MHz;
-                dpllCmdLen = sizeof(cmd4DpllSetting26MHz);
+                pCmd4PllSetting = (uint8_t*)SET_CONFIG_CMD_PLL_26MHZ;
+                pllCmdLen = sizeof(SET_CONFIG_CMD_PLL_26MHZ);
+                pCmd4DpllSetting = (uint8_t*) SET_CONFIG_CMD_DPLL_26MHZ;
+                dpllCmdLen = sizeof(SET_CONFIG_CMD_DPLL_26MHZ);
                 break;
             }
             case CLK_FREQ_32MHZ:
             {
                 NXPLOG_NCIHAL_D("PLL setting for CLK_FREQ_32MHZ");
-                uint8_t cmd4PllSetting32MHz[] = SET_CONFIG_CMD_PLL_32MHZ;
-                pCmd4PllSetting = cmd4PllSetting32MHz;
-                pllCmdLen = sizeof(cmd4PllSetting32MHz);
-                uint8_t cmd4DpllSetting32MHz[] = SET_CONFIG_CMD_DPLL_32MHZ;
-                pCmd4DpllSetting = cmd4DpllSetting32MHz;
-                dpllCmdLen = sizeof(cmd4DpllSetting32MHz);
+                pCmd4PllSetting = (uint8_t*)SET_CONFIG_CMD_PLL_32MHZ;
+                pllCmdLen = sizeof(SET_CONFIG_CMD_PLL_32MHZ);
+                pCmd4DpllSetting = (uint8_t*) SET_CONFIG_CMD_DPLL_32MHZ;
+                dpllCmdLen = sizeof(SET_CONFIG_CMD_DPLL_32MHZ);
                 break;
             }
             case CLK_FREQ_38_4MHZ:
             {
                 NXPLOG_NCIHAL_D("PLL setting for CLK_FREQ_38_4MHZ");
-                uint8_t cmd4PllSetting38_4MHz[] = SET_CONFIG_CMD_PLL_38_4MHZ;
-                pCmd4PllSetting = cmd4PllSetting38_4MHz;
-                pllCmdLen = sizeof(cmd4PllSetting38_4MHz);
-                uint8_t cmd4DpllSetting38_4MHz[] = SET_CONFIG_CMD_DPLL_38_4MHZ;
-                pCmd4DpllSetting = cmd4DpllSetting38_4MHz;
-                dpllCmdLen = sizeof(cmd4DpllSetting38_4MHz);
+                pCmd4PllSetting = (uint8_t*)SET_CONFIG_CMD_PLL_38_4MHZ;
+                pllCmdLen = sizeof(SET_CONFIG_CMD_PLL_38_4MHZ);
+                pCmd4DpllSetting = (uint8_t*) SET_CONFIG_CMD_DPLL_38_4MHZ;
+                dpllCmdLen = sizeof(SET_CONFIG_CMD_DPLL_38_4MHZ);
                 break;
             }
             default:
