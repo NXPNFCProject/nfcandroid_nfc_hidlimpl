@@ -20,7 +20,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#if (NXP_EXTNS == FALSE)
 #include <unistd.h>
+#endif
 #ifndef TRUE
 #define TRUE (0x01) /* Logical True Value */
 #endif
