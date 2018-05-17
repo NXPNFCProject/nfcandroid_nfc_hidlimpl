@@ -120,6 +120,10 @@ Return<V1_0::NfcStatus> Nfc::closeForPowerOffCase() {
   }
   //NFCSTATUS status = phNxpNciHal_configDiscShutdown();
 
+  /* TODO: Added to unblock VTS test case. Remove after *
+  *  phNxpNciHal_configDiscShutdown implemented         */
+  NFCSTATUS status = phNxpNciHal_close();
+
   if (mCallbackV1_1 != nullptr) {
     mCallbackV1_1->unlinkToDeath(this);
     mCallbackV1_1 = nullptr;
@@ -128,7 +132,7 @@ Return<V1_0::NfcStatus> Nfc::closeForPowerOffCase() {
     mCallbackV1_0->unlinkToDeath(this);
     mCallbackV1_0 = nullptr;
   }
-  return CHK_STATUS(0);
+  return CHK_STATUS(status);
 }
 
 Return<void> Nfc::getConfig(getConfig_cb hidl_cb) {
