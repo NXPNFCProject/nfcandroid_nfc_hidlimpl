@@ -572,7 +572,8 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
 
   /* By default HAL status is HAL_STATUS_OPEN */
   nxpncihal_ctrl.halStatus = HAL_STATUS_OPEN;
-
+  gpEseAdapt = &EseAdaptation::GetInstance();
+  gpEseAdapt->Initialize();
   nxpncihal_ctrl.p_nfc_stack_cback = p_cback;
   nxpncihal_ctrl.p_nfc_stack_data_cback = p_data_cback;
   /*nci version NCI_VERSION_UNKNOWN version by default*/
@@ -2546,6 +2547,11 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
     case HAL_NFC_IOCTL_GET_FEATURE_LIST:
         pInpOutData->out.data.chipType = (uint8_t)phNxpNciHal_getChipType();
         ret = 0;
+        break;
+    case HAL_NFC_IOCTL_NFC_JCOP_DWNLD :
+        NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_NFC_JCOP_DWNLD Enter value is %d: \n",pInpOutData->inp.data.nciCmd.p_cmd[0]);
+        if(gpEseAdapt !=  NULL)
+        ret = gpEseAdapt->HalIoctl(HAL_NFC_IOCTL_NFC_JCOP_DWNLD,pInpOutData);
         break;
     default:
       NXPLOG_NCIHAL_E("%s : Wrong arg = %ld", __func__, arg);
