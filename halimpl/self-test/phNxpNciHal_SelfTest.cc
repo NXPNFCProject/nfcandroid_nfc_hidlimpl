@@ -417,7 +417,7 @@ static uint8_t st_validator_testSWP1_vltg(nci_data_t* exp,
 static uint8_t st_validator_testAntenna_Txldo(nci_data_t* exp,
                                               phTmlNfc_TransactInfo_t* act) {
   uint8_t result = 0;
-  uint8_t mesuredrange = 0;
+  long measured_val = 0;
   int tolerance = 0;
 
   if (NULL == exp || NULL == act) {
@@ -591,7 +591,7 @@ static uint8_t st_validator_testAntenna_AgcVal_FixedNfcLd(
 ** Returns          One if successful otherwise Zero.
 **
 *******************************************************************************/
-static uint8_t st_validator_testAntenna_AgcVal_Differential(
+__attribute__((unused)) static uint8_t st_validator_testAntenna_AgcVal_Differential(
     nci_data_t* exp, phTmlNfc_TransactInfo_t* act) {
   uint8_t result = 0;
   int agc_toleranceopne1 = 0;
@@ -1399,7 +1399,7 @@ NFCSTATUS phNxpNciHal_PrbsTestStart(phNxpNfc_PrbsType_t prbs_type,
                       prbs_cmd_data.cmd.p_data, prbs_cmd_data.cmd.len);
   }
   else {
-    status = phNxpNciHal_getPrbsCmd(0,0,tech, bitrate, prbs_cmd_data.cmd.p_data,
+    status = phNxpNciHal_getPrbsCmd((phNxpNfc_PrbsType_t)0,(phNxpNfc_PrbsHwType_t)0,tech, bitrate, prbs_cmd_data.cmd.p_data,
               prbs_cmd_data.cmd.len);
   }
 
