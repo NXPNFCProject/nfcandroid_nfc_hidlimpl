@@ -1062,8 +1062,10 @@ void phTmlNfc_DeferredCall(uintptr_t dwThreadId,
   UNUSED(dwThreadId);
   /* Post message on the user thread to invoke the callback function */
   sem_wait(&gpphTmlNfc_Context->postMsgSemaphore);
+
   bPostStatus =
       phDal4Nfc_msgsnd(gpphTmlNfc_Context->dwCallbackThreadId, ptWorkerMsg, 0);
+
   sem_post(&gpphTmlNfc_Context->postMsgSemaphore);
 }
 

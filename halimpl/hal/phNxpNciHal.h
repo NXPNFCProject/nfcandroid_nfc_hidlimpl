@@ -73,7 +73,11 @@ typedef struct nci_data {
   uint8_t p_data[NCI_MAX_DATA_LEN];
 } nci_data_t;
 
-typedef enum { HAL_STATUS_CLOSE = 0, HAL_STATUS_OPEN } phNxpNci_HalStatus;
+typedef enum {
+  HAL_STATUS_CLOSE = 0,
+  HAL_STATUS_OPEN,
+  HAL_STATUS_MIN_OPEN
+} phNxpNci_HalStatus;
 
 /* Macros to enable and disable extensions */
 #define HAL_ENABLE_EXT() (nxpncihal_ctrl.hal_ext_enabled = 1)
@@ -95,6 +99,9 @@ typedef struct phNxpNciHal_Control {
   uint8_t* p_rx_data;
   uint16_t rx_data_len;
 
+  /* Rx data */
+  uint8_t* p_rx_ese_data;
+  uint16_t rx_ese_data_len;
   /* libnfc-nci callbacks */
   nfc_stack_callback_t* p_nfc_stack_cback;
   nfc_stack_data_callback_t* p_nfc_stack_data_cback;
@@ -112,6 +119,7 @@ typedef struct phNxpNciHal_Control {
 
   /* Waiting semaphore */
   phNxpNciHal_Sem_t ext_cb_data;
+  sem_t syncSpiNfc;
 
   uint16_t cmd_len;
   uint8_t p_cmd_data[NCI_MAX_DATA_LEN];

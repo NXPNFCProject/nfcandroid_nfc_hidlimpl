@@ -562,6 +562,10 @@ static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
     status = NFCSTATUS_FAILED;
     goto clean_and_return;
   }
+    /* No NTF expected for OMAPI command */
+  if(p_cmd[0] == 0x2F && p_cmd[1] == 0x1 &&  p_cmd[2] == 0x01) {
+    nxpncihal_ctrl.nci_info.wait_for_ntf = FALSE;
+  }
   /* Start timer to wait for NTF*/
   if (nxpncihal_ctrl.nci_info.wait_for_ntf == TRUE) {
     status = phOsalNfc_Timer_Start(timeoutTimerId, HAL_EXTNS_WRITE_RSP_TIMEOUT,
@@ -587,6 +591,15 @@ static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
       status = NFCSTATUS_FAILED;
       goto clean_and_return;
     }
+  }
+
+  if (nxpncihal_ctrl.ext_cb_data.status != NFCSTATUS_SUCCESS &&
+      p_cmd[0] != 0x2F && p_cmd[1] != 0x1 && p_cmd[2] == 0x01) {
+    NXPLOG_NCIHAL_E(
+        "Callback Status is failed!! Timer Expired!! Couldn't read it! 0x%x",
+        nxpncihal_ctrl.ext_cb_data.status);
+    status = NFCSTATUS_FAILED;
+    goto clean_and_return;
   }
 
   if (nxpncihal_ctrl.ext_cb_data.status != NFCSTATUS_SUCCESS) {
@@ -1298,7 +1311,25 @@ retryget:
   retry_cnt = 0;
   return status;
 }
-
+/******************************************************************************
+ * Function         phNxpNciHal_send_ese_hal_cmd
+ *
+ * Description      This function send the extension command to NFCC. No
+ *                  response is checked by this function but it waits for
+ *                  the response to come.
+ *
+ * Returns          Returns NFCSTATUS_SUCCESS if sending cmd is successful and
+ *                  response is received.
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_send_ese_hal_cmd(uint16_t cmd_len, uint8_t* p_cmd) {
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  nxpncihal_ctrl.cmd_len = cmd_len;
+  memcpy(nxpncihal_ctrl.p_cmd_data, p_cmd, cmd_len);
+  status = phNxpNciHal_process_ext_cmd_rsp(nxpncihal_ctrl.cmd_len,
+                                              nxpncihal_ctrl.p_cmd_data);
+  return status;
+}
 /*******************************************************************************
  **
  ** Function:        phNxpNciHal_CheckFwRegFlashRequired()

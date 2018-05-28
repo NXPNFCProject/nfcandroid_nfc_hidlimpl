@@ -9,6 +9,7 @@ cc_library_shared {
         "halimpl/hal/*.cc",
         "halimpl/log/*.cc",
         "halimpl/self-test/*.cc",
+        "halimpl/src/adaptation/EseAdaptation.cpp",
         "halimpl/tml/*.cc",
         "halimpl/utils/*.cc",
         "halimpl/utils/*.cpp",
@@ -27,6 +28,9 @@ cc_library_shared {
         "libutils",
         "android.hardware.nfc@1.0",
         "android.hardware.nfc@1.1",
+        "android.hardware.secure_element@1.0",
+        "ese_spi_nxp",
+        "vendor.nxp.nxpese@1.0",
     ],
     local_include_dirs: [
         "halimpl/dnld",
@@ -35,6 +39,7 @@ cc_library_shared {
         "halimpl/self-test",
         "halimpl/tml",
         "halimpl/utils",
+        "halimpl/src/include",
         "halimpl/configs",
     ],
     export_include_dirs: [
@@ -83,8 +88,6 @@ cc_binary {
         "libhidlbase",
         "libhidltransport",
         "libhwbinder",
-        //"vendor.nxp.nxpese@1.0",
-        //"ese_spi_nxp",
         "vendor.nxp.nxpnfc@1.0",
     ],
 }
