@@ -2898,11 +2898,6 @@ void phNxpNciHal_getVendorConfig(NfcConfig& config) {
   if (GetNxpNumValue(NAME_OFF_HOST_SIM_PIPE_ID, &num, sizeof(num))) {
     config.offHostSIMPipeId = num;
   }
-  if ((GetNxpByteArrayValue(NAME_DEFAULT_SYS_CODE, (char*)buffer.data(),
-                            buffer.size(), &retlen))) {
-    config.defaultSystemCode.resize(retlen);
-    for (int i = 0; i < retlen; i++) config.defaultSystemCode[i] = buffer[i];
-  }
   if ((GetNxpByteArrayValue(NAME_NFA_PROPRIETARY_CFG, (char*)buffer.data(), buffer.size(), &retlen))
          && (retlen == 9)) {
     config.nfaProprietaryCfg.protocol18092Active = (uint8_t) buffer[0];
