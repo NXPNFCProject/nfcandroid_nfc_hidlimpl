@@ -22,7 +22,8 @@
 #include <phNxpConfig.h>
 #include <phDnldNfc.h>
 #include "phNxpNciHal_nciParser.h"
-
+#include "hal_nxpese.h"
+#include <phNxpNciHal_Adaptation.h>
 /* Timeout value to wait for response from PN548AD */
 #define HAL_EXTNS_WRITE_RSP_TIMEOUT (2500)
 
@@ -288,6 +289,23 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
     p_ntf[3] = 0x00;
     p_ntf[4] = 0x00;
     *p_len = 5;
+  } else if (*p_len == 4 && p_ntf[0] == 0x61 && p_ntf[1] == 0x07) {
+    unsigned long rf_update_enable = 0;
+    if (GetNxpNumValue(NAME_RF_STATUS_UPDATE_ENABLE, &rf_update_enable,
+                       sizeof(unsigned long))) {
+      NXPLOG_NCIHAL_D("RF_STATUS_UPDATE_ENABLE : %lu", rf_update_enable);
+    }
+    if (rf_update_enable == 0x01) {
+      nfc_nci_IoctlInOutData_t inpOutData;
+      uint8_t rf_state_update[] = {0x00};
+      memset(&inpOutData, 0x00, sizeof(nfc_nci_IoctlInOutData_t));
+      inpOutData.inp.data.nciCmd.cmd_len = sizeof(rf_state_update);
+      rf_state_update[0] = p_ntf[3];
+      memcpy(inpOutData.inp.data.nciCmd.p_cmd, rf_state_update,
+             sizeof(rf_state_update));
+      inpOutData.inp.data_source = 2;
+      phNxpNciHal_ioctl(HAL_NFC_IOCTL_RF_STATUS_UPDATE, &inpOutData);
+    }
   }
 if(nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT == true) {
   /*Handle NFCC2.0 in NCI2.0 Boot sequence*/
