@@ -2708,12 +2708,12 @@ int phNxpNciHal_close(bool bShutdown) {
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed");
   }
+  sem_destroy(&nxpncihal_ctrl.syncSpiNfc);
 
-  if(gParserCreated)
-    {
-        phNxpNciHal_deinitParser();
-        gParserCreated = FALSE;
-    }
+  if (gParserCreated) {
+    phNxpNciHal_deinitParser();
+    gParserCreated = FALSE;
+  }
 close_and_return:
 
   if (NULL != gpphTmlNfc_Context->pDevHandle) {
@@ -3078,6 +3078,10 @@ int phNxpNciHal_check_ncicmd_write_window(uint16_t cmd_len, uint8_t* p_cmd) {
       status = NFCSTATUS_SUCCESS;
     }
   }
+  else {
+    /* cmd window check not required for writing data packet */
+    status = NFCSTATUS_SUCCESS;
+   }
   return status;
 }
 
