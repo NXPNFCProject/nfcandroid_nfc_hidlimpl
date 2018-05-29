@@ -1384,6 +1384,8 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
                                                   0x01, 0x03, 0x00, 0x01, 0x05};
   uint8_t swp_full_pwr_mode_on_cmd[] = {0x20, 0x02, 0x05, 0x01,
                                         0xA0, 0xF1, 0x01, 0x01};
+  static uint8_t cmd_ven_enable[] = {0x20, 0x02, 0x05, 0x01,
+                                     0xA0, 0x07, 0x01, 0x01};
   static uint8_t swp_switch_timeout_cmd[] = {0x20, 0x02, 0x06, 0x01, 0xA0,
                                              0xF3, 0x02, 0x00, 0x00};
   static uint8_t cmd_init_nci[] = {0x20, 0x01, 0x00};
@@ -1499,7 +1501,15 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     }
   }
 
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ven_enable), cmd_ven_enable);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("CMD_VEN_ENABLE: Failed");
+      retry_core_init_cnt++;
+      goto retry_core_init;
+    }
+
   retlen = 0;
+
   isfound = GetNxpByteArrayValue(NAME_NXP_CORE_STANDBY, (char*)buffer, bufflen,
                                  &retlen);
   if (retlen > 0) {
@@ -2581,12 +2591,14 @@ static void phNxpNciHal_release_info(void) {
  * Returns          Always return NFCSTATUS_SUCCESS (0).
  *
  ******************************************************************************/
-int phNxpNciHal_close(void) {
+int phNxpNciHal_close(bool bShutdown) {
   NFCSTATUS status = NFCSTATUS_FAILED;
   uint8_t cmd_ce_discovery_nci[10] = {
       0x21, 0x03,
   };
   static uint8_t cmd_core_reset_nci[] = {0x20, 0x00, 0x01, 0x00};
+  static uint8_t cmd_ven_disable_nci[] = {0x20, 0x02, 0x05, 0x01,
++                                         0xA0, 0x07, 0x01, 0x02};
   uint8_t length = 0;
   uint8_t numPrms = 0;
   uint8_t ptr = 4;
@@ -2665,6 +2677,14 @@ int phNxpNciHal_close(void) {
   }
 
   nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
+
+  if (!bShutdown) {
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ven_disable_nci),
+                                      cmd_ven_disable_nci);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("CMD_VEN_DISABLE_NCI: Failed");
+    }
+  }
 
   status =
       phNxpNciHal_send_ext_cmd(sizeof(cmd_core_reset_nci), cmd_core_reset_nci);
@@ -2774,6 +2794,45 @@ void phNxpNciHal_close_complete(NFCSTATUS status) {
 
   return;
 }
+
+/******************************************************************************
+ * Function         phNxpNciHal_configDiscShutdown
+ *
+ * Description      Enable the CE and VEN config during shutdown.
+ *
+ * Returns          Always return NFCSTATUS_SUCCESS (0).
+ *
+ ******************************************************************************/
+int phNxpNciHal_configDiscShutdown(void) {
+  NFCSTATUS status;
+  /*NCI_RESET_CMD*/
+  static uint8_t cmd_reset_nci[] = {0x20, 0x00, 0x01, 0x00};
+
+  static uint8_t cmd_ce_disc_nci[] = {0x21, 0x03, 0x07, 0x03, 0x80,
+                                      0x01, 0x81, 0x01, 0x82, 0x01};
+
+  CONCURRENCY_LOCK();
+
+  status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_disc_nci), cmd_ce_disc_nci);
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("CMD_CE_DISC_NCI: Failed");
+  }
+
+  status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed");
+  }
+  CONCURRENCY_UNLOCK();
+
+  status = phNxpNciHal_close(true);
+  if(status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("NCI_HAL_CLOSE: Failed");
+  }
+
+  /* Return success always */
+  return NFCSTATUS_SUCCESS;
+}
+
 /******************************************************************************
  * Function         phNxpNciHal_getVendorConfig
  *
