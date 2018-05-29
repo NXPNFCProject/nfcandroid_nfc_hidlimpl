@@ -2881,6 +2881,9 @@ void phNxpNciHal_getVendorConfig(NfcConfig& config) {
   if (GetNxpNumValue(NAME_DEFAULT_SYS_CODE_ROUTE, &num, sizeof(num))) {
     config.defaultSystemCodeRoute = num;
   }
+  if (GetNxpNumValue(NAME_DEFAULT_SYS_CODE_PWR_STATE, &num, sizeof(num))) {
+    config.defaultSystemCodePowerState = num;
+  }
   if (GetNxpNumValue(NAME_DEFAULT_ROUTE, &num, sizeof(num))) {
     config.defaultRoute = num;
   }
