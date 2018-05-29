@@ -3033,7 +3033,7 @@ int phNxpNciHal_power_cycle(void) {
  * Description      This function is called to provide the status of
  *                  phNxpNciHal_power_cycle to libnfc-nci through callback.
  *
- * Returns          void.
+ * Returns          return 0 on success and -1 on fail.
  *
  ******************************************************************************/
 static void phNxpNciHal_power_cycle_complete(NFCSTATUS status) {
