@@ -620,14 +620,6 @@ static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
     goto clean_and_return;
   }
 
-  if (nxpncihal_ctrl.ext_cb_data.status != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E(
-        "Callback Status is failed!! Timer Expired!! Couldn't read it! 0x%x",
-        nxpncihal_ctrl.ext_cb_data.status);
-    status = NFCSTATUS_FAILED;
-    goto clean_and_return;
-  }
-
   NXPLOG_NCIHAL_D("Checking response");
 
   if ((mGetCfg_info != NULL) && (mGetCfg_info->isGetcfg == true) &&

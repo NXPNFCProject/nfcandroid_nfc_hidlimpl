@@ -227,6 +227,7 @@ typedef struct phNxpNciProfile_Control {
 
 /******************** NCI HAL exposed functions *******************************/
 
+int phNxpNciHal_check_ncicmd_write_window(uint16_t cmd_len, uint8_t* p_cmd);
 void phNxpNciHal_request_control(void);
 void phNxpNciHal_release_control(void);
 NFCSTATUS phNxpNciHal_send_get_cfgs();

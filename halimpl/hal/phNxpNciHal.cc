@@ -1104,6 +1104,15 @@ int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t* p_data) {
   memcpy(nxpncihal_ctrl.p_cmd_data, p_data, data_len);
   nxpncihal_ctrl.cmd_len = data_len;
 
+
+  /* check for write synchronyztion */
+  if(phNxpNciHal_check_ncicmd_write_window(nxpncihal_ctrl.cmd_len,
+                         nxpncihal_ctrl.p_cmd_data) != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_D("phNxpNciHal_write_unlocked Create cb data failed");
+    data_len = 0;
+    goto clean_and_return;
+  }
+
 retry:
 
   data_len = nxpncihal_ctrl.cmd_len;
@@ -1239,18 +1248,12 @@ static void phNxpNciHal_read_complete(void* pContext,
   if (pInfo->wStatus == NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_D("read successful status = 0x%x", pInfo->wStatus);
 
-    nxpncihal_ctrl.p_rx_data = pInfo->pBuff;
-    nxpncihal_ctrl.rx_data_len = pInfo->wLength;
-
-    status = phNxpNciHal_process_ext_rsp(nxpncihal_ctrl.p_rx_data,
-                                         &nxpncihal_ctrl.rx_data_len);
-
-    phNxpNciHal_print_res_status(nxpncihal_ctrl.p_rx_data,
-                                 &nxpncihal_ctrl.rx_data_len);
     sem_getvalue(&(nxpncihal_ctrl.syncSpiNfc), &sem_val);
     if (((pInfo->pBuff[0] & NCI_MT_MASK) == NCI_MT_RSP) && sem_val == 0) {
       sem_post(&(nxpncihal_ctrl.syncSpiNfc));
     }
+    nxpncihal_ctrl.p_rx_data = pInfo->pBuff;
+    nxpncihal_ctrl.rx_data_len = pInfo->wLength;
     /*Check the Omapi command response and store in dedicated buffer to solve
      * sync issue*/
     if (pInfo->pBuff[0] == 0x4F && pInfo->pBuff[1] == 0x01 &&
@@ -1264,6 +1267,9 @@ static void phNxpNciHal_read_complete(void* pContext,
       status = phNxpNciHal_process_ext_rsp(nxpncihal_ctrl.p_rx_data,
                                            &nxpncihal_ctrl.rx_data_len);
     }
+
+    phNxpNciHal_print_res_status(pInfo->pBuff, &pInfo->wLength);
+
 #if (NXP_NFCC_FORCE_NCI1_0_INIT == true)
     /* Notification Checking */
     if (nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT && ((nxpncihal_ctrl.hal_ext_enabled == 1) &&
@@ -3037,6 +3043,42 @@ static void phNxpNciHal_power_cycle_complete(NFCSTATUS status) {
   phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &msg);
 
   return;
+}
+
+/******************************************************************************
+* Function         phNxpNciHal_check_ncicmd_write_window
+*
+* Description      This function is called to check the write synchroniztion
+*                  status if write already aquired then wait for corresponding
+*                   read to complete.
+*
+* Returns          void.
+*
+******************************************************************************/
+
+int phNxpNciHal_check_ncicmd_write_window(uint16_t cmd_len, uint8_t* p_cmd) {
+  UNUSED(cmd_len);
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  int sem_timedout = 2, s;
+  struct timespec ts;
+  if ((p_cmd[0] & 0xF0) == 0x20) {
+    clock_gettime(CLOCK_REALTIME, &ts);
+    ts.tv_sec += sem_timedout;
+    while ((s = sem_timedwait(&nxpncihal_ctrl.syncSpiNfc, &ts)) == -1 &&
+           errno == EINTR)
+      continue; /* Restart if interrupted by handler */
+
+    if (s == -1) {
+      if (errno == ETIMEDOUT)
+        ALOGD_IF(nfc_debug_enabled, "sem_timedwait() timed out");
+      else
+        ALOGD_IF(nfc_debug_enabled, "sem_timedwait");
+    } else {
+      ALOGD_IF(nfc_debug_enabled, "sem_timedwait() succeeded");
+      status = NFCSTATUS_SUCCESS;
+    }
+  }
+  return status;
 }
 
 /******************************************************************************
