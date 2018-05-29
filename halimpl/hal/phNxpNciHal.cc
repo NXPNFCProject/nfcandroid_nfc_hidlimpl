@@ -479,19 +479,29 @@ static NFCSTATUS phNxpNciHal_FwDwnld(uint16_t aType) {
         }
         status= phNxpNciHal_CheckValidFwVersion();
    }
-  if (NFCSTATUS_SUCCESS == status) {
-    NXPLOG_NCIHAL_D("Found Valid Firmware Type");
-    status = phNxpNciHal_fw_download();
-    if (status != NFCSTATUS_SUCCESS) {
-      if (NFCSTATUS_SUCCESS != phNxpNciHal_fw_mw_ver_check()) {
-        NXPLOG_NCIHAL_D("Chip Version Middleware Version mismatch!!!!");
-        goto clean_and_return;
-      }
-      NXPLOG_NCIHAL_E("FW Download failed - NFCC init will continue");
-    }
-  } else {
-    if (wFwVerRsp == 0) phDnldNfc_ReSetHwDevHandle();
-  }
+   if (NFCSTATUS_SUCCESS == status) {
+     NXPLOG_NCIHAL_D("Found Valid Firmware Type");
+     nfc_nci_IoctlInOutData_t data;
+     memset(&data, 0x00, sizeof(nfc_nci_IoctlInOutData_t));
+     data.inp.level =
+         0x03; /* ioctl call arg value to get eSE power GPIO value = 0x03  */
+     int ese_gpio_value = phNxpNciHal_ioctl(HAL_NFC_GET_SPM_STATUS, &data);
+     NXPLOG_NCIHAL_D("eSE Power GPIO value = %d", ese_gpio_value);
+     if (ese_gpio_value == 0) {
+       status = phNxpNciHal_fw_download();
+       if (status != NFCSTATUS_SUCCESS) {
+         if (NFCSTATUS_SUCCESS != phNxpNciHal_fw_mw_ver_check()) {
+           NXPLOG_NCIHAL_D("Chip Version Middleware Version mismatch!!!!");
+           goto clean_and_return;
+         }
+         NXPLOG_NCIHAL_E("FW Download failed - NFCC init will continue");
+       }
+     } else {
+       NXPLOG_NCIHAL_E("SPI IN USE , FW DOWNLOAD DENIED, CONTINUE NFC INIT ");
+     }
+   } else {
+     if (wFwVerRsp == 0) phDnldNfc_ReSetHwDevHandle();
+   }
 clean_and_return:
   return status;
 }
