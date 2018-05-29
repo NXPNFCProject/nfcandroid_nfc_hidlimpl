@@ -2872,26 +2872,33 @@ void phNxpNciHal_getVendorConfig(NfcConfig& config) {
        && (num == 1)) {
     config.nfaPollBailOutMode = true;
   }
-  if (GetNxpNumValue(NAME_ACTIVE_SE, &num, sizeof(num))) {
+  if (GetNxpNumValue(NAME_DEFAULT_OFFHOST_ROUTE, &num, sizeof(num))) {
     config.defaultOffHostRoute = num;
   }
-  if (GetNxpNumValue(NAME_ACTIVE_SE_NFCF, &num, sizeof(num))) {
+  if (GetNxpNumValue(NAME_DEFAULT_NFCF_ROUTE, &num, sizeof(num))) {
     config.defaultOffHostRouteFelica = num;
   }
-  if (GetNxpNumValue(NAME_DEFAULT_FELICA_SYS_CODE_ROUTE, &num, sizeof(num))) {
+  if (GetNxpNumValue(NAME_DEFAULT_SYS_CODE_ROUTE, &num, sizeof(num))) {
     config.defaultSystemCodeRoute = num;
   }
-  if (GetNxpNumValue(NAME_DEFAULT_ISODEP_ROUTE, &num, sizeof(num))) {
+  if (GetNxpNumValue(NAME_DEFAULT_ROUTE, &num, sizeof(num))) {
     config.defaultRoute = num;
   }
-  if (GetNxpByteArrayValue(NAME_DEVICE_HOST_WHITE_LIST, (char*)buffer.data(), buffer.size(), &retlen)) {
-    config.hostWhitelist.setToExternal(buffer.data(),retlen);
+  if (GetNxpByteArrayValue(NAME_DEVICE_HOST_WHITE_LIST, (char*)buffer.data(),
+                           buffer.size(), &retlen)) {
+    config.hostWhitelist.resize(retlen);
+    for (int i = 0; i < retlen; i++) config.hostWhitelist[i] = buffer[i];
   }
-  if (GetNxpNumValue(NAME_NFA_HCI_STATIC_PIPE_ID_ESE, &num, sizeof(num))) {
+  if (GetNxpNumValue(NAME_OFF_HOST_ESE_PIPE_ID, &num, sizeof(num))) {
     config.offHostESEPipeId = num;
   }
-  if (GetNxpNumValue(NAME_NFA_HCI_STATIC_PIPE_ID_SIM, &num, sizeof(num))) {
+  if (GetNxpNumValue(NAME_OFF_HOST_SIM_PIPE_ID, &num, sizeof(num))) {
     config.offHostSIMPipeId = num;
+  }
+  if ((GetNxpByteArrayValue(NAME_DEFAULT_SYS_CODE, (char*)buffer.data(),
+                            buffer.size(), &retlen))) {
+    config.defaultSystemCode.resize(retlen);
+    for (int i = 0; i < retlen; i++) config.defaultSystemCode[i] = buffer[i];
   }
   if ((GetNxpByteArrayValue(NAME_NFA_PROPRIETARY_CFG, (char*)buffer.data(), buffer.size(), &retlen))
          && (retlen == 9)) {
