@@ -141,7 +141,6 @@ static void* phNxpNciHal_client_thread(void* arg);
 static void phNxpNciHal_nfccClockCfgRead(void);
 static NFCSTATUS phNxpNciHal_nfccClockCfgApply(void);
 static void phNxpNciHal_txNfccClockSetCmd(void);
-static void phNxpNciHal_check_factory_reset(void);
 static NFCSTATUS phNxpNciHal_check_eSE_Session_Identity(void);
 static void phNxpNciHal_print_res_status(uint8_t* p_rx_data, uint16_t* p_len);
 static NFCSTATUS phNxpNciHal_CheckValidFwVersion(void);
@@ -3991,10 +3990,18 @@ __attribute__((unused)) void phNxpNciHal_enable_i2c_fragmentation() {
  * Returns          void.
  *
  ******************************************************************************/
-static void phNxpNciHal_check_factory_reset(void) {
+void phNxpNciHal_check_factory_reset(void) {
   struct stat st;
   int ret = 0;
+
   NFCSTATUS status = NFCSTATUS_FAILED;
+  if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
+    status = phNxpNciHal_MinOpen();
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("%s: NXP Nfc Open failed", __func__);
+      return;
+    }
+  }
   const char config_eseinfo_path[] = "/data/vendor/nfc/nfaStorage.bin1";
   uint8_t *reset_ese_session_identity_set;
   uint8_t ese_session_dyn_uicc_nv[] = {
