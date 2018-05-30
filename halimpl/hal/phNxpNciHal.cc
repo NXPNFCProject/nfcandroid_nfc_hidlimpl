@@ -69,7 +69,7 @@ do\
     goto recoveryLabel;\
 }while(0)
 
-static const char* NXP_NFC_MW_VER = "NFC_NCIHALx_AR0040.9.0.5";
+static const char* NXP_NFC_MW_VER = "NFC_NCIHALx_AR0040.9.0.6";
 /* Processing of ISO 15693 EOF */
 extern uint8_t icode_send_eof;
 extern uint8_t icode_detected;
