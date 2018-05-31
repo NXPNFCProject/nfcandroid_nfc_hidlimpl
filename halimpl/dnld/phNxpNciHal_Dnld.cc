@@ -598,19 +598,13 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
       else if ((false == (gphNxpNciHal_fw_IoctlCtx.bDnldInitiated)) &&
                ((bNewVer[0] == bCurrVer[0]) && (bNewVer[1] == bCurrVer[1]))) {
         wStatus = NFCSTATUS_SUCCESS;
-#if (PH_LIBNFC_ENABLE_FORCE_DOWNLOAD == 0)
         NXPLOG_FWDNLD_D("Version Already UpToDate!!\n");
         if ((nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD == true) &&
                 ((gphNxpNciHal_fw_IoctlCtx.bForceDnld) == false)) {
             (gphNxpNciHal_fw_IoctlCtx.bSkipSeq) = true;
-        }
-        else {
+        } else {
             (gphNxpNciHal_fw_IoctlCtx.bSkipSeq) = false;
         }
-#else
-        (gphNxpNciHal_fw_IoctlCtx.bForceDnld) = true;
-#endif
-
       }
       /* Minor Version number check - after download
        * after download, we should get the same version information.*/
@@ -1013,9 +1007,8 @@ static NFCSTATUS phNxpNciHal_fw_dnld_write(void* pContext, NFCSTATUS status,
     return NFCSTATUS_FAILED;
   }
 
-  if ((nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD == false) &&
-          (false == (gphNxpNciHal_fw_IoctlCtx.bForceDnld)))
-  {
+  if ((gphNxpNciHal_fw_IoctlCtx.bForceDnld == false) ||
+          (nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD == true)) {
     NXPLOG_FWDNLD_D("phNxpNciHal_fw_dnld_write - Incrementing NumDnldTrig..");
     (gphNxpNciHal_fw_IoctlCtx.bDnldInitiated) = true;
     (gphNxpNciHal_fw_IoctlCtx.bDnldAttempts)++;

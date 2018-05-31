@@ -40,11 +40,7 @@ using namespace android::hardware::nfc::V1_1;
 #define PN547C2_CLOCK_SETTING
 #undef PN547C2_FACTORY_RESET_DEBUG
 #define CORE_RES_STATUS_BYTE 3
-#if (NXP_NFCC_FORCE_NCI1_0_INIT == true)
-#ifndef PH_LIBNFC_ENABLE_FORCE_DOWNLOAD
-#define PH_LIBNFC_ENABLE_FORCE_DOWNLOAD false
-#endif
-#endif
+
 
 const char RF_BLOCK_LIST[6][18] =
 {
@@ -1269,17 +1265,13 @@ static void phNxpNciHal_read_complete(void* pContext,
 
     phNxpNciHal_print_res_status(pInfo->pBuff, &pInfo->wLength);
 
-#if (NXP_NFCC_FORCE_NCI1_0_INIT == true)
     /* Notification Checking */
     if (nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT && ((nxpncihal_ctrl.hal_ext_enabled == 1) &&
         (nxpncihal_ctrl.p_rx_data[0x00] == 0x60) &&
         (nxpncihal_ctrl.p_rx_data[0x03] == 0x02))) {
       nxpncihal_ctrl.ext_cb_data.status = NFCSTATUS_SUCCESS;
       SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
-    } else
-#endif
-        /* Check if response should go to hal module only */
-        if (nxpncihal_ctrl.hal_ext_enabled == TRUE &&
+    } else if (nxpncihal_ctrl.hal_ext_enabled == TRUE && /* Check if response should go to hal module only */
             ((nxpncihal_ctrl.p_rx_data[0x00] & NCI_MT_MASK) == NCI_MT_RSP ||
              ((icode_detected == true) && (icode_send_eof == 3)))) {
       if (status == NFCSTATUS_FAILED) {
