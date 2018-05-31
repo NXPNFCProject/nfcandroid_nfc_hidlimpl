@@ -3337,6 +3337,22 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
           return -1;
         }
       }
+
+      gpphTmlNfc_Context->nfc_service_pid = pInpOutData->inp.data.nfcServicePid;
+      status = phTmlNfc_IoCtl(phTmlNfc_e_SetNfcServicePid);
+      if (NFCSTATUS_SUCCESS != status) {
+        NXPLOG_NCIHAL_E("%s : Error! SetNfcServicePid Failed ", __func__);
+        ;
+      }
+
+      if (!nfcFL.eseFL._NXP_SPI_DWP_SYNC) {
+        ALOGD_IF(nfc_debug_enabled,
+                 "phNxpNciHal_ioctl HAL_NFC_IOCTL_SPI_DWP_SYNC not supported. "
+                 "Returning..");
+        ret = 0;
+        break;
+      }
+
       ret = phNxpNciHal_send_ese_hal_cmd(pInpOutData->inp.data.nciCmd.cmd_len,
                                          pInpOutData->inp.data.nciCmd.p_cmd);
       pInpOutData->out.data.nciRsp.rsp_len = nxpncihal_ctrl.rx_ese_data_len;

@@ -111,6 +111,7 @@ typedef struct {
     uint8_t _BLOCK_PROPRIETARY_APDU_GATE                 : 1;
     uint8_t _JCOP_WA_ENABLE                              : 1;
     uint8_t _NXP_LDR_SVC_VER_2                           : 1;
+    uint8_t _NXP_SPI_DWP_SYNC                            : 1;
     uint8_t _NXP_ESE_VER                                 : 3;
 }tNfc_eseFeatureList;
 /*
@@ -213,6 +214,7 @@ extern tNfc_featureList nfcFL;
             nfcFL.eseFL._GP_CONTINOUS_PROCESSING = false;                   \
             nfcFL.eseFL._ESE_DWP_SPI_SYNC_ENABLE = true;                    \
             nfcFL.eseFL._ESE_ETSI12_PROP_INIT = true;                       \
+            nfcFL.eseFL._NXP_SPI_DWP_SYNC = true;                           \
         }                                                                   \
         if (chipType == pn80T) {                                            \
             CONFIGURE_FEATURELIST_NFCC(pn553)                               \
@@ -231,6 +233,7 @@ extern tNfc_featureList nfcFL;
             nfcFL.eseFL._ESE_DWP_SPI_SYNC_ENABLE = true;                    \
             nfcFL.eseFL._ESE_POWER_MODE = true;                             \
             nfcFL.eseFL._ESE_P73_ISO_RST = true;                            \
+            nfcFL.eseFL._NXP_SPI_DWP_SYNC = false;                          \
             \
             \
             nfcFL.nfcMwFL._NCI_PWR_LINK_PARAM_CMD_SIZE = 0x02;              \
@@ -251,6 +254,7 @@ extern tNfc_featureList nfcFL;
             nfcFL.eseFL._NFCC_ESE_UICC_CONCURRENT_ACCESS_PROTECTION = true; \
             nfcFL.eseFL._ESE_DWP_SPI_SYNC_ENABLE = true;                    \
             nfcFL.eseFL._NXP_ESE_VER = JCOP_VER_3_3;                        \
+            nfcFL.eseFL._NXP_SPI_DWP_SYNC = false;                          \
         }                                                                   \
         else if (chipType == pn66T)                                         \
         {                                                                   \
@@ -267,6 +271,7 @@ extern tNfc_featureList nfcFL;
             nfcFL.eseFL._NFCC_ESE_UICC_CONCURRENT_ACCESS_PROTECTION = true; \
             nfcFL.eseFL._ESE_DWP_SPI_SYNC_ENABLE = true;                    \
             nfcFL.eseFL._NXP_ESE_VER = JCOP_VER_3_3;                        \
+            nfcFL.eseFL._NXP_SPI_DWP_SYNC = false;                          \
         }                                                                   \
         else if (chipType == pn65T)                                         \
         {                                                                   \
@@ -305,6 +310,7 @@ extern tNfc_featureList nfcFL;
         nfcFL.eseFL._BLOCK_PROPRIETARY_APDU_GATE = false;                   \
         nfcFL.eseFL._JCOP_WA_ENABLE = true;                                 \
         nfcFL.eseFL._EXCLUDE_NV_MEM_DEPENDENCY = false;                     \
+        nfcFL.eseFL._NXP_SPI_DWP_SYNC = false;                              \
         nfcFL.nfccFL._NXP_NFC_UICC_ETSI12 = false;                          \
         nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = false;                    \
         \
