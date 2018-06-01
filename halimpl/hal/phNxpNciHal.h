@@ -78,6 +78,19 @@ typedef enum {
   HAL_STATUS_OPEN,
   HAL_STATUS_MIN_OPEN
 } phNxpNci_HalStatus;
+typedef enum {
+  GPIO_UNKNOWN = 0x00,
+  GPIO_STORE = 0x01,
+  GPIO_STORE_DONE = 0x02,
+  GPIO_RESTORE = 0x10,
+  GPIO_RESTORE_DONE = 0x20,
+  GPIO_CLEAR = 0xFF
+} phNxpNciHal_GpioInfoState;
+
+typedef struct phNxpNciGpioInfo {
+  phNxpNciHal_GpioInfoState state;
+  uint8_t values[2];
+} phNxpNciGpioInfo_t;
 
 /* Macros to enable and disable extensions */
 #define HAL_ENABLE_EXT() (nxpncihal_ctrl.hal_ext_enabled = 1)
@@ -132,6 +145,9 @@ typedef struct phNxpNciHal_Control {
   phNxpNciInfo_t nci_info;
   uint8_t hal_boot_mode;
   tNFC_chipType chipType;
+  /* to store and restore gpio values */
+  phNxpNciGpioInfo_t phNxpNciGpioInfo;
+  bool bIsForceFwDwnld;
 } phNxpNciHal_Control_t;
 
 typedef struct {

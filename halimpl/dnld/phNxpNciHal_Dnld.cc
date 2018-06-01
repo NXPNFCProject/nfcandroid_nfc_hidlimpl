@@ -603,7 +603,7 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
                 ((gphNxpNciHal_fw_IoctlCtx.bForceDnld) == false)) {
             (gphNxpNciHal_fw_IoctlCtx.bSkipSeq) = true;
         } else {
-            (gphNxpNciHal_fw_IoctlCtx.bSkipSeq) = false;
+          (gphNxpNciHal_fw_IoctlCtx.bSkipSeq) = false;
         }
       }
       /* Minor Version number check - after download
@@ -1006,9 +1006,8 @@ static NFCSTATUS phNxpNciHal_fw_dnld_write(void* pContext, NFCSTATUS status,
     NXPLOG_FWDNLD_E("phNxpNciHal_fw_dnld_write cb_data creation failed");
     return NFCSTATUS_FAILED;
   }
-
   if ((gphNxpNciHal_fw_IoctlCtx.bForceDnld == false) ||
-          (nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD == true)) {
+      (nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD == true)) {
     NXPLOG_FWDNLD_D("phNxpNciHal_fw_dnld_write - Incrementing NumDnldTrig..");
     (gphNxpNciHal_fw_IoctlCtx.bDnldInitiated) = true;
     (gphNxpNciHal_fw_IoctlCtx.bDnldAttempts)++;
