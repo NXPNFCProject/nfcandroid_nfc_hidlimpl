@@ -64,7 +64,6 @@ do\
     goto recoveryLabel;\
 }while(0)
 
-static const char* NXP_NFC_MW_VER = "NFC_NCIHALx_AR0040.9.0.8";
 /* Processing of ISO 15693 EOF */
 extern uint8_t icode_send_eof;
 extern uint8_t icode_detected;
@@ -714,7 +713,6 @@ clean_and_return:
  ******************************************************************************/
 int phNxpNciHal_MinInit(nfc_stack_callback_t* p_cback,
                         nfc_stack_data_callback_t* p_data_cback) {
-  NXPLOG_NCIHAL_D("NXP NFC MW Version = %s",NXP_NFC_MW_VER);
   NXPLOG_NCIHAL_E("Init monitor phNxpNciHal_MinInit");
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   phOsalNfc_Config_t tOsalConfig;
@@ -1083,7 +1081,6 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
                      nfc_stack_data_callback_t* p_data_cback) {
   NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
 
-  NXPLOG_NCIHAL_D("NXP NFC MW Version = %s", NXP_NFC_MW_VER);
   if (nxpncihal_ctrl.hal_boot_mode == NFC_FAST_BOOT_MODE) {
     NXPLOG_NCIHAL_E(" HAL NFC fast init mode calling min_open %d",
                     nxpncihal_ctrl.hal_boot_mode);
