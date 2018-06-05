@@ -2845,6 +2845,14 @@ int phNxpNciHal_close(bool bShutdown) {
     goto close_and_return;
   }
 
+  if (!bShutdown) {
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ven_disable_nci),
+                                      cmd_ven_disable_nci);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("CMD_VEN_DISABLE_NCI: Failed");
+    }
+  }
+
   if((uiccListenMask & 0x1) == 0x01 || (eseListenMask & 0x1) == 0x01) {
     NXPLOG_NCIHAL_D("phNxpNciHal_close (): Adding A passive listen");
     numPrms++;
@@ -2881,14 +2889,6 @@ int phNxpNciHal_close(bool bShutdown) {
   }
 
   nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
-
-  if (!bShutdown) {
-    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ven_disable_nci),
-                                      cmd_ven_disable_nci);
-    if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("CMD_VEN_DISABLE_NCI: Failed");
-    }
-  }
 
   status =
       phNxpNciHal_send_ext_cmd(sizeof(cmd_core_reset_nci), cmd_core_reset_nci);
