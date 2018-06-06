@@ -667,6 +667,7 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
 static NFCSTATUS phDnldNfc_CreateFramePld(pphDnldNfc_DlContext_t pDlContext) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   uint32_t wBuffIdx = 0;
+  uint16_t wChkIntgVal = 0;
   uint16_t wFrameLen = 0;
 
   if (NULL == pDlContext) {
@@ -681,13 +682,14 @@ static NFCSTATUS phDnldNfc_CreateFramePld(pphDnldNfc_DlContext_t pDlContext) {
       (pDlContext->tCmdRspFrameInfo.dwSendlength) += PHDNLDNFC_MIN_PLD_LEN;
     } else if (phDnldNfc_ChkIntg == (pDlContext->FrameInp.Type)) {
       (pDlContext->tCmdRspFrameInfo.dwSendlength) += PHDNLDNFC_MIN_PLD_LEN;
-#if 0 /*Commented for SN100*/
-      wChkIntgVal = PHDNLDNFC_USERDATA_EEPROM_OFFSET;
+    if (nfcFL.chipType != sn100u) {
+      wChkIntgVal = nfcFL._PHDNLDNFC_USERDATA_EEPROM_OFFSET;
+
       memcpy(&(pDlContext->tCmdRspFrameInfo
                    .aFrameBuff[PHDNLDNFC_FRAME_RDDATA_OFFSET]),
              &wChkIntgVal, sizeof(wChkIntgVal));
 
-      wChkIntgVal = PHDNLDNFC_USERDATA_EEPROM_LEN;
+      wChkIntgVal = nfcFL._PHDNLDNFC_USERDATA_EEPROM_LEN;
       memcpy(&(pDlContext->tCmdRspFrameInfo
                    .aFrameBuff[PHDNLDNFC_FRAME_RDDATA_OFFSET +
                                PHDNLDNFC_USERDATA_EEPROM_OFFSIZE]),
@@ -697,7 +699,7 @@ static NFCSTATUS phDnldNfc_CreateFramePld(pphDnldNfc_DlContext_t pDlContext) {
           PHDNLDNFC_USERDATA_EEPROM_LENSIZE;
       (pDlContext->tCmdRspFrameInfo.dwSendlength) +=
           PHDNLDNFC_USERDATA_EEPROM_OFFSIZE;
-#endif
+      }
     } else if (phDnldNfc_FTWrite == (pDlContext->FrameInp.Type)) {
       wBuffIdx = (pDlContext->tRWInfo.wOffset);
 

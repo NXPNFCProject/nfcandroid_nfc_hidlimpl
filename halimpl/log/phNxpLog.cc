@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+#define LOG_TAG "NxpNfcHal"
 #include <stdio.h>
 #include <string.h>
 #if !defined(NXPLOG__H_INCLUDED)
@@ -21,6 +21,7 @@
 #include "phNxpLog.h"
 #endif
 #include <cutils/properties.h>
+#include <log/log.h>
 
 const char* NXPLOG_ITEM_EXTNS = "NxpExtns";
 const char* NXPLOG_ITEM_NCIHAL = "NxpHal";
@@ -36,6 +37,8 @@ const char* NXPLOG_ITEM_HCPR = "NxpHcpR";
 
 /* global log level structure */
 nci_log_level_t gLog_level;
+
+extern bool nfc_debug_enabled;
 
 /*******************************************************************************
  *
@@ -246,7 +249,7 @@ void phNxpLog_InitializeLogLevel(void) {
   phNxpLog_SetDnldLogLevel(level);
   phNxpLog_SetNciTxLogLevel(level);
 
-  ALOGD(
+  ALOGD_IF(nfc_debug_enabled,
       "%s: global =%u, Fwdnld =%u, extns =%u, \
                 hal =%u, tml =%u, ncir =%u, \
                 ncix =%u",

@@ -76,15 +76,10 @@ static uint8_t st_validator_testAntenna_AgcVal_FixedNfcLd(
 static uint8_t st_validator_testAntenna_AgcVal_Differential(
     nci_data_t* exp, phTmlNfc_TransactInfo_t* act);
 
-#if (NFC_NXP_CHIP_TYPE != PN547C2)
 NFCSTATUS phNxpNciHal_getPrbsCmd(phNxpNfc_PrbsType_t prbs_type,
                                  phNxpNfc_PrbsHwType_t hw_prbs_type,
                                  uint8_t tech, uint8_t bitrate,
                                  uint8_t* prbs_cmd, uint8_t prbs_cmd_len);
-#else
-NFCSTATUS phNxpNciHal_getPrbsCmd(uint8_t tech, uint8_t bitrate,
-                                 uint8_t* prbs_cmd, uint8_t prbs_cmd_len);
-#endif
 /* Test data to validate SWP line 2*/
 static nci_test_data_t swp2_test_data[] = {
     {{

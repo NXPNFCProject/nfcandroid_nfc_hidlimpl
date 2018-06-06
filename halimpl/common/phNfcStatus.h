@@ -305,17 +305,6 @@
 /* No registry node matches the specified input data. */
 #define NFCSTATUS_NODE_NOT_FOUND (0x0017)
 
-#define NFCSTATUS_SMX_SPI_STATE (0x00F0)
-
-/* The current module is free ; one might use it */
-#define NFCSTATUS_SMX_IDLE_STATE (0x00F1)
-
-/* The current module is busy with wired; one might use it */
-#define NFCSTATUS_SMX_WIRED_STATE (0x00F3)
-
-/* The current module is free ; one might use it */
-#define NFCSTATUS_NFCC_DWNLD_STATE (0x00F4)
-
 /* The current module is busy ; one might retry later */
 #define NFCSTATUS_SMX_BAD_STATE (0x00F0)
 

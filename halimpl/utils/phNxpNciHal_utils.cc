@@ -17,15 +17,11 @@
  ******************************************************************************/
 #include <errno.h>
 #include <pthread.h>
+#include <log/log.h>
 
 #include <phNxpLog.h>
 #include <phNxpNciHal.h>
 #include <phNxpNciHal_utils.h>
-
-
-extern uint8_t discovery_cmd[50];
-extern uint8_t discovery_cmd_len;
-extern uint8_t nfcdep_detected;
 
 /*********************** Link list functions **********************************/
 
@@ -341,6 +337,9 @@ void phNxpNciHal_cleanup_monitor(void) {
 **
 *******************************************************************************/
 phNxpNciHal_Monitor_t* phNxpNciHal_get_monitor(void) {
+  if (nxpncihal_monitor == NULL) {
+    NXPLOG_NCIHAL_E("nxpncihal_monitor is null");
+  }
   return nxpncihal_monitor;
 }
 

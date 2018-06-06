@@ -32,6 +32,7 @@ typedef struct {
 /* NXP HAL functions */
 int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
                      nfc_stack_data_callback_t* p_data_cback);
+int phNxpNciHal_MinOpen();
 int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data);
 int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params);
 int phNxpNciHal_pre_discover(void);

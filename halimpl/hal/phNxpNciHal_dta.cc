@@ -19,7 +19,7 @@
 
 /*********************** Global Variables *************************************/
 static phNxpDta_Control_t nxpdta_ctrl = {0, 0, 0};
-
+extern bool nfc_debug_enabled;
 /*******************************************************************************
 **
 ** Function         phNxpEnable_DtaMode
@@ -32,7 +32,7 @@ void phNxpEnable_DtaMode(uint16_t pattern_no) {
   nxpdta_ctrl.dta_ctrl_flag = false;
   nxpdta_ctrl.dta_t1t_flag = false;
   nxpdta_ctrl.dta_pattern_no = pattern_no;
-  ALOGD(">>>>DTA - Mode is enabled");
+  NXPLOG_NCIHAL_D(">>>>DTA - Mode is enabled");
   nxpdta_ctrl.dta_ctrl_flag = true;
 }
 

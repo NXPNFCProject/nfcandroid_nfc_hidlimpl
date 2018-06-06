@@ -24,12 +24,13 @@
 #include <phNxpConfig.h>
 #include <phNxpLog.h>
 #include <phTmlNfc.h>
-
+#include <string>
 static void*
-    pFwLibHandle;    /* Global firmware lib handle used in this file only */
+   pFwHandle;    /* Global firmware handle*/
 uint16_t wMwVer = 0; /* Middleware version no */
 uint16_t wFwVer = 0; /* Firmware version no */
 uint8_t gRecFWDwnld; /* flag set to true to indicate dummy FW download */
+phTmlNfc_i2cfragmentation_t fragmentation_enabled = I2C_FRAGMENATATION_DISABLED;
 static pphDnldNfc_DlContext_t gpphDnldContext = NULL; /* Download contex */
 #undef EEPROM_Read_Mem_IMP
 
@@ -244,11 +245,11 @@ NFCSTATUS phDnldNfc_CheckIntegrity(uint8_t bChipVer, pphDnldNfc_Buff_t pCRCData,
       if ((PHDNLDNFC_HWVER_MRA2_1 == bChipVer) ||
            (PHDNLDNFC_HWVER_MRA2_2 == bChipVer) ||
            ( (nfcFL.chipType == pn551) &&
-               ((PHDNLDNFC_HWVER_PN551_MRA1_0 == bChipVer) || (PHDNLDNFC_HWVER_PN553_MRA1_0 == bChipVer))) ||
+               ((PHDNLDNFC_HWVER_PN551_MRA1_0 == bChipVer))) ||
            ( (nfcFL.chipType == pn548C2) &&
                (PHDNLDNFC_HWVER_PN548AD_MRA1_0 == bChipVer)) ||
            ( ((nfcFL.chipType == pn553) || (nfcFL.chipType == pn557)) &&
-               ((PHDNLDNFC_HWVER_PN553_MRA1_0 == bChipVer) ||(PHDNLDNFC_HWVER_PN553_MRA1_0_UPDATED & bChipVer))) ||
+               ((PHDNLDNFC_HWVER_PN553_MRA1_0 == bChipVer) || (PHDNLDNFC_HWVER_PN553_MRA1_0_UPDATED & bChipVer)||((PHDNLDNFC_HWVER_PN557_MRA1_0 == bChipVer)))) ||
            ( (nfcFL.chipType == sn100u) && (PHDNLDNFC_HWVER_VENUS_MRA1_0 & bChipVer))) {
         (gpphDnldContext->FrameInp.Type) = phDnldNfc_ChkIntg;
       } else {
@@ -732,31 +733,38 @@ NFCSTATUS phDnldNfc_InitImgInfo(void) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   uint8_t* pImageInfo = NULL;
   uint32_t ImageInfoLen = 0;
-  char fwFileName[256];
-  char fwpathName[256];
-  char* pathName = NULL;
+  unsigned long fwType = FW_FORMAT_SO;
 
   /* if memory is not allocated then allocate memory for download context
    * structure */
   phDnldNfc_SetHwDevHandle();
 
+  gpphDnldContext->FwFormat = FW_FORMAT_UNKNOWN;
+
   /*Read Firmware file name from config file*/
-  if (GetNxpStrValue(NAME_NXP_FW_NAME, (char*)fwFileName, sizeof(fwFileName)) ==
-      true) {
-    strcpy(fwpathName, FW_DLL_ROOT_DIR);
-    strncat(fwpathName, fwFileName, strlen(fwFileName));
-    pathName = fwpathName;
-  }
-
-/* load the library and get the image info pointer */
-  if ((nfcFL.chipType != pn547C2) && (gRecFWDwnld == true)) {
-    wStatus = phDnldNfc_LoadRecoveryFW(pathName, &pImageInfo, &ImageInfoLen);
+  if (GetNxpNumValue(NAME_NXP_FW_TYPE, &fwType, sizeof(fwType)) == true) {
+    NXPLOG_FWDNLD_D("firmware type from conf file: %lu",fwType);
   } else {
-    wStatus = phDnldNfc_LoadFW(pathName, &pImageInfo, &ImageInfoLen);
+    NXPLOG_FWDNLD_W("firmware type not found. Taking default value: %lu",fwType);
   }
 
-  NXPLOG_FWDNLD_D("FW Image Length - ImageInfoLen %d", ImageInfoLen);
-  NXPLOG_FWDNLD_D("FW Image Info Pointer - pImageInfo %p", pImageInfo);
+  if(fwType == FW_FORMAT_BIN) {
+    gpphDnldContext->FwFormat = FW_FORMAT_BIN;
+    wStatus = phDnldNfc_LoadBinFW(&pImageInfo, &ImageInfoLen);
+  } else if(fwType == FW_FORMAT_SO) {
+    gpphDnldContext->FwFormat = FW_FORMAT_SO;
+    if (gRecFWDwnld == true) {
+      wStatus = phDnldNfc_LoadRecoveryFW(&pImageInfo, &ImageInfoLen);
+    } else {
+      wStatus = phDnldNfc_LoadFW(&pImageInfo, &ImageInfoLen);
+    }
+  } else {
+    NXPLOG_FWDNLD_E("firmware file format mismatch!!!\n");
+    return NFCSTATUS_FAILED;
+  }
+
+  NXPLOG_FWDNLD_E("FW Image Length - ImageInfoLen %d", ImageInfoLen);
+  NXPLOG_FWDNLD_E("FW Image Info Pointer - pImageInfo %p", pImageInfo);
 
   if ((pImageInfo == NULL) || (ImageInfoLen == 0)) {
     NXPLOG_FWDNLD_E(
@@ -821,14 +829,10 @@ NFCSTATUS phDnldNfc_LoadRecInfo(void) {
   /* if memory is not allocated then allocate memory for donwload context
    * structure */
   phDnldNfc_SetHwDevHandle();
-  if ((nfcFL.chipType != pn547C2) && (gRecFWDwnld == true)) {
-      wStatus =
-              phDnldNfc_LoadRecoveryFW((char *)&nfcFL.nfcMwFL._PLATFORM_LIB_PATH,
-                      &pImageInfo, &ImageInfoLen);
-  } else {
-      wStatus = phDnldNfc_LoadFW((char *)&nfcFL.nfcMwFL._PLATFORM_LIB_PATH,
-              &pImageInfo, &ImageInfoLen);
-  }
+  if (gRecFWDwnld == true)
+      wStatus = phDnldNfc_LoadRecoveryFW(&pImageInfo, &ImageInfoLen);
+  else
+      wStatus = phDnldNfc_LoadFW(&pImageInfo, &ImageInfoLen);
   if ((pImageInfo == NULL) || (ImageInfoLen == 0)) {
     NXPLOG_FWDNLD_E(
         "Image extraction Failed - invalid imginfo or imginfolen!!");
@@ -881,14 +885,11 @@ NFCSTATUS phDnldNfc_LoadPKInfo(void) {
   phDnldNfc_SetHwDevHandle();
 
 /* load the PKU image library */
-  if ((nfcFL.chipType != pn547C2) && (gRecFWDwnld == true)) {
-      wStatus =
-              phDnldNfc_LoadRecoveryFW((char *)&nfcFL.nfcMwFL._PKU_LIB_PATH,
-                      &pImageInfo, &ImageInfoLen);
-  } else {
-      wStatus = phDnldNfc_LoadFW((char *)&nfcFL.nfcMwFL._PKU_LIB_PATH,
-              &pImageInfo, &ImageInfoLen);
-  }
+  if (gRecFWDwnld == true)
+      wStatus =phDnldNfc_LoadRecoveryFW(&pImageInfo, &ImageInfoLen);
+  else
+      wStatus = phDnldNfc_LoadFW(
+            &pImageInfo, &ImageInfoLen);
   if ((pImageInfo == NULL) || (ImageInfoLen == 0)) {
     NXPLOG_FWDNLD_E(
         "Image extraction Failed - invalid imginfo or imginfolen!!");
@@ -931,13 +932,19 @@ NFCSTATUS phDnldNfc_LoadPKInfo(void) {
 **
 *******************************************************************************/
 void phDnldNfc_CloseFwLibHandle(void) {
-  NFCSTATUS wStatus;
-
-  wStatus = phDnldNfc_UnloadFW();
-  if (wStatus != NFCSTATUS_SUCCESS) {
-    NXPLOG_FWDNLD_E("free library FAILED !!\n");
-  } else {
-    NXPLOG_FWDNLD_E("free library SUCCESS !!\n");
+  NFCSTATUS wStatus = NFCSTATUS_FAILED;
+  if (gpphDnldContext->FwFormat == FW_FORMAT_SO) {
+    wStatus = phDnldNfc_UnloadFW();
+    if (wStatus != NFCSTATUS_SUCCESS) {
+      NXPLOG_FWDNLD_E("free library FAILED !!\n");
+    } else {
+      NXPLOG_FWDNLD_E("free library SUCCESS !!\n");
+    }
+  } else if (gpphDnldContext->FwFormat == FW_FORMAT_BIN) {
+    if (pFwHandle != NULL) {
+      free(pFwHandle);
+      pFwHandle = NULL;
+    }
   }
   return;
 }
@@ -948,45 +955,29 @@ void phDnldNfc_CloseFwLibHandle(void) {
 **
 ** Description      Load the firmware version form firmware lib
 **
-** Parameters       pathName    - Firmware image path
-**                  pImgInfo    - Firmware image handle
+** Parameters       pImgInfo    - Firmware image handle
 **                  pImgInfoLen - Firmware image length
 **
 ** Returns          NFC status
 **
 *******************************************************************************/
-NFCSTATUS phDnldNfc_LoadFW(const char* pathName, uint8_t** pImgInfo,
+NFCSTATUS phDnldNfc_LoadFW(uint8_t** pImgInfo,
                            uint32_t* pImgInfoLen) {
   void* pImageInfo = NULL;
   void* pImageInfoLen = NULL;
-  if (pathName == NULL) {
-      if(nfcFL.chipType == pn548C2) {
-          pathName = "/system/vendor/firmware/libpn548ad_fw.so";
-      } else if(nfcFL.chipType == pn551) {
-          pathName = "/system/vendor/firmware/libpn551_fw.so";
-      } else if(nfcFL.chipType == pn553) {
-          pathName = "/system/vendor/firmware/libpn553_fw.so";
-      } else if(nfcFL.chipType == pn557) {
-          pathName = "/system/vendor/firmware/libpn557_fw.so";
-      } else if(nfcFL.chipType == sn100u) {
-          pathName = "/system/vendor/firmware/libsn100u_fw.so";
-      } else {
-          pathName = "/system/vendor/firmware/libpn547_fw.so";
-      }
-  }
 
   /* check if the handle is not NULL then free the library */
-  if (pFwLibHandle != NULL) {
-    phDnldNfc_UnloadFW();
-    pFwLibHandle = NULL;
+  if (pFwHandle != NULL) {
+    phDnldNfc_CloseFwLibHandle();
+    pFwHandle = NULL;
   }
 
   /* load the DLL file */
-  pFwLibHandle = dlopen(pathName, RTLD_LAZY);
-  NXPLOG_FWDNLD_D("@@@%s", pathName);
+  pFwHandle = dlopen(nfcFL._FW_LIB_PATH.c_str(), RTLD_LAZY);
+  NXPLOG_FWDNLD_D("@@@%s", nfcFL._FW_LIB_PATH.c_str());
 
   /* if library load failed then handle will be NULL */
-  if (pFwLibHandle == NULL) {
+  if (pFwHandle == NULL) {
     NXPLOG_FWDNLD_E(
         "NULL handler : unable to load the library file, specify correct path");
     return NFCSTATUS_FAILED;
@@ -995,7 +986,7 @@ NFCSTATUS phDnldNfc_LoadFW(const char* pathName, uint8_t** pImgInfo,
   dlerror(); /* Clear any existing error */
 
   /* load the address of download image pointer and image size */
-  pImageInfo = (void*)dlsym(pFwLibHandle, "gphDnldNfc_DlSeq");
+  pImageInfo = (void*)dlsym(pFwHandle, "gphDnldNfc_DlSeq");
 
   if (dlerror() || (NULL == pImageInfo)) {
     NXPLOG_FWDNLD_E("Problem loading symbol : gphDnldNfc_DlSeq");
@@ -1003,7 +994,7 @@ NFCSTATUS phDnldNfc_LoadFW(const char* pathName, uint8_t** pImgInfo,
   }
   (*pImgInfo) = (*(uint8_t**)pImageInfo);
 
-  pImageInfoLen = (void*)dlsym(pFwLibHandle, "gphDnldNfc_DlSeqSz");
+  pImageInfoLen = (void*)dlsym(pFwHandle, "gphDnldNfc_DlSeqSz");
   if (dlerror() || (NULL == pImageInfoLen)) {
     NXPLOG_FWDNLD_E("Problem loading symbol : gphDnldNfc_DlSeqSz");
     return NFCSTATUS_FAILED;
@@ -1013,6 +1004,87 @@ NFCSTATUS phDnldNfc_LoadFW(const char* pathName, uint8_t** pImgInfo,
   return NFCSTATUS_SUCCESS;
 }
 
+/*******************************************************************************
+**
+** Function         phDnldNfc_LoadBinFW
+**
+** Description      Load the firmware version form firmware lib
+**
+** Parameters       pImgInfo    - Firmware image handle
+**                  pImgInfoLen - Firmware image length
+**
+** Returns          NFC status
+**
+*******************************************************************************/
+NFCSTATUS phDnldNfc_LoadBinFW(uint8_t** pImgInfo, uint32_t* pImgInfoLen) {
+  FILE* pFile = NULL;
+  uint32_t fileSize = 0;
+  uint32_t bytesRead = 0;
+  long ftellFileSize = 0;
+
+  /* check for path name */
+  if (nfcFL._FW_BIN_PATH.c_str() == NULL) {
+    NXPLOG_FWDNLD_E("Invalid FW file path!!!\n");
+    return NFCSTATUS_FAILED;
+  }
+
+  /* check if the handle is not NULL then free the memory*/
+  if (pFwHandle != NULL) {
+    phDnldNfc_CloseFwLibHandle();
+    pFwHandle = NULL;
+  }
+
+  /* Open the FW binary image file to be read */
+  pFile = fopen(nfcFL._FW_BIN_PATH.c_str(), "r");
+  if (NULL == pFile) {
+    NXPLOG_FWDNLD_E("Failed to load FW binary image file!!!\n");
+    return NFCSTATUS_FAILED;
+  }
+
+  /* Seek to the end of the file */
+  fseek(pFile, 0, SEEK_END);
+
+  /* get the actual length of the file */
+  ftellFileSize = ftell(pFile);
+
+  if (ftellFileSize > 0) {
+    fileSize = ftellFileSize;
+  } else {
+    fileSize = 0;
+  }
+
+  /* Seek to the start of the file, to move file handle back to start of file*/
+  fseek(pFile, 0, SEEK_SET);
+
+  /* allocate the memory to read the FW binary image */
+  pFwHandle = (void*)malloc(sizeof(uint8_t) * fileSize);
+
+  /* check for valid memory allocation */
+  if (NULL == pFwHandle) {
+    NXPLOG_FWDNLD_E("Failed to allocate memory to load FW image !!!\n");
+    fclose(pFile);
+    return NFCSTATUS_FAILED;
+  }
+
+  /* Read the actual contents of the FW binary image */
+  bytesRead =
+      (uint32_t)fread(pFwHandle, sizeof(uint8_t), (size_t)fileSize, pFile);
+  if (bytesRead != fileSize) {
+    NXPLOG_FWDNLD_E("Unable to read the specified size from file !!!\n");
+    fclose(pFile);
+    free(pFwHandle);
+    pFwHandle = NULL;
+    return NFCSTATUS_FAILED;
+  }
+
+  /* Update the image info pointer to the caller */
+  *pImgInfo = (uint8_t*)pFwHandle;
+  *pImgInfoLen = (uint32_t)(bytesRead & 0xFFFFFFFF);
+
+  /* close the FW binary image file */
+  fclose(pFile);
+  return NFCSTATUS_SUCCESS;
+}
 
 /*******************************************************************************
 **
@@ -1022,46 +1094,28 @@ NFCSTATUS phDnldNfc_LoadFW(const char* pathName, uint8_t** pImgInfo,
 **                  recovery. This will change the FW version of the NFCC
 **                  firmware and enable flashing of firmware of same version.
 **
-** Parameters       pathName    - Firmware image path
-**                  pImgInfo    - Firmware image handle
+** Parameters       pImgInfo    - Firmware image handle
 **                  pImgInfoLen - Firmware image length
 **
 ** Returns          NFCSTATUS
 **
 *******************************************************************************/
-NFCSTATUS phDnldNfc_LoadRecoveryFW(const char* pathName, uint8_t** pImgInfo,
+NFCSTATUS phDnldNfc_LoadRecoveryFW(uint8_t** pImgInfo,
                                    uint32_t* pImgInfoLen) {
   void* pImageInfo = NULL;
   void* pImageInfoLen = NULL;
 
-  /* check for path name */
-  if (pathName == NULL) {
-      if(nfcFL.chipType == pn548C2) {
-          pathName = "/system/vendor/firmware/libpn548ad_fw.so";
-      } else if(nfcFL.chipType == pn551) {
-          pathName = "/system/vendor/firmware/libpn551_fw.so";
-      } else if(nfcFL.chipType == pn553) {
-          pathName = "/system/vendor/firmware/libpn553_fw.so";
-      } else if(nfcFL.chipType == pn557) {
-          pathName = "/system/vendor/firmware/libpn557_fw.so";
-      } else if(nfcFL.chipType == sn100u) {
-          pathName = "/system/vendor/firmware/libsn100u_fw.so";
-      } else {
-          pathName = "/system/vendor/firmware/libpn547_fw.so";
-      }
-  }
-
   /* check if the handle is not NULL then free the library */
-  if (pFwLibHandle != NULL) {
-    phDnldNfc_UnloadFW();
-    pFwLibHandle = NULL;
+  if (pFwHandle != NULL) {
+    phDnldNfc_CloseFwLibHandle();
+    pFwHandle = NULL;
   }
   /* load the DLL file */
-  pFwLibHandle = dlopen(pathName, RTLD_LAZY);
-  NXPLOG_FWDNLD_D("phDnldNfc_LoadRecoveryFW %s ", pathName);
+  pFwHandle = dlopen(nfcFL._FW_LIB_PATH.c_str(), RTLD_LAZY);
+  NXPLOG_FWDNLD_D("phDnldNfc_LoadRecoveryFW %s ", nfcFL._FW_LIB_PATH.c_str());
 
   /* if library load failed then handle will be NULL */
-  if (pFwLibHandle == NULL) {
+  if (pFwHandle == NULL) {
     NXPLOG_FWDNLD_E(
         "NULL handler : unable to load the library file, specify correct path");
     return NFCSTATUS_FAILED;
@@ -1070,7 +1124,7 @@ NFCSTATUS phDnldNfc_LoadRecoveryFW(const char* pathName, uint8_t** pImgInfo,
   dlerror(); /* Clear any existing error */
 
   /* load the address of download image pointer and image size */
-  pImageInfo = (void*)dlsym(pFwLibHandle, "gphDnldNfc_DummyDlSeq");
+  pImageInfo = (void*)dlsym(pFwHandle, "gphDnldNfc_DummyDlSeq");
 
   if (dlerror() || (NULL == pImageInfo)) {
     NXPLOG_FWDNLD_E("Problem loading symbol : gphDnldNfc_DummyDlSeq");
@@ -1078,7 +1132,7 @@ NFCSTATUS phDnldNfc_LoadRecoveryFW(const char* pathName, uint8_t** pImgInfo,
   }
 
   (*pImgInfo) = (*(uint8_t**)pImageInfo);
-  pImageInfoLen = (void*)dlsym(pFwLibHandle, "gphDnldNfc_DlSeqDummyFwSz");
+  pImageInfoLen = (void*)dlsym(pFwHandle, "gphDnldNfc_DlSeqDummyFwSz");
   if (dlerror() || (NULL == pImageInfoLen)) {
     NXPLOG_FWDNLD_E("Problem loading symbol : gphDnldNfc_DlSeqDummyFwSz");
     return NFCSTATUS_FAILED;
@@ -1105,9 +1159,9 @@ NFCSTATUS phDnldNfc_UnloadFW(void) {
   int32_t status;
 
   /* check if the handle is not NULL then free the library */
-  if (pFwLibHandle != NULL) {
-    status = dlclose(pFwLibHandle);
-    pFwLibHandle = NULL;
+  if (pFwHandle != NULL) {
+    status = dlclose(pFwHandle);
+    pFwHandle = NULL;
 
     dlerror(); /* Clear any existing error */
     if (status != 0) {
