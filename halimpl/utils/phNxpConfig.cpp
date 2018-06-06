@@ -41,6 +41,7 @@
 #include <list>
 #include <string>
 #include <vector>
+#include <log/log.h>
 
 #include <phNxpConfig.h>
 #include <phNxpLog.h>
@@ -53,7 +54,6 @@ const char alternative_config_path[] = "";
 
 #if 1
 const char* transport_config_paths[] = {"/odm/etc/", "/vendor/etc/", "/etc/"};
-const char transit_config_path[] = "/data/vendor/nfc/libnfc-nxpTransit.conf";
 #else
 const char* transport_config_paths[] = {"res/"};
 #endif
@@ -75,7 +75,7 @@ const char config_timestamp_path[] =
         "/vendor/etc/libnfc-nxp.conf";*/
 const char nxp_rf_config_path[] =
         "/system/vendor/libnfc-nxp_RF.conf";
-
+const char transit_config_path[] = "/data/vendor/nfc/libnfc-nxpTransit.conf";
 void readOptionalConfig(const char* optional);
 
 namespace {

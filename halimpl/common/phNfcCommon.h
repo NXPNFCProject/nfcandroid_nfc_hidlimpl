@@ -34,7 +34,7 @@
 #include <semaphore.h>
 
 #define FW_DLL_EXTENSION ".so"
-#define FW_LIB_ROOT_DIR "/vendor/firmware/"
+#define FW_LIB_ROOT_DIR "/vendor/lib64/"
 #define FW_BIN_ROOT_DIR "/vendor/firmware/"
 #define FW_LIB_EXTENSION ".so"
 #define FW_BIN_EXTENSION ".bin"

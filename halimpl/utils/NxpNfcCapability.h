@@ -32,11 +32,11 @@ private:
   const char* product[12] = {"UNKNOWN", "PN547C2", "PN65T", "PN548C2",
                              "PN66T",   "PN551",   "PN67T", "PN553",
                              "PN80T",   "PN557",   "PN81T",  "sn100u"};
-    capability();
-public:
-    static tNFC_chipType chipType;
-    static capability* getInstance();
-    tNFC_chipType processChipType(uint8_t* msg, uint16_t msg_len);
-};
+  capability();
 
+ public:
+  static tNFC_chipType chipType;
+  static capability* getInstance();
+  tNFC_chipType processChipType(uint8_t* msg, uint16_t msg_len);
+};
 #endif

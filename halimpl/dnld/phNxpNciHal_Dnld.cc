@@ -36,8 +36,7 @@
 /* External global variable to get FW version */
 extern uint16_t wFwVer;
 extern uint16_t wMwVer;
-extern uint8_t
-    gRecFWDwnld; /* flag  set to true to  indicate dummy FW download */
+extern uint8_t gRecFWDwnld; /* flag  set to true to  indicate dummy FW download */
 /* RF Configuration structure */
 typedef struct phLibNfc_IoctlSetRfConfig {
   uint8_t bNumOfParams;   /* Number of Rf configurable parameters to be set */
@@ -205,6 +204,7 @@ static NFCSTATUS (*phNxpNciHal_dummy_rec_dwnld_seqhandler[])(void* pContext,
     phNxpNciHal_fw_dnld_log_read,
     phNxpNciHal_fw_dnld_write,
     NULL};
+
 /* Download Recovery Sequence */
 static NFCSTATUS (*phNxpNciHal_dwnld_rec_seqhandler[])(void* pContext,
                                                        NFCSTATUS status,
@@ -535,9 +535,11 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
     if ((0 != pRespBuff->wLen) && (NULL != pRespBuff->pBuff)) {
       bHwVer = (pRespBuff->pBuff[0]);
       bHwVer &= 0x0F; /* 0x0F is the mask to extract chip version */
-      if ((PHDNLDNFC_HWVER_MRA2_1 == bHwVer) || (PHDNLDNFC_HWVER_MRA2_2 == bHwVer) ||
+
+      if ((PHDNLDNFC_HWVER_MRA2_1 == bHwVer) ||
+          (PHDNLDNFC_HWVER_MRA2_2 == bHwVer) ||
               ((nfcFL.chipType == pn551) &&
-                      ((PHDNLDNFC_HWVER_PN551_MRA1_0 == bHwVer) || (PHDNLDNFC_HWVER_PN553_MRA1_0 == bHwVer))) ||
+                      ((PHDNLDNFC_HWVER_PN551_MRA1_0 == bHwVer))) ||
                       ((nfcFL.chipType == pn548C2) &&
                               (PHDNLDNFC_HWVER_PN548AD_MRA1_0 == bHwVer)) ||
                               (((nfcFL.chipType == pn553) || (nfcFL.chipType == pn557)) &&
@@ -1739,8 +1741,7 @@ NFCSTATUS phNxpNciHal_fw_download_seq(uint8_t bClkSrcVal, uint8_t bClkFreqVal) {
     if (gRecFWDwnld == true) {
       status =
           phNxpNciHal_fw_seq_handler(phNxpNciHal_dummy_rec_dwnld_seqhandler);
-    } else
-    {
+    } else {
       status = phNxpNciHal_fw_seq_handler(phNxpNciHal_dwnld_seqhandler);
     }
   } else {
@@ -1762,16 +1763,8 @@ NFCSTATUS phNxpNciHal_fw_download_seq(uint8_t bClkSrcVal, uint8_t bClkFreqVal) {
 }
 
 static NFCSTATUS phLibNfc_VerifyCrcStatus(uint8_t bCrcStatus) {
-    uint8_t bBitPos;
-    uint8_t bShiftVal;
-    if((nfcFL.chipType == pn551) || (nfcFL.chipType == pn553)) {
-      bBitPos = 1;
-      bShiftVal = 2;
-    } else {
-      bBitPos = 0;
-      bShiftVal = 1;
-    }
-
+  uint8_t bBitPos = 1;
+  uint8_t bShiftVal = 2;
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   while (bBitPos < 7) {
     if (!(bCrcStatus & bShiftVal)) {
