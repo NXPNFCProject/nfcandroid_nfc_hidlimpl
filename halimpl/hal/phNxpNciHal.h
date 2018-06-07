@@ -41,8 +41,6 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 /*ROM CODE VERSION FW*/
 #define FW_MOBILE_ROM_VERSION_PN551 0x10
 #define FW_MOBILE_ROM_VERSION_PN553 0x11
-#define FW_MOBILE_ROM_VERSION_PN548AD 0x10
-#define FW_MOBILE_ROM_VERSION_PN547C2 0x08
 #define FW_MOBILE_ROM_VERSION_PN557 0x12
 
 #define FW_DBG_REASON_AVAILABLE     (0xA3)
@@ -283,6 +281,4 @@ void phNxpNciHal_configFeatureList(uint8_t* init_rsp, uint16_t rsp_len);
 *******************************************************************************/
 tNFC_chipType phNxpNciHal_getChipType();
 
-NFCSTATUS phNxpNciHal_core_reset_recovery();
-void phNxpNciHal_discovery_cmd_ext(uint8_t* p_cmd_data, uint16_t cmd_len);
 #endif /* _PHNXPNCIHAL_H_ */

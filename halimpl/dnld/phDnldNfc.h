@@ -43,8 +43,6 @@ typedef void (*pphDnldNfc_RspCb_t)(void* pContext, NFCSTATUS wStatus,
 #define PHDNLDNFC_HWVER_MRA2_1 (0x04U) /* ChipVersion MRA2.1 */
 #define PHDNLDNFC_HWVER_MRA2_2 (0x05U) /* ChipVersion MRA2.2 */
 
-/* PN548AD ChipVersion MRA1.0 */
-#define PHDNLDNFC_HWVER_PN548AD_MRA1_0 (0x08U)
 
 /* PN551 ChipVersion MRA1.0 */
 #define PHDNLDNFC_HWVER_PN551_MRA1_0 (0x08U)
