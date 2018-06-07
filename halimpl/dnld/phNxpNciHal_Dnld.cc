@@ -540,8 +540,6 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
           (PHDNLDNFC_HWVER_MRA2_2 == bHwVer) ||
               ((nfcFL.chipType == pn551) &&
                       ((PHDNLDNFC_HWVER_PN551_MRA1_0 == bHwVer))) ||
-                      ((nfcFL.chipType == pn548C2) &&
-                              (PHDNLDNFC_HWVER_PN548AD_MRA1_0 == bHwVer)) ||
                               (((nfcFL.chipType == pn553) || (nfcFL.chipType == pn557)) &&
                                       ((PHDNLDNFC_HWVER_PN553_MRA1_0 == bHwVer ||
                                               (PHDNLDNFC_HWVER_PN553_MRA1_0_UPDATED & pRespBuff->pBuff[0])))) ||
