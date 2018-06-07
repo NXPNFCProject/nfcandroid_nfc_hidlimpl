@@ -3038,6 +3038,40 @@ int phNxpNciHal_configDiscShutdown(void) {
 }
 
 /******************************************************************************
+ * Function         phNxpNciHal_getNxp
+ *
+ * Description      This function can be used by HAL to inform
+ *                 to update vendor configuration parametres
+ *
+ * Returns          void.
+ *
+ ******************************************************************************/
+void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
+  unsigned long num = 0;
+  if (GetNxpNumValue(NAME_NXP_ESE_LISTEN_TECH_MASK, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.ese_listen_tech_mask = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_DEFAULT_NFCEE_DISC_TIMEOUT, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.default_nfcee_disc_timeout = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_DEFAULT_NFCEE_TIMEOUT, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.default_nfcee_timeout = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_ESE_WIRED_PRT_MASK, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.ese_wired_prt_mask = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_UICC_WIRED_PRT_MASK, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.uicc_wired_prt_mask = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_WIRED_MODE_RF_FIELD_ENABLE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.wired_mode_rf_field_enable = num;
+  }
+  if (GetNxpNumValue(NAME_AID_BLOCK_ROUTE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.aid_block_route = num;
+  }
+}
+
+/******************************************************************************
  * Function         phNxpNciHal_getVendorConfig
  *
  * Description      This function can be used by HAL to inform
@@ -3608,6 +3642,12 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
       if (gpEseAdapt != NULL)
         ret = gpEseAdapt->HalIoctl(HAL_NFC_IOCTL_RF_STATUS_UPDATE, pInpOutData);
       break;
+
+    case HAL_NFC_GET_NXP_CONFIG:
+      phNxpNciHal_getNxpConfig(pInpOutData);
+      ret = 0;
+      break;
+
     default:
       NXPLOG_NCIHAL_E("%s : Wrong arg = %ld", __func__, arg);
       break;

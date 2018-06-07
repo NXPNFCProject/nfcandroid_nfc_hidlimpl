@@ -44,6 +44,19 @@ typedef struct {
  * command
  */
 typedef struct {
+  uint8_t ese_listen_tech_mask;
+  uint8_t default_nfcee_disc_timeout;
+  uint8_t default_nfcee_timeout;
+  uint8_t ese_wired_prt_mask;
+  uint8_t uicc_wired_prt_mask;
+  uint8_t wired_mode_rf_field_enable;
+  uint8_t aid_block_route;
+} nxp_nfc_config_t;
+/*
+ * nfc_nci_ExtnRsp_t shall contain response for command sent in transceive
+ * command
+ */
+typedef struct {
   uint16_t rsp_len;
   uint8_t p_rsp[MAX_IOCTL_TRANSCEIVE_RESP_LEN];
 } nfc_nci_ExtnRsp_t;
@@ -89,6 +102,7 @@ typedef union {
   uint16_t fwDwnldStatus;
   uint16_t fwMwVerStatus;
   uint8_t chipType;
+  nxp_nfc_config_t nxpConfigs;
 } outputData_t;
 
 /*

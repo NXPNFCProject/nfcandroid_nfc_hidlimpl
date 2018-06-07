@@ -278,4 +278,17 @@ void phNxpNciHal_configFeatureList(uint8_t* init_rsp, uint16_t rsp_len);
 ** Returns          chipType
 *******************************************************************************/
 tNFC_chipType phNxpNciHal_getChipType();
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_getNxpConfig
+**
+** Description      Read vendor configuration macro values
+**
+** Parameters       ioctl input/output struct.
+**
+** Returns          none
+*******************************************************************************/
+void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData);
+
 #endif /* _PHNXPNCIHAL_H_ */
