@@ -33,6 +33,7 @@ cc_library_shared {
         "halimpl/hal/phNxpNciHal_NfcDepSWPrio.cc",
         "halimpl/hal/phNxpNciHal_dta.cc",
         "halimpl/hal/phNxpNciHal_ext.cc",
+        "halimpl/hal/phNxpNciHal_nciParser.cc",
         "halimpl/log/phNxpLog.cc",
         "halimpl/self-test/phNxpNciHal_SelfTest.cc",
         "halimpl/src/adaptation/EseAdaptation.cc",
