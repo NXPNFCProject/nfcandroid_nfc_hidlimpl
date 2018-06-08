@@ -17,6 +17,7 @@
 #include <android-base/stringprintf.h>
 #include <base/logging.h>
 #include <phNfcCommon.h>
+#if(NXP_EXTNS == TRUE)
  /*********************** Global Variables *************************************/
 static void nfaDeviceManagementCallback(uint8_t dmEvent,
                                  tNFA_DM_CBACK_DATA* eventData);
@@ -390,3 +391,5 @@ bool phNxpNfc_EseTransceive(uint8_t* xmitBuffer, int32_t xmitBufferSize, uint8_t
   NXPLOG_NCIHAL_E("phNxpNfc_EseTransceive exit");
     return (isSuccess);
 }
+#endif
+

@@ -31,7 +31,7 @@
 #include <phNxpNfc_IntfApi.h>
 #include <phNxpNciHal.h>
 #include <phNxpConfig.h>
-
+#if(NXP_EXTNS == TRUE)
 /*static char gethex(const char *s, char **endptr);
 char *convert(const char *s, int *length);*/
 uint8_t datahex(char c);
@@ -87,7 +87,7 @@ SESTATUS ESE_ChannelInit(IChannel *ch)
     ch->doeSE_JcopDownLoadReset = SE_JcopDownLoadReset;
     return SESTATUS_SUCCESS;
 }
-
+#endif
 /*******************************************************************************
 **
 ** Function:        LSC_doDownload
@@ -99,11 +99,12 @@ SESTATUS ESE_ChannelInit(IChannel *ch)
 *******************************************************************************/
 SESTATUS JCOS_doDownload( ) {
   SESTATUS status = SESTATUS_FAILED;
+#if(NXP_EXTNS == TRUE)
   performJCOS_Download_thread(NULL);
-
+#endif
   return status;
 }
-
+#if(NXP_EXTNS == TRUE)
 /*******************************************************************************
 **
 ** Function:        LSC_doDownload
@@ -214,3 +215,4 @@ uint8_t datahex(char c) {
     value = (10 + (c - 'a'));
   return value;
 }
+#endif

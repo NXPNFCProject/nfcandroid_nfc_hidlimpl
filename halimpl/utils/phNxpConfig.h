@@ -126,6 +126,7 @@ int updateNxpConfigTimestamp();
 #define NAME_DEVICE_HOST_WHITE_LIST "DEVICE_HOST_WHITE_LIST"
 #define NAME_NFA_PROPRIETARY_CFG "NFA_PROPRIETARY_CFG"
 #define NAME_PRESENCE_CHECK_ALGORITHM "PRESENCE_CHECK_ALGORITHM"
+#define NAME_NXP_CORE_PROP_SYSTEM_DEBUG "NXP_CORE_PROP_SYSTEM_DEBUG"
 
 /* default configuration */
 #define default_storage_location "/data/vendor/nfc"

@@ -27,6 +27,9 @@
 #include <phNxpNciHal_ext.h>
 #include <phTmlNfc.h>
 #include <phTmlNfc_i2c.h>
+#if(NXP_EXTNS == TRUE)
+#include "phNxpNciHal_nciParser.h"
+#endif
 
 #include <sys/stat.h>
 #include <EseAdaptation.h>
@@ -127,6 +130,9 @@ static NFCSTATUS phNxpNciHal_CheckValidFwVersion(void);
 static void phNxpNciHal_enable_i2c_fragmentation();
 static NFCSTATUS phNxpNciHal_get_mw_eeprom(void);
 static NFCSTATUS phNxpNciHal_set_mw_eeprom(void);
+#if(NXP_EXTNS == TRUE)
+static void phNxpNciHal_configNciParser(void);
+#endif
 static int phNxpNciHal_fw_mw_ver_check();
 NFCSTATUS phNxpNciHal_check_clock_config(void);
 NFCSTATUS phNxpNciHal_china_tianjin_rf_setting(void);
@@ -1767,6 +1773,19 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       }
     }
   }
+#if(NXP_EXTNS == TRUE)
+  isfound = GetNxpNumValue(NAME_NXP_NCI_PARSER_LIBRARY, &num, sizeof(num));
+  if(isfound > 0 && num == 0x01)
+  {
+    NXPLOG_NCIHAL_E("NCI Parser is enabled");
+    phNxpNciHal_configNciParser();
+  }
+  else
+  {
+    NXPLOG_NCIHAL_E("NCI Parser is disabled");
+  }
+#endif
+
     config_access = false;
   {
     if(true == setConfigAlways)
@@ -2059,6 +2078,13 @@ int phNxpNciHal_close(bool bShutdown) {
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed");
   }
+#if(NXP_EXTNS == TRUE)
+  if(gParserCreated)
+  {
+    phNxpNciHal_deinitParser();
+    gParserCreated = FALSE;
+  }
+#endif
   sem_destroy(&nxpncihal_ctrl.syncSpiNfc);
 close_and_return:
   if (NULL != gpphTmlNfc_Context->pDevHandle) {
@@ -3532,3 +3558,85 @@ tNFC_chipType phNxpNciHal_getChipType() {
     return nxpncihal_ctrl.chipType;
 }
 
+#if(NXP_EXTNS == TRUE)
+/*******************************************************************************
+**
+** Function         phNxpNciHal_configNciParser(void)
+**
+** Description      Helper function to configure LxDebug modes
+**
+** Parameters       none
+**
+** Returns          void
+*******************************************************************************/
+void phNxpNciHal_configNciParser(void)
+{
+    NFCSTATUS status = NFCSTATUS_SUCCESS;
+    unsigned long num = 0;
+    uint8_t  isfound = 0;
+    static uint8_t cmd_lxdebug[] = { 0x20, 0x02, 0x06, 0x01, 0xA0, 0x1D, 0x02, 0x00, 0x00 };
+
+    isfound = GetNxpNumValue(NAME_NXP_CORE_PROP_SYSTEM_DEBUG, &num, sizeof(num));
+
+    if(isfound > 0)
+    {
+        if(num == 0x00)
+        {
+            NXPLOG_NCIHAL_D("Disable LxDebug");
+        }
+        else if(num == 0x01)
+        {
+            NXPLOG_NCIHAL_D("Enable L1 RF NTF debugs");
+            cmd_lxdebug[7] = 0x10;
+        }
+        else if(num == 0x02)
+        {
+            NXPLOG_NCIHAL_D("Enable L2 RF NTF debugs");
+            cmd_lxdebug[7] = 0x01;
+        }
+        else if(num == 0x03)
+        {
+            NXPLOG_NCIHAL_D("Enable L1 & L2 RF NTF debugs");
+            cmd_lxdebug[7] = 0x31;
+        }
+        else if(num == 0x04)
+        {
+            NXPLOG_NCIHAL_D("Enable L1 & L2 & RSSI NTF debugs");
+            cmd_lxdebug[7] = 0x31;
+            cmd_lxdebug[8] = 0x01;
+        }
+        else if(num == 0x05)
+        {
+            NXPLOG_NCIHAL_D("Enable L2 & Felica RF NTF debugs");
+            cmd_lxdebug[7] = 0x03;
+        }
+        else
+            NXPLOG_NCIHAL_E("Invalid Level, Disable LxDebug");
+
+        status = phNxpNciHal_send_ext_cmd(sizeof(cmd_lxdebug)/sizeof(cmd_lxdebug[0]),cmd_lxdebug);
+        if (status != NFCSTATUS_SUCCESS)
+        {
+            NXPLOG_NCIHAL_E("Set lxDebug config failed");
+        }
+    }
+
+    // try initializing parser library
+    NXPLOG_NCIHAL_D("Try Init Parser gParserCreated:%d",gParserCreated);
+
+    if(!gParserCreated) {
+        gParserCreated = phNxpNciHal_initParser();
+    } else {
+        NXPLOG_NCIHAL_D("Parser Already Initialized");
+    }
+
+    if(gParserCreated) {
+        NXPLOG_NCIHAL_D("Parser Initialized Successfully");
+        if(isfound) {
+            NXPLOG_NCIHAL_D("Setting lxdebug levels in library");
+            phNxpNciHal_parsePacket(cmd_lxdebug,sizeof(cmd_lxdebug)/sizeof(cmd_lxdebug[0]));
+        }
+    } else {
+        NXPLOG_NCIHAL_E("Parser Library Not Available");
+    }
+}
+#endif

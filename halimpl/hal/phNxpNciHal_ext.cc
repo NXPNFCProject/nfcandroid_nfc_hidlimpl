@@ -24,6 +24,9 @@
 #include <phNxpNciHal_ext.h>
 #include <phTmlNfc.h>
 #include <phDnldNfc.h>
+#if(NXP_EXTNS == TRUE)
+#include "phNxpNciHal_nciParser.h"
+#endif
 
 /* Timeout value to wait for response from PN548AD */
 #define HAL_EXTNS_WRITE_RSP_TIMEOUT (1000)
@@ -49,7 +52,7 @@ static uint8_t setEEModeDone = 0x00;
 extern uint32_t wFwVerRsp;
 /* External global variable to get FW version from FW file*/
 extern uint16_t wFwVer;
-
+extern bool_t gParserCreated;
 uint16_t fw_maj_ver;
 uint16_t rom_version;
 /* local buffer to store CORE_INIT response */
@@ -119,6 +122,14 @@ NFCSTATUS phNxpNciHal_ext_send_sram_config_to_flash() {
 NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
 
+#if(NXP_EXTNS == TRUE)
+  /*parse and decode LxDebug Notifications*/
+  if(p_ntf[0] == 0x6F && (p_ntf[1] == 0x35 || p_ntf[1] == 0x36))
+  {
+    if(gParserCreated)
+      phNxpNciHal_parsePacket(p_ntf,*p_len);
+  }
+#endif
 
   if (p_ntf[0] == 0x61 && p_ntf[1] == 0x05 && p_ntf[4] == 0x03 &&
       p_ntf[5] == 0x05 && nxpprofile_ctrl.profile_type == EMV_CO_PROFILE) {
