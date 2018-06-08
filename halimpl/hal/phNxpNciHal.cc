@@ -1269,6 +1269,9 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   uint8_t fw_dwnld_flag = false;
 #endif
   uint8_t setConfigAlways = false;
+#if(NXP_EXTNS == TRUE)
+  uint8_t enableAutonomusMode = false;
+#endif
   static uint8_t p2p_listen_mode_routing_cmd[] = {0x21, 0x01, 0x07, 0x00, 0x01,
                                                   0x01, 0x03, 0x00, 0x01, 0x05};
 
@@ -1283,6 +1286,9 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   static uint8_t swp_switch_timeout_cmd[] = {0x20, 0x02, 0x06, 0x01, 0xA0,
                                              0xF3, 0x02, 0x00, 0x00};
   static uint8_t cmd_get_cfg_dbg_info[] = {0x20, 0x03, 0x4, 0xA0, 0x1B, 0xA0, 0x27};
+#if(NXP_EXTNS == TRUE)
+  static uint8_t cmd_enable_autonomous_mode[] = { 0x2F, 0x00, 0x01, 0x02 };
+#endif
   config_success = true;
   long bufflen = 260;
   long retlen = 0;
@@ -1783,6 +1789,19 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   else
   {
     NXPLOG_NCIHAL_E("NCI Parser is disabled");
+  }
+  enableAutonomusMode = false;
+  isfound = GetNxpNumValue(NAME_NXP_CORE_SCRN_OFF_AUTONOMOUS_ENABLE, &num, sizeof(num));
+  if (isfound > 0) {
+      enableAutonomusMode = num;
+  }
+  NXPLOG_NCIHAL_D("EEPROM_fw_dwnld_flag : 0x%02x SetConfigAlways flag : 0x%02x enableAutonomusMode flag : 0x%02x",
+                  fw_dwnld_flag, setConfigAlways, enableAutonomusMode);
+  if (true == enableAutonomusMode)
+  {
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_enable_autonomous_mode), cmd_enable_autonomous_mode);
+    if (status != NFCSTATUS_SUCCESS)
+      NXPLOG_NCIHAL_E("Setting NXP_CORE_SCRN_OFF_AUTONOMOUS_ENABLE status failed");
   }
 #endif
 
