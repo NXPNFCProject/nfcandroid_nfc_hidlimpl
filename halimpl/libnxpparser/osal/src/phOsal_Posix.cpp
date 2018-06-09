@@ -26,6 +26,7 @@
 #include <unistd.h>
 #include <cstdlib>
 #include <ctime>
+#include <string.h>
 
 /*
 ****************************** Macro Definitions ******************************
