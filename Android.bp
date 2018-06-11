@@ -89,7 +89,6 @@ cc_library_shared {
         "libhidltransport",
         "liblog",
         "libutils",
-        "ese_spi_nxp",
         "vendor.nxp.nxpese@1.0",
         "libnfc-nci",
         "libicuuc",
@@ -126,7 +125,6 @@ cc_binary {
         "libhidltransport",
         "libhwbinder",
         "vendor.nxp.nxpese@1.0",
-        "ese_spi_nxp",
         "vendor.nxp.nxpnfc@1.0",
     ],
 
