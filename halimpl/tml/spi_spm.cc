@@ -57,7 +57,9 @@ int phPalEse_spi_ioctl(phPalEse_ControlCode_t eControlCode, void *pDevHandle,
       break;
 
     case phPalEse_e_GetSPMStatus:
-      ret = ioctl((intptr_t)pDevHandle, P61_GET_PWR_STATUS, level);
+      ret = ioctl((intptr_t)pDevHandle, P61_GET_PWR_STATUS, &level);
+      if (ret == 0)
+        ret = (int)level;
       break;
 
     case phPalEse_e_SetPowerScheme:
