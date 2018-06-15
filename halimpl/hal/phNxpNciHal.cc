@@ -675,10 +675,8 @@ static NFCSTATUS phNxpNciHal_FwDwnld(uint16_t aType) {
    NFCSTATUS status = NFCSTATUS_SUCCESS;
 
    if(aType != NFC_STATUS_NOT_INITIALIZED) {
-   if (wFwVerRsp == 0) {
-            phDnldNfc_InitImgInfo();
-        }
-        status= phNxpNciHal_CheckValidFwVersion();
+    phDnldNfc_InitImgInfo();
+    status= phNxpNciHal_CheckValidFwVersion();
    }
    if (NFCSTATUS_SUCCESS == status) {
      NXPLOG_NCIHAL_D("Found Valid Firmware Type");
@@ -1041,6 +1039,20 @@ init_retry:
     wConfigStatus = NFCSTATUS_FAILED;
     goto minCleanAndreturn;
   }
+
+  status = phNxpNciHal_FwDwnld(NFCSTATUS_SUCCESS);
+  if(NFCSTATUS_FAILED == status){
+      wConfigStatus = NFCSTATUS_FAILED;
+      goto minCleanAndreturn;
+      NXPLOG_NCIHAL_D("FW download Failed");
+    } else if(NFCSTATUS_REJECTED == status) {
+      wConfigStatus = NFCSTATUS_SUCCESS;
+      NXPLOG_NCIHAL_D("FW download Rejected. Continuing Nfc Init");
+    } else {
+      wConfigStatus = NFCSTATUS_SUCCESS;
+      NXPLOG_NCIHAL_D("FW download Success");
+    }
+
   phNxpNciHal_MinOpen_complete(wConfigStatus);
   NXPLOG_NCIHAL_D("phNxpNciHal_MinOpen(): exit");
   return wConfigStatus;
@@ -1060,6 +1072,7 @@ minCleanAndreturn:
     free(mGetCfg_info);
     mGetCfg_info = NULL;
   }
+  nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
   return NFCSTATUS_FAILED;
 }
 
