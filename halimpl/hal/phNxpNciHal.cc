@@ -445,7 +445,7 @@ static NFCSTATUS phNxpNciHal_fw_download(void) {
       0x03; // ioctl call arg value to get eSE power GPIO value = 0x03
   int spi_current_state = phNxpNciHal_ioctl(HAL_NFC_GET_SPM_STATUS, &data);
   NXPLOG_NCIHAL_D("spi_current_state  = %4x ", spi_current_state);
-  if (spi_current_state != P61_STATE_SPI) {
+  if (spi_current_state != P61_STATE_IDLE) {
     NXPLOG_NCIHAL_E("FW download denied while SPI in use, Continue NFC init");
     return NFCSTATUS_REJECTED;
   }
