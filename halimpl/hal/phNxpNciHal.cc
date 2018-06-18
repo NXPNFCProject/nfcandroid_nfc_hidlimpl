@@ -34,7 +34,7 @@
 #include "spi_spm.h"
 
 using namespace android::hardware::nfc::V1_1;
-
+using android::hardware::nfc::V1_1::NfcEvent;
 
 /*********************** Global Variables *************************************/
 #define PN547C2_CLOCK_SETTING
@@ -138,6 +138,7 @@ static void phNxpNciHal_nfccClockCfgRead(void);
 static NFCSTATUS phNxpNciHal_nfccClockCfgApply(void);
 static void phNxpNciHal_txNfccClockSetCmd(void);
 static NFCSTATUS phNxpNciHal_check_eSE_Session_Identity(void);
+static void phNxpNciHal_hci_network_reset(void);
 static void phNxpNciHal_print_res_status(uint8_t* p_rx_data, uint16_t* p_len);
 static NFCSTATUS phNxpNciHal_CheckValidFwVersion(void);
 static void phNxpNciHal_enable_i2c_fragmentation();
@@ -261,6 +262,17 @@ static void* phNxpNciHal_client_thread(void* arg) {
           /* Send the event */
           (*nxpncihal_ctrl.p_nfc_stack_cback)(HAL_NFC_PRE_DISCOVER_CPLT_EVT,
                                               HAL_NFC_STATUS_OK);
+        }
+        REENTRANCE_UNLOCK();
+        break;
+      }
+
+      case NCI_HAL_HCI_NETWORK_RESET_MSG: {
+        REENTRANCE_LOCK();
+        if (nxpncihal_ctrl.p_nfc_stack_cback != NULL) {
+          /* Send the event */
+          (*nxpncihal_ctrl.p_nfc_stack_cback)(
+              (uint32_t)NfcEvent::HCI_NETWORK_RESET, HAL_NFC_STATUS_OK);
         }
         REENTRANCE_UNLOCK();
         break;
@@ -882,6 +894,7 @@ int phNxpNciHal_MinOpen() {
 
   int init_retry_cnt = 0;
   int8_t ret_val = 0x00;
+  uint8_t fw_flash_req = 0, rf_update_req = 0;
 
   phNxpNciHal_initialize_debug_enabled_flag();
   /* initialize trace level */
@@ -1040,18 +1053,24 @@ init_retry:
     goto minCleanAndreturn;
   }
 
-  status = phNxpNciHal_FwDwnld(NFCSTATUS_SUCCESS);
-  if(NFCSTATUS_FAILED == status){
+  phNxpNciHal_CheckFwRegFlashRequired(&fw_flash_req, &rf_update_req);
+
+  if (fw_flash_req) {
+    fw_dwnld_flag = fw_flash_req;
+    NXPLOG_NCIHAL_D("fw_dwnld_flag = %d", fw_dwnld_flag);
+    status = phNxpNciHal_FwDwnld(NFCSTATUS_SUCCESS);
+    if (NFCSTATUS_FAILED == status) {
       wConfigStatus = NFCSTATUS_FAILED;
       goto minCleanAndreturn;
       NXPLOG_NCIHAL_D("FW download Failed");
-    } else if(NFCSTATUS_REJECTED == status) {
+    } else if (NFCSTATUS_REJECTED == status) {
       wConfigStatus = NFCSTATUS_SUCCESS;
       NXPLOG_NCIHAL_D("FW download Rejected. Continuing Nfc Init");
     } else {
       wConfigStatus = NFCSTATUS_SUCCESS;
       NXPLOG_NCIHAL_D("FW download Success");
     }
+  }
 
   phNxpNciHal_MinOpen_complete(wConfigStatus);
   NXPLOG_NCIHAL_D("phNxpNciHal_MinOpen(): exit");
@@ -1725,17 +1744,21 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       goto retry_core_init;
     }
 
-  retlen = 0;
-
-  isfound = GetNxpByteArrayValue(NAME_NXP_CORE_STANDBY, (char*)buffer, bufflen,
-                                 &retlen);
-  if (retlen > 0) {
-    /* NXP ACT Proprietary Ext */
-    status = phNxpNciHal_send_ext_cmd(retlen, buffer);
-    if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("Stand by mode enable failed");
-      NXP_NCI_HAL_CORE_INIT_RECOVER(retry_core_init_cnt, retry_core_init);
+    if (fw_download_success == 1) {
+      phNxpNciHal_hci_network_reset();
     }
+
+    retlen = 0;
+
+    isfound = GetNxpByteArrayValue(NAME_NXP_CORE_STANDBY, (char *)buffer,
+                                   bufflen, &retlen);
+    if (retlen > 0) {
+      /* NXP ACT Proprietary Ext */
+      status = phNxpNciHal_send_ext_cmd(retlen, buffer);
+      if (status != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("Stand by mode enable failed");
+        NXP_NCI_HAL_CORE_INIT_RECOVER(retry_core_init_cnt, retry_core_init);
+      }
   }
 
   if(nfcFL.eseFL._ESE_SVDD_SYNC) {
@@ -1751,7 +1774,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   }
   config_access = false;
   if(nfcFL.eseFL._EXCLUDE_NV_MEM_DEPENDENCY == false) {
-  phNxpNciHal_check_factory_reset();
+    phNxpNciHal_reset_nfcee_session(false);
   }
 
 #ifdef FW_DWNLD_FLAG
@@ -2460,6 +2483,24 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     return NFCSTATUS_FAILED;
   else
     return NFCSTATUS_SUCCESS;
+}
+/******************************************************************************
+ * Function         phNxpNciHal_hci_network_reset
+ *
+ * Description      This function resets the session id's of all the se's
+ *                  in the HCI network and notify to HCI_NETWORK_RESET event to
+ *                  NFC HAL Client.
+ *
+ * Returns          void.
+ *
+ ******************************************************************************/
+static void phNxpNciHal_hci_network_reset(void) {
+  NXPLOG_NCIHAL_D("%s: enter", __func__);
+  static phLibNfc_Message_t msg;
+  phNxpNciHal_reset_nfcee_session(true);
+  msg.eMsgType = NCI_HAL_HCI_NETWORK_RESET_MSG;
+  phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &msg);
+  NXPLOG_NCIHAL_D("%s: exit", __func__);
 }
 /******************************************************************************
  * Function         phNxpNciHal_check_eSE_Session_Identity
@@ -4238,7 +4279,7 @@ __attribute__((unused)) void phNxpNciHal_enable_i2c_fragmentation() {
   }
 }
 /******************************************************************************
- * Function         phNxpNciHal_check_factory_reset
+ * Function         phNxpNciHal_reset_nfcee_session
  *
  * Description      This function is called at init time to check
  *                  the presence of ese related info. If file are not
@@ -4248,9 +4289,10 @@ __attribute__((unused)) void phNxpNciHal_enable_i2c_fragmentation() {
  * Returns          void.
  *
  ******************************************************************************/
-void phNxpNciHal_check_factory_reset(void) {
+void phNxpNciHal_reset_nfcee_session(bool force_session_reset) {
   struct stat st;
   int ret = 0;
+  size_t length;
 
   NFCSTATUS status = NFCSTATUS_FAILED;
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
@@ -4263,35 +4305,38 @@ void phNxpNciHal_check_factory_reset(void) {
   const char config_eseinfo_path[] = "/data/vendor/nfc/nfaStorage.bin1";
   uint8_t *reset_ese_session_identity_set;
   uint8_t ese_session_dyn_uicc_nv[] = {
-            0x20, 0x02, 0x17, 0x02,0xA0, 0xEA, 0x08, 0xFF, 0xFF, 0xFF,
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF,0xA0, 0x1E, 0x08, 0xFF, 0xFF,
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-  uint8_t ese_session_dyn_uicc[] = {
             0x20, 0x02, 0x22, 0x03, 0xA0, 0xEA, 0x08, 0xFF, 0xFF, 0xFF,
             0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xA0, 0x1E, 0x08, 0xFF, 0xFF,
             0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xA0, 0xEB, 0x08, 0xFF,
             0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-  uint8_t ese_session_nv[] = {
-            0x20, 0x02, 0x0C, 0x01, 0xA0, 0xEA, 0x08, 0xFF, 0xFF,
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-  uint8_t ese_session[] = {
-            0x20, 0x02, 0x17, 0x02, 0xA0, 0xEA, 0x08, 0xFF, 0xFF,
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xA0, 0xEB, 0x08,
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  uint8_t ese_session_dyn_uicc[] = {0x20, 0x02, 0x17, 0x02, 0xA0, 0xEA, 0x08,
+                                    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+                                    0xFF, 0xA0, 0x1E, 0x08, 0xFF, 0xFF, 0xFF,
+                                    0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  uint8_t ese_session_nv[] = {0x20, 0x02, 0x17, 0x02, 0xA0, 0xEA, 0x08,
+                              0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+                              0xFF, 0xA0, 0xEB, 0x08, 0xFF, 0xFF, 0xFF,
+                              0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  uint8_t ese_session[] = {0x20, 0x02, 0x0C, 0x01, 0xA0, 0xEA, 0x08, 0xFF,
+                           0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
   if(nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_WO_EXT_SWITCH || nfcFL.nfccFL._NFCC_DYNAMIC_DUAL_UICC) {
     if(nfcFL.eseFL._EXCLUDE_NV_MEM_DEPENDENCY) {
       reset_ese_session_identity_set = ese_session_dyn_uicc_nv;
+      length = sizeof(ese_session_dyn_uicc_nv);
     }
     else {
       reset_ese_session_identity_set = ese_session_dyn_uicc;
+      length = sizeof(ese_session_dyn_uicc);
     }
   }
   else {
     if(nfcFL.eseFL._EXCLUDE_NV_MEM_DEPENDENCY) {
       reset_ese_session_identity_set = ese_session_nv;
+      length = sizeof(ese_session_nv);
     }
     else {
       reset_ese_session_identity_set = ese_session;
+      length = sizeof(ese_session);
     }
   }
 
@@ -4307,27 +4352,24 @@ void phNxpNciHal_check_factory_reset(void) {
     ret = 0;
   }
 
-  if (ret == -1) {
+  if (ret == -1 || force_session_reset) {
 #ifdef PN547C2_FACTORY_RESET_DEBUG
     /* NXP ACT Proprietary Ext */
-    status = phNxpNciHal_send_ext_cmd(sizeof(reset_session_identity),
-            reset_session_identity);
+    status = phNxpNciHal_send_ext_cmd(length, reset_session_identity);
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("NXP reset_session_identity command failed");
     }
 #endif
     if((nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_WO_EXT_SWITCH) &&
             (nfcFL.nfccFL._NFCC_DYNAMIC_DUAL_UICC)) {
-        status = phNxpNciHal_send_ext_cmd(sizeof(reset_ese_session_identity_set),
-                reset_ese_session_identity_set);
+      status = phNxpNciHal_send_ext_cmd(length, reset_ese_session_identity_set);
     }
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("NXP reset_ese_session_identity_set command failed");
     }
 #ifdef PN547C2_FACTORY_RESET_DEBUG
     /* NXP ACT Proprietary Ext */
-    status = phNxpNciHal_send_ext_cmd(sizeof(reset_session_identity),
-            reset_session_identity);
+    status = phNxpNciHal_send_ext_cmd(length, reset_session_identity);
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("NXP reset_ese_session_identity command failed");
     }

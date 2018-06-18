@@ -39,7 +39,7 @@ int phNxpNciHal_power_cycle(void);
 void phNxpNciHal_getVendorConfig(NfcConfig& config);
 int phNxpNciHal_MinInit(nfc_stack_callback_t* p_cback,
                         nfc_stack_data_callback_t* p_data_cback);
-void phNxpNciHal_check_factory_reset(void);
+void phNxpNciHal_reset_nfcee_session(bool force_session_reset);
 int phNxpNciHal_Minclose(void);
 int phNxpNciHal_getFWDownloadFlag(uint8_t* fwDnldRequest);
 #endif /* _PHNXPNCIHAL_ADAPTATION_H_ */
