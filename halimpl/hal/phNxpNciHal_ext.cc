@@ -1358,7 +1358,10 @@ int phNxpNciHal_CheckFwRegFlashRequired(uint8_t* fw_update_req,
   NXPLOG_NCIHAL_E("FW version of the libpn5xx.so binary = 0x%x", wFwVer);
   NXPLOG_NCIHAL_E("FW version found on the device = 0x%x", wFwVerRsp);
   /* Consider for each chip type */
-  *fw_update_req = (((wFwVerRsp & 0x0000FFFF) != wFwVer) ? true : false);
+  if (status == NFCSTATUS_SUCCESS)
+    *fw_update_req = (((wFwVerRsp & 0x0000FFFF) != wFwVer) ? true : false);
+  else
+    *fw_update_req = false;
 
   if (false == *fw_update_req) {
     NXPLOG_NCIHAL_D("FW update not required");

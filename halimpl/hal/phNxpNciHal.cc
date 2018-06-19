@@ -483,7 +483,6 @@ static NFCSTATUS phNxpNciHal_fw_download(void) {
         NXPLOG_NCIHAL_E("Unknown chip type, FW can't be upgraded");
         return status;
       }
-      nxpncihal_ctrl.bIsForceFwDwnld = false;
     }
 
     /* Set the obtained device handle to download module */
@@ -1053,10 +1052,14 @@ init_retry:
     goto minCleanAndreturn;
   }
 
-  phNxpNciHal_CheckFwRegFlashRequired(&fw_flash_req, &rf_update_req);
+  if (!nxpncihal_ctrl.bIsForceFwDwnld) {
+    phNxpNciHal_CheckFwRegFlashRequired(&fw_flash_req, &rf_update_req);
+    fw_dwnld_flag = fw_flash_req;
+  } else {
+    nxpncihal_ctrl.bIsForceFwDwnld = false;
+  }
 
   if (fw_flash_req) {
-    fw_dwnld_flag = fw_flash_req;
     NXPLOG_NCIHAL_D("fw_dwnld_flag = %d", fw_dwnld_flag);
     status = phNxpNciHal_FwDwnld(NFCSTATUS_SUCCESS);
     if (NFCSTATUS_FAILED == status) {
@@ -1067,6 +1070,9 @@ init_retry:
       wConfigStatus = NFCSTATUS_SUCCESS;
       NXPLOG_NCIHAL_D("FW download Rejected. Continuing Nfc Init");
     } else {
+      uint8_t p_core_init_rsp_params = 0;
+      phNxpNciHal_core_initialized(&p_core_init_rsp_params);
+      fw_dwnld_flag = false;
       wConfigStatus = NFCSTATUS_SUCCESS;
       NXPLOG_NCIHAL_D("FW download Success");
     }
@@ -1078,7 +1084,13 @@ init_retry:
 
 force_download:
   wFwVerRsp = 0;
-  phNxpNciHal_FwDwnld(NFC_STATUS_NOT_INITIALIZED);
+  fw_dwnld_flag = true;
+  status = phNxpNciHal_FwDwnld(NFC_STATUS_NOT_INITIALIZED);
+  if (status == NFCSTATUS_SUCCESS) {
+    uint8_t p_core_init_rsp_params = 0;
+    phNxpNciHal_core_initialized(&p_core_init_rsp_params);
+    fw_dwnld_flag = false;
+  }
   goto init_retry;
 
 minCleanAndreturn:
@@ -1746,6 +1758,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
 
     if (fw_download_success == 1) {
       phNxpNciHal_hci_network_reset();
+      fw_download_success = 0;
     }
 
     retlen = 0;
