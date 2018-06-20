@@ -510,6 +510,7 @@ static NFCSTATUS phNxpNciHal_fw_download(void) {
   } else {
     status = NFCSTATUS_SUCCESS;
     fw_download_success = 1;
+    property_set("persist.nfc.hci_network_reset_req", "true");
   }
 
   /*Keep Read Pending on I2C*/
@@ -1593,6 +1594,9 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   uint8_t* buffer = NULL;
   uint8_t isfound = false;
   uint8_t setConfigAlways = false;
+  char valueStr[PROPERTY_VALUE_MAX] = {0};
+  bool persist_hci_network_reset_req =false;
+  int len = property_get("persist.nfc.hci_network_reset_req", valueStr, "false");
   static uint8_t retry_core_init_cnt = 0;
   static uint8_t p2p_listen_mode_routing_cmd[] = {0x21, 0x01, 0x07, 0x00, 0x01,
                                                   0x01, 0x03, 0x00, 0x01, 0x05};
@@ -2183,10 +2187,12 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     }
   }
 
-    if (fw_download_success == 1) {
-      phNxpNciHal_hci_network_reset();
-      fw_download_success = 0;
-    }
+  if (len > 0) {
+    persist_hci_network_reset_req = (len == 4 && (memcmp(valueStr, "true", len) == 0)) ? true : false;
+  }
+  if (persist_hci_network_reset_req) {
+    phNxpNciHal_hci_network_reset();
+  }
 
   config_access = false;
   if (!((*p_core_init_rsp_params > 0) && (*p_core_init_rsp_params < 4))) {
@@ -2454,7 +2460,7 @@ static void phNxpNciHal_hci_network_reset(void) {
 static NFCSTATUS phNxpNciHal_check_eSE_Session_Identity(void) {
   struct stat st;
   NFCSTATUS status = NFCSTATUS_FAILED;
-  const char config_eseinfo_path[] = "/data/vendor/nfc/nfaStorage.bin1";
+  const char config_eseinfo_path[] = "/data/nfc/nfaStorage.bin1";
   static uint8_t session_identity[8] = {0x00};
   uint8_t default_session[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
   uint8_t swp2_intf_status = 0x00;
@@ -4245,7 +4251,7 @@ void phNxpNciHal_reset_nfcee_session(bool force_session_reset) {
       return;
     }
   }
-  const char config_eseinfo_path[] = "/data/vendor/nfc/nfaStorage.bin1";
+  const char config_eseinfo_path[] = "/data/nfc/nfaStorage.bin1";
   uint8_t *reset_ese_session_identity_set;
   uint8_t ese_session_dyn_uicc_nv[] = {
             0x20, 0x02, 0x22, 0x03, 0xA0, 0xEA, 0x08, 0xFF, 0xFF, 0xFF,
