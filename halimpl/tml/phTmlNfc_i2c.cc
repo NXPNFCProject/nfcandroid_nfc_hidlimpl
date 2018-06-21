@@ -93,9 +93,9 @@ NFCSTATUS phTmlNfc_i2c_open_and_configure(pphTmlNfc_Config_t pConfig,
   *pLinkHandle = (void*)((intptr_t)nHandle);
 
   /*Reset PN54X*/
-  phTmlNfc_i2c_reset((void*)((intptr_t)nHandle), 0);
+  phTmlNfc_i2c_reset((void*)((intptr_t)nHandle), MODE_POWER_OFF);
   usleep(10 * 1000);
-  phTmlNfc_i2c_reset((void*)((intptr_t)nHandle), 1);
+  phTmlNfc_i2c_reset((void*)((intptr_t)nHandle), MODE_POWER_ON);
 
   return NFCSTATUS_SUCCESS;
 }
@@ -293,13 +293,13 @@ int phTmlNfc_i2c_reset(void* pDevHandle, long level) {
   ret = ioctl((intptr_t)pDevHandle, PN544_SET_PWR, level);
   if (ret < 0) {
     NXPLOG_TML_E("%s :failed errno = 0x%x", __func__, errno);
-    if ((level == 2 || level == 4) && errno == EBUSY) {
+    if ((level == MODE_FW_DWNLD_WITH_VEN || level == MODE_FW_DWND_HIGH) && errno == EBUSY) {
       notifyFwrequest = true;
     } else {
       notifyFwrequest = false;
     }
   }
-  if ((level == 2 || level == 4) && ret == 0) {
+  if ((level == MODE_FW_DWNLD_WITH_VEN || level == MODE_FW_DWND_HIGH) && ret == 0) {
     bFwDnldFlag = true;
   } else {
     bFwDnldFlag = false;
