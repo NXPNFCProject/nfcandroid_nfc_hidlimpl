@@ -568,7 +568,7 @@ static void phTmlNfc_CleanUp(void) {
     return;
   }
   if (NULL != gpphTmlNfc_Context->pDevHandle) {
-    (void)phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, 0);
+    (void)phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_OFF);
     gpphTmlNfc_Context->bThreadDone = 0;
   }
   sem_destroy(&gpphTmlNfc_Context->rxSemaphore);
@@ -880,14 +880,14 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
         gpphTmlNfc_Context->tReadInfo.bEnable = 0;
         if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_VEN_RESET) {
             NXPLOG_TML_D(" phTmlNfc_e_EnableNormalMode complete with VEN RESET ");
-          phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, 0);
+          phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_OFF);
           usleep(10 * 1000);
-          phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, 1);
+          phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_ON);
           usleep(100 * 1000);
         }
         else if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD) {
           NXPLOG_TML_D(" phTmlNfc_e_EnableNormalMode complete with NCI CMD ");
-          phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, 1);
+          phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_ON);
           usleep(100 * 1000);
         }
         if (read_flag) {
@@ -901,11 +901,11 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
         gpphTmlNfc_Context->tReadInfo.bEnable = 0;
         if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_VEN_RESET) {
             NXPLOG_TML_D(" phTmlNfc_e_EnableDownloadMode complete with VEN RESET ");
-          wStatus = phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, 2);
+          wStatus = phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, MODE_FW_DWNLD_WITH_VEN);
         }
         else if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD) {
             NXPLOG_TML_D(" phTmlNfc_e_EnableDownloadMode complete with NCI CMD ");
-          wStatus = phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, 4);
+          wStatus = phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, MODE_FW_DWND_HIGH);
         }
         usleep(100 * 1000);
         gpphTmlNfc_Context->tReadInfo.bEnable = 1;

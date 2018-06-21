@@ -22,6 +22,15 @@
 #include <phNfcTypes.h>
 #include <phTmlNfc.h>
 #define PN544_MAGIC 0xE9
+
+typedef enum {
+  MODE_POWER_OFF = 0x00,
+  MODE_POWER_ON,
+  MODE_FW_DWNLD_WITH_VEN,
+  MODE_ISO_RST,
+  MODE_FW_DWND_HIGH
+}MODE_I2C_SET_PWR;
+
 /* Function declarations */
 void phTmlNfc_i2c_close(void* pDevHandle);
 NFCSTATUS phTmlNfc_i2c_open_and_configure(pphTmlNfc_Config_t pConfig,
