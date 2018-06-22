@@ -4,7 +4,7 @@
 
 | DESCRIPTION        | CHECKOUT COMMAND          |
 | :-------------: |:-------------:| 
-| NXPNFC_P61_JCOP_Kit    |  git clone https://github.com/NXPNFCProject/nfcandroid_nfc_hidlimpl.git |
+| nfcandroid_nfc_hidlimpl    |  git clone https://github.com/NXPNFCProject/nfcandroid_nfc_hidlimpl.git |
 
 ####Supported Android Versions on "br_android_ncihalx_p" Branch
 
