@@ -35,7 +35,7 @@ else
 LOCAL_MULTILIB := 32
 endif
 
-LOCAL_SHARED_LIBRARIES := libcutils liblog
+LOCAL_SHARED_LIBRARIES := libcutils liblog libbase libutils
 
 LOCAL_C_INCLUDES += $(OSAL)/inc $(PARSER)/inc
 

@@ -20,7 +20,7 @@
 #include <phNxpNciHal_Dnld.h>
 #include <phNxpNciHal_utils.h>
 #include <phTmlNfc.h>
-#include "nfc_types.h"
+
 /* Macro */
 #define PHLIBNFC_IOCTL_DNLD_MAX_ATTEMPTS 3
 #define PHLIBNFC_IOCTL_DNLD_GETVERLEN (0x0BU)

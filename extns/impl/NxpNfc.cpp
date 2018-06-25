@@ -20,6 +20,10 @@
 
 #include "NxpNfc.h"
 #include "phNxpNciHal_Adaptation.h"
+#include "hal_nxpese.h"
+#include "eSEClientIntf.h"
+#include "phNxpNciHal.h"
+#include "eSEClient.h"
 
 extern bool nfc_debug_enabled;
 
@@ -33,21 +37,30 @@ namespace implementation {
 Return<void> NxpNfc::ioctl(uint64_t ioctlType, const hidl_vec<uint8_t>& inOutData, ioctl_cb _hidl_cb) {
     int status;
     nfc_nci_IoctlInOutData_t inpOutData;
-    NfcData  outputData;
     ALOGD("HAL ioctl enter......");
     nfc_nci_IoctlInOutData_t *pInOutData=(nfc_nci_IoctlInOutData_t*)&inOutData[0];
 
     /*data from proxy->stub is copied to local data which can be updated by
      * underlying HAL implementation since its an inout argument*/
     memcpy(&inpOutData,pInOutData,sizeof(nfc_nci_IoctlInOutData_t));
-    //status = phNxpNciHal_ioctl(ioctlType, &inpOutData);
-     status = 0;
-     pInOutData->inp.context = 0;
+    status = phNxpNciHal_ioctl(ioctlType, &inpOutData);
+    if(HAL_NFC_IOCTL_ESE_JCOP_DWNLD == ioctlType)
+    {
+      ALOGD("NxpNfc::ioctl == HAL_NFC_IOCTL_ESE_JCOP_DWNLD");
+      if(pInOutData->inp.data.nciCmd.p_cmd[0] == ESE_JCOP_UPDATE_COMPLETED
+      || pInOutData->inp.data.nciCmd.p_cmd[0] == ESE_LS_UPDATE_COMPLETED)
+      {
+        ALOGD("NxpNfc::ioctl state == ESE_UPDATE_COMPLETED");
+        seteSEClientState(pInOutData->inp.data.nciCmd.p_cmd[0]);
+        eSEClientUpdate_Thread();
+      }
+    }
     /*copy data and additional fields indicating status of ioctl operation
      * and context of the caller. Then invoke the corresponding proxy callback*/
     inpOutData.out.ioctlType = ioctlType;
     inpOutData.out.context   = pInOutData->inp.context;
     inpOutData.out.result    = status;
+    NfcData  outputData;
     outputData.setToExternal((uint8_t*)&inpOutData.out, sizeof(nfc_nci_ExtnOutputData_t));
     _hidl_cb(outputData);
     return Void();
