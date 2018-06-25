@@ -40,16 +40,12 @@ cc_library_shared {
         "halimpl/tml/phDal4Nfc_messageQueueLib.cc",
         "halimpl/tml/phOsalNfc_Timer.cc",
         "halimpl/tml/phTmlNfc.cc",
-        "halimpl/eseClient/phNxpNfc_IntfApi.cc",
         "halimpl/tml/phTmlNfc_i2c.cc",
         "halimpl/tml/spi_spm.cc",
         "halimpl/utils/NxpNfcCapability.cc",
         "halimpl/utils/phNxpConfig.cc",
         "halimpl/utils/phNxpNciHal_utils.cc",
         "halimpl/utils/sparse_crc32.cc",
-        "halimpl/ese-clients/src/eSEClient.cc",
-        "halimpl/ese-clients/src/JcDnld.cc",
-        "halimpl/ese-clients/src/JcopOsDownload.cc",
     ],
 
     local_include_dirs: [
@@ -61,7 +57,6 @@ cc_library_shared {
         "halimpl/self-test",
         "halimpl/tml",
         "halimpl/utils",
-        "halimpl/eseClient",
         "halimpl/ese-clients/inc",
         "halimpl/src/include"
     ],
@@ -69,11 +64,8 @@ cc_library_shared {
     include_dirs: [
         "hardware/nxp/nfc/extns/impl",
         "hardware/nxp/secure_element/extns/impl",
-        "system/nfc/src/nfa/include",
-        "system/nfc/src/nfc/include",
-        "system/nfc/src/include",
-        "system/nfc/src/gki/common",
-        "system/nfc/src/gki/ulinux",
+        "hardware/nxp/nfc/extns/impl",
+        "hardware/nxp/secure_element_extns/inc",
     ],
 
     shared_libs: [
@@ -90,9 +82,8 @@ cc_library_shared {
         "liblog",
         "libutils",
         "vendor.nxp.nxpese@1.0",
-        "libnfc-nci",
         "libicuuc",
-        "libchrome"
+        "libchrome",
     ],
     static_libs: [
         "libnfcutils",
@@ -105,10 +96,19 @@ cc_binary {
     proprietary: true,
     init_rc: ["1.1/android.hardware.nfc@1.1-service.rc"],
     relative_install_path: "hw",
+    cflags: [
+         "-Wall",
+         "-Werror",
+         "-Wextra",
+         "-DNXP_EXTNS=TRUE"
+     ],
+
     srcs: [
         "1.1/NxpNfcService.cpp",
         "1.1/Nfc.cpp",
         "extns/impl/NxpNfc.cpp",
+        "halimpl/ese-clients/src/eSEClient.cc",
+        "halimpl/eseClient/phNxpNfc_IntfApi.cc",
     ],
 
     shared_libs: [
@@ -126,6 +126,11 @@ cc_binary {
         "libhwbinder",
         "vendor.nxp.nxpese@1.0",
         "vendor.nxp.nxpnfc@1.0",
+        "ls_client",
+        "se_extn_client",
+        "jcos_client",
+        "libnfc-nci",
+        "libchrome",
     ],
 
     local_include_dirs: [
@@ -137,11 +142,22 @@ cc_binary {
         "halimpl/self-test",
         "halimpl/tml",
         "halimpl/utils",
-        "halimpl/ese-clients/inc"
+        "halimpl/ese-clients/inc",
+        "halimpl/eseClient"
     ],
 
     include_dirs: [
         "hardware/nxp/nfc/extns/impl",
         "hardware/nxp/secure_element/extns/impl",
+        "hardware/nxp/secure_element_extns/inc",
+        "hardware/nxp/secure_element_extns/inc",
+        "hardware/nxp/secure_element_extns/ls_client/inc",
+        "hardware/nxp/secure_element_extns/jcos_client/inc",
+        "system/nfc/src/nfa/include",
+        "system/nfc/src/nfc/include",
+        "system/nfc/src/include",
+        "system/nfc/utils/include",
+        "system/nfc/src/gki/common",
+        "system/nfc/src/gki/ulinux",
     ],
 }

@@ -36,6 +36,8 @@
 #include "hal_nxpnfc.h"
 #include "hal_nxpese.h"
 #include "spi_spm.h"
+#include "eSEClient.h"
+
 #include <android-base/stringprintf.h>
 #include <base/logging.h>
 using android::base::StringPrintf;
@@ -75,13 +77,15 @@ extern int phNxpNciHal_CheckFwRegFlashRequired(uint8_t* fw_update_req,
                                                uint8_t* rf_update_req);
 extern NFCSTATUS phNxpNciHal_ext_send_sram_config_to_flash();
 extern NFCSTATUS phNxpNciHal_enableDefaultUICC2SWPline(uint8_t uicc2_sel);
-
+nfc_stack_callback_t* p_nfc_stack_cback_backup;
 phNxpNci_getCfg_info_t* mGetCfg_info = NULL;
 bool_t force_fw_download_req = false;
 bool_t gParserCreated = FALSE;
 /* global variable to get FW version from NCI response*/
 uint32_t wFwVerRsp;
 EseAdaptation *gpEseAdapt = NULL;
+nfcIoctlData_t  nfcioctldata;
+ese_update_state_t ese_update = ESE_UPDATE_COMPLETED;
 /* External global variable to get FW version */
 extern uint16_t wFwVer;
 extern uint16_t fw_maj_ver;
@@ -830,6 +834,17 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
   NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
   NFCSTATUS status = NFCSTATUS_SUCCESS;
 
+  NXPLOG_NCIHAL_E("phNxpNciHal_open NFC HAL OPEN");
+  if(ese_update != ESE_UPDATE_COMPLETED)
+  {
+    ALOGD("BLOCK NFC HAL OPEN");
+    if (p_cback != NULL) {
+        p_nfc_stack_cback_backup = p_cback;
+        (*p_cback)(HAL_NFC_OPEN_CPLT_EVT,
+                   HAL_NFC_STATUS_FAILED);
+      }
+    return NFCSTATUS_FAILED;
+  }
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_OPEN) {
     NXPLOG_NCIHAL_E("phNxpNciHal_open already open");
     return NFCSTATUS_SUCCESS;
@@ -2461,7 +2476,9 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
   NFCSTATUS fm_mw_ver_check = NFCSTATUS_FAILED;
   long level;
   level=pInpOutData->inp.level;
-  if(nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE)
+  if(nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE &&
+    (arg != HAL_NFC_IOCTL_ESE_JCOP_DWNLD && arg
+    != HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE && arg != HAL_ESE_IOCTL_NFC_JCOP_DWNLD))
    {
        NFCSTATUS status = NFCSTATUS_FAILED;
        status = phNxpNciHal_MinOpen();
@@ -2545,13 +2562,31 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
         pInpOutData->out.data.chipType = (uint8_t)phNxpNciHal_getChipType();
         ret = 0;
         break;
-    case HAL_NFC_IOCTL_NFC_JCOP_DWNLD :
-        NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_NFC_JCOP_DWNLD Enter value is %d: \n",pInpOutData->inp.data.nciCmd.p_cmd[0]);
+    case HAL_ESE_IOCTL_NFC_JCOP_DWNLD :
+        NXPLOG_NCIHAL_D("HAL_ESE_IOCTL_NFC_JCOP_DWNLD Enter value is %d: \n",pInpOutData->inp.data.nciCmd.p_cmd[0]);
         if(gpEseAdapt !=  NULL)
-        ret = gpEseAdapt->HalIoctl(HAL_NFC_IOCTL_NFC_JCOP_DWNLD,pInpOutData);
+	  ret = gpEseAdapt->HalIoctl(HAL_ESE_IOCTL_NFC_JCOP_DWNLD,pInpOutData);
+        break;
+    case HAL_NFC_IOCTL_ESE_JCOP_DWNLD :
+        NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_ESE_JCOP_DWNLD Enter value is %d: \n",pInpOutData->inp.data.nciCmd.p_cmd[0]);
+        ret = 0;
+        break;
+    case HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE :
+        ese_update = ESE_UPDATE_COMPLETED;
+        NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE \n");
+        if(p_nfc_stack_cback_backup != NULL)
+        {
+          (*p_nfc_stack_cback_backup)(HAL_NFC_OPEN_CPLT_EVT,
+            HAL_NFC_STATUS_RESTART);
+        }
+        else
+        {
+            NXPLOG_NCIHAL_D("p_nfc_stack_cback_backup cback NULL \n");
+        }
+        ret = 0;
         break;
     case HAL_NFC_IOCTL_SPI_DWP_SYNC:
-           {
+        {
                   ret = phNxpNciHal_send_ese_hal_cmd(pInpOutData->inp.data.nciCmd.cmd_len,
                                      pInpOutData->inp.data.nciCmd.p_cmd);
                   pInpOutData->out.data.nciRsp.rsp_len = nxpncihal_ctrl.rx_ese_data_len;

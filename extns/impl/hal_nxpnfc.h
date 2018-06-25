@@ -125,6 +125,15 @@ typedef struct {
     nfc_nci_ExtnOutputData_t out;
 }nfc_nci_IoctlInOutData_t;
 
+enum NxpNfcHalStatus {
+    /** In case of an error, HCI network needs to be re-initialized */
+    HAL_NFC_STATUS_RESTART = 0x30,
+};
+typedef union {
+    uint8_t ese_jcop_download_state;
+} nfcIoctlData_t;
+extern nfcIoctlData_t  nfcioctldata;
+
 /*
  * nxpnfc_nci_device_t :data structure for nxp's extended nfc_nci_device
  * Extra features added are
