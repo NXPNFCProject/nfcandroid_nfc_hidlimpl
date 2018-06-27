@@ -3564,13 +3564,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
           nfc_debug_enabled,
           "phNxpNciHal_ioctl HAL_NFC_IOCTL_SPI_DWP_SYNC:enter................");
 
-      gpphTmlNfc_Context->nfc_service_pid = pInpOutData->inp.data.nfcServicePid;
-      status = phTmlNfc_IoCtl(phTmlNfc_e_SetNfcServicePid);
-      if (NFCSTATUS_SUCCESS != status) {
-        NXPLOG_NCIHAL_E("%s : Error! SetNfcServicePid Failed ", __func__);
-        ;
-      }
-
       if (!nfcFL.eseFL._NXP_SPI_DWP_SYNC) {
         ALOGD_IF(nfc_debug_enabled,
                  "phNxpNciHal_ioctl HAL_NFC_IOCTL_SPI_DWP_SYNC not supported. "
