@@ -20,5 +20,12 @@
 #include <phNfcTypes.h>
 
 NFCSTATUS phNxpNciHal_fw_download_seq(uint8_t bClkSrcVal, uint8_t bClkFreqVal);
+#define STREAM_TO_UINT32(u32, p)                                      \
+{                                                                   \
+  (u32) = (((uint32_t)(*(p))) + ((((uint32_t)(*((p) + 1)))) << 8) + \
+           ((((uint32_t)(*((p) + 2)))) << 16) +                     \
+           ((((uint32_t)(*((p) + 3)))) << 24));                     \
+  (p) += 4;                                                         \
+}
 
 #endif /* _PHNXPNCIHAL_DNLD_H_ */

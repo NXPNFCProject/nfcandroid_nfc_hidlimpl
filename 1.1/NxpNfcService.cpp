@@ -19,11 +19,13 @@
 #define LOG_TAG "nxpnfc@1.0-service"
 #include <android/hardware/nfc/1.1/INfc.h>
 #include <vendor/nxp/nxpnfc/1.0/INxpNfc.h>
+#include <unistd.h>
 
 #include <hidl/LegacySupport.h>
 #include "Nfc.h"
 #include "NxpNfc.h"
 #include "eSEClient.h"
+
 // Generated HIDL files
 using android::hardware::nfc::V1_1::INfc;
 using android::hardware::nfc::V1_1::implementation::Nfc;
@@ -49,6 +51,7 @@ int main() {
     }
 
     configureRpcThreadpool(1, true /*callerWillJoin*/);
+    checkEseClientUpdate();
     status = nfc_service->registerAsService();
     if (status != OK) {
         LOG_ALWAYS_FATAL("Could not register service for NFC HAL Iface (%d).", status);
@@ -61,15 +64,15 @@ int main() {
         ALOGE("Can not create an instance of NXP NFC Extn Iface, exiting.");
         return -1;
     }
+
     status = nxp_nfc_service->registerAsService();
     if (status != OK) {
         ALOGE("Could not register service for NXP NFC Extn Iface (%d).", status);
     }
-    ALOGI("NFC service is ready");
     ALOGE("Before calling JCOP JCOS_doDownload");
-    JCOS_doDownload();
+    perform_eSEClientUpdate();
     ALOGE("After calling JCOS_doDownload");
-
+    ALOGI("NFC service is ready");
     joinRpcThreadpool();
     return 1;
 }
