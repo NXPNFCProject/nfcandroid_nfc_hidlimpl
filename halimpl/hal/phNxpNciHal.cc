@@ -2797,15 +2797,9 @@ static void phNxpNciHal_release_info(void) {
  ******************************************************************************/
 int phNxpNciHal_close(bool bShutdown) {
   NFCSTATUS status = NFCSTATUS_FAILED;
-  uint8_t cmd_ce_discovery_nci[10] = {
-      0x21, 0x03,
-  };
   static uint8_t cmd_core_reset_nci[] = {0x20, 0x00, 0x01, 0x00};
   static uint8_t cmd_ven_disable_nci[] = {0x20, 0x02, 0x05, 0x01,
-+                                         0xA0, 0x07, 0x01, 0x02};
-  uint8_t length = 0;
-  uint8_t numPrms = 0;
-  uint8_t ptr = 4;
+                                         0xA0, 0x07, 0x01, 0x02};
   unsigned long uiccListenMask = 0x00;
   unsigned long eseListenMask = 0x00;
 
@@ -2851,41 +2845,6 @@ int phNxpNciHal_close(bool bShutdown) {
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("CMD_VEN_DISABLE_NCI: Failed");
     }
-  }
-
-  if((uiccListenMask & 0x1) == 0x01 || (eseListenMask & 0x1) == 0x01) {
-    NXPLOG_NCIHAL_D("phNxpNciHal_close (): Adding A passive listen");
-    numPrms++;
-    cmd_ce_discovery_nci[ptr++] = 0x80;
-    cmd_ce_discovery_nci[ptr++] = 0x01;
-    length += 2;
-  }
-  if((uiccListenMask & 0x2) == 0x02 || (eseListenMask & 0x4) == 0x02) {
-    NXPLOG_NCIHAL_D("phNxpNciHal_close (): Adding B passive listen");
-    numPrms++;
-    cmd_ce_discovery_nci[ptr++] = 0x81;
-    cmd_ce_discovery_nci[ptr++] = 0x01;
-    length += 2;
-  }
-  if((uiccListenMask & 0x4) == 0x04 || (eseListenMask & 0x4) == 0x04) {
-    NXPLOG_NCIHAL_D("phNxpNciHal_close (): Adding F passive listen");
-    numPrms++;
-    cmd_ce_discovery_nci[ptr++] = 0x82;
-    cmd_ce_discovery_nci[ptr++] = 0x01;
-    length += 2;
-  }
-
-  if (length != 0) {
-    cmd_ce_discovery_nci[2] = length + 1;
-    cmd_ce_discovery_nci[3] = numPrms;
-    status = phNxpNciHal_send_ext_cmd(length + 4, cmd_ce_discovery_nci);
-    if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("CMD_CE_DISC_NCI: Failed");
-    }
-  } else {
-    NXPLOG_NCIHAL_E(
-        "No changes in the discovery command, sticking to last discovery "
-        "command sent");
   }
 
   nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
