@@ -724,14 +724,18 @@ init_retry:
     phNxpNciHal_enable_i2c_fragmentation();
   /*Get FW version from device*/
   status = phDnldNfc_InitImgInfo();
-  NXPLOG_NCIHAL_E("FW version for FW file = 0x%x", wFwVer);
   NXPLOG_NCIHAL_E("FW version from device = 0x%x", wFwVerRsp);
   if ((wFwVerRsp & 0x0000FFFF) == wFwVer && (fw_dwld_req == 0)) {
     NXPLOG_NCIHAL_D("FW update not required");
     phDnldNfc_ReSetHwDevHandle();
   } else {
   force_download:
+  NXPLOG_NCIHAL_E("FW version for FW file = 0x%x", wFwVer);
+  NXPLOG_NCIHAL_E("FW version from device = 0x%x", wFwVerRsp);
     if (wFwVerRsp == 0) {
+      nfcFL.chipType = sn100u;
+      tNFC_chipType chipType = sn100u;
+      CONFIGURE_FEATURELIST(chipType);
       phDnldNfc_InitImgInfo();
     }
     if (NFCSTATUS_SUCCESS == phNxpNciHal_CheckValidFwVersion()) {
@@ -1032,6 +1036,7 @@ int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t* p_data) {
   NFCSTATUS status = NFCSTATUS_INVALID_PARAMETER;
   phNxpNciHal_Sem_t cb_data;
   nxpncihal_ctrl.retry_cnt = 0;
+  int sem_val = 0;
   static uint8_t reset_ntf[] = {0x60, 0x00, 0x06, 0xA0, 0x00,
                                 0xC7, 0xD4, 0x00, 0x00};
   /* Create the local semaphore */
@@ -1048,7 +1053,7 @@ int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t* p_data) {
   /* check for write synchronyztion */
   if(phNxpNciHal_check_ncicmd_write_window(nxpncihal_ctrl.cmd_len,
                          nxpncihal_ctrl.p_cmd_data) != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_D("phNxpNciHal_write_unlocked Create cb data failed");
+    NXPLOG_NCIHAL_D("phNxpNciHal_write_unlocked  CMD window  check failed");
     data_len = 0;
     goto clean_and_return;
   }
@@ -1118,6 +1123,10 @@ retry:
   }
 
 clean_and_return:
+    sem_getvalue(&(nxpncihal_ctrl.syncSpiNfc), &sem_val);
+    if(((nxpncihal_ctrl.p_cmd_data[0] & NCI_MT_MASK) == NCI_MT_CMD)  && sem_val == 0 ) {
+        sem_post(&(nxpncihal_ctrl.syncSpiNfc));
+    }
   phNxpNciHal_cleanup_cb_data(&cb_data);
   return data_len;
 }
@@ -2443,9 +2452,9 @@ int phNxpNciHal_check_ncicmd_write_window(uint16_t cmd_len, uint8_t* p_cmd) {
     clock_gettime(CLOCK_REALTIME, &ts);
     ts.tv_sec += sem_timedout;
     while ((s = sem_timedwait(&nxpncihal_ctrl.syncSpiNfc, &ts)) == -1 &&
-           errno == EINTR)
+           errno == EINTR){
       continue; /* Restart if interrupted by handler */
-
+    }
     if (s != -1) {
       status = NFCSTATUS_SUCCESS;
     }
