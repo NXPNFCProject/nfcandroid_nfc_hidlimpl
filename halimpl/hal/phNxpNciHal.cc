@@ -736,6 +736,7 @@ init_retry:
       nfcFL.chipType = sn100u;
       tNFC_chipType chipType = sn100u;
       CONFIGURE_FEATURELIST(chipType);
+      nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_VEN_RESET;
       phDnldNfc_InitImgInfo();
     }
     if (NFCSTATUS_SUCCESS == phNxpNciHal_CheckValidFwVersion()) {
@@ -1049,7 +1050,7 @@ int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t* p_data) {
   /* Create local copy of cmd_data */
   memcpy(nxpncihal_ctrl.p_cmd_data, p_data, data_len);
   nxpncihal_ctrl.cmd_len = data_len;
-
+  write_unlocked_status = NFCSTATUS_FAILED;
   /* check for write synchronyztion */
   if(phNxpNciHal_check_ncicmd_write_window(nxpncihal_ctrl.cmd_len,
                          nxpncihal_ctrl.p_cmd_data) != NFCSTATUS_SUCCESS) {
@@ -1123,9 +1124,13 @@ retry:
   }
 
 clean_and_return:
-    sem_getvalue(&(nxpncihal_ctrl.syncSpiNfc), &sem_val);
-    if(((nxpncihal_ctrl.p_cmd_data[0] & NCI_MT_MASK) == NCI_MT_CMD)  && sem_val == 0 ) {
+    if(write_unlocked_status == NFCSTATUS_FAILED) {
+      sem_getvalue(&(nxpncihal_ctrl.syncSpiNfc), &sem_val);
+      if(((nxpncihal_ctrl.p_cmd_data[0] & NCI_MT_MASK) == NCI_MT_CMD)  && sem_val == 0 ) {
         sem_post(&(nxpncihal_ctrl.syncSpiNfc));
+        NXPLOG_NCIHAL_D(
+              "HAL write  failed CMD window check releasing \n");
+      }
     }
   phNxpNciHal_cleanup_cb_data(&cb_data);
   return data_len;
