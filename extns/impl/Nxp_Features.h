@@ -39,7 +39,8 @@
 #define JCOP_VER_4_0    4
 
 typedef enum {
-    pn547C2 = 0x01,
+    unknown,
+    pn547C2,
     pn65T,
     pn548C2,
     pn66T,

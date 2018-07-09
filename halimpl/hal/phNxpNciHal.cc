@@ -872,8 +872,8 @@ int phNxpNciHal_MinOpen() {
   const uint16_t max_len = 260;
   NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
   NFCSTATUS status = NFCSTATUS_SUCCESS;
-  nxpncihal_ctrl.bIsForceFwDwnld = false;
   uint8_t boot_mode = nxpncihal_ctrl.hal_boot_mode;
+  nxpncihal_ctrl.bIsForceFwDwnld = false;
   NXPLOG_NCIHAL_D("phNxpNci_MinOpen(): enter");
   /*NCI_INIT_CMD*/
   static uint8_t cmd_init_nci[] = {0x20, 0x01, 0x00};
@@ -1173,7 +1173,10 @@ clean_and_return:
  ******************************************************************************/
 int phNxpNciHal_fw_mw_ver_check() {
     NFCSTATUS status = NFCSTATUS_FAILED;
-    if (((nfcFL.chipType == pn553)||(nfcFL.chipType == pn80T)) &&
+    if (((nfcFL.chipType == pn557)||(nfcFL.chipType == pn81T)) &&
+           (rom_version == FW_MOBILE_ROM_VERSION_PN557) && (fw_maj_ver == 0x01)) {
+      status = NFCSTATUS_SUCCESS;
+    } else if (((nfcFL.chipType == pn553)||(nfcFL.chipType == pn80T)) &&
            (rom_version == FW_MOBILE_ROM_VERSION_PN553) && (fw_maj_ver == 0x01)) {
         status = NFCSTATUS_SUCCESS;
     } else if (((nfcFL.chipType == pn551)||(nfcFL.chipType == pn67T)) &&
@@ -4441,8 +4444,8 @@ int phNxpNciHal_getFWDownloadFlag(uint8_t* fwDnldRequest) {
 **
 ** Returns          none
 *******************************************************************************/
-void phNxpNciHal_configFeatureList(uint8_t* init_rsp, uint16_t rsp_len) {
-    nxpncihal_ctrl.chipType = configChipType(init_rsp,rsp_len);
+void phNxpNciHal_configFeatureList(uint8_t* msg, uint16_t msg_len) {
+    nxpncihal_ctrl.chipType = configChipType(msg,msg_len);
     tNFC_chipType chipType = nxpncihal_ctrl.chipType;
     CONFIGURE_FEATURELIST(chipType);
     NXPLOG_NCIHAL_D("NFC_GetFeatureList ()chipType = %d", chipType);

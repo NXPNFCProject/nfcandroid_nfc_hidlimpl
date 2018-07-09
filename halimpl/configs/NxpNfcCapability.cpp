@@ -30,13 +30,24 @@ capability* capability::getInstance() {
     return instance;
 }
 
-tNFC_chipType capability::processChipType(uint8_t* msg, uint16_t msg_len) {
+tNFC_chipType capability::getChipType(uint8_t* msg, uint16_t msg_len) {
     if((msg != NULL) && (msg_len != 0)) {
-        if((msg[0] == 0x60 && msg[1] == 00) ||
-                ((offsetFwVersion < msg_len) && (msg[offsetFwVersion] == 0x12))) {
-            chipType = pn81T;
+        uint16_t offsetHwVersion = 0;
+        uint16_t offsetFwVersion = 0;
+        if(msg[0] == 0x60 && msg[1] == 00) {
+            /* CORE_RST_NTF*/
+            offsetHwVersion = offsetRstHwVersion;
+            offsetFwVersion = offsetRstFwVersion;
+        } else if (msg[0] == 0x21 && msg[1] == 0x01) {
+            /*CORE_INIT_RSP*/
+            offsetHwVersion = offsetInitHwVersion;
+            offsetFwVersion = offsetInitFwVersion;
+        } else if (msg[0] == 0x00 && msg[1] == 0x0A) {
+            /*Propreitary Response*/
+            offsetHwVersion = offsetPropHwVersion;
+            offsetFwVersion = offsetPropFwVersion;
         }
-        else if(offsetHwVersion < msg_len) {
+        if ((offsetHwVersion > 0) && (offsetHwVersion < msg_len)) {
             ALOGD ("%s HwVersion : 0x%02x", __func__,msg[offsetHwVersion]);
             switch(msg[offsetHwVersion]){
 
@@ -49,9 +60,17 @@ tNFC_chipType capability::processChipType(uint8_t* msg, uint16_t msg_len) {
             case 0x50 : //PN553 A0 + P73
             case 0x51 : //PN553 B0 + P73 , NQ440
                         //NQ330
-                chipType = pn80T;
+                if (msg[offsetFwVersion] == 0x12) {
+                    chipType = pn81T;
+                } else {
+                    chipType = pn81T;
+                }
                 break;
-
+            case 0x61:
+                if(msg[offsetFwVersion] == 0x11) {
+                    chipType = pn553;
+                }
+                break;
             case 0x98 :
                 chipType = pn551;
                 break;
@@ -76,8 +95,8 @@ tNFC_chipType capability::processChipType(uint8_t* msg, uint16_t msg_len) {
             }
         }
         else {
-            ALOGD ("%s Wrong msg_len. Setting Default ChiptType pn80T",__func__);
-            chipType = pn80T;
+            ALOGD ("%s Wrong msg_len. Setting Default ChiptType pn81T",__func__);
+            chipType = pn81T;
         }
     }
     ALOGD ("%s NxpNci > Product : %s",__func__,product[chipType]);
@@ -85,7 +104,7 @@ tNFC_chipType capability::processChipType(uint8_t* msg, uint16_t msg_len) {
 }
 
 extern tNFC_chipType configChipType(uint8_t* msg, uint16_t msg_len) {
-    return pConfigFL->processChipType(msg,msg_len);
+    return pConfigFL->getChipType(msg,msg_len);
 }
 
 extern tNFC_chipType getChipType() {
