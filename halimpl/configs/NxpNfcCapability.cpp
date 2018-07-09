@@ -38,7 +38,7 @@ tNFC_chipType capability::getChipType(uint8_t* msg, uint16_t msg_len) {
             /* CORE_RST_NTF*/
             offsetHwVersion = offsetRstHwVersion;
             offsetFwVersion = offsetRstFwVersion;
-        } else if (msg[0] == 0x21 && msg[1] == 0x01) {
+        } else if (msg[0] == 0x40 && msg[1] == 0x01) {
             /*CORE_INIT_RSP*/
             offsetHwVersion = offsetInitHwVersion;
             offsetFwVersion = offsetInitFwVersion;
