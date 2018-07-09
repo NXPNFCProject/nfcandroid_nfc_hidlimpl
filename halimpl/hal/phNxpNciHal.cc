@@ -440,6 +440,8 @@ retry:
  *
  * Returns          NFCSTATUS_SUCCESS if firmware download successful
  *                  NFCSTATUS_FAILED in case of failure
+ *                  NFCSTATUS_REJECTED if FW version is invalid or if hardware
+ *                                     criteria is not matching
  *
  ******************************************************************************/
 static NFCSTATUS phNxpNciHal_fw_download(void) {

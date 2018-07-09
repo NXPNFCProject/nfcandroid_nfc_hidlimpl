@@ -207,6 +207,13 @@ static void phDnldNfc_ProcessSeqState(void* pContext,
     switch (pDlCtxt->tCurrState) {
       case phDnldNfc_StateInit: {
         NXPLOG_FWDNLD_D("Initializing Sequence..");
+        wStatus = phTmlNfc_UpdateReadCompleteCallback (
+            (pphTmlNfc_TransactCompletionCb_t)&phDnldNfc_ProcessSeqState);
+        if (NFCSTATUS_SUCCESS != wStatus) {
+          NXPLOG_FWDNLD_D(
+              "Registering phDnldNfc_ProcessSeqState for readComplete "
+              "Failed!!");
+        }
 
         if (0 == (pDlCtxt->TimerInfo.dwRspTimerId)) {
           TimerId = phOsalNfc_Timer_Create();

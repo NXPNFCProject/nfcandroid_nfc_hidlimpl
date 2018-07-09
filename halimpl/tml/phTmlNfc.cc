@@ -120,7 +120,10 @@ NFCSTATUS phTmlNfc_Init(pphTmlNfc_Config_t pConfig) {
         gpphTmlNfc_Context->tReadInfo.bThreadBusy = false;
         gpphTmlNfc_Context->tWriteInfo.bThreadBusy = false;
 
-        if (0 != sem_init(&gpphTmlNfc_Context->rxSemaphore, 0, 0)) {
+        if (pthread_mutex_init(&gpphTmlNfc_Context->readInfoUpdateMutex,
+                               NULL) == -1) {
+          wInitStatus = NFCSTATUS_FAILED;
+        } else if (0 != sem_init(&gpphTmlNfc_Context->rxSemaphore, 0, 0)) {
           wInitStatus = NFCSTATUS_FAILED;
         } else if (0 != phTmlNfc_WaitReadInit()) {
           wInitStatus = NFCSTATUS_FAILED;
@@ -379,6 +382,7 @@ static void* phTmlNfc_TmlThread(void* pParam) {
           }
           sem_post(&gpphTmlNfc_Context->rxSemaphore);
         } else {
+          pthread_mutex_lock(&gpphTmlNfc_Context->readInfoUpdateMutex);
           memcpy(gpphTmlNfc_Context->tReadInfo.pBuffer, temp, dwNoBytesWrRd);
           if(nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT) {
               read_count = 0;
@@ -431,6 +435,7 @@ static void* phTmlNfc_TmlThread(void* pParam) {
           }
           /*TML reader writer callback syncronization-- END*/
           pthread_mutex_unlock(&gpphTmlNfc_Context->wait_busy_lock);
+          pthread_mutex_unlock(&gpphTmlNfc_Context->readInfoUpdateMutex);
           NXPLOG_TML_D("PN54X - Posting read message.....\n");
           phNxpNciHal_print_packet("RECV",
                                    gpphTmlNfc_Context->tReadInfo.pBuffer,
@@ -662,6 +667,7 @@ NFCSTATUS phTmlNfc_Shutdown(void) {
     usleep(1000);
     sem_post(&gpphTmlNfc_Context->postMsgSemaphore);
     usleep(1000);
+    pthread_mutex_destroy(&gpphTmlNfc_Context->readInfoUpdateMutex);
     if (0 != pthread_join(gpphTmlNfc_Context->readerThread, (void**)NULL)) {
       NXPLOG_TML_E("Fail to kill reader thread!");
     }
@@ -758,6 +764,30 @@ NFCSTATUS phTmlNfc_Write(uint8_t* pBuffer, uint16_t wLength,
 
 /*******************************************************************************
 **
+** Function         phTmlNfc_UpdateReadCompleteCallback
+**
+** Description      Updates the callback to be invoked after read completed
+**
+** Parameters       pTmlReadComplete - pointer to the function to be invoked
+**                                     upon completion of read operation
+**
+** Returns          NFC status:
+**                  NFCSTATUS_SUCCESS - if TmlNfc context available
+**                  NFCSTATUS_FAILED - otherwise
+**
+*******************************************************************************/
+NFCSTATUS phTmlNfc_UpdateReadCompleteCallback (
+    pphTmlNfc_TransactCompletionCb_t pTmlReadComplete) {
+  NFCSTATUS wStatus = NFCSTATUS_FAILED;
+  if ((NULL != gpphTmlNfc_Context) && (NULL != pTmlReadComplete)) {
+    gpphTmlNfc_Context->tReadInfo.pThread_Callback = pTmlReadComplete;
+    wStatus = NFCSTATUS_SUCCESS;
+  }
+  return wStatus;
+}
+
+/*******************************************************************************
+**
 ** Function         phTmlNfc_Read
 **
 ** Description      Asynchronously reads data from the driver
@@ -791,6 +821,7 @@ NFCSTATUS phTmlNfc_Read(uint8_t* pBuffer, uint16_t wLength,
     if ((gpphTmlNfc_Context->pDevHandle != NULL) && (NULL != pBuffer) &&
         (PH_TMLNFC_RESET_VALUE != wLength) && (NULL != pTmlReadComplete)) {
       if (!gpphTmlNfc_Context->tReadInfo.bThreadBusy) {
+        pthread_mutex_lock(&gpphTmlNfc_Context->readInfoUpdateMutex);
         /* Setting the flag marks beginning of a Read Operation */
         gpphTmlNfc_Context->tReadInfo.bThreadBusy = true;
         /* Copy the buffer, length and Callback function,
@@ -804,6 +835,7 @@ NFCSTATUS phTmlNfc_Read(uint8_t* pBuffer, uint16_t wLength,
 
         /* Set event to invoke Reader Thread */
         gpphTmlNfc_Context->tReadInfo.bEnable = 1;
+        pthread_mutex_unlock(&gpphTmlNfc_Context->readInfoUpdateMutex);
         sem_post(&gpphTmlNfc_Context->rxSemaphore);
       } else {
         wReadStatus = PHNFCSTVAL(CID_NFC_TML, NFCSTATUS_BUSY);
