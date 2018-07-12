@@ -379,6 +379,8 @@ static NFCSTATUS phNxpNciHal_fw_download(void) {
     }
     nxpncihal_ctrl.hal_ext_enabled = FALSE;
     nxpncihal_ctrl.nci_info.wait_for_ntf = FALSE;
+    /* FW download done.Therefore if previous I2C write failed then we can change the state to NFCSTATUS_SUCCESS*/
+    write_unlocked_status = NFCSTATUS_SUCCESS;
   } else {
     status = NFCSTATUS_FAILED;
   }
