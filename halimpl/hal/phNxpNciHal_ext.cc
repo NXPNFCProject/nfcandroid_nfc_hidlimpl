@@ -268,8 +268,12 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
     }
   }
   phNxpNciHal_ext_process_nfc_init_rsp(p_ntf, p_len);
-
-  if (p_ntf[0] == 0x61 && p_ntf[1] == 0x05 && p_ntf[2] == 0x15 &&
+  if(p_ntf[0] == 0x42 && p_ntf[1] == 0x01 && p_ntf[2] == 0x01 && p_ntf[3] == 0x00) {
+    if(nxpncihal_ctrl.hal_ext_enabled == TRUE && nfcFL.chipType == sn100u) {
+      nxpncihal_ctrl.nci_info.wait_for_ntf = TRUE;
+      NXPLOG_NCIHAL_D(" Mode set received");
+    }
+  } else if (p_ntf[0] == 0x61 && p_ntf[1] == 0x05 && p_ntf[2] == 0x15 &&
       p_ntf[4] == 0x01 && p_ntf[5] == 0x06 && p_ntf[6] == 0x06) {
     NXPLOG_NCIHAL_D("> Going through workaround - notification of ISO 15693");
     icode_detected = 0x01;

@@ -2635,7 +2635,31 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
        }
       break;
     case HAL_NFC_SET_SPM_PWR:
-          ret = phPalEse_spi_ioctl(phPalEse_e_ChipRst, gpphTmlNfc_Context->pDevHandle, level);
+          if(nfcFL.chipType != sn100u)
+          {
+            ret = phPalEse_spi_ioctl(phPalEse_e_ChipRst, gpphTmlNfc_Context->pDevHandle, level);
+          } else
+          {
+            if(0x02 == level) {
+              HAL_ENABLE_EXT();
+              uint8_t mode_set[] = {0x22, 0x01, 0x02, 0xC0, 0x01};
+              uint8_t power_link[] = {0x22, 0x03, 0x02, 0xC0, 0x01};
+              power_link[4] = 0x00;
+              ret = phNxpNciHal_send_ese_hal_cmd(sizeof(power_link),power_link);
+
+              mode_set[4] = 0x00;
+              ret = phNxpNciHal_send_ese_hal_cmd(sizeof(mode_set),mode_set);
+
+              power_link[4] = 0x01;
+              ret = phNxpNciHal_send_ese_hal_cmd(sizeof(power_link),power_link);
+
+              mode_set[4] = 0x01;
+              ret = phNxpNciHal_send_ese_hal_cmd(sizeof(mode_set),mode_set);
+              HAL_DISABLE_EXT();
+            } else {
+              ret = NFCSTATUS_SUCCESS;
+            }
+          }
          break;
     case HAL_NFC_SET_POWER_SCHEME:
          ret = phPalEse_spi_ioctl(phPalEse_e_SetPowerScheme,gpphTmlNfc_Context->pDevHandle,level);
