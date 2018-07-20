@@ -106,8 +106,9 @@ typedef enum {
   phTmlNfc_e_ResetDevice = PH_TMLNFC_RESETDEVICE, /* Reset the device */
   phTmlNfc_e_EnableDownloadMode, /* Do the hardware setting to enter into
                                     download mode */
-  phTmlNfc_e_EnableNormalMode /* Hardware setting for normal mode of operation
+  phTmlNfc_e_EnableNormalMode, /* Hardware setting for normal mode of operation
                                  */
+  phTmlNfc_e_PowerReset = 5,
 } phTmlNfc_ControlCode_t;     /* Control code for IOCTL call */
 
 /*
