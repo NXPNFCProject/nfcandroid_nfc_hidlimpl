@@ -3542,9 +3542,16 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
                  pInpOutData->out.data.nciRsp.p_rsp[2] == 0x01 &&
                  pInpOutData->out.data.nciRsp.p_rsp[3] == 0x00 &&
                  pInpOutData->inp.data.nciCmd.p_cmd[3] == 0x00)
-
       {
         NXPLOG_NCIHAL_D("OMAPI COMMAND for Close SUCCESS : 0x%x",
+                        pInpOutData->out.data.nciRsp.p_rsp[3]);
+        ret = pInpOutData->out.data.nciRsp.p_rsp[3];
+      } else if (pInpOutData->out.data.nciRsp.p_rsp[0] == 0x4F &&
+                 pInpOutData->out.data.nciRsp.p_rsp[1] == 0x01 &&
+                 pInpOutData->out.data.nciRsp.p_rsp[2] == 0x01 &&
+                 pInpOutData->out.data.nciRsp.p_rsp[3] == 0x00 &&
+                 pInpOutData->inp.data.nciCmd.p_cmd[3] == 0x02) {
+        NXPLOG_NCIHAL_D("OMAPI COMMAND for Switch Allowed SUCCESS : 0x%x",
                         pInpOutData->out.data.nciRsp.p_rsp[3]);
         ret = pInpOutData->out.data.nciRsp.p_rsp[3];
       } else {
@@ -3583,14 +3590,19 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
       NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_RF_STATUS_UPDATE Enter value is %d: \n",
                       pInpOutData->inp.data.nciCmd.p_cmd[0]);
       if (gpEseAdapt != NULL)
-        ret = gpEseAdapt->HalIoctl(HAL_NFC_IOCTL_RF_STATUS_UPDATE, pInpOutData);
+        gpEseAdapt->HalNfccNtf(HAL_NFC_IOCTL_RF_STATUS_UPDATE, pInpOutData);
+      ret = 0;
       break;
-
+    case HAL_NFC_IOCTL_RF_ACTION_NTF:
+      NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_RF_ACTION_NTF");
+      if (gpEseAdapt != NULL)
+        gpEseAdapt->HalNfccNtf(HAL_NFC_IOCTL_RF_ACTION_NTF, pInpOutData);
+      ret = 0;
+      break;
     case HAL_NFC_GET_NXP_CONFIG:
       phNxpNciHal_getNxpConfig(pInpOutData);
       ret = 0;
       break;
-
     default:
       NXPLOG_NCIHAL_E("%s : Wrong arg = %ld", __func__, arg);
       break;

@@ -306,7 +306,22 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
       inpOutData.inp.data_source = 2;
       phNxpNciHal_ioctl(HAL_NFC_IOCTL_RF_STATUS_UPDATE, &inpOutData);
     }
+  } else if (p_ntf[0] == 0x61 && p_ntf[1] == 0x09) {
+    unsigned long rf_update_enable = 0;
+    if (GetNxpNumValue(NAME_RF_STATUS_UPDATE_ENABLE, &rf_update_enable,
+                       sizeof(unsigned long))) {
+      NXPLOG_NCIHAL_D("RF_STATUS_UPDATE_ENABLE : %lu", rf_update_enable);
+    }
+    if (rf_update_enable == 0x01) {
+      nfc_nci_IoctlInOutData_t inpOutData;
+      memset(&inpOutData, 0x00, sizeof(nfc_nci_IoctlInOutData_t));
+      inpOutData.inp.data.nciCmd.cmd_len = p_ntf[2];
+      memcpy(inpOutData.inp.data.nciCmd.p_cmd, p_ntf + 3, p_ntf[2]);
+      inpOutData.inp.data_source = 2;
+      phNxpNciHal_ioctl(HAL_NFC_IOCTL_RF_ACTION_NTF, &inpOutData);
+    }
   }
+
 if(nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT == true) {
   /*Handle NFCC2.0 in NCI2.0 Boot sequence*/
   /*After TML sent Hard Reset, we may or may not receive this notification*/
@@ -356,6 +371,7 @@ if(nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT == true) {
     nxpncihal_ctrl.nci_info.lastResetNtfReason = p_ntf[3];
   }
 }
+
 /*Handle NFCC2.0 in NCI1.0 Boot sequence*/
 if (((nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT) &&
         ((p_ntf[0] == 0x40) && (p_ntf[1] == 0x01) &&
