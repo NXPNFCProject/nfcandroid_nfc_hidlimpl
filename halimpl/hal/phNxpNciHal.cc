@@ -2403,7 +2403,7 @@ int phNxpNciHal_power_cycle(void) {
     NXPLOG_NCIHAL_D("Power Cycle failed due to hal status not open");
     return NFCSTATUS_FAILED;
   }
-  status = phTmlNfc_IoCtl(phTmlNfc_e_ResetDevice);
+  status = phTmlNfc_IoCtl(phTmlNfc_e_PowerReset);
 
   if (NFCSTATUS_SUCCESS == status) {
     NXPLOG_NCIHAL_D("PN54X Reset - SUCCESS\n");

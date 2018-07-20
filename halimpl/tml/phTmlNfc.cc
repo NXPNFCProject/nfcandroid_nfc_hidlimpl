@@ -859,6 +859,12 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
     wStatus = NFCSTATUS_FAILED;
   } else {
     switch (eControlCode) {
+       case phTmlNfc_e_PowerReset:
+        {
+            /*VEN_RESET*/
+            phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, 5);
+            break;
+        }
       case phTmlNfc_e_ResetDevice:
 
        {
