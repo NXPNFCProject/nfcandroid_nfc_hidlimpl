@@ -21,7 +21,8 @@ cc_library_shared {
         "-Wall",
         "-Werror",
         "-Wextra",
-        "-DNXP_EXTNS=TRUE"
+        "-DNXP_EXTNS=TRUE",
+        "-DNXP_HW_SELF_TEST=TRUE"
     ],
 
     srcs: [
