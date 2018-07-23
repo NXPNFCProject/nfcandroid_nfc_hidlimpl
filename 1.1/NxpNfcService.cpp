@@ -36,7 +36,7 @@ using vendor::nxp::nxpnfc::V1_0::INxpNfc;
 using vendor::nxp::nxpnfc::V1_0::implementation::NxpNfc;
 
 int main() {
-  ALOGD("NFC HAL Service 1.1 is starting.");
+  ALOGD("Registering NFC HALIMPL Service v1.1...");
   sp<INfc> nfc_service = new Nfc();
 
   configureRpcThreadpool(2, true /*callerWillJoin*/);
@@ -46,13 +46,13 @@ int main() {
                      status);
     return -1;
     }
-
+    ALOGD("Registering NFC HALIOCTL Service v1.0...");
     sp<INxpNfc> nxp_nfc_service = new NxpNfc();
     status = nxp_nfc_service->registerAsService();
     if (status != OK) {
         ALOGD("Could not register service for NXP NFC Extn Iface (%d).", status);
     }
-    ALOGD("NFC service is ready");
+    ALOGD("NFC HAL Service is ready");
     joinRpcThreadpool();
     return 1;
 }

@@ -16,7 +16,7 @@
  *  limitations under the License.
  *
  ******************************************************************************/
-#define LOG_TAG "EseAdaptation"
+#define LOG_TAG "EseHalClient"
 #include <android/hardware/secure_element/1.0/ISecureElement.h>
 #include <android/hardware/secure_element/1.0/ISecureElementHalCallback.h>
 #include <android/hardware/secure_element/1.0/types.h>

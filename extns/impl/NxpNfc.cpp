@@ -30,9 +30,10 @@
  *  limitations under the License.
  *
  ******************************************************************************/
+#define LOG_TAG "vendor.nxp.nxpnfc@1.0-impl"
 #include "NxpNfc.h"
 #include "phNxpNciHal_Adaptation.h"
-
+#include <log/log.h>
 
 namespace vendor {
 namespace nxp {
@@ -44,6 +45,7 @@ namespace implementation {
 Return<void> NxpNfc::ioctl(uint64_t ioctlType,
                            const hidl_vec<uint8_t>& inOutData,
                            ioctl_cb _hidl_cb) {
+  ALOGD_IF(true, "%s: enter", __FUNCTION__);
   uint32_t status;
   nfc_nci_IoctlInOutData_t inpOutData;
   NfcData outputData;
@@ -61,6 +63,7 @@ Return<void> NxpNfc::ioctl(uint64_t ioctlType,
   inpOutData.out.result = status;
   outputData.setToExternal((uint8_t*)&inpOutData.out,
                            sizeof(nfc_nci_ExtnOutputData_t));
+  ALOGD_IF(true, "%s: exit", __FUNCTION__);
   _hidl_cb(outputData);
   return Void();
 }
