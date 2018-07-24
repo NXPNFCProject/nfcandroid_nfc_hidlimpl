@@ -63,7 +63,7 @@ tNFC_chipType capability::getChipType(uint8_t* msg, uint16_t msg_len) {
                 if (msg[offsetFwVersion] == 0x12) {
                     chipType = pn81T;
                 } else {
-                    chipType = pn81T;
+                    chipType = pn80T;
                 }
                 break;
             case 0x61:
