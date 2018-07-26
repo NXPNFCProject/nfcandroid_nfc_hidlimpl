@@ -18,6 +18,10 @@
 #include <base/logging.h>
 #include <phNfcCommon.h>
 #include <phNxpNciHal.h>
+
+#define ESE_HCI_APDU_PIPE_ID 0x19
+#define EVT_END_OF_APDU_TRANSFER 0x61
+
 #if(NXP_EXTNS == TRUE)
  /*********************** Global Variables *************************************/
 static void nfaDeviceManagementCallback(uint8_t dmEvent,
@@ -88,6 +92,51 @@ NFCSTATUS phNxpNfc_ResetEseJcopUpdate() {
       usleep(500 * 1000);
   }
   NXPLOG_NCIHAL_E("phNxpNfc_ResetEseJcopUpdate exit");
+
+  return nfaStat;
+}
+
+NFCSTATUS phNxpNfc_openEse() {
+  tNFA_STATUS nfaStat = NFA_STATUS_FAILED;
+  NXPLOG_NCIHAL_E("phNxpNfc_openEse enter");
+
+  nfaStat = NFA_SendPowerLinkCommand((uint8_t)ESE_HANDLE, 0x03);
+  if(nfaStat ==  NFA_STATUS_OK) {
+    if (SEM_WAIT(cb_powerlink)) {
+      NXPLOG_NCIHAL_E("semaphore error");
+      return nfaStat;
+    }
+  }
+  NXPLOG_NCIHAL_E("phNxpNfc_openEse mode set");
+  nfaStat =  NFA_EeModeSet((uint8_t)ESE_HANDLE, NFA_EE_MD_ACTIVATE);
+  if(nfaStat == NFA_STATUS_OK)
+  {
+      if (SEM_WAIT(cd_mode_set)) {
+        NXPLOG_NCIHAL_E("semaphore error");
+        return nfaStat;
+      }
+      usleep(100 * 1000);
+  }
+  NXPLOG_NCIHAL_E("phNxpNfc_openEse exit: status : %d",nfaStat);
+
+  return nfaStat;
+}
+
+NFCSTATUS phNxpNfc_closeEse() {
+  tNFA_STATUS nfaStat = NFA_STATUS_FAILED;
+  NXPLOG_NCIHAL_E("phNxpNfc_closeEse enter");
+
+  nfaStat = NFA_SendPowerLinkCommand((uint8_t)ESE_HANDLE, 0x01);
+  if(nfaStat ==  NFA_STATUS_OK) {
+    if (SEM_WAIT(cb_powerlink)) {
+      NXPLOG_NCIHAL_E("semaphore error");
+      return nfaStat;
+    }
+  }
+  NXPLOG_NCIHAL_E("phNxpNfc_closeEse END OF APDU");
+
+  NFA_HciSendEvent (mNfaHciHandle, ESE_HCI_APDU_PIPE_ID, EVT_END_OF_APDU_TRANSFER, 0x00, NULL, 0x00,NULL, 0);
+  NXPLOG_NCIHAL_E("phNxpNfc_closeEse exit: status : %d",nfaStat);
 
   return nfaStat;
 }

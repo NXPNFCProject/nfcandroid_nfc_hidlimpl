@@ -35,6 +35,8 @@ extern bool nfc_debug_enabled;
 NFCSTATUS phNxpNfc_InitLib();
 NFCSTATUS phNxpNfc_DeInitLib();
 NFCSTATUS phNxpNfc_ResetEseJcopUpdate();
+NFCSTATUS phNxpNfc_openEse();
+NFCSTATUS phNxpNfc_closeEse();
 bool phNxpNfc_EseTransceive(uint8_t* xmitBuffer, int32_t xmitBufferSize, uint8_t* recvBuffer,
                      int32_t recvBufferMaxSize, int32_t& recvBufferActualSize, int32_t timeoutMillisec);
 #endif

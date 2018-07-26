@@ -51,7 +51,16 @@ void seteSEClientState(uint8_t state);
 SESTATUS eSEUpdate_SeqHandler();
 int16_t SE_Open()
 {
+  if(phNxpNfc_openEse() == SESTATUS_SUCCESS)
+  {
+    ALOGD("%s enter: success ", __func__);
     return SESTATUS_SUCCESS;
+  }
+  else
+  {
+    ALOGD("%s enter: failed ", __func__);
+    return SESTATUS_FAILED;
+  }
 }
 
 void SE_Reset()
@@ -76,7 +85,10 @@ void SE_JcopDownLoadReset()
 bool SE_Close(int16_t mHandle)
 {
     if(mHandle != 0)
+    {
+      phNxpNfc_closeEse();
       return true;
+    }
     else
       return false;
 }
