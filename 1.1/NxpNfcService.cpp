@@ -39,7 +39,7 @@ int main() {
   ALOGD("Registering NFC HALIMPL Service v1.1...");
   sp<INfc> nfc_service = new Nfc();
 
-  configureRpcThreadpool(2, true /*callerWillJoin*/);
+  configureRpcThreadpool(1, true /*callerWillJoin*/);
   status_t status = nfc_service->registerAsService();
   if (status != OK) {
     LOG_ALWAYS_FATAL("Could not register service for NFC HAL Iface (%d).",
