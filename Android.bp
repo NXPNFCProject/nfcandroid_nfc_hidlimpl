@@ -85,6 +85,7 @@ cc_binary {
         "libutils",
         "android.hardware.nfc@1.0",
         "android.hardware.nfc@1.1",
+        "ese_spi_nxp",
         "libhidlbase",
         "libhidltransport",
         "libhwbinder",

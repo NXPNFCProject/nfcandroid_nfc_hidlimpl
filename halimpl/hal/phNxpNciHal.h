@@ -291,5 +291,14 @@ tNFC_chipType phNxpNciHal_getChipType();
 ** Returns          none
 *******************************************************************************/
 void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData);
-
+/******************************************************************************
+ * Function         phNxpNciHal_getNxpTransitConfig
+ *
+ * Description      This function overwrite libnfc-nxpTransit.conf file
+ *                  with transitConfValue.
+ *
+ * Returns          void.
+ *
+ ******************************************************************************/
+void phNxpNciHal_setNxpTransitConfig(char *transitConfValue);
 #endif /* _PHNXPNCIHAL_H_ */

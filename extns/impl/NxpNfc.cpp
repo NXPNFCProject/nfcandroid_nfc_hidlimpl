@@ -32,6 +32,7 @@
  ******************************************************************************/
 #define LOG_TAG "vendor.nxp.nxpnfc@1.0-impl"
 #include "NxpNfc.h"
+#include "hal_nxpese.h"
 #include "phNxpNciHal_Adaptation.h"
 #include <log/log.h>
 
@@ -55,6 +56,12 @@ Return<void> NxpNfc::ioctl(uint64_t ioctlType,
   /*data from proxy->stub is copied to local data which can be updated by
    * underlying HAL implementation since its an inout argument*/
   memcpy(&inpOutData, pInOutData, sizeof(nfc_nci_IoctlInOutData_t));
+  if (ioctlType == HAL_NFC_IOCTL_SET_TRANSIT_CONFIG) {
+    /*As transit configurations are appended at the end of
+    nfc_nci_IoctlInOutData_t, Assign appropriate pointer to TransitConfig*/
+    inpOutData.inp.data.transitConfig.val =
+        ((char *)pInOutData) + sizeof(nfc_nci_IoctlInOutData_t);
+  }
   status = phNxpNciHal_ioctl(ioctlType, &inpOutData);
   /*copy data and additional fields indicating status of ioctl operation
    * and context of the caller. Then invoke the corresponding proxy callback*/

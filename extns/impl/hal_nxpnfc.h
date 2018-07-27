@@ -61,6 +61,14 @@ typedef struct {
   uint8_t p_rsp[MAX_IOCTL_TRANSCEIVE_RESP_LEN];
 } nfc_nci_ExtnRsp_t;
 /*
+ * TransitConfig_t shall contain transit config value and transit
+ * Configuration length
+ */
+typedef struct {
+  long len;
+  char *val;
+} TransitConfig_t;
+/*
  * InputData_t :ioctl has multiple subcommands
  * Each command has corresponding input data which needs to be populated in this
  */
@@ -70,6 +78,7 @@ typedef union {
   nfc_nci_ExtnCmd_t nciCmd;
   uint32_t timeoutMilliSec;
   long nfcServicePid;
+  TransitConfig_t transitConfig;
 } InputData_t;
 /*
  * nfc_nci_ExtnInputData_t :Apart from InputData_t, there are context data

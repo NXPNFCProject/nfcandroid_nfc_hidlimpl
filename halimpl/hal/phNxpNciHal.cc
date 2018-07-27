@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <android-base/file.h>
 #include <sys/stat.h>
 #include <phNxpNciHal.h>
 #include <phNxpNciHal_ext.h>
@@ -35,6 +36,7 @@
 
 using namespace android::hardware::nfc::V1_1;
 using android::hardware::nfc::V1_1::NfcEvent;
+using android::base::WriteStringToFile;
 
 /*********************** Global Variables *************************************/
 #define PN547C2_CLOCK_SETTING
@@ -3019,6 +3021,21 @@ void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
 }
 
 /******************************************************************************
+ * Function         phNxpNciHal_getNxpTransitConfig
+ *
+ * Description      This function overwrite libnfc-nxpTransit.conf file
+ *                  with transitConfValue.
+ *
+ * Returns          void.
+ *
+ ******************************************************************************/
+void phNxpNciHal_setNxpTransitConfig(char *transitConfValue) {
+  NXPLOG_NCIHAL_D("%s : Enter", __func__);
+  std::string transitConfFileName = "/data/vendor/nfc/libnfc-nxpTransit.conf";
+  WriteStringToFile(transitConfValue, transitConfFileName);
+  NXPLOG_NCIHAL_D("%s : Exit", __func__);
+}
+/******************************************************************************
  * Function         phNxpNciHal_getVendorConfig
  *
  * Description      This function can be used by HAL to inform
@@ -3601,6 +3618,11 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
       break;
     case HAL_NFC_GET_NXP_CONFIG:
       phNxpNciHal_getNxpConfig(pInpOutData);
+      ret = 0;
+      break;
+    case HAL_NFC_IOCTL_SET_TRANSIT_CONFIG:
+      phNxpNciHal_setNxpTransitConfig(
+          pInpOutData->inp.data.transitConfig.val);
       ret = 0;
       break;
     default:
