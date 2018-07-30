@@ -1756,9 +1756,10 @@ NFCSTATUS phNxpNciHal_fw_download_seq(uint8_t bClkSrcVal, uint8_t bClkFreqVal,
 static NFCSTATUS phLibNfc_VerifyCrcStatus(uint8_t bCrcStatus) {
     uint8_t bBitPos;
     uint8_t bShiftVal;
-    if((nfcFL.chipType == pn551) || (nfcFL.chipType == pn553)) {
-        bBitPos = 1;
-        bShiftVal = 2;
+    if ((nfcFL.chipType == pn551) || (nfcFL.chipType == pn553) ||
+        (nfcFL.chipType == pn557)) {
+      bBitPos = 1;
+      bShiftVal = 2;
     } else {
         bBitPos = 0;
         bShiftVal = 1;
