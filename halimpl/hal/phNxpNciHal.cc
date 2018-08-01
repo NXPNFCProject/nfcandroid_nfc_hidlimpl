@@ -3625,6 +3625,10 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
           pInpOutData->inp.data.transitConfig.val);
       ret = 0;
       break;
+    case HAL_NFC_IOCTL_NFCEE_SESSION_RESET:
+      phNxpNciHal_reset_nfcee_session(true);
+      ret = 0;
+      break;
     default:
       NXPLOG_NCIHAL_E("%s : Wrong arg = %ld", __func__, arg);
       break;
