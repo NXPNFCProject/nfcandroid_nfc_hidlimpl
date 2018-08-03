@@ -47,7 +47,6 @@ phTmlNfc_i2cfragmentation_t fragmentation_enabled;
 phTmlNfc_Context_t* gpphTmlNfc_Context = NULL;
 /* Local Function prototypes */
 static NFCSTATUS phTmlNfc_StartThread(void);
-static void phTmlNfc_CleanUp(void);
 static void phTmlNfc_ReadDeferredCb(void* pParams);
 static void phTmlNfc_WriteDeferredCb(void* pParams);
 static void* phTmlNfc_TmlThread(void* pParam);
@@ -611,7 +610,7 @@ static void* phTmlNfc_TmlWriterThread(void* pParam) {
 ** Returns          None
 **
 *******************************************************************************/
-static void phTmlNfc_CleanUp(void) {
+void phTmlNfc_CleanUp(void) {
 
   if (NULL == gpphTmlNfc_Context) {
     return;
@@ -676,7 +675,6 @@ NFCSTATUS phTmlNfc_Shutdown(void) {
     }
     NXPLOG_TML_D("bThreadDone == 0");
 
-    phTmlNfc_CleanUp();
   } else {
     wShutdownStatus = PHNFCSTVAL(CID_NFC_TML, NFCSTATUS_NOT_INITIALISED);
   }
@@ -1234,4 +1232,21 @@ static int phTmlNfc_WaitReadInit(void) {
     NXPLOG_TML_E(" phTphTmlNfc_WaitReadInit failed, error = 0x%X", ret);
   }
   return ret;
+}
+
+/*******************************************************************************
+**
+** Function         phTmlNfc_Shutdown_CleanUp
+**
+** Description      wrapper function  for shutdown  and cleanup of resources
+**
+** Parameters       None
+**
+** Returns          NFCSTATUS
+**
+*******************************************************************************/
+NFCSTATUS phTmlNfc_Shutdown_CleanUp() {
+  NFCSTATUS wShutdownStatus = phTmlNfc_Shutdown();
+  phTmlNfc_CleanUp();
+  return wShutdownStatus;
 }
