@@ -16,6 +16,7 @@
 
 #include <dlfcn.h>
 #include <log/log.h>
+#include <android-base/file.h>
 #include <phDal4Nfc_messageQueueLib.h>
 #include <phDnldNfc.h>
 #include <phNxpConfig.h>
@@ -44,6 +45,7 @@
 using android::base::StringPrintf;
 using namespace android::hardware::nfc::V1_1;
 using android::hardware::nfc::V1_1::NfcEvent;
+using android::base::WriteStringToFile;
 
 /*********************** Global Variables *************************************/
 #define PN547C2_CLOCK_SETTING
@@ -2259,6 +2261,22 @@ int phNxpNciHal_configDiscShutdown(void) {
 }
 
 /******************************************************************************
+ * Function         phNxpNciHal_getNxpTransitConfig
+ *
+ * Description      This function overwrite libnfc-nxpTransit.conf file
+ *                  with transitConfValue.
+ *
+ * Returns          void.
+ *
+ ******************************************************************************/
+void phNxpNciHal_setNxpTransitConfig(char *transitConfValue) {
+  NXPLOG_NCIHAL_D("%s : Enter", __func__);
+  std::string transitConfFileName = "/data/vendor/nfc/libnfc-nxpTransit.conf";
+  WriteStringToFile(transitConfValue, transitConfFileName);
+  NXPLOG_NCIHAL_D("%s : Exit", __func__);
+}
+
+/******************************************************************************
  * Function         phNxpNciHal_getVendorConfig
  *
  * Description      This function can be used by HAL to inform
@@ -2689,6 +2707,10 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
         NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_RF_STATUS_UPDATE Enter value is %d: \n",pInpOutData->inp.data.nciCmd.p_cmd[0]);
         if(gpEseAdapt !=  NULL)
         ret = gpEseAdapt->HalIoctl(HAL_NFC_IOCTL_RF_STATUS_UPDATE,pInpOutData);
+        break;
+    case HAL_NFC_IOCTL_SET_TRANSIT_CONFIG:
+        phNxpNciHal_setNxpTransitConfig(pInpOutData->inp.data.transitConfig.val);
+        ret = 0;
         break;
     default:
       NXPLOG_NCIHAL_E("%s : Wrong arg = %ld", __func__, arg);
