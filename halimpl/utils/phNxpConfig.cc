@@ -73,7 +73,7 @@ const char config_timestamp_path[] =
         "/data/vendor/nfc/libnfc-nxpConfigState.bin";
 /*const char default_nxp_config_path[] =
         "/vendor/etc/libnfc-nxp.conf";*/
-const char nxp_rf_config_path[] =
+char nxp_rf_config_path[256] =
         "/system/vendor/libnfc-nxp_RF.conf";
 const char transit_config_path[] = "/data/vendor/nfc/libnfc-nxpTransit.conf";
 void readOptionalConfig(const char* optional);
@@ -477,7 +477,6 @@ CNfcConfig& CNfcConfig::GetInstance() {
     theInstance.readNxpRFConfig(nxp_rf_config_path);
 #endif
   }
-
   return theInstance;
 }
 
@@ -1020,6 +1019,12 @@ extern "C" int GetNxpNumValue(const char* name, void* pValue,
       return false;
   }
   return true;
+}
+
+extern "C" void setNxpRfConfigPath(const char* name) {
+  memset(nxp_rf_config_path, 0, sizeof(nxp_rf_config_path));
+  strcpy(nxp_rf_config_path, name);
+  ALOGD("nxp_rf_config_path=%s", nxp_rf_config_path);
 }
 
 /*******************************************************************************

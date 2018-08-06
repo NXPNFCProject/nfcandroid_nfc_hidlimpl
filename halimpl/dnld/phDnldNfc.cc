@@ -752,9 +752,9 @@ NFCSTATUS phDnldNfc_InitImgInfo(void) {
   } else if(fwType == FW_FORMAT_SO) {
     gpphDnldContext->FwFormat = FW_FORMAT_SO;
     if (gRecFWDwnld == true) {
-      wStatus = phDnldNfc_LoadRecoveryFW(&pImageInfo, &ImageInfoLen);
+      wStatus = phDnldNfc_LoadRecoveryFW(Fw_Lib_Path, &pImageInfo, &ImageInfoLen);
     } else {
-      wStatus = phDnldNfc_LoadFW(&pImageInfo, &ImageInfoLen);
+      wStatus = phDnldNfc_LoadFW(Fw_Lib_Path, &pImageInfo, &ImageInfoLen);
     }
   } else {
     NXPLOG_FWDNLD_E("firmware file format mismatch!!!\n");
@@ -828,9 +828,9 @@ NFCSTATUS phDnldNfc_LoadRecInfo(void) {
    * structure */
   phDnldNfc_SetHwDevHandle();
   if (gRecFWDwnld == true)
-      wStatus = phDnldNfc_LoadRecoveryFW(&pImageInfo, &ImageInfoLen);
+      wStatus = phDnldNfc_LoadRecoveryFW(PLATFORM_LIB_PATH, &pImageInfo, &ImageInfoLen);
   else
-      wStatus = phDnldNfc_LoadFW(&pImageInfo, &ImageInfoLen);
+      wStatus = phDnldNfc_LoadFW(PLATFORM_LIB_PATH, &pImageInfo, &ImageInfoLen);
   if ((pImageInfo == NULL) || (ImageInfoLen == 0)) {
     NXPLOG_FWDNLD_E(
         "Image extraction Failed - invalid imginfo or imginfolen!!");
@@ -884,10 +884,10 @@ NFCSTATUS phDnldNfc_LoadPKInfo(void) {
 
 /* load the PKU image library */
   if (gRecFWDwnld == true)
-      wStatus =phDnldNfc_LoadRecoveryFW(&pImageInfo, &ImageInfoLen);
+      wStatus =phDnldNfc_LoadRecoveryFW(PKU_LIB_PATH, &pImageInfo, &ImageInfoLen);
   else
       wStatus = phDnldNfc_LoadFW(
-            &pImageInfo, &ImageInfoLen);
+            PKU_LIB_PATH, &pImageInfo, &ImageInfoLen);
   if ((pImageInfo == NULL) || (ImageInfoLen == 0)) {
     NXPLOG_FWDNLD_E(
         "Image extraction Failed - invalid imginfo or imginfolen!!");
@@ -953,16 +953,20 @@ void phDnldNfc_CloseFwLibHandle(void) {
 **
 ** Description      Load the firmware version form firmware lib
 **
-** Parameters       pImgInfo    - Firmware image handle
+** Parameters       pathName    - Firmware image path
+**                  pImgInfo    - Firmware image handle
 **                  pImgInfoLen - Firmware image length
 **
 ** Returns          NFC status
 **
 *******************************************************************************/
-NFCSTATUS phDnldNfc_LoadFW(uint8_t** pImgInfo,
+NFCSTATUS phDnldNfc_LoadFW(const char* pathName, uint8_t** pImgInfo,
                            uint32_t* pImgInfoLen) {
   void* pImageInfo = NULL;
   void* pImageInfoLen = NULL;
+
+  /* check for path name */
+  if (pathName == NULL) pathName = nfcFL._FW_LIB_PATH.c_str();
 
   /* check if the handle is not NULL then free the library */
   if (pFwHandle != NULL) {
@@ -971,8 +975,8 @@ NFCSTATUS phDnldNfc_LoadFW(uint8_t** pImgInfo,
   }
 
   /* load the DLL file */
-  pFwHandle = dlopen(nfcFL._FW_LIB_PATH.c_str(), RTLD_LAZY);
-  NXPLOG_FWDNLD_D("@@@%s", nfcFL._FW_LIB_PATH.c_str());
+  pFwHandle = dlopen(pathName, RTLD_LAZY);
+  NXPLOG_FWDNLD_D("@@@%s", pathName);
 
   /* if library load failed then handle will be NULL */
   if (pFwHandle == NULL) {
@@ -1092,16 +1096,20 @@ NFCSTATUS phDnldNfc_LoadBinFW(uint8_t** pImgInfo, uint32_t* pImgInfoLen) {
 **                  recovery. This will change the FW version of the NFCC
 **                  firmware and enable flashing of firmware of same version.
 **
-** Parameters       pImgInfo    - Firmware image handle
+** Parameters       pathName    - Firmware image path
+**                  pImgInfo    - Firmware image handle
 **                  pImgInfoLen - Firmware image length
 **
 ** Returns          NFCSTATUS
 **
 *******************************************************************************/
-NFCSTATUS phDnldNfc_LoadRecoveryFW(uint8_t** pImgInfo,
+NFCSTATUS phDnldNfc_LoadRecoveryFW(const char* pathName, uint8_t** pImgInfo,
                                    uint32_t* pImgInfoLen) {
   void* pImageInfo = NULL;
   void* pImageInfoLen = NULL;
+
+  /* check for path name */
+  if (pathName == NULL) pathName = nfcFL._FW_LIB_PATH.c_str();
 
   /* check if the handle is not NULL then free the library */
   if (pFwHandle != NULL) {
@@ -1109,8 +1117,8 @@ NFCSTATUS phDnldNfc_LoadRecoveryFW(uint8_t** pImgInfo,
     pFwHandle = NULL;
   }
   /* load the DLL file */
-  pFwHandle = dlopen(nfcFL._FW_LIB_PATH.c_str(), RTLD_LAZY);
-  NXPLOG_FWDNLD_D("phDnldNfc_LoadRecoveryFW %s ", nfcFL._FW_LIB_PATH.c_str());
+  pFwHandle = dlopen(pathName, RTLD_LAZY);
+  NXPLOG_FWDNLD_D("phDnldNfc_LoadRecoveryFW %s ", pathName);
 
   /* if library load failed then handle will be NULL */
   if (pFwHandle == NULL) {

@@ -51,6 +51,7 @@ void resetNxpConfig(void);
 int isNxpRFConfigModified();
 int isNxpConfigModified();
 int updateNxpConfigTimestamp();
+void setNxpRfConfigPath(const char* name);
 
 #ifdef __cplusplus
 };
@@ -131,7 +132,8 @@ int updateNxpConfigTimestamp();
 #define NAME_NXP_P61_LS_DEFAULT_INTERFACE "NXP_P61_LS_DEFAULT_INTERFACE"
 #define NAME_NXP_LS_FORCE_UPDATE_REQUIRED "NXP_LS_FORCE_UPDATE_REQUIRED"
 #define NAME_NXP_JCOP_FORCE_UPDATE_REQUIRED "NXP_JCOP_FORCE_UPDATE_REQUIRED"
-
+#define NAME_RF_STORAGE "RF_STORAGE"
+#define NAME_NXP_FLASH_CONFIG "NXP_FLASH_CONFIG"
 /* default configuration */
 #define default_storage_location "/data/vendor/nfc"
 

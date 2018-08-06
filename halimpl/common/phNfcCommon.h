@@ -33,11 +33,19 @@
 #include <pthread.h>
 #include <semaphore.h>
 
+#define FW_DLL_ROOT_DIR "/system/vendor/"
 #define FW_DLL_EXTENSION ".so"
 #define FW_LIB_ROOT_DIR "/vendor/lib64/"
 #define FW_BIN_ROOT_DIR "/vendor/firmware/"
 #define FW_LIB_EXTENSION ".so"
 #define FW_BIN_EXTENSION ".bin"
+
+/* Actual FW library name*/
+/* Restore Corrupted PLL Settings/etc */
+#define PLATFORM_LIB_PATH \
+  FW_DLL_ROOT_DIR "libsn100u_fw_platform" FW_DLL_EXTENSION
+/* Upgrade the public Key */
+#define PKU_LIB_PATH FW_DLL_ROOT_DIR "libsn100u_fw_pku" FW_DLL_EXTENSION
 
 /* HAL Version number (Updated as per release) */
 #define NXP_MW_VERSION_MAJ (0x03)
@@ -52,13 +60,10 @@
 #define GET_FW_DWNLD_FLAG (1U)
 #define RESET_FW_DWNLD_FLAG (2U)
 
-
-
-
-
-
-
-
+#define FLASH_UPPER_VERSION (1)
+#define FLASH_DIFFERENT_VERSION (2)
+#define FLASH_ALWAYS (3)
+extern char Fw_Lib_Path[256];
 /*
  *****************************************************************
  ***********  System clock source selection configuration ********
