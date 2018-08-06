@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <dlfcn.h>
 #include <log/log.h>
 #include <phDal4Nfc_messageQueueLib.h>
 #include <phDnldNfc.h>
@@ -74,7 +75,8 @@ extern void phTmlNfc_set_fragmentation_enabled(
     phTmlNfc_i2cfragmentation_t result);
 
 extern int phNxpNciHal_CheckFwRegFlashRequired(uint8_t* fw_update_req,
-                                               uint8_t* rf_update_req);
+                                               uint8_t* rf_update_req,
+                                               uint8_t skipEEPROMRead);
 extern NFCSTATUS phNxpNciHal_ext_send_sram_config_to_flash();
 extern NFCSTATUS phNxpNciHal_enableDefaultUICC2SWPline(uint8_t uicc2_sel);
 nfc_stack_callback_t* p_nfc_stack_cback_backup;
@@ -95,6 +97,8 @@ static uint8_t gRecFwRetryCount;  // variable to hold dummy FW recovery count
 static uint8_t write_unlocked_status = NFCSTATUS_SUCCESS;
 static uint8_t Rx_data[NCI_MAX_DATA_LEN];
 extern int phPalEse_spi_ioctl(phPalEse_ControlCode_t eControlCode,void *pDevHandle, long level);
+uint8_t wFwUpdateReq = false;
+uint8_t wRfUpdateReq = false;
 uint32_t timeoutTimerId = 0;
 #ifndef FW_DWNLD_FLAG
 uint8_t fw_dwnld_flag = false;
@@ -108,6 +112,10 @@ phNxpNciClock_t phNxpNciClock = {0, {0}, false};
 phNxpNciRfSetting_t phNxpNciRfSet = {false, {0}};
 
 phNxpNciMwEepromArea_t phNxpNciMwEepromArea = {false, {0}};
+
+void *RfFwRegionDnld_handle = NULL;
+fpVerInfoStoreInEeprom_t fpVerInfoStoreInEeprom = NULL;
+fpRegRfFwDndl_t fpRegRfFwDndl = NULL;
 
 /**************** local methods used in this file only ************************/
 static NFCSTATUS phNxpNciHal_fw_download(void);
@@ -552,10 +560,8 @@ int phNxpNciHal_MinOpen (){
   const uint16_t max_len = 260;
   NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
   NFCSTATUS status = NFCSTATUS_SUCCESS;
-  uint8_t fw_dwld_req = 0;
-  int     isfound = 0;
-  unsigned long num = 0;
   NXPLOG_NCIHAL_D("phNxpNci_MinOpen(): enter");
+
   /*NCI_INIT_CMD*/
   static uint8_t cmd_init_nci[] = {0x20, 0x01, 0x00};
   /*NCI_RESET_CMD*/
@@ -566,6 +572,10 @@ int phNxpNciHal_MinOpen (){
     NXPLOG_NCIHAL_E("phNxpNciHal_MinOpen(): already open");
     return NFCSTATUS_SUCCESS;
   }
+  setNxpRfConfigPath("/system/vendor/libnfc-nxp_RF.conf");
+  strcpy((char *)Fw_Lib_Path,"/system/vendor/lib64/libsn100u_fw.so");
+  phNxpNciHal_initializeRegRfFwDnld();
+
   /* reset config cache */
   resetNxpConfig();
 
@@ -613,10 +623,6 @@ int phNxpNciHal_MinOpen (){
         "Invalid nfc device node name keeping the default device node "
         "/dev/pn54x");
     strcpy(nfc_dev_node, "/dev/pn54x");
-  }
-  isfound = GetNxpNumValue(NAME_NXP_ALWAYS_FW_UPDATE, &num, sizeof(num));
-  if (isfound > 0) {
-    fw_dwld_req = num;
   }
   /* Configure hardware link */
   nxpncihal_ctrl.gDrvCfg.nClientId = phDal4Nfc_msgget(0, 0600);
@@ -672,6 +678,8 @@ int phNxpNciHal_MinOpen (){
 
 init_retry:
 
+  uint8_t fw_update_req;
+  uint8_t rf_update_req;
   phNxpNciHal_ext_init();
 
   status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
@@ -724,11 +732,16 @@ init_retry:
   }
   if(nfcFL.chipType != sn100u)
     phNxpNciHal_enable_i2c_fragmentation();
+
+  status = phNxpNciHal_CheckFwRegFlashRequired(&fw_update_req, &rf_update_req, false);
+  wFwUpdateReq = fw_update_req;
+
   /*Get FW version from device*/
   status = phDnldNfc_InitImgInfo();
-  NXPLOG_NCIHAL_E("FW version from device = 0x%x", wFwVerRsp);
-  if ((wFwVerRsp & 0x0000FFFF) == wFwVer && (fw_dwld_req == 0)) {
+  NXPLOG_NCIHAL_D("FW version from device = 0x%x", wFwVerRsp);
+  if (!wFwUpdateReq) {
     NXPLOG_NCIHAL_D("FW update not required");
+    property_set("nfc.fw.downloadmode_force", "0");
     phDnldNfc_ReSetHwDevHandle();
   } else {
   force_download:
@@ -757,6 +770,7 @@ init_retry:
       NXPLOG_NCIHAL_D("eSE Power GPIO value = %d", ese_gpio_value);
       if(ese_gpio_value == 0) {
         status = phNxpNciHal_fw_download();
+        property_set("nfc.fw.downloadmode_force", "0");
         if (status != NFCSTATUS_SUCCESS) {
           if (NFCSTATUS_SUCCESS != phNxpNciHal_fw_mw_ver_check()) {
             NXPLOG_NCIHAL_D("Chip Version Middleware Version mismatch!!!!");
@@ -1631,7 +1645,11 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
 
   //if (config_success == false) return NFCSTATUS_FAILED;
 
-
+    if (fpVerInfoStoreInEeprom != NULL) {
+      fpVerInfoStoreInEeprom();
+    }
+    phNxpNciHal_deinitializeRegRfFwDnld();
+  }
     config_access = false;
 
     {
@@ -1743,7 +1761,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       }
     }
     fw_dwnld_flag = false;
-  }
 
   retlen = 0;
   config_access = false;
@@ -1875,7 +1892,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   gRecFwRetryCount = 0;
 
   phNxpNciHal_core_initialized_complete(status);
-
   return NFCSTATUS_SUCCESS;
 }
 /******************************************************************************
@@ -1962,6 +1978,7 @@ NFCSTATUS phNxpNciHalRFConfigCmdRecSequence() {
   }
   return status;
 }
+
 /******************************************************************************
  * Function         phNxpNciHal_core_initialized_complete
  *
@@ -2518,7 +2535,8 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
       FwRfInfo =
           (phNxpNciHal_FwRfupdateInfo_t*)&pInpOutData->out.data.fwUpdateInf;
       status = phNxpNciHal_CheckFwRegFlashRequired(&FwRfInfo->fw_update_reqd,
-                                                   &FwRfInfo->rf_update_reqd);
+                                                   &FwRfInfo->rf_update_reqd,
+                                                   false);
       if (NFCSTATUS_SUCCESS == status) {
 #ifndef FW_DWNLD_FLAG
         fw_dwnld_flag = FwRfInfo->fw_update_reqd;
@@ -3450,6 +3468,7 @@ void phNxpNciHal_do_factory_reset(void) {
       NXPLOG_NCIHAL_E("%s: NXP Nfc Open failed", __func__);
       return;
     }
+    phNxpNciHal_deinitializeRegRfFwDnld();
   }
   status = phNxpNciHal_do_se_session_reset();
   if (status != NFCSTATUS_SUCCESS) {
@@ -3732,5 +3751,54 @@ void phNxpNciHal_configNciParser(void)
     } else {
         NXPLOG_NCIHAL_E("Parser Library Not Available");
     }
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_initializeRegRfFwDnld(void)
+**
+** Description      Loads the module & initializes function pointers for Region
+**                  based RF & FW update module
+**
+** Parameters       none
+**
+** Returns          void
+*******************************************************************************/
+void phNxpNciHal_initializeRegRfFwDnld() {
+  //Getting pointer to RF & RF Region Code Download module
+  RfFwRegionDnld_handle = dlopen("/system/vendor/lib64/libonebinary.so",RTLD_NOW);
+  if(RfFwRegionDnld_handle == NULL) {
+    NXPLOG_NCIHAL_D("Error : opening (/system/vendor/lib64/libonebinary.so) !!");
+    return;
+  }
+  if ((fpVerInfoStoreInEeprom = (fpVerInfoStoreInEeprom_t)dlsym(RfFwRegionDnld_handle, "read_version_info_and_store_in_eeprom")) == NULL){
+    NXPLOG_NCIHAL_D("Error while linking (read_version_info_and_store_in_eeprom) !!");
+    return;
+  }
+  if ((fpRegRfFwDndl = (fpRegRfFwDndl_t) dlsym(RfFwRegionDnld_handle, "RegRfFwDndl")) == NULL) {
+    NXPLOG_NCIHAL_D("Error while linking (RegRfFwDndl) !!");
+    return;
+  }
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_deinitializeRegRfFwDnld(void)
+**
+** Description      Resets the module handle & all the function pointers for
+**                  Region based RF & FW update module
+**
+** Parameters       none
+**
+** Returns          void
+*******************************************************************************/
+void phNxpNciHal_deinitializeRegRfFwDnld() {
+  if (RfFwRegionDnld_handle != NULL) {
+    NXPLOG_NCIHAL_D("closing libonebinary.so");
+    fpVerInfoStoreInEeprom = NULL;
+    fpRegRfFwDndl = NULL;
+    dlclose(RfFwRegionDnld_handle);
+    RfFwRegionDnld_handle = NULL;
+  }
 }
 #endif

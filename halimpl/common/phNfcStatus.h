@@ -377,4 +377,14 @@
  */
 #define NFCSTATUS_CONNECTION_FAILED (0x0047)
 
+/*
+ * Indicates file is not present at the specified location
+ */
+#define NFCSTATUS_FILE_NOT_FOUND (0x0048)
+
+/*
+ * Indicates force download is required
+ */
+#define NFCSTATUS_FORCE_FWDWNLD (0x0049)
+
 #endif /* PHNFCSTATUS_H */

@@ -171,6 +171,15 @@ typedef struct phNxpNciMwEepromArea {
   uint8_t p_rx_data[32];
 } phNxpNciMwEepromArea_t;
 
+typedef void (*fpVerInfoStoreInEeprom_t)();
+typedef int (*fpVerifyCscEfsTest_t)(char* nfcc_csc, char* rffilepath,
+                              char* fwfilepath);
+typedef int (*fpRegRfFwDndl_t)(uint8_t* fw_update_req,
+                   uint8_t* rf_update_req,
+                   uint8_t skipEEPROMRead);
+void phNxpNciHal_initializeRegRfFwDnld();
+void phNxpNciHal_deinitializeRegRfFwDnld();
+
 /*set config management*/
 
 #define TOTAL_DURATION 0x00
