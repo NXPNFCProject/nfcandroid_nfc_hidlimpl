@@ -2659,21 +2659,12 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
           } else
           {
             if(0x02 == level) {
-              HAL_ENABLE_EXT();
-              uint8_t mode_set[] = {0x22, 0x01, 0x02, 0xC0, 0x01};
-              uint8_t power_link[] = {0x22, 0x03, 0x02, 0xC0, 0x01};
-              power_link[4] = 0x00;
-              ret = phNxpNciHal_send_ese_hal_cmd(sizeof(power_link),power_link);
-
-              mode_set[4] = 0x00;
-              ret = phNxpNciHal_send_ese_hal_cmd(sizeof(mode_set),mode_set);
-
-              power_link[4] = 0x01;
-              ret = phNxpNciHal_send_ese_hal_cmd(sizeof(power_link),power_link);
-
-              mode_set[4] = 0x01;
-              ret = phNxpNciHal_send_ese_hal_cmd(sizeof(mode_set),mode_set);
-              HAL_DISABLE_EXT();
+              ret = phTmlNfc_IoCtl(phTmlNfc_e_PowerReset);
+              if(nxpncihal_ctrl.p_nfc_stack_cback != NULL)
+              {
+                (*nxpncihal_ctrl.p_nfc_stack_cback)(HAL_NFC_OPEN_CPLT_EVT,
+                 HAL_NFC_STATUS_RESTART);
+              }
             } else {
               ret = NFCSTATUS_SUCCESS;
             }
