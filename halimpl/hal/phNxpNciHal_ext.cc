@@ -59,7 +59,6 @@ uint16_t rom_version;
 /* local buffer to store CORE_INIT response */
 static uint32_t bCoreInitRsp[40];
 static uint32_t iCoreInitRspLen;
-char Fw_Lib_Path[256] = "/vendor/lib64/libsn100u_fw.so";
 
 extern uint32_t timeoutTimerId;
 

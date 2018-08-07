@@ -75,6 +75,8 @@ const char config_timestamp_path[] =
         "/vendor/etc/libnfc-nxp.conf";*/
 char nxp_rf_config_path[256] =
         "/system/vendor/libnfc-nxp_RF.conf";
+char Fw_Lib_Path[256] =
+        "/vendor/lib64/libsn100u_fw.so";
 const char transit_config_path[] = "/data/vendor/nfc/libnfc-nxpTransit.conf";
 void readOptionalConfig(const char* optional);
 
@@ -1021,10 +1023,34 @@ extern "C" int GetNxpNumValue(const char* name, void* pValue,
   return true;
 }
 
+/*******************************************************************************
+**
+** Function:    setNxpRfConfigPath
+**
+** Description: sets the path of the NXP RF config file
+**
+** Returns:     none
+**
+*******************************************************************************/
 extern "C" void setNxpRfConfigPath(const char* name) {
   memset(nxp_rf_config_path, 0, sizeof(nxp_rf_config_path));
   strcpy(nxp_rf_config_path, name);
   ALOGD("nxp_rf_config_path=%s", nxp_rf_config_path);
+}
+
+/*******************************************************************************
+**
+** Function:    setNxpFwConfigPath
+**
+** Description: sets the path of the NXP FW library
+**
+** Returns:     none
+**
+*******************************************************************************/
+extern "C" void setNxpFwConfigPath(const char* name) {
+  memset(Fw_Lib_Path, 0, sizeof(Fw_Lib_Path));
+  strcpy(Fw_Lib_Path, name);
+  ALOGD("Fw_Lib_Path=%s", Fw_Lib_Path);
 }
 
 /*******************************************************************************

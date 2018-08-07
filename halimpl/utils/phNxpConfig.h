@@ -52,10 +52,13 @@ int isNxpRFConfigModified();
 int isNxpConfigModified();
 int updateNxpConfigTimestamp();
 void setNxpRfConfigPath(const char* name);
+void setNxpFwConfigPath(const char* name);
 
 #ifdef __cplusplus
 };
 #endif
+
+extern char Fw_Lib_Path[256];
 
 #define NAME_NXPLOG_EXTNS_LOGLEVEL "NXPLOG_EXTNS_LOGLEVEL"
 #define NAME_NXPLOG_NCIHAL_LOGLEVEL "NXPLOG_NCIHAL_LOGLEVEL"
