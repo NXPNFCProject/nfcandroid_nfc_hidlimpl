@@ -38,7 +38,6 @@ cc_library_shared {
         "halimpl/log",
         "halimpl/self-test",
         "halimpl/tml",
-        "halimpl/utils",
         "halimpl/src/include",
         "halimpl/configs",
     ],
@@ -46,6 +45,7 @@ cc_library_shared {
         "extns/impl",
         "halimpl/inc",
         "halimpl/common",
+        "halimpl/utils",
     ],
     cflags: [
         "-DBUILDCFG=1",
