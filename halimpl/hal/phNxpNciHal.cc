@@ -575,7 +575,7 @@ int phNxpNciHal_MinOpen (){
     return NFCSTATUS_SUCCESS;
   }
   setNxpRfConfigPath("/system/vendor/libnfc-nxp_RF.conf");
-  strcpy((char *)Fw_Lib_Path,"/system/vendor/lib64/libsn100u_fw.so");
+  setNxpFwConfigPath("/system/vendor/lib64/libsn100u_fw.so");
   phNxpNciHal_initializeRegRfFwDnld();
 
   /* reset config cache */

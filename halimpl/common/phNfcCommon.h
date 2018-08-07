@@ -63,7 +63,6 @@
 #define FLASH_UPPER_VERSION (1)
 #define FLASH_DIFFERENT_VERSION (2)
 #define FLASH_ALWAYS (3)
-extern char Fw_Lib_Path[256];
 /*
  *****************************************************************
  ***********  System clock source selection configuration ********
