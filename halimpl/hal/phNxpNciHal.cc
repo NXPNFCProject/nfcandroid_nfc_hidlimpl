@@ -2676,7 +2676,7 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
             ret = phPalEse_spi_ioctl(phPalEse_e_ChipRst, gpphTmlNfc_Context->pDevHandle, level);
           } else
           {
-            if(0x02 == level) {
+            if(0x05 == level) {
               ret = phTmlNfc_IoCtl(phTmlNfc_e_PowerReset);
               if(nxpncihal_ctrl.p_nfc_stack_cback != NULL)
               {
