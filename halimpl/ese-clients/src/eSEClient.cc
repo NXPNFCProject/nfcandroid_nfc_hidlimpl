@@ -92,7 +92,10 @@ bool SE_Close(int16_t mHandle)
     else
       return false;
 }
-
+uint8_t SE_getInterfaceInfo()
+{
+  return INTF_NFC;
+}
 /***************************************************************************
 **
 ** Function:        checkEseClientUpdate
@@ -161,6 +164,7 @@ SESTATUS ESE_ChannelInit(IChannel *ch)
     ch->transceive = SE_Transmit;
     ch->doeSE_Reset = SE_Reset;
     ch->doeSE_JcopDownLoadReset = SE_JcopDownLoadReset;
+    ch->getInterfaceInfo = SE_getInterfaceInfo;
     return SESTATUS_SUCCESS;
 }
 
