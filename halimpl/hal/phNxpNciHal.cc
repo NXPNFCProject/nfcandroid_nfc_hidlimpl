@@ -3304,7 +3304,18 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
   phNxpNciHal_FwRfupdateInfo_t* FwRfInfo;
   NFCSTATUS fm_mw_ver_check = NFCSTATUS_FAILED;
   long level;
-
+  if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
+    NFCSTATUS status = NFCSTATUS_FAILED;
+    status = phNxpNciHal_MinOpen();
+    if (status != NFCSTATUS_SUCCESS) {
+      if (arg == HAL_NFC_IOCTL_SPI_DWP_SYNC) {
+        /* p_rsp[3] is the status for DWP sync response. value 0x00 equals
+        Success and 0x01 for Fail. */
+        pInpOutData->out.data.nciRsp.p_rsp[3] = 0x01;
+      }
+      return -1;
+    }
+  }
   switch (arg) {
     case HAL_NFC_IOCTL_P61_IDLE_MODE:
         if(nfcFL.nfcNxpEse) {
@@ -3520,18 +3531,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
       ret = 0;
       break;
     case HAL_NFC_IOCTL_SPI_DWP_SYNC: {
-      if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
-        NFCSTATUS status = NFCSTATUS_FAILED;
-        status = phNxpNciHal_MinOpen();
-        if (status != NFCSTATUS_SUCCESS) {
-          if (arg == HAL_NFC_IOCTL_SPI_DWP_SYNC) {
-            /* p_rsp[3] is the status for DWP sync response. value 0x00 equals
-            Success and 0x01 for Fail. */
-            pInpOutData->out.data.nciRsp.p_rsp[3] = 0x01;
-          }
-          return -1;
-        }
-      }
       ALOGD_IF(
           nfc_debug_enabled,
           "phNxpNciHal_ioctl HAL_NFC_IOCTL_SPI_DWP_SYNC:enter................");
