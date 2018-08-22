@@ -628,9 +628,6 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
                                 uint16_t* rsp_len, uint8_t* p_rsp_data) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
 
-  unsigned long retval = 0;
-  GetNxpNumValue(NAME_MIFARE_READER_ENABLE, &retval, sizeof(unsigned long));
-
   phNxpNciHal_NfcDep_cmd_ext(p_cmd_data, cmd_len);
 
   if (phNxpDta_IsEnable() == true) {
@@ -693,17 +690,23 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
     }
   }
 
-  if (retval == 0x01 && p_cmd_data[0] == 0x21 && p_cmd_data[1] == 0x00) {
-    NXPLOG_NCIHAL_D("Going through extns - Adding Mifare in RF Discovery");
-    p_cmd_data[2] += 3;
-    p_cmd_data[3] += 1;
-    p_cmd_data[*cmd_len] = 0x80;
-    p_cmd_data[*cmd_len + 1] = 0x01;
-    p_cmd_data[*cmd_len + 2] = 0x80;
-    *cmd_len += 3;
-    status = NFCSTATUS_SUCCESS;
-    NXPLOG_NCIHAL_D(
-        "Going through extns - Adding Mifare in RF Discovery - END");
+  if ((p_cmd_data[0] == 0x21 && p_cmd_data[1] == 0x00) &&
+      (nxpprofile_ctrl.profile_type == NFC_FORUM_PROFILE)) {
+    unsigned long retval = 0;
+
+    GetNxpNumValue(NAME_MIFARE_READER_ENABLE, &retval, sizeof(unsigned long));
+    if(retval == 0x01) {
+      NXPLOG_NCIHAL_D("Going through extns - Adding Mifare in RF Discovery");
+      p_cmd_data[2] += 3;
+      p_cmd_data[3] += 1;
+      p_cmd_data[*cmd_len] = 0x80;
+      p_cmd_data[*cmd_len + 1] = 0x01;
+      p_cmd_data[*cmd_len + 2] = 0x80;
+      *cmd_len += 3;
+      status = NFCSTATUS_SUCCESS;
+      NXPLOG_NCIHAL_D(
+          "Going through extns - Adding Mifare in RF Discovery - END");
+    }
   } else if (p_cmd_data[3] == 0x81 && p_cmd_data[4] == 0x01 &&
              p_cmd_data[5] == 0x03) {
     NXPLOG_NCIHAL_D("> Going through the set host list");
@@ -812,17 +815,6 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
     phNxpNciHal_print_packet("RECV", p_rsp_data, 5);
     //        status = NFCSTATUS_FAILED;
     NXPLOG_NCIHAL_D("> Going through workaround - Dirty Set Config - End ");
-  } else if (p_cmd_data[0] == 0x21 && p_cmd_data[1] == 0x00) {
-    NXPLOG_NCIHAL_D(
-        "> Going through workaround - Add Mifare Classic in Discovery Map");
-    p_cmd_data[*cmd_len] = 0x80;
-    p_cmd_data[*cmd_len + 1] = 0x01;
-    p_cmd_data[*cmd_len + 2] = 0x80;
-    p_cmd_data[5] = 0x01;
-    p_cmd_data[6] = 0x01;
-    p_cmd_data[2] += 3;
-    p_cmd_data[3] += 1;
-    *cmd_len += 3;
   } else if (*cmd_len == 3 && p_cmd_data[0] == 0x00 && p_cmd_data[1] == 0x00 &&
              p_cmd_data[2] == 0x00) {
     NXPLOG_NCIHAL_D("> Going through workaround - ISO-DEP Presence Check ");
