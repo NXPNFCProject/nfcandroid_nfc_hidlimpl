@@ -3183,18 +3183,24 @@ NFCSTATUS phNxpNciHal_check_clock_config(void) {
 NFCSTATUS phNxpNciHal_china_tianjin_rf_setting(void) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   int isfound = 0;
-  int rf_enable = false;
+  unsigned long rf_enable = false;
+  unsigned long cfg_blk_chk_enable = false;
+  unsigned long cma_bypass_enable = false;
   int rf_val = 0;
-  int send_flag;
+  int flag_send_tianjin_config = true;
+  int flag_send_transit_config = true;
+  int flag_send_cmabypass_config = true;
   uint8_t retry_cnt = 0;
   int enable_bit = 0;
+  int enable_blk_num_chk_bit = 0;
   static uint8_t get_rf_cmd[] = {0x20, 0x03, 0x03, 0x01, 0xA0, 0x85};
+  NXPLOG_NCIHAL_D("phNxpNciHal_china_tianjin_rf_setting - Enter");
 
 retry_send_ext:
   if (retry_cnt > 3) {
     return NFCSTATUS_FAILED;
   }
-  send_flag = true;
+
   phNxpNciRfSet.isGetRfSetting = true;
   status = phNxpNciHal_send_ext_cmd(sizeof(get_rf_cmd), get_rf_cmd);
   if (status != NFCSTATUS_SUCCESS) {
@@ -3208,29 +3214,85 @@ retry_send_ext:
     NXPLOG_NCIHAL_E("GET_CONFIG_RSP is FAILED for CHINA TIANJIN");
     return status;
   }
+
+  /* check if tianjin_rf_setting is required */
   rf_val = phNxpNciRfSet.p_rx_data[10];
   isfound = (GetNxpNumValue(NAME_NXP_CHINA_TIANJIN_RF_ENABLED,
                             (void*)&rf_enable, sizeof(rf_enable)));
   if (isfound > 0) {
-    enable_bit = rf_val & 0x40;
-    if ((enable_bit != 0x40) && (rf_enable == 1)) {
-      phNxpNciRfSet.p_rx_data[10] |= 0x40;  // Enable if it is disabled
-    } else if ((enable_bit == 0x40) && (rf_enable == 0)) {
-      phNxpNciRfSet.p_rx_data[10] &= 0xBF;  // Disable if it is Enabled
+      enable_bit = rf_val & 0x40;
+      if(nfcFL.nfccFL._NFCC_MIFARE_TIANJIN) {
+          if ((enable_bit != 0x40) && (rf_enable == 1)) {
+              phNxpNciRfSet.p_rx_data[10] |= 0x40;  // Enable if it is disabled
+          } else if ((enable_bit == 0x40) && (rf_enable == 0)) {
+              phNxpNciRfSet.p_rx_data[10] &= 0xBF;  // Disable if it is Enabled
+          } else {
+              flag_send_tianjin_config = false;  // No need to change in RF setting
+          }
+      }
+      else {
+          enable_bit = phNxpNciRfSet.p_rx_data[11] & 0x10;
+          if ((rf_enable == 1) && (enable_bit != 0x10)) {
+              NXPLOG_NCIHAL_E("Setting Non-Mifare reader for china tianjin");
+              phNxpNciRfSet.p_rx_data[11] |= 0x10;
+          } else if ((rf_enable == 0) && (enable_bit == 0x10)) {
+              NXPLOG_NCIHAL_E("Setting Non-Mifare reader for china tianjin");
+              phNxpNciRfSet.p_rx_data[11] &= 0xEF;
+          } else {
+              flag_send_tianjin_config = false;
+          }
+      }
+  }
+  else {
+    flag_send_tianjin_config = false;
+  }
+  /*check if china block number check is required*/
+  rf_val = phNxpNciRfSet.p_rx_data[8];
+  isfound =
+      (GetNxpNumValue(NAME_NXP_CHINA_BLK_NUM_CHK_ENABLE,
+                      (void*)&cfg_blk_chk_enable, sizeof(cfg_blk_chk_enable)));
+  if (isfound > 0) {
+    enable_blk_num_chk_bit = rf_val & 0x40;
+    if ((enable_blk_num_chk_bit != 0x40) && (cfg_blk_chk_enable == 1)) {
+      phNxpNciRfSet.p_rx_data[8] |= 0x40;  // Enable if it is disabled
+    } else if ((enable_blk_num_chk_bit == 0x40) && (cfg_blk_chk_enable == 0)) {
+      phNxpNciRfSet.p_rx_data[8] &= ~0x40;  // Disable if it is Enabled
     } else {
-      send_flag = false;  // No need to change in RF setting
+      flag_send_transit_config = false;  // No need to change in RF setting
+    }
+  }
+  else
+    {
+        flag_send_transit_config = FALSE;  // No need to change in RF setting
     }
 
-    if (send_flag == true) {
-      static uint8_t set_rf_cmd[] = {0x20, 0x02, 0x08, 0x01, 0xA0, 0x85,
-                                     0x04, 0x50, 0x08, 0x68, 0x00};
-      memcpy(&set_rf_cmd[4], &phNxpNciRfSet.p_rx_data[5], 7);
-      status = phNxpNciHal_send_ext_cmd(sizeof(set_rf_cmd), set_rf_cmd);
-      if (status != NFCSTATUS_SUCCESS) {
-        NXPLOG_NCIHAL_E("unable to set the RF setting");
-        retry_cnt++;
-        goto retry_send_ext;
-      }
+    isfound = (GetNxpNumValue(NAME_NXP_CN_TRANSIT_CMA_BYPASSMODE_ENABLE, (void *)&cma_bypass_enable, sizeof(cma_bypass_enable)));
+    if(isfound >0) {
+        if(cma_bypass_enable == 0 && ((phNxpNciRfSet.p_rx_data[10] & 0x80) == 1)) {
+            NXPLOG_NCIHAL_D("Disable CMA_BYPASSMODE Supports EMVCo PICC Complaincy");
+            phNxpNciRfSet.p_rx_data[10] &=~0x80;        //set 24th bit of RF MISC SETTING to 0 for EMVCo PICC Complaincy support
+        }
+        else if(cma_bypass_enable == 1 && ((phNxpNciRfSet.p_rx_data[10] & 0x80) == 0)) {
+            NXPLOG_NCIHAL_D("Enable CMA_BYPASSMODE bypass the ISO14443-3A state machine from READY to ACTIVE and backward compatibility with MIfrae Reader ");
+            phNxpNciRfSet.p_rx_data[10] |=0x80;        //set 24th bit of RF MISC SETTING to 1 for backward compatibility with MIfrae Reader
+        }
+        else {
+            flag_send_cmabypass_config = FALSE;  // No need to change in RF setting
+        }
+    }
+    else {
+       flag_send_cmabypass_config = FALSE;
+    }
+
+  if (flag_send_tianjin_config || flag_send_transit_config || flag_send_cmabypass_config) {
+    static uint8_t set_rf_cmd[] = {0x20, 0x02, 0x08, 0x01, 0xA0, 0x85,
+                                   0x04, 0x50, 0x08, 0x68, 0x00};
+    memcpy(&set_rf_cmd[4], &phNxpNciRfSet.p_rx_data[5], 7);
+    status = phNxpNciHal_send_ext_cmd(sizeof(set_rf_cmd), set_rf_cmd);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("unable to set the RF setting");
+      retry_cnt++;
+      goto retry_send_ext;
     }
   }
 
