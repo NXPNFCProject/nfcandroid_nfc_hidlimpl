@@ -137,6 +137,7 @@ typedef struct {
 enum NxpNfcHalStatus {
     /** In case of an error, HCI network needs to be re-initialized */
     HAL_NFC_STATUS_RESTART = 0x30,
+    HAL_NFC_HCI_NV_RESET = 0x40,
 };
 typedef union {
     uint8_t ese_jcop_download_state;

@@ -2620,10 +2620,14 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
     case HAL_ESE_IOCTL_NFC_JCOP_DWNLD :
         NXPLOG_NCIHAL_D("HAL_ESE_IOCTL_NFC_JCOP_DWNLD Enter value is %d: \n",pInpOutData->inp.data.nciCmd.p_cmd[0]);
         if(gpEseAdapt !=  NULL)
-	  ret = gpEseAdapt->HalIoctl(HAL_ESE_IOCTL_NFC_JCOP_DWNLD,pInpOutData);
-        break;
+          ret = gpEseAdapt->HalIoctl(HAL_ESE_IOCTL_NFC_JCOP_DWNLD,pInpOutData);
     case HAL_NFC_IOCTL_ESE_JCOP_DWNLD :
         NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_ESE_JCOP_DWNLD Enter value is %d: \n",pInpOutData->inp.data.nciCmd.p_cmd[0]);
+        if(p_nfc_stack_cback_backup != NULL)
+        {
+          (*p_nfc_stack_cback_backup)(HAL_NFC_OPEN_CPLT_EVT,
+            HAL_NFC_HCI_NV_RESET);
+        }
         ret = 0;
         break;
     case HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE :
