@@ -609,8 +609,7 @@ int phNxpNciHal_MinOpen (){
 
   /* By default HAL status is HAL_STATUS_OPEN */
   nxpncihal_ctrl.halStatus = HAL_STATUS_OPEN;
-  gpEseAdapt = &EseAdaptation::GetInstance();
-  gpEseAdapt->Initialize();
+
 
   /*nci version NCI_VERSION_UNKNOWN version by default*/
   nxpncihal_ctrl.nci_info.nci_version = NCI_VERSION_UNKNOWN;
@@ -2539,6 +2538,10 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
          return -1;
        }
    }
+    if(gpEseAdapt == NULL) {
+        gpEseAdapt = &EseAdaptation::GetInstance();
+        gpEseAdapt->Initialize();
+    }
   switch (arg) {
     case HAL_NFC_IOCTL_GET_CONFIG_INFO:
       if (mGetCfg_info) {
