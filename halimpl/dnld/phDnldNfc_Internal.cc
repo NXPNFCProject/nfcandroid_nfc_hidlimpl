@@ -201,11 +201,7 @@ static void phDnldNfc_ProcessSeqState(void* pContext,
     switch (pDlCtxt->tCurrState) {
       case phDnldNfc_StateInit: {
         NXPLOG_FWDNLD_D("Initializing Sequence..");
-          wStatus = phTmlNfc_Read(
-              pDlCtxt->tCmdRspFrameInfo.aFrameBuff,
-              (uint16_t)PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE,
-              (pphTmlNfc_TransactCompletionCb_t)&phDnldNfc_ProcessRWSeqState,
-              (void*)pDlCtxt);
+
         if (0 == (pDlCtxt->TimerInfo.dwRspTimerId)) {
           TimerId = phOsalNfc_Timer_Create();
 
@@ -407,6 +403,11 @@ static void phDnldNfc_ProcessRWSeqState(void* pContext,
             /* Todo:- diagnostic in this case */
           }
           /* Call TML_Read function and register the call back function */
+          wStatus = phTmlNfc_Read(
+              pDlCtxt->tCmdRspFrameInfo.aFrameBuff,
+              (uint16_t)PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE,
+              (pphTmlNfc_TransactCompletionCb_t)&phDnldNfc_ProcessRWSeqState,
+              (void*)pDlCtxt);
 
           /* set read status to pDlCtxt->wCmdSendStatus to enable callback */
           pDlCtxt->wCmdSendStatus = wStatus;
@@ -501,11 +502,6 @@ static void phDnldNfc_ProcessRWSeqState(void* pContext,
                             &(pDlCtxt->tRspBuffInfo));
           }
         }
-          wStatus = phTmlNfc_Read(
-              pDlCtxt->tCmdRspFrameInfo.aFrameBuff,
-              (uint16_t)PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE,
-              (pphTmlNfc_TransactCompletionCb_t)&phDnldNfc_ProcessRWSeqState,
-              (void*)pDlCtxt);
         break;
       }
       default: {
