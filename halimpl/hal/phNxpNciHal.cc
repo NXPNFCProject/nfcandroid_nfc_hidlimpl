@@ -1730,17 +1730,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
 
     retlen = 0;
 
-    isfound = GetNxpByteArrayValue(NAME_NXP_CORE_STANDBY, (char *)buffer,
-                                   bufflen, &retlen);
-    if (retlen > 0) {
-      /* NXP ACT Proprietary Ext */
-      status = phNxpNciHal_send_ext_cmd(retlen, buffer);
-      if (status != NFCSTATUS_SUCCESS) {
-        NXPLOG_NCIHAL_E("Stand by mode enable failed");
-        NXP_NCI_HAL_CORE_INIT_RECOVER(retry_core_init_cnt, retry_core_init);
-      }
-  }
-
   if(nfcFL.eseFL._ESE_SVDD_SYNC) {
       if (GetNxpNumValue(NAME_NXP_SVDD_SYNC_OFF_DELAY, (void*)&gSvddSyncOff_Delay,
               sizeof(gSvddSyncOff_Delay))) {
@@ -2460,9 +2449,7 @@ static void phNxpNciHal_hci_network_reset(void) {
  *
  ******************************************************************************/
 static NFCSTATUS phNxpNciHal_check_eSE_Session_Identity(void) {
-  struct stat st;
   NFCSTATUS status = NFCSTATUS_FAILED;
-  const char config_eseinfo_path[] = "/data/nfc/nfaStorage.bin1";
   static uint8_t session_identity[8] = {0x00};
   uint8_t default_session[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
   uint8_t swp2_intf_status = 0x00;
@@ -2485,10 +2472,6 @@ static NFCSTATUS phNxpNciHal_check_eSE_Session_Identity(void) {
     return NFCSTATUS_SUCCESS;
   }
 
-  if (stat(config_eseinfo_path, &st) == -1) {
-    status = NFCSTATUS_FAILED;
-    NXPLOG_NCIHAL_D("%s file not present = %s", __func__, config_eseinfo_path);
-  } else {
     phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
     mEEPROM_info.request_mode = GET_EEPROM_DATA;
     mEEPROM_info.request_type = EEPROM_ESE_SESSION_ID;
@@ -2503,7 +2486,6 @@ static NFCSTATUS phNxpNciHal_check_eSE_Session_Identity(void) {
         status = NFCSTATUS_OK;
       }
     }
-  }
 
   if (status == NFCSTATUS_FAILED) {
     /*Disable SWP1 and 1A interfaces*/
@@ -3026,6 +3008,110 @@ void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
   }
   if (GetNxpNumValue(NAME_AID_BLOCK_ROUTE, &num, sizeof(num))) {
     pInpOutData->out.data.nxpConfigs.aid_block_route = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_ESE_POWER_DH_CONTROL, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.esePowerDhControl = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_SWP_RD_TAG_OP_TIMEOUT, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.tagOpTimeout = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_LOADER_SERICE_VERSION, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.loaderServiceVersion = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_DEFAULT_NFCEE_DISC_TIMEOUT, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.defaultNfceeDiscTimeout = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_DUAL_UICC_ENABLE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.dualUiccEnable = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_CE_ROUTE_STRICT_DISABLE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.ceRouteStrictDisable = num;
+  }
+  if (GetNxpNumValue(NAME_OS_DOWNLOAD_TIMEOUT_VALUE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.osDownloadTimeoutValue = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_DEFAULT_SE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.nxpDefaultSe = num;
+  }
+  if (GetNxpNumValue(NAME_DEFAULT_AID_ROUTE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.defaultAidRoute = num;
+  }
+  if (GetNxpNumValue(NAME_DEFAULT_AID_PWR_STATE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.defaultAidPwrState = num;
+  }
+  if (GetNxpNumValue(NAME_DEFAULT_ROUTE_PWR_STATE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.defaultRoutePwrState = num;
+  }
+  if (GetNxpNumValue(NAME_DEFAULT_OFFHOST_PWR_STATE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.defaultOffHostPwrState = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_JCOPDL_AT_BOOT_ENABLE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.jcopDlAtBootEnable = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_DEFAULT_NFCEE_TIMEOUT, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.defaultNfceeTimeout = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_NFC_CHIP, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.nxpNfcChip = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_CORE_SCRN_OFF_AUTONOMOUS_ENABLE, &num,
+                     sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.coreScrnOffAutonomousEnable = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_P61_LS_DEFAULT_INTERFACE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.p61LsDefaultInterface = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_P61_JCOP_DEFAULT_INTERFACE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.p61JcopDefaultInterface = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_AGC_DEBUG_ENABLE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.agcDebugEnable = num;
+  }
+  if (GetNxpNumValue(NAME_DEFAULT_FELICA_CLT_PWR_STATE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.felicaCltPowerState = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_HCEF_CMD_RSP_TIMEOUT_VALUE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.cmdRspTimeoutValue = num;
+  }
+  if (GetNxpNumValue(NAME_CHECK_DEFAULT_PROTO_SE_ID, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.checkDefaultProtoSeId = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_NFCC_PASSIVE_LISTEN_TIMEOUT, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.nfccPassiveListenTimeout = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_NFCC_STANDBY_TIMEOUT, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.nfccStandbyTimeout = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_WM_MAX_WTX_COUNT, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.wmMaxWtxCount = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_NFCC_RF_FIELD_EVENT_TIMEOUT, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.nfccRfFieldEventTimeout = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_ALLOW_WIRED_IN_MIFARE_DESFIRE_CLT, &num,
+                     sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.allowWiredInMifareDesfireClt = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_DWP_INTF_RESET_ENABLE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.dwpIntfResetEnable = num;
+  }
+  if (GetNxpNumValue(NAME_NXPLOG_HAL_LOGLEVEL, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.nxpLogHalLoglevel = num;
+  }
+  if (GetNxpNumValue(NAME_NXPLOG_EXTNS_LOGLEVEL, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.nxpLogExtnsLogLevel = num;
+  }
+  if (GetNxpNumValue(NAME_NXPLOG_TML_LOGLEVEL, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.nxpLogTmlLogLevel = num;
+  }
+  if (GetNxpNumValue(NAME_NXPLOG_FWDNLD_LOGLEVEL, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.nxpLogFwDnldLogLevel = num;
+  }
+  if (GetNxpNumValue(NAME_NXPLOG_NCIX_LOGLEVEL, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.nxpLogNcixLogLevel = num;
+  }
+  if (GetNxpNumValue(NAME_NXPLOG_NCIR_LOGLEVEL, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.nxpLogNcirLogLevel = num;
   }
 }
 
@@ -4227,8 +4313,6 @@ __attribute__((unused)) void phNxpNciHal_enable_i2c_fragmentation() {
  *
  ******************************************************************************/
 void phNxpNciHal_reset_nfcee_session(bool force_session_reset) {
-  struct stat st;
-  int ret = 0;
   size_t length;
 
   NFCSTATUS status = NFCSTATUS_FAILED;
@@ -4239,7 +4323,6 @@ void phNxpNciHal_reset_nfcee_session(bool force_session_reset) {
       return;
     }
   }
-  const char config_eseinfo_path[] = "/data/nfc/nfaStorage.bin1";
   uint8_t *reset_ese_session_identity_set;
   uint8_t ese_session_dyn_uicc_nv[] = {
             0x20, 0x02, 0x22, 0x03, 0xA0, 0xEA, 0x08, 0xFF, 0xFF, 0xFF,
@@ -4282,14 +4365,8 @@ void phNxpNciHal_reset_nfcee_session(bool force_session_reset) {
   static uint8_t reset_session_identity[] = {0x20, 0x03, 0x05, 0x02,
                                                  0xA0, 0xEA, 0xA0, 0xEB};
 #endif
-  if (stat(config_eseinfo_path, &st) == -1) {
-    NXPLOG_NCIHAL_D("%s file not present = %s", __func__, config_eseinfo_path);
-    ret = -1;
-  } else {
-    ret = 0;
-  }
 
-  if (ret == -1 || force_session_reset) {
+  if (force_session_reset) {
 #ifdef PN547C2_FACTORY_RESET_DEBUG
     /* NXP ACT Proprietary Ext */
     status = phNxpNciHal_send_ext_cmd(length, reset_session_identity);

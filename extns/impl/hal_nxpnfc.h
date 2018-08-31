@@ -17,6 +17,8 @@
  ******************************************************************************/
 #ifndef ANDROID_HARDWARE_HAL_NXPNFC_V1_0_H
 #define ANDROID_HARDWARE_HAL_NXPNFC_V1_0_H
+#include <vector>
+#include <string>
 
 #define NFC_NCI_NXP_PN54X_HARDWARE_MODULE_ID "nfc_nci.pn54x"
 #define MAX_IOCTL_TRANSCEIVE_CMD_LEN 256
@@ -51,6 +53,41 @@ typedef struct {
   uint8_t uicc_wired_prt_mask;
   uint8_t wired_mode_rf_field_enable;
   uint8_t aid_block_route;
+
+  uint8_t esePowerDhControl;
+  uint8_t tagOpTimeout;
+  uint8_t loaderServiceVersion;
+  uint8_t defaultNfceeDiscTimeout;
+  uint8_t dualUiccEnable;
+  uint8_t ceRouteStrictDisable;
+  uint32_t osDownloadTimeoutValue;
+  uint8_t nxpDefaultSe;
+  uint8_t defaultAidRoute;
+  uint8_t defaultAidPwrState;
+  uint8_t defaultRoutePwrState;
+  uint8_t defaultOffHostPwrState;
+  uint8_t jcopDlAtBootEnable;
+  uint8_t defaultNfceeTimeout;
+  uint8_t nxpNfcChip;
+  uint8_t coreScrnOffAutonomousEnable;
+  uint8_t p61LsDefaultInterface;
+  uint8_t p61JcopDefaultInterface;
+  uint8_t agcDebugEnable;
+  uint8_t felicaCltPowerState;
+  uint32_t cmdRspTimeoutValue;
+  uint8_t checkDefaultProtoSeId;
+  uint8_t nfccPassiveListenTimeout;
+  uint32_t nfccStandbyTimeout;
+  uint32_t wmMaxWtxCount;
+  uint32_t nfccRfFieldEventTimeout;
+  uint8_t allowWiredInMifareDesfireClt;
+  uint8_t dwpIntfResetEnable;
+  uint8_t nxpLogHalLoglevel;
+  uint8_t nxpLogExtnsLogLevel;
+  uint8_t nxpLogTmlLogLevel;
+  uint8_t nxpLogFwDnldLogLevel;
+  uint8_t nxpLogNcixLogLevel;
+  uint8_t nxpLogNcirLogLevel;
 } nxp_nfc_config_t;
 /*
  * nfc_nci_ExtnRsp_t shall contain response for command sent in transceive
