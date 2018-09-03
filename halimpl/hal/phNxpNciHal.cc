@@ -2988,8 +2988,11 @@ int phNxpNciHal_configDiscShutdown(void) {
  ******************************************************************************/
 void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
   unsigned long num = 0;
+  memset(&pInpOutData->out.data.nxpConfigs, 0x00, sizeof(pInpOutData->out.data.nxpConfigs));
   if (GetNxpNumValue(NAME_NXP_ESE_LISTEN_TECH_MASK, &num, sizeof(num))) {
     pInpOutData->out.data.nxpConfigs.ese_listen_tech_mask = num;
+  }else {
+    pInpOutData->out.data.nxpConfigs.ese_listen_tech_mask = 0x07;
   }
   if (GetNxpNumValue(NAME_NXP_DEFAULT_NFCEE_DISC_TIMEOUT, &num, sizeof(num))) {
     pInpOutData->out.data.nxpConfigs.default_nfcee_disc_timeout = num;
@@ -3069,6 +3072,8 @@ void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
   }
   if (GetNxpNumValue(NAME_DEFAULT_FELICA_CLT_PWR_STATE, &num, sizeof(num))) {
     pInpOutData->out.data.nxpConfigs.felicaCltPowerState = num;
+  } else {
+    pInpOutData->out.data.nxpConfigs.felicaCltPowerState = 0x3F;
   }
   if (GetNxpNumValue(NAME_NXP_HCEF_CMD_RSP_TIMEOUT_VALUE, &num, sizeof(num))) {
     pInpOutData->out.data.nxpConfigs.cmdRspTimeoutValue = num;
