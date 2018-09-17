@@ -3678,8 +3678,12 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
     } break;
     case HAL_NFC_SET_SPM_PWR:
       level = pInpOutData->inp.level;
-      ret = phPalEse_spi_ioctl(phPalEse_e_ChipRst,
-                               gpphTmlNfc_Context->pDevHandle, level);
+      if (nfcFL.chipType == pn557) {
+        ret = phPalEse_spi_ioctl(phPalEse_e_ChipRst,
+                                 gpphTmlNfc_Context->pDevHandle, level);
+      } else {
+        ret = NFCSTATUS_FEATURE_NOT_SUPPORTED;
+      }
       if ((nxpncihal_ctrl.halStatus == HAL_STATUS_MIN_OPEN) && (level == 0x00)) {
         phNxpNciHal_Minclose();
       }
