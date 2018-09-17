@@ -1126,6 +1126,9 @@ retry:
               "recovery\n");
           // Send the Core Reset NTF to upper layer, which will trigger the
           // recovery.
+#if(NXP_EXTNS == TRUE)
+          abort();
+#endif
           nxpncihal_ctrl.rx_data_len = sizeof(reset_ntf);
           memcpy(nxpncihal_ctrl.p_rx_data, reset_ntf, sizeof(reset_ntf));
           (*nxpncihal_ctrl.p_nfc_stack_data_cback)(nxpncihal_ctrl.rx_data_len,
@@ -2146,6 +2149,8 @@ int phNxpNciHal_close(bool bShutdown) {
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed");
   }
+  sem_destroy(&nxpncihal_ctrl.syncSpiNfc);
+close_and_return:
 #if(NXP_EXTNS == TRUE)
   if(gParserCreated)
   {
@@ -2153,8 +2158,6 @@ int phNxpNciHal_close(bool bShutdown) {
     gParserCreated = FALSE;
   }
 #endif
-  sem_destroy(&nxpncihal_ctrl.syncSpiNfc);
-close_and_return:
   if (NULL != gpphTmlNfc_Context->pDevHandle) {
     phNxpNciHal_close_complete(NFCSTATUS_SUCCESS);
     /* Abort any pending read and write */
