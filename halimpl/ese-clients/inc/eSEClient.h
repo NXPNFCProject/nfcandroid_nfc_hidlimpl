@@ -27,7 +27,7 @@ void checkEseClientUpdate();
 
 SESTATUS perform_eSEClientUpdate();
 
-void eSEClientUpdate_Thread();
+void eSEClientUpdate_NFC_Thread();
 
 void seteSEClientState(uint8_t state);
 SESTATUS LSUpdate();
