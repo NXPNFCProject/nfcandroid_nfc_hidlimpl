@@ -35,13 +35,22 @@
 #include "eSEClientIntf.h"
 #include <LsClient.h>
 #include "hal_nxpese.h"
+#include <vendor/nxp/nxpese/1.0/INxpEse.h>
 
+using vendor::nxp::nxpese::V1_0::INxpEse;
+using android::hardware::hidl_vec;
+using android::sp;
+using android::hardware::Return;
+using android::hardware::Void;
 
+android::sp<INxpEse> mHalNxpEse;
 uint8_t datahex(char c);
 IChannel_t Ch;
 se_extns_entry se_intf;
 void* eSEClientUpdate_ThreadHandler(void* data);
 void* eSEClientUpdate_Thread(void* data);
+void eSEClientUpdate_Thread();
+void* eSEClientUpdate_NFC_ThreadHandler(void* data);
 SESTATUS ESE_ChannelInit(IChannel *ch);
 uint8_t handleJcopOsDownload();
 uint8_t performLSUpdate();
@@ -109,7 +118,7 @@ uint8_t SE_getInterfaceInfo()
 void checkEseClientUpdate()
 {
   ALOGD("%s enter:  ", __func__);
-  checkeSEClientRequired();
+  checkeSEClientRequired(ESE_INTF_NFC);
   se_intf.isJcopUpdateRequired = getJcopUpdateRequired();
   se_intf.isLSUpdateRequired = getLsUpdateRequired();
   se_intf.sJcopUpdateIntferface = getJcopUpdateIntf();
@@ -117,6 +126,29 @@ void checkEseClientUpdate()
   if((se_intf.isJcopUpdateRequired && se_intf.sJcopUpdateIntferface)||
    (se_intf.isLSUpdateRequired && se_intf.sLsUpdateIntferface))
     seteSEClientState(ESE_UPDATE_STARTED);
+}
+
+/***************************************************************************
+**
+** Function:        IoctlCallback
+**
+** Description:     Callback for IOCTL API
+**
+** Returns:         void
+**
+*******************************************************************************/
+
+void IoctlCallback(hidl_vec<uint8_t> outputData) {
+  const char* func = "IoctlCallback";
+  ese_nxp_ExtnOutputData_t* pOutData =
+      (ese_nxp_ExtnOutputData_t*)&outputData[0];
+  ALOGD_IF(nfc_debug_enabled, "%s Ioctl Type=%lu", func,
+           (unsigned long)pOutData->ioctlType);
+  NfcAdaptation* pAdaptation = (NfcAdaptation*)pOutData->context;
+  /*Output Data from stub->Proxy is copied back to output data
+   * This data will be sent back to libese*/
+  memcpy(&pAdaptation->mCurrentIoctlData->out, &outputData[0],
+         sizeof(ese_nxp_ExtnOutputData_t));
 }
 
 /***************************************************************************
@@ -129,32 +161,11 @@ void checkEseClientUpdate()
 **
 *******************************************************************************/
 SESTATUS perform_eSEClientUpdate() {
-  SESTATUS status = SESTATUS_FAILED;
+
   ALOGD("%s enter:  ", __func__);
-  if(getJcopUpdateRequired()) {
-    if(se_intf.sJcopUpdateIntferface == ESE_INTF_SPI) {
-      seteSEClientState(ESE_JCOP_UPDATE_REQUIRED);
-      return SESTATUS_SUCCESS;
-    }
-    else if(se_intf.sJcopUpdateIntferface == ESE_INTF_NFC) {
-      seteSEClientState(ESE_JCOP_UPDATE_REQUIRED);
-    }
-  }
 
-  if((ESE_JCOP_UPDATE_REQUIRED != ese_update) && (getLsUpdateRequired())) {
-    if(se_intf.sLsUpdateIntferface == ESE_INTF_SPI) {
-      seteSEClientState(ESE_LS_UPDATE_REQUIRED);
-      return SESTATUS_SUCCESS;
-    }
-    else if(se_intf.sLsUpdateIntferface == ESE_INTF_NFC) {
-      seteSEClientState(ESE_LS_UPDATE_REQUIRED);
-    }
-  }
-
-  if((ese_update == ESE_JCOP_UPDATE_REQUIRED) ||
-    (ese_update == ESE_LS_UPDATE_REQUIRED))
-    eSEClientUpdate_Thread();
-  return status;
+  eSEClientUpdate_Thread();
+  return SESTATUS_SUCCESS;
 }
 
 SESTATUS ESE_ChannelInit(IChannel *ch)
@@ -193,6 +204,49 @@ void eSEClientUpdate_Thread()
   }
     pthread_attr_destroy(&attr);
 }
+
+/*******************************************************************************
+**
+** Function:        eSEClientUpdate_NFC_Thread
+**
+** Description:     Perform eSE update
+**
+** Returns:         SUCCESS of ok
+**
+*******************************************************************************/
+void eSEClientUpdate_NFC_Thread()
+{
+  SESTATUS status = SESTATUS_FAILED;
+  pthread_t thread;
+  pthread_attr_t attr;
+  pthread_attr_init(&attr);
+  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+  if (pthread_create(&thread, &attr, &eSEClientUpdate_NFC_ThreadHandler, NULL) != 0) {
+    ALOGD("Thread creation failed");
+    status = SESTATUS_FAILED;
+  } else {
+    status = SESTATUS_SUCCESS;
+    ALOGD("Thread creation success");
+  }
+    pthread_attr_destroy(&attr);
+}
+/*******************************************************************************
+**
+** Function:        eSEClientUpdate_NFC_ThreadHandler
+**
+** Description:     Perform JCOP Download
+**
+** Returns:         SUCCESS of ok
+**
+*******************************************************************************/
+void* eSEClientUpdate_NFC_ThreadHandler(void* data) {
+  (void)data;
+  ALOGD("%s Enter\n", __func__);
+  eSEUpdate_SeqHandler();
+  ALOGD("%s Exit eSEClientUpdate_Thread\n", __func__);
+  return NULL;
+
+}
 /*******************************************************************************
 **
 ** Function:        eSEClientUpdate_ThreadHandler
@@ -204,7 +258,73 @@ void eSEClientUpdate_Thread()
 *******************************************************************************/
 void* eSEClientUpdate_ThreadHandler(void* data) {
   (void)data;
+  nfc_nci_IoctlInOutData_t inpOutData;
+  int state, cnt = 0;
+
   ALOGD("%s Enter\n", __func__);
+  while(((mHalNxpEse == nullptr) && (cnt < 3)))
+  {
+    mHalNxpEse = INxpEse::tryGetService();
+    ALOGD_IF(mHalNxpEse == nullptr, ": Failed to retrieve the NXP ESE HAL!");
+    if(mHalNxpEse != nullptr) {
+      ALOGD_IF(nfc_debug_enabled, ": INxpEse::getService() returned %p (%s)",
+                mHalNxpEse.get(),
+               (mHalNxpEse->isRemote() ? "remote" : "local"));
+    }
+    usleep(100*1000);
+    cnt++;
+  }
+  if(mHalNxpEse != nullptr)
+  {
+    memset(&inpOutData, 0x00, sizeof(nfc_nci_IoctlInOutData_t));
+    inpOutData.inp.data.nciCmd.cmd_len = sizeof(state);
+    memcpy(inpOutData.inp.data.nciCmd.p_cmd, &state,sizeof(state));
+
+    hidl_vec<uint8_t> data;
+
+    nfc_nci_IoctlInOutData_t* pInpOutData = &inpOutData;
+    //ALOGD_IF(nfc_debug_enabled, "%s arg=%ld", func, arg);
+    pInpOutData->inp.context = &NfcAdaptation::GetInstance();
+    NfcAdaptation::GetInstance().mCurrentIoctlData = pInpOutData;
+    data.setToExternal((uint8_t*)pInpOutData, sizeof(nfc_nci_IoctlInOutData_t));
+
+    mHalNxpEse->ioctl(HAL_ESE_IOCTL_GET_ESE_UPDATE_STATE, data, IoctlCallback);
+
+    ALOGD_IF(nfc_debug_enabled, "Ioctl Completed for Type result = %d", pInpOutData->out.data.status);
+    if(!se_intf.isJcopUpdateRequired && (pInpOutData->out.data.status & 0xFF))
+    {
+	  se_intf.isJcopUpdateRequired = true;
+    }
+    if(!se_intf.isLSUpdateRequired && ((pInpOutData->out.data.status >> 8) & 0xFF))
+    {
+	  se_intf.isLSUpdateRequired = true;
+    }
+
+  }
+
+  if(se_intf.isJcopUpdateRequired) {
+    if(se_intf.sJcopUpdateIntferface == ESE_INTF_SPI) {
+      seteSEClientState(ESE_JCOP_UPDATE_REQUIRED);
+      return NULL;
+    }
+    else if(se_intf.sJcopUpdateIntferface == ESE_INTF_NFC) {
+      seteSEClientState(ESE_JCOP_UPDATE_REQUIRED);
+    }
+  }
+
+  if((ESE_JCOP_UPDATE_REQUIRED != ese_update) && (se_intf.isLSUpdateRequired)) {
+    if(se_intf.sLsUpdateIntferface == ESE_INTF_SPI) {
+      seteSEClientState(ESE_LS_UPDATE_REQUIRED);
+      return NULL;
+    }
+    else if(se_intf.sLsUpdateIntferface == ESE_INTF_NFC) {
+      seteSEClientState(ESE_LS_UPDATE_REQUIRED);
+    }
+  }
+
+  if((ese_update == ESE_JCOP_UPDATE_REQUIRED) ||
+    (ese_update == ESE_LS_UPDATE_REQUIRED))
+
   eSEUpdate_SeqHandler();
   ALOGD("%s Exit eSEClientUpdate_Thread\n", __func__);
   return NULL;

@@ -2531,7 +2531,8 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
   level=pInpOutData->inp.level;
   if(nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE &&
     (arg != HAL_NFC_IOCTL_ESE_JCOP_DWNLD && arg
-    != HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE && arg != HAL_ESE_IOCTL_NFC_JCOP_DWNLD))
+    != HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE && arg != HAL_ESE_IOCTL_NFC_JCOP_DWNLD
+	&& arg != HAL_NFC_IOCTL_GET_ESE_UPDATE_STATE))
    {
        NFCSTATUS status = NFCSTATUS_FAILED;
        status = phNxpNciHal_MinOpen();
@@ -2633,6 +2634,9 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
         }
         ret = 0;
         break;
+    case HAL_NFC_IOCTL_GET_ESE_UPDATE_STATE :
+	ret = 0;
+	break;
     case HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE :
         ese_update = ESE_UPDATE_COMPLETED;
         NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE \n");
