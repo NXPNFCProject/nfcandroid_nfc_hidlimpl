@@ -18,6 +18,9 @@
 | android-p-preview 2               |  9.00.0A (SN100x) |  NFC_NCIHALx_AR2000.09.00.0A_OpnSrc |
 | android-p-preview 2               |  9.00.0C (SN100x) |  NFC_NCIHALx_AR2000.09.00.0C_OpnSrc |
 | android-p-preview 2               |  9.00.0D (SN100x) |  NFC_NCIHALx_AR2000.09.00.0D_OpnSrc |
+| android-p-preview 2               |  9.00.0F (SN100x) |  NFC_NCIHALx_AR2000.09.00.0F_OpnSrc |
+
+
 
 ####Supported Versions on "br_android_ncihalx_row_p" Branch
 
