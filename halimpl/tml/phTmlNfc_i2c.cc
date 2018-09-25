@@ -44,6 +44,9 @@
 static bool_t bFwDnldFlag = false;
 extern phTmlNfc_i2cfragmentation_t fragmentation_enabled;
 bool_t notifyFwrequest;
+#if(NXP_EXTNS == TRUE)
+sem_t txrxSemaphore;
+#endif
 /*******************************************************************************
 **
 ** Function         phTmlNfc_i2c_close
@@ -59,7 +62,9 @@ void phTmlNfc_i2c_close(void* pDevHandle) {
   if (NULL != pDevHandle) {
     close((intptr_t)pDevHandle);
   }
-
+#if(NXP_EXTNS == TRUE)
+  sem_destroy(&txrxSemaphore);
+#endif
   return;
 }
 
@@ -91,7 +96,11 @@ NFCSTATUS phTmlNfc_i2c_open_and_configure(pphTmlNfc_Config_t pConfig,
   }
 
   *pLinkHandle = (void*)((intptr_t)nHandle);
-
+#if(NXP_EXTNS == TRUE)
+  if (0 != sem_init(&txrxSemaphore, 0, 1)) {
+    NXPLOG_TML_E("_i2c_open() Failed: reason sem_init : retval %x", nHandle);
+  }
+#endif
   /*Reset PN54X*/
   phTmlNfc_i2c_reset((void*)((intptr_t)nHandle), MODE_POWER_OFF);
   usleep(10 * 1000);
@@ -153,6 +162,9 @@ int phTmlNfc_i2c_read(void* pDevHandle, uint8_t* pBuffer, int nNbBytesToRead) {
   } else {
     ret_Read = read((intptr_t)pDevHandle, pBuffer, totalBtyesToRead - numRead);
     if (ret_Read > 0) {
+#if(NXP_EXTNS == TRUE)
+      sem_wait(&txrxSemaphore);
+#endif
       numRead += ret_Read;
     } else if (ret_Read == 0) {
       NXPLOG_TML_E("_i2c_read() [hdr]EOF");
@@ -171,7 +183,11 @@ int phTmlNfc_i2c_read(void* pDevHandle, uint8_t* pBuffer, int nNbBytesToRead) {
     if (numRead < totalBtyesToRead) {
       ret_Read =
           read((intptr_t)pDevHandle, pBuffer, totalBtyesToRead - numRead);
+
       if (ret_Read != totalBtyesToRead - numRead) {
+#if(NXP_EXTNS == TRUE)
+        sem_post(&txrxSemaphore);
+#endif
         NXPLOG_TML_E("_i2c_read() [hdr] errno : %x", errno);
         return -1;
       } else {
@@ -191,6 +207,9 @@ int phTmlNfc_i2c_read(void* pDevHandle, uint8_t* pBuffer, int nNbBytesToRead) {
       if (ret_Read > 0) {
         numRead += ret_Read;
       } else if (ret_Read == 0) {
+#if(NXP_EXTNS == TRUE)
+        sem_post(&txrxSemaphore);
+#endif
         NXPLOG_TML_E("_i2c_read() [pyld] EOF");
         return -1;
       } else {
@@ -198,6 +217,9 @@ int phTmlNfc_i2c_read(void* pDevHandle, uint8_t* pBuffer, int nNbBytesToRead) {
           NXPLOG_TML_E("_i2c_read() [hdr] received");
           phNxpNciHal_print_packet("RECV", pBuffer, NORMAL_MODE_HEADER_LEN);
         }
+#if(NXP_EXTNS == TRUE)
+        sem_post(&txrxSemaphore);
+#endif
         NXPLOG_TML_E("_i2c_read() [pyld] errno : %x", errno);
         return -1;
       }
@@ -205,6 +227,9 @@ int phTmlNfc_i2c_read(void* pDevHandle, uint8_t* pBuffer, int nNbBytesToRead) {
       NXPLOG_TML_E("_>>>>> Empty packet recieved !!");
     }
   }
+#if(NXP_EXTNS == TRUE)
+  sem_post(&txrxSemaphore);
+#endif
   return numRead;
 }
 
@@ -247,7 +272,13 @@ int phTmlNfc_i2c_write(void* pDevHandle, uint8_t* pBuffer,
         numBytes = nNbBytesToWrite;
       }
     }
+#if(NXP_EXTNS == TRUE)
+    sem_wait(&txrxSemaphore);
+#endif
     ret = write((intptr_t)pDevHandle, pBuffer + numWrote, numBytes - numWrote);
+#if(NXP_EXTNS == TRUE)
+    sem_post(&txrxSemaphore);
+#endif
     if (ret > 0) {
       numWrote += ret;
       if (fragmentation_enabled == I2C_FRAGMENTATION_ENABLED &&
