@@ -2337,6 +2337,11 @@ void phNxpNciHal_getVendorConfig(NfcConfig& config) {
   if (GetNxpNumValue(NAME_OFF_HOST_SIM_PIPE_ID, &num, sizeof(num))) {
     config.offHostSIMPipeId = num;
   }
+#if (NXP_EXTNS == TRUE)
+  if (GetNxpNumValue(NAME_NXP_SE_COLD_TEMP_ERROR_DELAY, &num, sizeof(num))) {
+    config.eSeLowTempErrorDelay = num;
+  }
+#endif
   if ((GetNxpByteArrayValue(NAME_NFA_PROPRIETARY_CFG, (char*)buffer.data(), buffer.size(), &retlen))
          && (retlen == 9)) {
     config.nfaProprietaryCfg.protocol18092Active = (uint8_t) buffer[0];
