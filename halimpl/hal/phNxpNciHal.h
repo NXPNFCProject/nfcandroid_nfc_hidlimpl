@@ -63,6 +63,10 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 //#define NCI_MSG_CORE_INIT            0x01
 #define NCI_MT_MASK                  0xE0
 #define NCI_OID_MASK                 0x3F
+#if (NXP_EXTNS == TRUE)
+/* GID: Group Identifier (byte 0) */
+#define NCI_GID_MASK                 0x0F
+#endif
 #define NXP_PROPCMD_GID              0x2F
 #define NXP_FLUSH_SRAM_AO_TO_FLASH   0x21
 #define NXP_CORE_GET_CONFIG_CMD      0x03

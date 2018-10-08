@@ -1240,10 +1240,16 @@ static void phNxpNciHal_read_complete(void* pContext,
     }  // Notification Checking
     else if ((nxpncihal_ctrl.hal_ext_enabled == TRUE) &&
              ((nxpncihal_ctrl.p_rx_data[0x00] & NCI_MT_MASK) == NCI_MT_NTF) &&
+#if (NXP_EXTNS == TRUE)
+             ((nxpncihal_ctrl.p_cmd_data[0x00] & NCI_GID_MASK) ==
+                     (nxpncihal_ctrl.p_rx_data[0x00] & NCI_GID_MASK)) &&
+             ((nxpncihal_ctrl.p_cmd_data[0x01] & NCI_OID_MASK) ==
+                     (nxpncihal_ctrl.p_rx_data[0x01] & NCI_OID_MASK)) &&
+#endif
              (nxpncihal_ctrl.nci_info.wait_for_ntf == TRUE)) {
       /* Unlock semaphore waiting for only  ntf*/
-      SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
       nxpncihal_ctrl.nci_info.wait_for_ntf = FALSE;
+      SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
     }
     /* Read successful send the event to higher layer */
     else if ((nxpncihal_ctrl.p_nfc_stack_data_cback != NULL) &&
@@ -1256,7 +1262,13 @@ static void phNxpNciHal_read_complete(void* pContext,
   }
 
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE &&
-      nxpncihal_ctrl.nci_info.wait_for_ntf == FALSE) {
+#if (NXP_EXTNS == TRUE)
+  (nxpncihal_ctrl.p_cmd_data[0x00] & NCI_GID_MASK) ==
+		  (nxpncihal_ctrl.p_rx_data[0x00] & NCI_GID_MASK) &&
+  (nxpncihal_ctrl.p_cmd_data[0x01] & NCI_OID_MASK) ==
+		  (nxpncihal_ctrl.p_rx_data[0x01] & NCI_OID_MASK) &&
+#endif
+  nxpncihal_ctrl.nci_info.wait_for_ntf == FALSE) {
     NXPLOG_NCIHAL_E(" Ignoring read , HAL close triggered");
     return;
   }
