@@ -230,7 +230,8 @@ NCI_LxDebug_Decoder::parseL1DbgNtf(psLxNtfCoded_t   psLxNtfCoded,
         {
             decodeTimeStamp(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
             decodeCLIFFState(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-            if(!strcmp((const char*)psLxNtfDecoded->psL1NtfDecoded->sInfo.pCliffStateTriggerTypeDirection, (const char*)"CLF_EVT_RX"))
+            if((psLxNtfDecoded->psL1NtfDecoded->sInfo.pCliffStateTriggerTypeDirection) &&
+               (!strcmp((const char*)psLxNtfDecoded->psL1NtfDecoded->sInfo.pCliffStateTriggerTypeDirection, (const char*)"CLF_EVT_RX")))
                 decodeRSSIValues(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
             else
             {
@@ -250,7 +251,8 @@ NCI_LxDebug_Decoder::parseL1DbgNtf(psLxNtfCoded_t   psLxNtfCoded,
         {
             decodeTimeStamp(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
             decodeCLIFFState(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-            if(!strcmp((const char*)psLxNtfDecoded->psL1NtfDecoded->sInfo.pCliffStateTriggerTypeDirection, (const char*)"CLF_EVT_RX"))
+            if((psLxNtfDecoded->psL1NtfDecoded->sInfo.pCliffStateTriggerTypeDirection) &&
+                (!strcmp((const char*)psLxNtfDecoded->psL1NtfDecoded->sInfo.pCliffStateTriggerTypeDirection, (const char*)"CLF_EVT_RX")))
                 decodeRSSIValues(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
             else
             {
@@ -271,7 +273,8 @@ NCI_LxDebug_Decoder::parseL1DbgNtf(psLxNtfCoded_t   psLxNtfCoded,
         {
             decodeTimeStamp(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
             decodeCLIFFState(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-            if(!strcmp((const char*)psLxNtfDecoded->psL1NtfDecoded->sInfo.pCliffStateTriggerTypeDirection, (const char*)"CLF_EVT_RX"))
+            if((psLxNtfDecoded->psL1NtfDecoded->sInfo.pCliffStateTriggerTypeDirection) &&
+               (!strcmp((const char*)psLxNtfDecoded->psL1NtfDecoded->sInfo.pCliffStateTriggerTypeDirection, (const char*)"CLF_EVT_RX")))
                 decodeRSSIValues(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
             else
             {
@@ -348,7 +351,8 @@ NCI_LxDebug_Decoder::parseL2DbgNtf(psLxNtfCoded_t   psLxNtfCoded,
             {
                 decodeTimeStamp(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
                 decodeCLIFFState(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-                if(!strcmp((const char*)psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection, (const char*)"CLF_EVT_RX"))
+                if((psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection) &&
+                  (!strcmp((const char*)psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection, (const char*)"CLF_EVT_RX")))
                     decodeRSSIValues(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
                 else
                 {
@@ -370,7 +374,8 @@ NCI_LxDebug_Decoder::parseL2DbgNtf(psLxNtfCoded_t   psLxNtfCoded,
             {
                 decodeTimeStamp(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
                 decodeCLIFFState(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-                if(!strcmp((const char*)psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection, (const char*)"CLF_EVT_RX"))
+                if((psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection) &&
+                  (!strcmp((const char*)psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection, (const char*)"CLF_EVT_RX")))
                     decodeRSSIValues(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
                 else
                 {
@@ -480,7 +485,8 @@ NCI_LxDebug_Decoder::printLxDebugInfo(psLxNtfDecoded_t psLxNtfDecoded) {
             phOsal_LogInfoString((const uint8_t*)"L1 RxNak EDD",psLxNtfDecoded->psL1NtfDecoded->sInfo.pEddL1RxNak);
             phOsal_LogInfoString((const uint8_t*)"L1 TxErr EDD",psLxNtfDecoded->psL1NtfDecoded->sInfo.pEddL1TxErr);
             phOsal_LogInfoU32hh((const uint8_t*)"L1 7816-4 Ret Code", psLxNtfDecoded->psL1NtfDecoded->sInfo.eddL178164RetCode[0], psLxNtfDecoded->psL1NtfDecoded->sInfo.eddL178164RetCode[1]);
-            if(!strcmp((const char*)psLxNtfDecoded->psL1NtfDecoded->sInfo.pCliffStateTriggerTypeDirection, (const char*)"CLF_EVT_TX"))
+            if((psLxNtfDecoded->psL1NtfDecoded->sInfo.pCliffStateTriggerTypeDirection) &&
+               (!strcmp((const char*)psLxNtfDecoded->psL1NtfDecoded->sInfo.pCliffStateTriggerTypeDirection, (const char*)"CLF_EVT_TX")))
             {
                 phOsal_LogInfoU32d((const uint8_t*)"Residual Carrier", psLxNtfDecoded->psL1NtfDecoded->sInfo.residualCarrier);
                 phOsal_LogInfoU32d((const uint8_t*)"Number Driver", psLxNtfDecoded->psL1NtfDecoded->sInfo.numDriver);
@@ -520,7 +526,8 @@ NCI_LxDebug_Decoder::printLxDebugInfo(psLxNtfDecoded_t psLxNtfDecoded) {
                     phOsal_LogInfoString((const uint8_t*)"Felica Misc Entry",psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].pFelicaMisc);
                     phOsal_LogInfoU32h((const uint8_t*)"Felica EDD", psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].eddFelica);
                 }
-                if(!strcmp((const char*)psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection, (const char*)"CLF_EVT_TX"))
+                if((psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection) &&
+                  (!strcmp((const char*)psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection, (const char*)"CLF_EVT_TX")))
                 {
                     phOsal_LogInfoU32d((const uint8_t*)"Residual Carrier", psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].residualCarrier);
                     phOsal_LogInfoU32d((const uint8_t*)"Number Driver", psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].numDriver);
