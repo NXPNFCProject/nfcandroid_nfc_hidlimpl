@@ -1611,6 +1611,9 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   static uint8_t cmd_reset_nci[] = {0x20, 0x00, 0x01, 0x00};
   static uint8_t cmd_init_nci2_0[] = {0x20,0x01,0x02,0x00,0x00};
   static uint8_t cmd_get_cfg_dbg_info[] = {0x20, 0x03, 0x4, 0xA0, 0x1B, 0xA0, 0x27};
+  /*fix to disable mifare clt emulation for jcop v4.1*/
+  static uint8_t cmd_mf_clt_jcop_cfg[] = {0x20, 0x02, 0x05, 0x01,
+                                          0xA0, 0x6B, 0x01, 0x00};
 
   config_success = true;
   long bufflen = 260;
@@ -1728,7 +1731,20 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     goto retry_core_init;
   }
 
-    retlen = 0;
+  retlen = 0;
+  if ((nfcFL.chipType == pn553) || (nfcFL.chipType == pn557)) {
+    if (GetNxpNumValue(NAME_NXP_MF_CLT_JCOP_CFG, (void *)&retlen,
+                       sizeof(retlen))) {
+      cmd_mf_clt_jcop_cfg[7] = 0x01 & retlen;
+      status = phNxpNciHal_send_ext_cmd(sizeof(cmd_mf_clt_jcop_cfg),
+                                        cmd_mf_clt_jcop_cfg);
+      if (status != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("cmd_mf_clt_jcop_cfg: Failed");
+        retry_core_init_cnt++;
+        goto retry_core_init;
+      }
+    }
+  }
 
   if(nfcFL.eseFL._ESE_SVDD_SYNC) {
       if (GetNxpNumValue(NAME_NXP_SVDD_SYNC_OFF_DELAY, (void*)&gSvddSyncOff_Delay,
