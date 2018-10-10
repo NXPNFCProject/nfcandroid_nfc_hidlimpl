@@ -91,7 +91,7 @@ void phNxpNciHal_cleanup_cb_data(phNxpNciHal_Sem_t* pCallbackData);
 void phNxpNciHal_releaseall_cb_data(void);
 void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
                               uint16_t len);
-void phNxpNciHal_emergency_recovery(void);
+void phNxpNciHal_emergency_recovery(uint8_t status);
 
 /* Lock unlock helper macros */
 /* Lock unlock helper macros */

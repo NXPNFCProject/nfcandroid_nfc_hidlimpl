@@ -478,8 +478,8 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf, uint16_t* 
           }
           NXPLOG_NCIHAL_E("CORE_RESET_NTF received !");
           NXPLOG_NCIR_E("len = %3d > %s", *p_len, print_buffer);
-           phNxpNciHal_emergency_recovery();
-           status = NFCSTATUS_FAILED;
+          phNxpNciHal_emergency_recovery(p_ntf[3]);
+          status = NFCSTATUS_FAILED;
         } /* Parsing CORE_INIT_RSP*/
       } else if (p_ntf[0] == NCI_MT_RSP && ((p_ntf[1] & NCI_OID_MASK) == NCI_MSG_CORE_INIT)) {
       if (nxpncihal_ctrl.nci_info.nci_version == NCI_VERSION_2_0) {

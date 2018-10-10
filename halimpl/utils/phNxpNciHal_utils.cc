@@ -461,13 +461,20 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
 **
 ** Function         phNxpNciHal_emergency_recovery
 **
-** Description      Emergency recovery in case of no other way out
+** Description      Abort the process in case of ESE_OVER_TEMP_ERROR.
+**                  Ignore the other status.
 **
 ** Returns          None
 **
 *******************************************************************************/
 
-void phNxpNciHal_emergency_recovery(void) {
-  NXPLOG_NCIHAL_E("%s: abort()", __func__);
-  //    abort();
+void phNxpNciHal_emergency_recovery(uint8_t status) {
+  NXPLOG_NCIHAL_D("%s: %d", __func__, status);
+  switch(status){
+  case NCI2_0_CORE_RESET_TRIGGER_TYPE_OVER_TEMPERATURE:
+      NXPLOG_NCIHAL_E("abort()");
+      abort();
+  default:
+      ;
+  }
 }
