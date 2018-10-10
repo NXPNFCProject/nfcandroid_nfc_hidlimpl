@@ -59,6 +59,7 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 
 #define CORE_RESET_TRIGGER_TYPE_CORE_RESET_CMD_RECEIVED 0x02
 #define CORE_RESET_TRIGGER_TYPE_POWERED_ON              0x01
+#define NCI2_0_CORE_RESET_TRIGGER_TYPE_OVER_TEMPERATURE ((uint8_t)0xA1)
 //#define NCI_MSG_CORE_RESET           0x00
 //#define NCI_MSG_CORE_INIT            0x01
 #define NCI_MT_MASK                  0xE0
