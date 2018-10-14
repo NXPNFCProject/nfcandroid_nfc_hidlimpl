@@ -145,7 +145,7 @@ static void phNxpNciHal_enable_i2c_fragmentation();
 static NFCSTATUS phNxpNciHal_get_mw_eeprom(void);
 static NFCSTATUS phNxpNciHal_set_mw_eeprom(void);
 #if(NXP_EXTNS == TRUE)
-static void phNxpNciHal_configNciParser(void);
+static void phNxpNciHal_configNciParser(bool enable);
 #endif
 static int phNxpNciHal_fw_mw_ver_check();
 NFCSTATUS phNxpNciHal_check_clock_config(void);
@@ -1847,13 +1847,17 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   isfound = GetNxpNumValue(NAME_NXP_NCI_PARSER_LIBRARY, &num, sizeof(num));
   if(isfound > 0 && num == 0x01)
   {
-    NXPLOG_NCIHAL_E("NCI Parser is enabled");
-    phNxpNciHal_configNciParser();
+    phNxpNciHal_configNciParser(true);
+    NXPLOG_NCIHAL_D("NCI Parser is enabled");
   }
-  else
+  else if(isfound > 0 && num == 0x00)
   {
-    NXPLOG_NCIHAL_E("NCI Parser is disabled");
+    NXPLOG_NCIHAL_D("Disabling NCI Parser...");
+    phNxpNciHal_configNciParser(false);
+  }else{
+    NXPLOG_NCIHAL_D("NCI Parser is disabled");
   }
+
   enableAutonomusMode = false;
   isfound = GetNxpNumValue(NAME_NXP_CORE_SCRN_OFF_AUTONOMOUS_ENABLE, &num, sizeof(num));
   if (isfound > 0) {
@@ -3780,7 +3784,7 @@ tNFC_chipType phNxpNciHal_getChipType() {
 #if(NXP_EXTNS == TRUE)
 /*******************************************************************************
 **
-** Function         phNxpNciHal_configNciParser(void)
+** Function         phNxpNciHal_configNciParser(bool enable)
 **
 ** Description      Helper function to configure LxDebug modes
 **
@@ -3788,58 +3792,69 @@ tNFC_chipType phNxpNciHal_getChipType() {
 **
 ** Returns          void
 *******************************************************************************/
-void phNxpNciHal_configNciParser(void)
+void phNxpNciHal_configNciParser(bool enable)
 {
     NFCSTATUS status = NFCSTATUS_SUCCESS;
-    unsigned long num = 0;
+    unsigned long lx_debug_cfg = 0;
     uint8_t  isfound = 0;
     static uint8_t cmd_lxdebug[] = { 0x20, 0x02, 0x06, 0x01, 0xA0, 0x1D, 0x02, 0x00, 0x00 };
 
-    isfound = GetNxpNumValue(NAME_NXP_CORE_PROP_SYSTEM_DEBUG, &num, sizeof(num));
+    isfound = GetNxpNumValue(NAME_NXP_CORE_PROP_SYSTEM_DEBUG, &lx_debug_cfg, sizeof(lx_debug_cfg));
 
-    if(isfound > 0)
+    if(isfound > 0 && enable == true)
     {
-        if(num == 0x00)
+        if(lx_debug_cfg & LX_DEBUG_CFG_MASK_RFU)
+        {
+            NXPLOG_NCIHAL_E("One or more RFU bits are enabled.\nMasking the RFU bits");
+            lx_debug_cfg = lx_debug_cfg & ~LX_DEBUG_CFG_MASK_RFU;
+        }
+        if(lx_debug_cfg == LX_DEBUG_CFG_DISABLE)
         {
             NXPLOG_NCIHAL_D("Disable LxDebug");
         }
-        else if(num == 0x01)
+        if(lx_debug_cfg & LX_DEBUG_CFG_ENABLE_L1_EVENT)
         {
             NXPLOG_NCIHAL_D("Enable L1 RF NTF debugs");
-            cmd_lxdebug[7] = 0x10;
         }
-        else if(num == 0x02)
+        if(lx_debug_cfg & LX_DEBUG_CFG_ENABLE_L2_EVENT)
         {
             NXPLOG_NCIHAL_D("Enable L2 RF NTF debugs");
-            cmd_lxdebug[7] = 0x01;
         }
-        else if(num == 0x03)
+        if(lx_debug_cfg & LX_DEBUG_CFG_ENABLE_FELICA_RF)
         {
-            NXPLOG_NCIHAL_D("Enable L1 & L2 RF NTF debugs");
-            cmd_lxdebug[7] = 0x31;
+            NXPLOG_NCIHAL_D("Enable all Felica CM events");
         }
-        else if(num == 0x04)
+        if(lx_debug_cfg & LX_DEBUG_CFG_ENABLE_FELICA_SYSCODE)
         {
-            NXPLOG_NCIHAL_D("Enable L1 & L2 & RSSI NTF debugs");
-            cmd_lxdebug[7] = 0x31;
-            cmd_lxdebug[8] = 0x01;
+            NXPLOG_NCIHAL_D("Enable Felica System Code");
         }
-        else if(num == 0x05)
+        if(lx_debug_cfg & LX_DEBUG_CFG_ENABLE_7816_4_RETCODE)
         {
-            NXPLOG_NCIHAL_D("Enable L2 & Felica RF NTF debugs");
-            cmd_lxdebug[7] = 0x03;
+            NXPLOG_NCIHAL_D("Enable 7816-4 RetCode");
         }
-        else
-            NXPLOG_NCIHAL_E("Invalid Level, Disable LxDebug");
-
-        status = phNxpNciHal_send_ext_cmd(sizeof(cmd_lxdebug)/sizeof(cmd_lxdebug[0]),cmd_lxdebug);
-        if (status != NFCSTATUS_SUCCESS)
-        {
-            NXPLOG_NCIHAL_E("Set lxDebug config failed");
+        cmd_lxdebug[7] = lx_debug_cfg & ~LX_DEBUG_CFG_MASK_RSSI;
+        if((lx_debug_cfg & LX_DEBUG_CFG_MASK_RSSI) == 0x0100)
+        {/*If valid value id present for the RSSI i.e. Byte1 of the flag*/
+            if(lx_debug_cfg & (LX_DEBUG_CFG_ENABLE_L1_EVENT | LX_DEBUG_CFG_ENABLE_L2_EVENT)){
+                NXPLOG_NCIHAL_D("Enable RSSI");
+                cmd_lxdebug[8] = LX_DEBUG_CFG_ENABLE_RSSI;;
+            }else{
+                NXPLOG_NCIHAL_E("RSSI should be used only with L1 and L2 events!!\nDiscarding RSSI....");
+            }
+        }else{
+            NXPLOG_NCIHAL_E("Invalid RSSI Value!!\nDiscarding RSSI....");
         }
     }
-
-    // try initializing parser library
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_lxdebug)/sizeof(cmd_lxdebug[0]),cmd_lxdebug);
+    if (status != NFCSTATUS_SUCCESS)
+    {
+        NXPLOG_NCIHAL_E("Set lxDebug config failed");
+    }
+    if(enable == false)
+    {/*We are here to disable the LX_DEBUG_CFG and parser library*/
+        return;
+    }
+    /* try initializing parser library*/
     NXPLOG_NCIHAL_D("Try Init Parser gParserCreated:%d",gParserCreated);
 
     if(!gParserCreated) {
