@@ -12,84 +12,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-cc_library_shared {
-    name: "nfc_nci_nxp",
-    defaults: ["hidl_defaults"],
-    proprietary: true,
-
-    cflags: [
-        "-Wall",
-        "-Werror",
-        "-Wextra",
-        "-DNXP_EXTNS=TRUE",
-        "-DNXP_HW_SELF_TEST=TRUE"
-    ],
-
-    srcs: [
-        "halimpl/dnld/phDnldNfc.cc",
-        "halimpl/dnld/phDnldNfc_Internal.cc",
-        "halimpl/dnld/phDnldNfc_Utils.cc",
-        "halimpl/dnld/phNxpNciHal_Dnld.cc",
-        "halimpl/hal/phNxpNciHal.cc",
-        "halimpl/hal/phNxpNciHal_NfcDepSWPrio.cc",
-        "halimpl/hal/phNxpNciHal_dta.cc",
-        "halimpl/hal/phNxpNciHal_ext.cc",
-        "halimpl/hal/phNxpNciHal_nciParser.cc",
-        "halimpl/log/phNxpLog.cc",
-        "halimpl/self-test/phNxpNciHal_SelfTest.cc",
-        "halimpl/src/adaptation/EseAdaptation.cc",
-        "halimpl/tml/phDal4Nfc_messageQueueLib.cc",
-        "halimpl/tml/phOsalNfc_Timer.cc",
-        "halimpl/tml/phTmlNfc.cc",
-        "halimpl/tml/phTmlNfc_i2c.cc",
-        "halimpl/tml/spi_spm.cc",
-        "halimpl/utils/NxpNfcCapability.cc",
-        "halimpl/utils/phNxpConfig.cc",
-        "halimpl/utils/phNxpNciHal_utils.cc",
-        "halimpl/utils/sparse_crc32.cc",
-    ],
-
-    local_include_dirs: [
-        "halimpl/common",
-        "halimpl/dnld",
-        "halimpl/hal",
-        "halimpl/inc",
-        "halimpl/log",
-        "halimpl/self-test",
-        "halimpl/tml",
-        "halimpl/utils",
-        "halimpl/ese-clients/inc",
-        "halimpl/src/include"
-    ],
-
-    include_dirs: [
-        "hardware/nxp/nfc/extns/impl",
-        "hardware/nxp/secure_element/extns/impl",
-        "hardware/nxp/nfc/extns/impl",
-        "hardware/nxp/secure_element_extns/inc",
-    ],
-
-    shared_libs: [
-        "android.hardware.nfc@1.0",
-        "android.hardware.nfc@1.1",
-        "android.hardware.secure_element@1.0",
-        "libbase",
-        "libcutils",
-        "libdl",
-        "libhardware",
-        "libhardware_legacy",
-        "libhidlbase",
-        "libhidltransport",
-        "liblog",
-        "libutils",
-        "vendor.nxp.nxpese@1.0",
-        "libicuuc",
-        "libchrome",
-    ],
-    static_libs: [
-        "libnfcutils",
-    ],
-}
+subdirs = [
+    "SN100x",
+]
 
 cc_binary {
     name: "android.hardware.nfc@1.1-service",
@@ -107,9 +32,9 @@ cc_binary {
     srcs: [
         "1.1/NxpNfcService.cpp",
         "1.1/Nfc.cpp",
-        "extns/impl/NxpNfc.cpp",
-        "halimpl/ese-clients/src/eSEClient.cc",
-        "halimpl/eseClient/phNxpNfc_IntfApi.cc",
+        "SN100x/extns/impl/NxpNfc.cpp",
+        "SN100x/halimpl/ese-clients/src/eSEClient.cc",
+        "SN100x/halimpl/eseClient/phNxpNfc_IntfApi.cc",
     ],
 
     shared_libs: [
@@ -135,20 +60,20 @@ cc_binary {
     ],
 
     local_include_dirs: [
-        "halimpl/common",
-        "halimpl/dnld",
-        "halimpl/hal",
-        "halimpl/inc",
-        "halimpl/log",
-        "halimpl/self-test",
-        "halimpl/tml",
-        "halimpl/utils",
-        "halimpl/ese-clients/inc",
-        "halimpl/eseClient"
+        "SN100x/halimpl/common",
+        "SN100x/halimpl/dnld",
+        "SN100x/halimpl/hal",
+        "SN100x/halimpl/inc",
+        "SN100x/halimpl/log",
+        "SN100x/halimpl/self-test",
+        "SN100x/halimpl/tml",
+        "SN100x/halimpl/utils",
+        "SN100x/halimpl/ese-clients/inc",
+        "SN100x/halimpl/eseClient"
     ],
 
     include_dirs: [
-        "hardware/nxp/nfc/extns/impl",
+        "hardware/nxp/nfc/SN100x/extns/impl",
         "hardware/nxp/secure_element/extns/impl",
         "hardware/nxp/secure_element_extns/inc",
         "hardware/nxp/secure_element_extns/inc",

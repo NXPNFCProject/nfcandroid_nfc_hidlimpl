@@ -451,4 +451,3 @@ bool phNxpNfc_EseTransceive(uint8_t* xmitBuffer, int32_t xmitBufferSize, uint8_t
     return (isSuccess);
 }
 #endif
-

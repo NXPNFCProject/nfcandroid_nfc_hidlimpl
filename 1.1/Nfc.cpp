@@ -19,7 +19,7 @@
 #define LOG_TAG "android.hardware.nfc@1.1-impl"
 #include <log/log.h>
 #include "Nfc.h"
-#include "halimpl/inc/phNxpNciHal_Adaptation.h"
+#include "SN100x/halimpl/inc/phNxpNciHal_Adaptation.h"
 #include "phNfcStatus.h"
 
 #define CHK_STATUS(x) ((x) == NFCSTATUS_SUCCESS) \

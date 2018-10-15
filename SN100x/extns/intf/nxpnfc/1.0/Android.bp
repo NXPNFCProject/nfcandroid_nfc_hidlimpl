@@ -2,7 +2,7 @@
 
 hidl_package_root {
     name: "vendor.nxp.nxpnfc",
-    path: "hardware/nxp/nfc/extns/intf/nxpnfc",
+    path: "hardware/nxp/nfc/SN100x/extns/intf/nxpnfc",
 }
 
 hidl_interface {
@@ -19,4 +19,3 @@ hidl_interface {
     ],
     gen_java: true,
 }
-

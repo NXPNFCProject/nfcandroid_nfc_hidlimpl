@@ -61,4 +61,3 @@
 #endif
 
 #endif                          /* end of #ifndef NXP_ESE_FEATURES_H */
-
