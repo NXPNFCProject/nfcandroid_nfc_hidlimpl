@@ -118,14 +118,29 @@ uint8_t SE_getInterfaceInfo()
 void checkEseClientUpdate()
 {
   ALOGD("%s enter:  ", __func__);
+  bool nfcSEIntfPresent = false;
+  char nfcterminal[5];
   checkeSEClientRequired(ESE_INTF_NFC);
   se_intf.isJcopUpdateRequired = getJcopUpdateRequired();
   se_intf.isLSUpdateRequired = getLsUpdateRequired();
   se_intf.sJcopUpdateIntferface = getJcopUpdateIntf();
   se_intf.sLsUpdateIntferface = getLsUpdateIntf();
-  if((se_intf.isJcopUpdateRequired && se_intf.sJcopUpdateIntferface)||
-   (se_intf.isLSUpdateRequired && se_intf.sLsUpdateIntferface))
+  if(getNfcSeTerminalId(nfcterminal)) {
+    nfcSEIntfPresent = true;
+    ALOGD("%s SMB intf  is present  ", __func__);
+  }
+  if(((se_intf.isJcopUpdateRequired && se_intf.sJcopUpdateIntferface)||
+   (se_intf.isLSUpdateRequired && se_intf.sLsUpdateIntferface))&& (nfcSEIntfPresent)) {
     seteSEClientState(ESE_UPDATE_STARTED);
+  }
+  else
+  {
+     se_intf.isJcopUpdateRequired = false;
+     se_intf.isLSUpdateRequired = false;
+     setJcopUpdateRequired(0);
+     setLsUpdateRequired(0);
+     ALOGD("%s LS and JCOP download not required ", __func__);
+  }
 }
 
 /***************************************************************************
