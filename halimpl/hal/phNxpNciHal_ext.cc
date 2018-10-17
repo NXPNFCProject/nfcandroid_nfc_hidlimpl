@@ -24,6 +24,7 @@
 #include "phNxpNciHal_nciParser.h"
 #include "hal_nxpese.h"
 #include <phNxpNciHal_Adaptation.h>
+
 /* Timeout value to wait for response from PN548AD */
 #define HAL_EXTNS_WRITE_RSP_TIMEOUT (2500)
 
@@ -76,6 +77,7 @@ static void hal_extns_write_rsp_timeout_cb(uint32_t TimerId, void* pContext);
 #define PROPRIETARY_CMD_FELICA_READER_MODE 0xFE
 static uint8_t gFelicaReaderMode;
 static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf, uint16_t* p_len);
+
 /*******************************************************************************
 **
 ** Function         phNxpNciHal_ext_init
@@ -247,7 +249,10 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
         break;
     }
   }
-  phNxpNciHal_ext_process_nfc_init_rsp(p_ntf, p_len);
+
+  status = phNxpNciHal_ext_process_nfc_init_rsp(p_ntf, p_len);
+  if (status != NFCSTATUS_SUCCESS)
+    return status;
 
   if (p_ntf[0] == 0x61 && p_ntf[1] == 0x05 && p_ntf[2] == 0x15 &&
       p_ntf[4] == 0x01 && p_ntf[5] == 0x06 && p_ntf[6] == 0x06) {
@@ -476,9 +481,9 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf, uint16_t* 
         if(nxpncihal_ctrl.hal_ext_enabled == TRUE) {
           nxpncihal_ctrl.nci_info.wait_for_ntf = TRUE;
         }
-      } else if(p_ntf[2] == 0x03 && p_ntf[3] == 0x00){
-          NXPLOG_NCIHAL_D("CORE_RESET_RSP NCI1.0");
-          nxpncihal_ctrl.nci_info.nci_version = p_ntf[4];
+      } else if (p_ntf[2] == 0x03 && p_ntf[3] == 0x00) {
+        NXPLOG_NCIHAL_D("CORE_RESET_RSP NCI1.0");
+        nxpncihal_ctrl.nci_info.nci_version = p_ntf[4];
       }
     } else if (p_ntf[0] == NCI_MT_NTF && ((p_ntf[1] & NCI_OID_MASK) == NCI_MSG_CORE_RESET)) {
         if(p_ntf[3] == CORE_RESET_TRIGGER_TYPE_CORE_RESET_CMD_RECEIVED ||
@@ -625,6 +630,18 @@ static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
       status = NFCSTATUS_FAILED;
       goto clean_and_return;
     }
+  }
+
+  NXPLOG_NCIHAL_E("nxpncihal_ctrl.ext_cb_data.status 0x%x",
+                  nxpncihal_ctrl.ext_cb_data.status);
+
+  if (nxpncihal_ctrl.ext_cb_data.status != NFCSTATUS_SUCCESS &&
+      p_cmd[0] == 0x40 && p_cmd[1] == 0x00 && p_cmd[2] == 0x03 &&
+      p_cmd[3] != 0x00) {
+    NXPLOG_NCIHAL_E("Core Reset Syntax Error status=0x%x",
+                    nxpncihal_ctrl.ext_cb_data.status);
+    status = NFCSTATUS_FAILED;
+    goto clean_and_return;
   }
 
   if (nxpncihal_ctrl.ext_cb_data.status != NFCSTATUS_SUCCESS &&

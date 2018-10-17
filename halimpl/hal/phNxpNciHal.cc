@@ -76,7 +76,6 @@ static uint8_t config_access = false;
 static uint8_t config_success = true;
 static uint8_t fw_download_success = 0;
 static NFCSTATUS phNxpNciHal_FwDwnld(uint16_t aType);
-static NFCSTATUS phNxpNciHal_SendCmd(uint8_t cmd_len, uint8_t* pcmd_buff);
 /* NCI HAL Control structure */
 phNxpNciHal_Control_t nxpncihal_ctrl;
 
@@ -727,10 +726,6 @@ int phNxpNciHal_MinInit(nfc_stack_callback_t* p_cback,
   phOsalNfc_Config_t tOsalConfig;
   phTmlNfc_Config_t tTmlConfig;
   int init_retry_cnt = 0;
-  /*NCI_RESET_CMD*/
-  uint8_t cmd_reset_nci[] = {0x20, 0x00, 0x01, 0x01};
-  /*NCI_INIT_CMD*/
-  uint8_t cmd_init_nci[] = {0x20, 0x01, 0x00};
   uint8_t boot_mode = nxpncihal_ctrl.hal_boot_mode;
   char* nfc_dev_node = NULL;
   const uint16_t max_len = 260;
@@ -805,18 +800,25 @@ int phNxpNciHal_MinInit(nfc_stack_callback_t* p_cback,
           (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete, NULL);
       if (status == NFCSTATUS_PENDING) {
         phNxpNciHal_ext_init();
-        do {
-          status = phNxpNciHal_SendCmd(sizeof(cmd_reset_nci), cmd_reset_nci);
-          if (status == NFCSTATUS_SUCCESS) {
-            status = phNxpNciHal_SendCmd(sizeof(cmd_init_nci), cmd_init_nci);
-          }
+        status = phNxpNciHal_nfcc_core_reset_init();
+        if (status != NFCSTATUS_SUCCESS) {
+          status = phNxpNciHal_FwDwnld(NFC_STATUS_NOT_INITIALIZED);
           if (status != NFCSTATUS_SUCCESS) {
-            (void)phNxpNciHal_power_cycle();
+            return NFCSTATUS_FAILED;
           } else {
-            break;
+            do {
+              status = phNxpNciHal_nfcc_core_reset_init();
+              if (status != NFCSTATUS_SUCCESS) {
+                (void)phNxpNciHal_power_cycle();
+              } else {
+                break;
+              }
+              init_retry_cnt++;
+            } while (init_retry_cnt < 0x03);
           }
-          init_retry_cnt++;
-        } while (init_retry_cnt < 0x03);
+        } else {
+          /*Do Nothing*/
+        }
       }
     }
     pthread_attr_destroy(&attr);
@@ -841,17 +843,6 @@ int phNxpNciHal_MinInit(nfc_stack_callback_t* p_cback,
     free(nfc_dev_node);
     nfc_dev_node = NULL;
   }
-  return status;
-}
-
-static NFCSTATUS phNxpNciHal_SendCmd(uint8_t cmd_len, uint8_t* pcmd_buff) {
-  int counter = 0x00;
-  NFCSTATUS status;
-  do {
-    status = NFCSTATUS_FAILED;
-    status = phNxpNciHal_send_ext_cmd(cmd_len, pcmd_buff);
-    counter++;
-  } while (counter < 0x03 && status != NFCSTATUS_SUCCESS);
   return status;
 }
 
