@@ -1354,6 +1354,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   long bufflen = 260;
   long retlen = 0;
   phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
+  uint8_t flash_update_done = FALSE;
 #if (NFC_NXP_HFO_SETTINGS == TRUE)
   /* Temp fix to re-apply the proper clock setting */
   int temp_fix = 1;
@@ -1451,21 +1452,18 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   }
   config_access = false;
 
-    if (fw_download_success == 1) {
-      phNxpNciHal_hci_network_reset();
-    }
+  if (fw_download_success == 1) {
+    phNxpNciHal_hci_network_reset();
+  }
   if(nfcFL.chipType == sn100u) {
-    uint8_t flash_update_done = FALSE;
     fw_dwnld_flag = fw_download_success;
-    if(fw_dwnld_flag)
-    {
+    if(fw_dwnld_flag) {
       mEEPROM_info.buffer = &flash_update_done;
       mEEPROM_info.bufflen = sizeof(flash_update_done);
       mEEPROM_info.request_type = EEPROM_FLASH_UPDATE;
       mEEPROM_info.request_mode = SET_EEPROM_DATA;
       request_EEPROM(&mEEPROM_info);
-    }
-    else {
+    } else {
       mEEPROM_info.buffer = &flash_update_done;
       mEEPROM_info.bufflen = sizeof(flash_update_done);
       mEEPROM_info.request_type = EEPROM_FLASH_UPDATE;
@@ -1474,7 +1472,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       if(flash_update_done == FALSE)
         fw_dwnld_flag = TRUE;
     }
-
   } else {
   // Check if firmware download success
   status = phNxpNciHal_get_mw_eeprom();
@@ -1549,6 +1546,13 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       goto retry_core_init;
     }
   }
+  setConfigAlways = false;
+  isfound = GetNxpNumValue(NAME_NXP_SET_CONFIG_ALWAYS, &num, sizeof(num));
+  if (isfound > 0) {
+    setConfigAlways = num;
+  }
+  NXPLOG_NCIHAL_D("EEPROM_fw_dwnld_flag : 0x%02x SetConfigAlways flag : 0x%02x",
+                  fw_dwnld_flag, setConfigAlways);
 
   if (isNxpConfigModified() || (fw_download_success == 1)) {
     retlen = 0;
@@ -1599,19 +1603,11 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     phNxpNciHal_send_ext_cmd(sizeof(cmd_get_cfg_dbg_info), cmd_get_cfg_dbg_info);
     NXPLOG_NCIHAL_D("NFCC txed reset ntf with reason code 0xA3");
   }
-  setConfigAlways = false;
-  isfound = GetNxpNumValue(NAME_NXP_SET_CONFIG_ALWAYS, &num, sizeof(num));
-  if (isfound > 0) {
-    setConfigAlways = num;
-  }
-  NXPLOG_NCIHAL_D("EEPROM_fw_dwnld_flag : 0x%02x SetConfigAlways flag : 0x%02x",
-                  fw_dwnld_flag, setConfigAlways);
 
   }
   if ((true == fw_dwnld_flag) || (true == setConfigAlways) ||
-      isNxpRFConfigModified() || isNxpConfigModified()) {
+      isNxpConfigModified()) {
     config_access = true;
-    setConfigAlways = true;
 
     if (nfcFL.chipType != pn547C2) {
         config_access = true;
@@ -1630,7 +1626,9 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
         retry_core_init_cnt++;
         goto retry_core_init;
     }
-
+  }
+  if ((true == fw_dwnld_flag) || (true == setConfigAlways) ||
+      isNxpRFConfigModified()) {
     retlen = 0;
     NXPLOG_NCIHAL_D("Performing NAME_NXP_CORE_CONF_EXTN Settings");
     isfound = GetNxpByteArrayValue(NAME_NXP_CORE_CONF_EXTN, (char*)buffer,
@@ -1667,8 +1665,8 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     phNxpNciHal_deinitializeRegRfFwDnld();
   }
     config_access = false;
-
-    {
+    if ((true == fw_dwnld_flag) || (true == setConfigAlways) ||
+        isNxpRFConfigModified()) {
         unsigned long maxBlocks = 0;
         unsigned long loopcnt = 0;
 
@@ -1705,6 +1703,12 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
             retlen = 0;
         }
     }
+    flash_update_done = TRUE;
+    mEEPROM_info.buffer = &flash_update_done;
+    mEEPROM_info.bufflen = sizeof(flash_update_done);
+    mEEPROM_info.request_type = EEPROM_FLASH_UPDATE;
+    mEEPROM_info.request_mode = SET_EEPROM_DATA;
+    request_EEPROM(&mEEPROM_info);
     retlen = 0;
     config_access = true;
 
@@ -1912,6 +1916,12 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   gRecFwRetryCount = 0;
 
   phNxpNciHal_core_initialized_complete(status);
+  if (isNxpConfigModified()) {
+      updateNxpConfigTimestamp();
+  }
+  if (isNxpRFConfigModified()) {
+      updateNxpRfConfigTimestamp();
+  }
   return NFCSTATUS_SUCCESS;
 }
 /******************************************************************************
@@ -2627,17 +2637,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
                nxpncihal_ctrl.rx_data_len);
       }
       break;
-    case HAL_NFC_IOCTL_SEND_FLASH_UPDATE:
-    {
-        uint8_t flash_update_done = TRUE;
-        phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
-        mEEPROM_info.buffer = &flash_update_done;
-        mEEPROM_info.bufflen = sizeof(flash_update_done);
-        mEEPROM_info.request_type = EEPROM_FLASH_UPDATE;
-        mEEPROM_info.request_mode = SET_EEPROM_DATA;
-        request_EEPROM(&mEEPROM_info);
-        break;
-    }
     case HAL_NFC_IOCTL_GET_FEATURE_LIST:
         pInpOutData->out.data.chipType = (uint8_t)phNxpNciHal_getChipType();
         ret = 0;
