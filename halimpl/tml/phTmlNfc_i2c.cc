@@ -540,12 +540,12 @@ NFCSTATUS phTmlNfc_get_ese_access(void* pDevHandle, long timeout) {
 ** Returns          success or failure
 **
 *******************************************************************************/
-NFCSTATUS phTmlNfc_rel_svdd_wait(void* pDevHandle) {
-    NXPLOG_TML_D("phTmlNfc_rel_svdd_wait()");
-    if(!nfcFL.nfcNxpEse && !nfcFL.eseFL._ESE_SVDD_SYNC) {
-        NXPLOG_TML_D("NxpEse and ESE_SVDD_SYNC not available. Returning");
-        return NFCSTATUS_FAILED;
-    }
+NFCSTATUS phTmlNfc_rel_svdd_wait(void *pDevHandle, long svddWaitStatus) {
+  NXPLOG_TML_D("phTmlNfc_rel_svdd_wait()");
+  if (!nfcFL.nfcNxpEse && !nfcFL.eseFL._ESE_SVDD_SYNC) {
+    NXPLOG_TML_D("NxpEse and ESE_SVDD_SYNC not available. Returning");
+    return NFCSTATUS_FAILED;
+  }
   int ret = -1;
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   NXPLOG_TML_D("phTmlNfc_rel_svdd_wait(), enter ");
@@ -554,7 +554,7 @@ NFCSTATUS phTmlNfc_rel_svdd_wait(void* pDevHandle) {
     return NFCSTATUS_FAILED;
   }
 
-  ret = ioctl((intptr_t)pDevHandle, P544_REL_SVDD_WAIT);
+  ret = ioctl((intptr_t)pDevHandle, P544_REL_SVDD_WAIT, svddWaitStatus);
   if (ret < 0) {
     if (ret == -EBUSY)
       status = NFCSTATUS_BUSY;
@@ -589,26 +589,24 @@ bool_t getDownloadFlag(void) { return bFwDnldFlag; }
 ** Returns          success or failure
 **
 *******************************************************************************/
-NFCSTATUS phTmlNfc_rel_dwpOnOff_wait(void *pDevHandle)
-{
-    int ret = -1;
-    NFCSTATUS status = NFCSTATUS_SUCCESS;
-    NXPLOG_TML_D("phTmlNfc_rel_dwpOnOff_wait(), enter ");
+NFCSTATUS phTmlNfc_rel_dwpOnOff_wait(void *pDevHandle, long dwplinkActvStatus) {
+  int ret = -1;
+  NFCSTATUS status = NFCSTATUS_SUCCESS;
+  NXPLOG_TML_D("phTmlNfc_rel_dwpOnOff_wait(), enter ");
 
-    if (NULL == pDevHandle)
-    {
-        return NFCSTATUS_FAILED;
-    }
+  if (NULL == pDevHandle) {
+    return NFCSTATUS_FAILED;
+  }
 
-    ret = ioctl((intptr_t)pDevHandle, P544_REL_DWPONOFF_WAIT);
-    if (ret < 0)
-    {
-        if (ret == -EBUSY)
-            status = NFCSTATUS_BUSY;
-        else
-            status = NFCSTATUS_FAILED;
-    }
-    NXPLOG_TML_D("phTmlNfc_rel_dwpOnOff_wait(), exit  ret %d, status %d", ret, status);
-    return status;
+  ret = ioctl((intptr_t)pDevHandle, P544_REL_DWPONOFF_WAIT, dwplinkActvStatus);
+  if (ret < 0) {
+    if (ret == -EBUSY)
+      status = NFCSTATUS_BUSY;
+    else
+      status = NFCSTATUS_FAILED;
+  }
+  NXPLOG_TML_D("phTmlNfc_rel_dwpOnOff_wait(), exit  ret %d, status %d", ret,
+               status);
+  return status;
 
 }

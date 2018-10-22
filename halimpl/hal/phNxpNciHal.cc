@@ -3511,20 +3511,24 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
       break;
     case HAL_NFC_IOCTL_REL_SVDD_WAIT:
         if(nfcFL.nfcNxpEse && nfcFL.eseFL._ESE_SVDD_SYNC) {
-            status = phTmlNfc_rel_svdd_wait(gpphTmlNfc_Context->pDevHandle);
-            NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_P61_REL_SVDD_WAIT retval = %d\n", status);
-            pInpOutData->out.data.status = status;
-            if (NFCSTATUS_SUCCESS == status) {
-                ret = 0;
+          status = phTmlNfc_rel_svdd_wait(gpphTmlNfc_Context->pDevHandle,
+                                          pInpOutData->inp.level);
+          NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_P61_REL_SVDD_WAIT retval = %d\n",
+                          status);
+          pInpOutData->out.data.status = status;
+          if (NFCSTATUS_SUCCESS == status) {
+            ret = 0;
             }
         }
       break;
     case HAL_NFC_IOCTL_REL_DWP_WAIT:
         if(nfcFL.nfcNxpEse) {
-            status = phTmlNfc_rel_dwpOnOff_wait(gpphTmlNfc_Context->pDevHandle);
-            NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_REL_DWP_ON_OFF_WAIT retval = %d\n", status);
-            if (NFCSTATUS_SUCCESS == status) {
-                ret = 0;
+          status = phTmlNfc_rel_dwpOnOff_wait(gpphTmlNfc_Context->pDevHandle,
+                                              pInpOutData->inp.level);
+          NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_REL_DWP_ON_OFF_WAIT retval = %d\n",
+                          status);
+          if (NFCSTATUS_SUCCESS == status) {
+            ret = 0;
             }
         }
       break;
