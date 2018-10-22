@@ -2093,17 +2093,23 @@ int phNxpNciHal_close(bool bShutdown) {
     NXPLOG_NCIHAL_E("phNxpNciHal_close is already closed, ignoring close");
     return NFCSTATUS_FAILED;
   }
-  if (!(GetNxpNumValue(NAME_NXP_UICC_LISTEN_TECH_MASK, &uiccListenMask,
-                       sizeof(uiccListenMask)))) {
-    uiccListenMask = 0x07;
-    NXPLOG_NCIHAL_D("UICC_LISTEN_TECH_MASK = 0x%0lX", uiccListenMask);
-  }
+#if(NXP_EXTNS == TRUE)
+  if(nfcFL.chipType != sn100u){
+#endif
+    if (!(GetNxpNumValue(NAME_NXP_UICC_LISTEN_TECH_MASK, &uiccListenMask,
+                          sizeof(uiccListenMask)))) {
+      uiccListenMask = 0x07;
+      NXPLOG_NCIHAL_D("UICC_LISTEN_TECH_MASK = 0x%0lX", uiccListenMask);
+    }
 
-  if (!(GetNxpNumValue(NAME_NXP_ESE_LISTEN_TECH_MASK, &eseListenMask,
-                      sizeof(eseListenMask)))) {
-    eseListenMask = 0x07;
-    NXPLOG_NCIHAL_D ("NXP_ESE_LISTEN_TECH_MASK = 0x%0lX", eseListenMask);
+    if (!(GetNxpNumValue(NAME_NXP_ESE_LISTEN_TECH_MASK, &eseListenMask,
+                        sizeof(eseListenMask)))) {
+      eseListenMask = 0x07;
+      NXPLOG_NCIHAL_D ("NXP_ESE_LISTEN_TECH_MASK = 0x%0lX", eseListenMask);
+    }
+#if(NXP_EXTNS == TRUE)
   }
+#endif
     /* Avoiding sending flush RAM to flash during NFC close.
        This is called during recovery sequence also.
        To be taken up after all discussion.
@@ -2132,6 +2138,9 @@ int phNxpNciHal_close(bool bShutdown) {
     goto close_and_return;
   }
 
+#if(NXP_EXTNS == TRUE)
+  if(nfcFL.chipType != sn100u){
+#endif
   if((uiccListenMask & 0x1) == 0x01 || (eseListenMask & 0x1) == 0x01) {
     NXPLOG_NCIHAL_D("phNxpNciHal_close (): Adding A passive listen");
     numPrms++;
@@ -2154,18 +2163,21 @@ int phNxpNciHal_close(bool bShutdown) {
     length += 2;
   }
 
-  if (length != 0) {
-    cmd_ce_discovery_nci[2] = length + 1;
-    cmd_ce_discovery_nci[3] = numPrms;
-    status = phNxpNciHal_send_ext_cmd(length + 4, cmd_ce_discovery_nci);
-    if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("CMD_CE_DISC_NCI: Failed");
+    if (length != 0) {
+      cmd_ce_discovery_nci[2] = length + 1;
+      cmd_ce_discovery_nci[3] = numPrms;
+      status = phNxpNciHal_send_ext_cmd(length + 4, cmd_ce_discovery_nci);
+      if (status != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("CMD_CE_DISC_NCI: Failed");
+      }
+    } else {
+      NXPLOG_NCIHAL_E(
+          "No changes in the discovery command, sticking to last discovery "
+          "command sent");
     }
-  } else {
-    NXPLOG_NCIHAL_E(
-        "No changes in the discovery command, sticking to last discovery "
-        "command sent");
+#if(NXP_EXTNS == TRUE)
   }
+#endif
 
   nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
 
@@ -2262,21 +2274,32 @@ int phNxpNciHal_configDiscShutdown(void) {
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("CMD_DISABLE_DISCOVERY: Failed");
   }
-
-  status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ven_pulld_enable_nci), cmd_ven_pulld_enable_nci);
-  if (status != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("CMD_VEN_PULLD_ENABLE_NCI: Failed");
+#if(NXP_EXTNS == TRUE)
+  if(nfcFL.chipType != sn100u){
+#endif
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ven_pulld_enable_nci), cmd_ven_pulld_enable_nci);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("CMD_VEN_PULLD_ENABLE_NCI: Failed");
+    }
+#if(NXP_EXTNS == TRUE)
   }
+#endif
 
   status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_disc_nci), cmd_ce_disc_nci);
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("CMD_CE_DISC_NCI: Failed");
   }
-
-  status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
-  if (status != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed");
+#if(NXP_EXTNS == TRUE)
+  if(nfcFL.chipType != sn100u){
+#endif
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed");
+    }
+#if(NXP_EXTNS == TRUE)
   }
+#endif
+
   CONCURRENCY_UNLOCK();
 
   status = phNxpNciHal_close(true);
