@@ -138,7 +138,7 @@ static void phNxpNciHal_set_clock(void);
 static void phNxpNciHal_nfccClockCfgRead(void);
 static NFCSTATUS phNxpNciHal_nfccClockCfgApply(void);
 static void phNxpNciHal_hci_network_reset(void);
-static NFCSTATUS phNxpNciHal_do_se_session_reset(void);
+static NFCSTATUS phNxpNciHal_do_swp_session_reset(void);
 static void phNxpNciHal_print_res_status(uint8_t* p_rx_data, uint16_t* p_len);
 static NFCSTATUS phNxpNciHal_CheckValidFwVersion(void);
 static void phNxpNciHal_enable_i2c_fragmentation();
@@ -3575,14 +3575,14 @@ void phNxpNciHal_enable_i2c_fragmentation() {
  * Returns          NFCSTATUS.
  *
  ******************************************************************************/
-static NFCSTATUS phNxpNciHal_do_se_session_reset(void) {
+static NFCSTATUS phNxpNciHal_do_swp_session_reset(void) {
   NFCSTATUS status = NFCSTATUS_FAILED;
-  static uint8_t reset_ese_session_identity_set[] = {
+  static uint8_t reset_swp_session_identity_set[] = {
       0x20, 0x02, 0x17, 0x02, 0xA0, 0xEA, 0x08, 0xFF, 0xFF,
-      0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xA0, 0xEB, 0x08,
+      0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xA0, 0x1E, 0x08,
       0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-      status = phNxpNciHal_send_ext_cmd(sizeof(reset_ese_session_identity_set),
-                                      reset_ese_session_identity_set);
+      status = phNxpNciHal_send_ext_cmd(sizeof(reset_swp_session_identity_set),
+         reset_swp_session_identity_set);
       if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("NXP reset_ese_session_identity_set command failed");
   }
@@ -3607,7 +3607,7 @@ void phNxpNciHal_do_factory_reset(void) {
     }
     phNxpNciHal_deinitializeRegRfFwDnld();
   }
-  status = phNxpNciHal_do_se_session_reset();
+  status = phNxpNciHal_do_swp_session_reset();
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("%s failed. status = %x ",__func__, status);
   }
@@ -3627,7 +3627,7 @@ static void phNxpNciHal_hci_network_reset(void) {
   msg.pMsgData = NULL;
   msg.Size = 0;
 
-  NFCSTATUS status = phNxpNciHal_do_se_session_reset();
+  NFCSTATUS status = phNxpNciHal_do_swp_session_reset();
 
   if (status != NFCSTATUS_SUCCESS) {
     msg.eMsgType = NCI_HAL_ERROR_MSG;
