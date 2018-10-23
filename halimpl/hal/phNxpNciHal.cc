@@ -42,6 +42,7 @@ using android::base::WriteStringToFile;
 #define PN547C2_CLOCK_SETTING
 #undef PN547C2_FACTORY_RESET_DEBUG
 #define CORE_RES_STATUS_BYTE 3
+#define SIGNAL_TRIGGER_NOT_REQD 0x10
 
 const char RF_BLOCK_LIST[6][18] =
 {
@@ -3690,6 +3691,8 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
     case HAL_NFC_SET_SPM_PWR:
       level = pInpOutData->inp.level;
       if (nfcFL.chipType == pn557) {
+        /*set a bit to indicate signal trigger from driver is not required for PN557*/
+        level |= SIGNAL_TRIGGER_NOT_REQD;
         ret = phPalEse_spi_ioctl(phPalEse_e_ChipRst,
                                  gpphTmlNfc_Context->pDevHandle, level);
       } else {

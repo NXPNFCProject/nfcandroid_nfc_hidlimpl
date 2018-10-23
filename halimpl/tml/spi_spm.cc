@@ -50,7 +50,7 @@ int phPalEse_spi_ioctl(phPalEse_ControlCode_t eControlCode, void *pDevHandle,
   }
   switch (eControlCode) {
     case phPalEse_e_ChipRst:
-      if (level == 1 || level == 0)
+      if ((level&0xF1) || (level&0xF0))
         ret = ioctl((intptr_t)pDevHandle, P61_SET_SPI_PWR, level);
       else
         ret = 0;
