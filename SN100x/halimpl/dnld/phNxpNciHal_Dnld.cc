@@ -1874,23 +1874,21 @@ static NFCSTATUS phLibNfc_VerifySN100U_CrcStatus(uint8_t* bCrcStatus) {
           break;
         }
         case 7: {
-            NXPLOG_FWDNLD_E("Trim Area NOT OK!!");
+          NXPLOG_FWDNLD_E("Trim Area NOT OK!!");
           wStatus = NFCSTATUS_FAILED;
           break;
         }
         case 8: {
-            NXPLOG_FWDNLD_E("Customer Area NOT OK!!");
+          NXPLOG_FWDNLD_E("Customer Area NOT OK!!");
           wStatus = NFCSTATUS_FAILED;
           break;
         }
         case 9: {
           NXPLOG_FWDNLD_E("NDEF Area NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
           break;
         }
         case 10: {
           NXPLOG_FWDNLD_E("User Area NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
           break;
         }
         case 11: {
