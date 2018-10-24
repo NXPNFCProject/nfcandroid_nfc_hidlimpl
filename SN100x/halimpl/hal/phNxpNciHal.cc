@@ -2734,14 +2734,7 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
           } else
           {
             if(0x05 == level) {
-              ret = phTmlNfc_IoCtl(phTmlNfc_e_PowerReset);
-              if(nxpncihal_ctrl.p_nfc_stack_cback != NULL)
-              {
-                (*nxpncihal_ctrl.p_nfc_stack_cback)(HAL_NFC_OPEN_CPLT_EVT,
-                 HAL_NFC_STATUS_RESTART);
-              }
-            } else {
-              ret = NFCSTATUS_SUCCESS;
+              ret = phNxpNciHal_PropEsePowerCycle();
             }
           }
          break;
@@ -3943,5 +3936,27 @@ void phNxpNciHal_deinitializeRegRfFwDnld() {
     dlclose(RfFwRegionDnld_handle);
     RfFwRegionDnld_handle = NULL;
   }
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_PropEsePowerCycle(void)
+**
+** Description      Sends Prop eSE power Cycle command to the NFCC
+**
+** Parameters       none
+**
+** Returns          status
+*******************************************************************************/
+NFCSTATUS phNxpNciHal_PropEsePowerCycle(void) {
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  uint8_t cmd_ese_pwrcycle[] = {0x2F, 0x1E, 0x00};
+  status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ese_pwrcycle)/sizeof(cmd_ese_pwrcycle[0]),
+                                    cmd_ese_pwrcycle);
+  if (status != NFCSTATUS_SUCCESS)
+  {
+    NXPLOG_NCIHAL_E("EsePowerCycle failed");
+  }
+  return status;
 }
 #endif
