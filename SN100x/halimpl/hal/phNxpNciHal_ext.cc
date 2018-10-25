@@ -815,15 +815,6 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
     phNxpNciHal_print_packet("RECV", p_rsp_data, 5);
     //        status = NFCSTATUS_FAILED;
     NXPLOG_NCIHAL_D("> Going through workaround - Dirty Set Config - End ");
-  } else if (*cmd_len == 3 && p_cmd_data[0] == 0x00 && p_cmd_data[1] == 0x00 &&
-             p_cmd_data[2] == 0x00) {
-    NXPLOG_NCIHAL_D("> Going through workaround - ISO-DEP Presence Check ");
-    p_cmd_data[0] = 0x2F;
-    p_cmd_data[1] = 0x11;
-    p_cmd_data[2] = 0x00;
-    status = NFCSTATUS_SUCCESS;
-    NXPLOG_NCIHAL_D(
-        "> Going through workaround - ISO-DEP Presence Check - End");
   }
 #if 0
     else if ( (p_cmd_data[0] == 0x20 && p_cmd_data[1] == 0x02 ) &&
