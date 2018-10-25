@@ -2378,6 +2378,18 @@ void phNxpNciHal_getVendorConfig(NfcConfig& config) {
   if (GetNxpNumValue(NAME_NXP_SE_COLD_TEMP_ERROR_DELAY, &num, sizeof(num))) {
     config.eSeLowTempErrorDelay = num;
   }
+  if (GetNxpNumValue(NAME_P2P_LISTEN_TECH_MASK, &num, sizeof(num))) {
+    config.p2pListenTechMask = num;
+  }
+  if (GetNxpNumValue(NAME_HOST_LISTEN_TECH_MASK, &num, sizeof(num))) {
+    config.hostListenTechMask = num;
+  }
+  if (GetNxpNumValue(NAME_UICC_LISTEN_TECH_MASK, &num, sizeof(num))) {
+    config.uiccListenTechMask = num;
+  }
+  if (GetNxpNumValue(NAME_POLLING_TECH_MASK, &num, sizeof(num))) {
+    config.pollingTechMask = num;
+  }
 #endif
   if ((GetNxpByteArrayValue(NAME_NFA_PROPRIETARY_CFG, (char*)buffer.data(), buffer.size(), &retlen))
          && (retlen == 9)) {
