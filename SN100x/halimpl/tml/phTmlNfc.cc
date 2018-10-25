@@ -568,7 +568,13 @@ static void phTmlNfc_CleanUp(void) {
     return;
   }
   if (NULL != gpphTmlNfc_Context->pDevHandle) {
-    (void)phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_OFF);
+#if(NXP_EXTNS == TRUE)
+    if(nfcFL.chipType != sn100u){
+#endif
+      (void)phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_OFF);
+#if(NXP_EXTNS == TRUE)
+    }
+#endif
     gpphTmlNfc_Context->bThreadDone = 0;
   }
   sem_destroy(&gpphTmlNfc_Context->rxSemaphore);
@@ -868,12 +874,18 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
       case phTmlNfc_e_ResetDevice:
 
        {
-        /*Reset PN54X*/
-        phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_ON);
-        usleep(100 * 1000);
-        phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_OFF);
-        usleep(100 * 1000);
-        phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_ON);
+#if(NXP_EXTNS == TRUE)
+         if(nfcFL.chipType != sn100u){
+#endif
+           /*Reset PN54X*/
+           phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_ON);
+           usleep(100 * 1000);
+           phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_OFF);
+           usleep(100 * 1000);
+           phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_ON);
+#if(NXP_EXTNS == TRUE)
+        }
+#endif
         break;
       }
       case phTmlNfc_e_EnableNormalMode: {

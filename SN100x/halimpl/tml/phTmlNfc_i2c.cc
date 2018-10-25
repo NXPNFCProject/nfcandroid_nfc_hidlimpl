@@ -100,12 +100,16 @@ NFCSTATUS phTmlNfc_i2c_open_and_configure(pphTmlNfc_Config_t pConfig,
   if (0 != sem_init(&txrxSemaphore, 0, 1)) {
     NXPLOG_TML_E("_i2c_open() Failed: reason sem_init : retval %x", nHandle);
   }
-#endif
+#else
   /*Reset PN54X*/
+  /* NOTE: This code was supposed to be under if(nfcFL.chipType != sn100u)
+   * as in case of the SN100x chip, it is not required.
+   * But, at very first init time the chiptype will be set to the default(0)
+   * Hence irrespective of the chiptype this code will always be executed.  */
   phTmlNfc_i2c_reset((void*)((intptr_t)nHandle), MODE_POWER_OFF);
   usleep(10 * 1000);
   phTmlNfc_i2c_reset((void*)((intptr_t)nHandle), MODE_POWER_ON);
-
+#endif
   return NFCSTATUS_SUCCESS;
 }
 
