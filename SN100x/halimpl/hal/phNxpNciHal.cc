@@ -2378,6 +2378,8 @@ void phNxpNciHal_getVendorConfig(NfcConfig& config) {
   if (GetNxpNumValue(NAME_NXP_SE_COLD_TEMP_ERROR_DELAY, &num, sizeof(num))) {
     config.eSeLowTempErrorDelay = num;
   }
+  config.p2pListenTechMask = config.hostListenTechMask = 0xFF;
+  config.uiccListenTechMask = config.pollingTechMask = 0xFF;
   if (GetNxpNumValue(NAME_P2P_LISTEN_TECH_MASK, &num, sizeof(num))) {
     config.p2pListenTechMask = num;
   }
