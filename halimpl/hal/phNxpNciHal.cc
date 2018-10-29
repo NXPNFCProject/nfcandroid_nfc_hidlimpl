@@ -3698,7 +3698,7 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
       } else {
         ret = NFCSTATUS_FEATURE_NOT_SUPPORTED;
       }
-      if ((nxpncihal_ctrl.halStatus == HAL_STATUS_MIN_OPEN) && (level == 0x00)) {
+      if ((nxpncihal_ctrl.halStatus == HAL_STATUS_MIN_OPEN) && ((level & 0x01) == 0x00)) {
         phNxpNciHal_Minclose();
       }
       break;
