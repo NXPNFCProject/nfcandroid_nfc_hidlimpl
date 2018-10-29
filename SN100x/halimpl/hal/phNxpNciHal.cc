@@ -2212,6 +2212,8 @@ close_and_return:
 
     NXPLOG_NCIHAL_D("phNxpNciHal_close - phOsalNfc_DeInit completed");
   }
+  /* reset config cache */
+  resetNxpConfig();
 
   CONCURRENCY_UNLOCK();
 
