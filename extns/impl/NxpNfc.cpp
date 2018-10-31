@@ -57,10 +57,17 @@ Return<void> NxpNfc::ioctl(uint64_t ioctlType,
    * underlying HAL implementation since its an inout argument*/
   memcpy(&inpOutData, pInOutData, sizeof(nfc_nci_IoctlInOutData_t));
   if (ioctlType == HAL_NFC_IOCTL_SET_TRANSIT_CONFIG) {
-    /*As transit configurations are appended at the end of
-    nfc_nci_IoctlInOutData_t, Assign appropriate pointer to TransitConfig*/
-    inpOutData.inp.data.transitConfig.val =
-        ((char *)pInOutData) + sizeof(nfc_nci_IoctlInOutData_t);
+    /* As transit configurations are appended at the end of
+     * nfc_nci_IoctlInOutData_t, Assign appropriate pointer to TransitConfig.
+     * if default configuration(string length is 0), assign null to tansit
+     * configuration pointer instead of appending configuration,
+     * and remove partition vendor transit conf file. */
+    if (inpOutData.inp.data.transitConfig.len == 0) {
+      inpOutData.inp.data.transitConfig.val = NULL;
+    } else {
+      inpOutData.inp.data.transitConfig.val =
+          ((char *)pInOutData) + sizeof(nfc_nci_IoctlInOutData_t);
+      }
   }
   status = phNxpNciHal_ioctl(ioctlType, &inpOutData);
   /*copy data and additional fields indicating status of ioctl operation

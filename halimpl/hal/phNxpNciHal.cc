@@ -3140,7 +3140,11 @@ void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
 void phNxpNciHal_setNxpTransitConfig(char *transitConfValue) {
   NXPLOG_NCIHAL_D("%s : Enter", __func__);
   std::string transitConfFileName = "/data/vendor/nfc/libnfc-nxpTransit.conf";
-  WriteStringToFile(transitConfValue, transitConfFileName);
+  if (transitConfValue != NULL) {
+    WriteStringToFile(transitConfValue, transitConfFileName);
+  } else {
+    remove(transitConfFileName.c_str());
+  }
   NXPLOG_NCIHAL_D("%s : Exit", __func__);
 }
 /******************************************************************************
