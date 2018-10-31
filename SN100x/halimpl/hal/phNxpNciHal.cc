@@ -2212,8 +2212,6 @@ close_and_return:
 
     NXPLOG_NCIHAL_D("phNxpNciHal_close - phOsalNfc_DeInit completed");
   }
-  /* reset config cache */
-  resetNxpConfig();
 
   CONCURRENCY_UNLOCK();
 
@@ -2325,7 +2323,12 @@ int phNxpNciHal_configDiscShutdown(void) {
 void phNxpNciHal_setNxpTransitConfig(char *transitConfValue) {
   NXPLOG_NCIHAL_D("%s : Enter", __func__);
   std::string transitConfFileName = "/data/vendor/nfc/libnfc-nxpTransit.conf";
-  WriteStringToFile(transitConfValue, transitConfFileName);
+  if (transitConfValue != NULL) {
+    WriteStringToFile(transitConfValue, transitConfFileName);
+  } else {
+    WriteStringToFile("", transitConfFileName);
+    remove(transitConfFileName.c_str());
+  }
   NXPLOG_NCIHAL_D("%s : Exit", __func__);
 }
 
@@ -2379,20 +2382,6 @@ void phNxpNciHal_getVendorConfig(NfcConfig& config) {
 #if (NXP_EXTNS == TRUE)
   if (GetNxpNumValue(NAME_NXP_SE_COLD_TEMP_ERROR_DELAY, &num, sizeof(num))) {
     config.eSeLowTempErrorDelay = num;
-  }
-  config.p2pListenTechMask = config.hostListenTechMask = 0xFF;
-  config.uiccListenTechMask = config.pollingTechMask = 0xFF;
-  if (GetNxpNumValue(NAME_P2P_LISTEN_TECH_MASK, &num, sizeof(num))) {
-    config.p2pListenTechMask = num;
-  }
-  if (GetNxpNumValue(NAME_HOST_LISTEN_TECH_MASK, &num, sizeof(num))) {
-    config.hostListenTechMask = num;
-  }
-  if (GetNxpNumValue(NAME_UICC_LISTEN_TECH_MASK, &num, sizeof(num))) {
-    config.uiccListenTechMask = num;
-  }
-  if (GetNxpNumValue(NAME_POLLING_TECH_MASK, &num, sizeof(num))) {
-    config.pollingTechMask = num;
   }
 #endif
   if ((GetNxpByteArrayValue(NAME_NFA_PROPRIETARY_CFG, (char*)buffer.data(), buffer.size(), &retlen))
