@@ -2088,6 +2088,8 @@ int phNxpNciHal_close(bool bShutdown) {
   uint8_t ptr = 4;
   unsigned long uiccListenMask = 0x00;
   unsigned long eseListenMask = 0x00;
+  uint8_t retry = 0;
+
 
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
     NXPLOG_NCIHAL_E("phNxpNciHal_close is already closed, ignoring close");
@@ -2181,12 +2183,21 @@ int phNxpNciHal_close(bool bShutdown) {
 
   nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
 
-  status =
-      phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
+  do { /*This is NXP_EXTNS code for retry*/
+    status =
+        phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
 
-  if (status != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed");
+    if (status == NFCSTATUS_SUCCESS) {
+      break;
+    }
+    else {
+      NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed, perform retry after delay")
+      usleep(1000*1000);
+      retry++;
+    }
   }
+  while(retry < 3);
+
   sem_destroy(&nxpncihal_ctrl.syncSpiNfc);
 close_and_return:
 #if(NXP_EXTNS == TRUE)
