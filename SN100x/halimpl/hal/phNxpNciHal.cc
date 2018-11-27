@@ -2390,11 +2390,6 @@ void phNxpNciHal_getVendorConfig(NfcConfig& config) {
   if (GetNxpNumValue(NAME_OFF_HOST_SIM_PIPE_ID, &num, sizeof(num))) {
     config.offHostSIMPipeId = num;
   }
-#if (NXP_EXTNS == TRUE)
-  if (GetNxpNumValue(NAME_NXP_SE_COLD_TEMP_ERROR_DELAY, &num, sizeof(num))) {
-    config.eSeLowTempErrorDelay = num;
-  }
-#endif
   if ((GetNxpByteArrayValue(NAME_NFA_PROPRIETARY_CFG, (char*)buffer.data(), buffer.size(), &retlen))
          && (retlen == 9)) {
     config.nfaProprietaryCfg.protocol18092Active = (uint8_t) buffer[0];
@@ -2778,6 +2773,12 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
         phNxpNciHal_setNxpTransitConfig(pInpOutData->inp.data.transitConfig.val);
         ret = 0;
         break;
+#if(NXP_EXTNS == TRUE)
+    case HAL_NFC_IOCTL_GET_NXP_CONFIG:
+      phNxpNciHal_getNxpConfig(pInpOutData);
+      ret = 0;
+      break;
+#endif
     default:
       NXPLOG_NCIHAL_E("%s : Wrong arg = %ld", __func__, arg);
       break;
@@ -3974,5 +3975,22 @@ NFCSTATUS phNxpNciHal_PropEsePowerCycle(void) {
     NXPLOG_NCIHAL_E("EsePowerCycle failed");
   }
   return status;
+}
+/******************************************************************************
+ * Function         phNxpNciHal_getNxpConfig
+ *
+ * Description      This function can be used by HAL to inform
+ *                 to update vendor configuration parametres
+ *
+ * Returns          void.
+ *
+ ******************************************************************************/
+void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
+  unsigned long num = 0;
+  memset(&pInpOutData->out.data.nxpConfigs, 0x00, sizeof(pInpOutData->out.data.nxpConfigs));
+  NXPLOG_NCIHAL_D("phNxpNciHal_getNxpConfig: Enter");
+  if (GetNxpNumValue(NAME_NXP_SE_COLD_TEMP_ERROR_DELAY, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.eSeLowTempErrorDelay = num;
+  }
 }
 #endif

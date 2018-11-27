@@ -44,6 +44,15 @@ typedef struct
     uint8_t  p_cmd[MAX_IOCTL_TRANSCEIVE_CMD_LEN];
 } nfc_nci_ExtnCmd_t;
 
+#if(NXP_EXTNS == TRUE)
+/*
+ * nxp_nfc_config_t shall contain the respective flag value from the
+ * libnfc-nxp.conf
+ */
+typedef struct {
+  uint8_t eSeLowTempErrorDelay;
+} nxp_nfc_config_t;
+#endif
 /*
  * nfc_nci_ExtnRsp_t shall contain response for command sent in transceive command
  */
@@ -102,6 +111,9 @@ typedef union{
     uint16_t            fwDwnldStatus;
     uint16_t            fwMwVerStatus;
     uint8_t             chipType;
+#if(NXP_EXTNS == TRUE)
+    nxp_nfc_config_t nxpConfigs;
+#endif
 }outputData_t;
 
 /*
