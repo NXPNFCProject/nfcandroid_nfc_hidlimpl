@@ -1522,6 +1522,23 @@ static void phNxpNciHal_read_complete(void* pContext,
              (status == NFCSTATUS_SUCCESS)) {
       (*nxpncihal_ctrl.p_nfc_stack_data_cback)(nxpncihal_ctrl.rx_data_len,
                                                nxpncihal_ctrl.p_rx_data);
+      /* sending NFCEE_RF_DISC NTF to upper layer if eSE DISCT_NTF with
+       * connected & enabled. */
+      if ((nfcFL.chipType == pn557) && nxpncihal_ctrl.p_rx_data[0] == 0x62 &&
+          nxpncihal_ctrl.p_rx_data[1] == 0x00 &&
+          nxpncihal_ctrl.p_rx_data[3] == 0xC0 &&
+          nxpncihal_ctrl.p_rx_data[4] == 0x00) {
+        uint8_t nfcee_notifiations[3][9] = {
+            {0x61, 0x0A, 0x06, 0x01, 0x00, 0x03, 0xC0, 0x80, 0x04},
+            {0x61, 0x0A, 0x06, 0x01, 0x00, 0x03, 0xC0, 0x81, 0x04},
+            {0x61, 0x0A, 0x06, 0x01, 0x00, 0x03, 0xC0, 0x82, 0x03},
+        };
+
+        for (int i = 0; i < 3; i++) {
+          (*nxpncihal_ctrl.p_nfc_stack_data_cback)(
+              sizeof(nfcee_notifiations[i]), nfcee_notifiations[i]);
+        }
+      }
     }
   } else {
     NXPLOG_NCIHAL_E("read error status = 0x%x", pInfo->wStatus);
