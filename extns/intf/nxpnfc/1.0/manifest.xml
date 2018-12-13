@@ -6,7 +6,7 @@
         <interface>
             <name>INfc</name>
             <instance>default</instance>
-        <interface>
+        </interface>
     </hal>
     <hal format="hidl">
         <name>vendor.nxp.nxpnfc</name>
@@ -15,6 +15,6 @@
         <interface>
             <name>INxpNfc</name>
             <instance>default</instance>
-        <interface>
+        </interface>
     </hal>
 </manifest>
