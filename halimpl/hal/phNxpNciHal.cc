@@ -868,6 +868,7 @@ int phNxpNciHal_MinOpen() {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   uint8_t boot_mode = nxpncihal_ctrl.hal_boot_mode;
   nxpncihal_ctrl.bIsForceFwDwnld = false;
+  bool isForceFwDownloadReqd = false;
   NXPLOG_NCIHAL_D("phNxpNci_MinOpen(): enter");
   /*NCI_INIT_CMD*/
   static uint8_t cmd_init_nci[] = {0x20, 0x01, 0x00};
@@ -990,8 +991,10 @@ init_retry:
   phNxpNciHal_ext_init();
 
   status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
-  if ((status != NFCSTATUS_SUCCESS) &&
-      (nxpncihal_ctrl.retry_cnt >= MAX_RETRY_COUNT)) {
+  isForceFwDownloadReqd = ((init_retry_cnt >= 3) /*No response for reset/init*/ ||
+         ((status != NFCSTATUS_SUCCESS) &&
+         (nxpncihal_ctrl.retry_cnt >= MAX_RETRY_COUNT)) /*write failure*/);
+  if (isForceFwDownloadReqd) {
     NXPLOG_NCIHAL_E("NFCC not coming out from Standby");
     NXPLOG_NCIHAL_E("Trying Force FW download");
     nxpncihal_ctrl.bIsForceFwDwnld = true;
