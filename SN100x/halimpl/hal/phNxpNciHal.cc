@@ -2774,6 +2774,25 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
         ret = 0;
         break;
 #if(NXP_EXTNS == TRUE)
+    case HAL_NFC_IOCTL_GET_SEMS_OUTPUT_LEN:
+        if(gpEseAdapt !=  NULL)
+        {
+          ret = gpEseAdapt->HalIoctl(HAL_ESE_IOCTL_GET_SEMS_OUTPUT_LEN,pInpOutData);
+          NXPLOG_NCIHAL_D("HAL_ESE_IOCTL_GET_SEMS_OUTPUT Lenght of SEMS file is  %d: \n",pInpOutData->out.data.nciRsp.rsp_len);
+        }
+        break;
+    case HAL_NFC_IOCTL_READ_SEMS_OUTPUT:
+        if(gpEseAdapt !=  NULL)
+        {
+          ret = gpEseAdapt->HalIoctl(HAL_ESE_IOCTL_READ_SEMS_OUTPUT,pInpOutData);
+        }
+        break;
+    case HAL_NFC_IOCTL_GET_SEMS_STATUS:
+        if(gpEseAdapt !=  NULL)
+        {
+          ret = gpEseAdapt->HalIoctl(HAL_ESE_IOCTL_GET_SEMS_STATUS,pInpOutData);
+        }
+        break;
     case HAL_NFC_IOCTL_GET_NXP_CONFIG:
       phNxpNciHal_getNxpConfig(pInpOutData);
       ret = 0;
