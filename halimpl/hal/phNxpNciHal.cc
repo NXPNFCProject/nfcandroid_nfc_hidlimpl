@@ -3790,8 +3790,7 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
       break;
     case HAL_NFC_SET_DWNLD_STATUS:
       level = pInpOutData->inp.level;
-      ret = phPalEse_spi_ioctl(phPalEse_e_SetJcopDwnldState,
-                               gpphTmlNfc_Context->pDevHandle, level);
+      ret = 0;
       break;
     case HAL_NFC_IOCTL_RF_STATUS_UPDATE:
       NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_RF_STATUS_UPDATE Enter value is %d: \n",

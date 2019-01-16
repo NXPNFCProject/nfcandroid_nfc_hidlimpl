@@ -36,7 +36,6 @@ typedef enum {
   phPalEse_e_SetPowerScheme,              /*!< Set power scheme */
   phPalEse_e_GetSPMStatus,                /*!< Get SPM(power mgt) status */
   phPalEse_e_DisablePwrCntrl,
-  phPalEse_e_SetJcopDwnldState, /*!< Set Jcop Download state */
 } phPalEse_ControlCode_t;
 
 /*******************************************************************************
