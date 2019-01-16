@@ -33,9 +33,11 @@
 #include "hal_nxpnfc.h"
 #include "hal_nxpese.h"
 #include "spi_spm.h"
+#include <vendor/nxp/nxpnfc/1.0/types.h>
 
 using namespace android::hardware::nfc::V1_1;
 using android::hardware::nfc::V1_1::NfcEvent;
+using vendor::nxp::nxpnfc::V1_0::NxpNfcEvent;
 using android::base::WriteStringToFile;
 
 /*********************** Global Variables *************************************/
@@ -97,6 +99,8 @@ uint32_t gSvddSyncOff_Delay = 10;
 bool_t force_fw_download_req = false;
 bool_t gParserCreated = FALSE;
 bool nfc_debug_enabled = true;
+ese_update_state_t ese_update = ESE_UPDATE_COMPLETED;
+nfc_stack_callback_t* p_nfc_stack_cback_backup;
 /* global variable to get FW version from NCI response*/
 uint32_t wFwVerRsp;
 EseAdaptation *gpEseAdapt = NULL;
@@ -1111,7 +1115,18 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
                      nfc_stack_data_callback_t* p_data_cback) {
   NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
 
-  if (nxpncihal_ctrl.hal_boot_mode == NFC_FAST_BOOT_MODE) {
+  if(ese_update != ESE_UPDATE_COMPLETED)
+  {
+    ALOGD("BLOCK NFC HAL OPEN");
+    if (p_cback != NULL) {
+        p_nfc_stack_cback_backup = p_cback;
+        (*p_cback)(HAL_NFC_OPEN_CPLT_EVT,
+                   HAL_NFC_STATUS_FAILED);
+      }
+    return NFCSTATUS_FAILED;
+  }
+
+  if (nxpncihal_ctrl.hal_boot_mode == NFC_FAST_BOOT_MODE ) {
     NXPLOG_NCIHAL_E(" HAL NFC fast init mode calling min_open %d",
                     nxpncihal_ctrl.hal_boot_mode);
     wConfigStatus = phNxpNciHal_MinInit(p_cback, p_data_cback);
@@ -3427,7 +3442,10 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
   phNxpNciHal_FwRfupdateInfo_t* FwRfInfo;
   NFCSTATUS fm_mw_ver_check = NFCSTATUS_FAILED;
   long level;
-  if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
+  if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE &&
+    (arg != HAL_NFC_IOCTL_ESE_JCOP_DWNLD && arg
+    != HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE && arg != HAL_ESE_IOCTL_NFC_JCOP_DWNLD
+    && arg != HAL_NFC_IOCTL_GET_ESE_UPDATE_STATE)) {
     NFCSTATUS status = NFCSTATUS_FAILED;
     status = phNxpNciHal_MinOpen();
     if (status != NFCSTATUS_SUCCESS) {
@@ -3657,6 +3675,36 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
       pInpOutData->out.data.chipType = (uint8_t)phNxpNciHal_getChipType();
       ret = 0;
       break;
+    case HAL_ESE_IOCTL_NFC_JCOP_DWNLD :
+        NXPLOG_NCIHAL_D("HAL_ESE_IOCTL_NFC_JCOP_DWNLD Enter value is %d: \n",pInpOutData->inp.data.nciCmd.p_cmd[0]);
+        if(gpEseAdapt !=  NULL)
+          ret = gpEseAdapt->HalIoctl(HAL_ESE_IOCTL_NFC_JCOP_DWNLD,pInpOutData);
+    case HAL_NFC_IOCTL_ESE_JCOP_DWNLD :
+        NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_ESE_JCOP_DWNLD Enter value is %d: \n",pInpOutData->inp.data.nciCmd.p_cmd[0]);
+        if(p_nfc_stack_cback_backup != NULL)
+        {
+          (*p_nfc_stack_cback_backup)(
+              (uint32_t)NxpNfcEvent::HAL_NXPNFC_HCI_NETWORK_RESET, HAL_NFC_STATUS_OK);
+        }
+        ret = 0;
+        break;
+    case HAL_NFC_IOCTL_GET_ESE_UPDATE_STATE :
+      ret = 0;
+      break;
+    case HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE :
+        ese_update = ESE_UPDATE_COMPLETED;
+        NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE \n");
+        if(p_nfc_stack_cback_backup != NULL)
+        {
+          (*p_nfc_stack_cback_backup)((uint32_t)NxpNfcEvent::HAL_NXPNFC_RESTART,
+            HAL_NFC_STATUS_OK);
+        }
+        else
+        {
+            NXPLOG_NCIHAL_D("p_nfc_stack_cback_backup cback NULL \n");
+        }
+        ret = 0;
+        break;
     case HAL_NFC_IOCTL_SPI_DWP_SYNC: {
       ALOGD_IF(
           nfc_debug_enabled,
@@ -3669,7 +3717,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
         ret = 0;
         break;
       }
-
       ret = phNxpNciHal_send_ese_hal_cmd(pInpOutData->inp.data.nciCmd.cmd_len,
                                          pInpOutData->inp.data.nciCmd.p_cmd);
       pInpOutData->out.data.nciRsp.rsp_len = nxpncihal_ctrl.rx_ese_data_len;
@@ -3718,11 +3765,11 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
         /*set a bit to indicate signal trigger from driver is not required for PN557*/
         level |= SIGNAL_TRIGGER_NOT_REQD;
         ret = phPalEse_spi_ioctl(phPalEse_e_ChipRst,
-                                 gpphTmlNfc_Context->pDevHandle, level);
+                                gpphTmlNfc_Context->pDevHandle, level);
       } else {
         ret = NFCSTATUS_FEATURE_NOT_SUPPORTED;
       }
-      if ((nxpncihal_ctrl.halStatus == HAL_STATUS_MIN_OPEN) && ((level & 0x01) == 0x00)) {
+      if ((nxpncihal_ctrl.halStatus == HAL_STATUS_MIN_OPEN) && ((level & 0x03) == 0x00)) {
         phNxpNciHal_Minclose();
       }
       break;

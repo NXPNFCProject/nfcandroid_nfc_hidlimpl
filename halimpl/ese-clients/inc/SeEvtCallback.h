@@ -1,4 +1,4 @@
-/******************************************************************************
+/*******************************************************************************
  *
  *  Copyright 2018 NXP
  *
@@ -15,15 +15,11 @@
  *  limitations under the License.
  *
  ******************************************************************************/
-package vendor.nxp.nxpnfc@1.0;
+#pragma once
+#include "ISeEvtCallback.h"
 
-import android.hardware.nfc@1.1::NfcEvent;
-
-typedef vec<uint8_t> NfcData;
-
-enum NxpNfcEvent : @1.1::NfcEvent {
-    /** In case of an error, HCI network needs to be re-initialized */
-    HAL_NXP_NFC_EVENT_START = 0xA0,
-    HAL_NXPNFC_HCI_NETWORK_RESET = HAL_NXP_NFC_EVENT_START,
-    HAL_NXPNFC_RESTART
+class SeEvtCallback : public ISeEvtCallback {
+ public:
+  void evtCallback(SESTATUS evt);
+  ~SeEvtCallback() {};
 };

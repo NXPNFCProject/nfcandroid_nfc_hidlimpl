@@ -14,8 +14,10 @@ hidl_interface {
     ],
     interfaces: [
         "android.hidl.base@1.0",
+        "android.hardware.nfc@1.1",
     ],
     types: [
+        "NxpNfcEvent",
     ],
     gen_java: true,
 }

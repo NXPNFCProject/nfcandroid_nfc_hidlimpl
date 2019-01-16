@@ -23,6 +23,9 @@
 #include <hidl/LegacySupport.h>
 #include "Nfc.h"
 #include "NxpNfc.h"
+#include "eSEClient.h"
+#include "SeChannelCallback.h"
+#include "SeEvtCallback.h"
 
 // Generated HIDL files
 using android::hardware::nfc::V1_1::INfc;
@@ -35,11 +38,17 @@ using android::OK;
 using vendor::nxp::nxpnfc::V1_0::INxpNfc;
 using vendor::nxp::nxpnfc::V1_0::implementation::NxpNfc;
 
+std::shared_ptr<ISeChannelCallback> seChannelCallback = nullptr;
+std::shared_ptr<ISeEvtCallback> seEventCallback = nullptr;
+
 int main() {
   ALOGD("Registering NFC HALIMPL Service v1.1...");
   sp<INfc> nfc_service = new Nfc();
 
   configureRpcThreadpool(1, true /*callerWillJoin*/);
+  seChannelCallback =  std::make_shared<SeChannelCallback>();// new SeChannelCallback();
+  seEventCallback = std::make_shared<SeEvtCallback>();
+  eseClient.checkEseClientUpdate();
   status_t status = nfc_service->registerAsService();
   if (status != OK) {
     LOG_ALWAYS_FATAL("Could not register service for NFC HAL Iface (%d).",
@@ -52,6 +61,9 @@ int main() {
     if (status != OK) {
         ALOGD("Could not register service for NXP NFC Extn Iface (%d).", status);
     }
+    ALOGE("Before calling JCOP JCOS_doDownload");
+    eseClient.perform_eSEClientUpdate();
+    ALOGE("After calling JCOS_doDownload");
     ALOGD("NFC HAL Service is ready");
     joinRpcThreadpool();
     return 1;
