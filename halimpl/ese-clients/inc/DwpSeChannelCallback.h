@@ -16,8 +16,8 @@
  *
  ******************************************************************************/
 #pragma once
-#include "eSEClient.h"
-class SeChannelCallback : public ISeChannelCallback {
+#include "DwpEseUpdater.h"
+class DwpSeChannelCallback : public ISeChannelCallback {
  public:
   /*******************************************************************************
   **

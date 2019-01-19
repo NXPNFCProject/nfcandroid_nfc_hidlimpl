@@ -14,6 +14,9 @@ cc_library_shared {
         "halimpl/utils/*.cc",
         "halimpl/utils/*.cpp",
         "halimpl/configs/*.cpp",
+        "halimpl/ese-clients/src/DwpEseUpdater.cc",
+        "halimpl/ese-clients/src/DwpSeChannelCallback.cc",
+        "halimpl/ese-clients/src/DwpSeEvtCallback.cc",
     ],
     shared_libs: [
         "libbase",
@@ -32,6 +35,8 @@ cc_library_shared {
         "ese_spi_nxp",
         "vendor.nxp.nxpese@1.0",
         "vendor.nxp.nxpnfc@1.0",
+        "se_extn_client",
+        "jcos_client",
     ],
     local_include_dirs: [
         "halimpl/dnld",
@@ -50,6 +55,7 @@ cc_library_shared {
         "halimpl/inc",
         "halimpl/common",
         "halimpl/utils",
+        "halimpl/ese-clients/inc",
     ],
     cflags: [
         "-DBUILDCFG=1",
@@ -78,9 +84,6 @@ cc_binary {
         "1.1/NxpNfcService.cpp",
         "1.1/Nfc.cpp",
         "extns/impl/NxpNfc.cpp",
-        "halimpl/ese-clients/src/eSEClient.cc",
-        "halimpl/ese-clients/src/SeChannelCallback.cc",
-        "halimpl/ese-clients/src/SeEvtCallback.cc",
     ],
 
     shared_libs: [
@@ -104,7 +107,6 @@ cc_binary {
     ],
     local_include_dirs: [
         "halimpl/eseClient",
-        "halimpl/ese-clients/inc",
         "halimpl/inc",
         "halimpl/hal",
         "halimpl/inc",

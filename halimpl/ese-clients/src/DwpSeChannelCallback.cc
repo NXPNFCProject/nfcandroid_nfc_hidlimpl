@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <cutils/log.h>
-#include "SeChannelCallback.h"
+#include "DwpSeChannelCallback.h"
 #include "phNxpEse_Api.h"
   /** abstract class having pure virtual functions to be implemented be each
    * client  - spi, nfc etc**/
@@ -14,7 +14,7 @@
     ** Returns:         True if ok.
     **
     *******************************************************************************/
-    int16_t SeChannelCallback :: open() { return SESTATUS_SUCCESS; }
+    int16_t DwpSeChannelCallback :: open() { return SESTATUS_SUCCESS; }
 
     /*******************************************************************************
     **
@@ -25,7 +25,7 @@
     ** Returns:         True if ok.
     **
     *******************************************************************************/
-    bool SeChannelCallback::close(int16_t mHandle) {
+    bool DwpSeChannelCallback::close(int16_t mHandle) {
       if (mHandle != 0)
         return true;
       else
@@ -47,7 +47,7 @@
     ** Returns:         True if ok.
     **
     *******************************************************************************/
-    bool SeChannelCallback::transceive(uint8_t* xmitBuffer, int32_t xmitBufferSize,
+    bool DwpSeChannelCallback::transceive(uint8_t* xmitBuffer, int32_t xmitBufferSize,
                                __attribute__((unused)) uint8_t* recvBuffer, int32_t recvBufferMaxSize,
                                __attribute__((unused)) int32_t& recvBufferActualSize,
                                int32_t timeoutMillisec) {
@@ -70,7 +70,7 @@
     ** Returns:         None.
     **
     *******************************************************************************/
-    void SeChannelCallback::doEseHardReset() { return ;}
+    void DwpSeChannelCallback::doEseHardReset() { return ;}
 
     /*******************************************************************************
     **
@@ -81,4 +81,4 @@
     ** Returns:         None.
     **
     *******************************************************************************/
-    uint8_t SeChannelCallback :: getInterfaceInfo() { return INTF_NFC; }
+    uint8_t DwpSeChannelCallback :: getInterfaceInfo() { return INTF_NFC; }

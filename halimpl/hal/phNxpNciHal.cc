@@ -99,7 +99,7 @@ uint32_t gSvddSyncOff_Delay = 10;
 bool_t force_fw_download_req = false;
 bool_t gParserCreated = FALSE;
 bool nfc_debug_enabled = true;
-ese_update_state_t ese_update = ESE_UPDATE_COMPLETED;
+ese_update_state_t eseUpdateSpi = ESE_UPDATE_COMPLETED;
 nfc_stack_callback_t* p_nfc_stack_cback_backup;
 /* global variable to get FW version from NCI response*/
 uint32_t wFwVerRsp;
@@ -1115,7 +1115,7 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
                      nfc_stack_data_callback_t* p_data_cback) {
   NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
 
-  if(ese_update != ESE_UPDATE_COMPLETED)
+  if(eseUpdateSpi != ESE_UPDATE_COMPLETED)
   {
     ALOGD("BLOCK NFC HAL OPEN");
     if (p_cback != NULL) {
@@ -3692,7 +3692,7 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
       ret = 0;
       break;
     case HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE :
-        ese_update = ESE_UPDATE_COMPLETED;
+        eseUpdateSpi = ESE_UPDATE_COMPLETED;
         NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE \n");
         if(p_nfc_stack_cback_backup != NULL)
         {

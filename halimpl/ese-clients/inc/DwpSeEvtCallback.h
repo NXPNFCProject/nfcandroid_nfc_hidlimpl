@@ -15,29 +15,11 @@
  *  limitations under the License.
  *
  ******************************************************************************/
-
 #pragma once
-#include "eSEClientIntf.h"
-#include "JcDnld.h"
+#include "ISeEvtCallback.h"
 
-extern bool nfc_debug_enabled;
-extern se_extns_entry se_intf;
-
-#define eseClient (EseClient::getInstance())
-class EseClient {
-  public:
-    static EseClient& getInstance();
-    void checkEseClientUpdate();
-    SESTATUS perform_eSEClientUpdate();
-    void registerHandle( const std::shared_ptr<ISeChannelCallback>& pseChannelCallback, const std::shared_ptr<ISeEvtCallback>& pseEvtCallback);
-  private:
-    static EseClient sEseClientInstance;
-    EseClient ();
+class DwpSeEvtCallback : public ISeEvtCallback {
+ public:
+  void evtCallback(SESTATUS evt);
+  ~DwpSeEvtCallback() {};
 };
-
-
-void eSEClientUpdate_NFC_Thread();
-void seteSEClientState(uint8_t state);
-void sendeSEUpdateState(uint8_t state);
-SESTATUS eSEUpdate_SeqHandler();
-SESTATUS LSUpdate();

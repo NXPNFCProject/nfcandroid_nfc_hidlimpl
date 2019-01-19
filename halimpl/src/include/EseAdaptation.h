@@ -27,6 +27,8 @@
 #include <android/hardware/secure_element/1.0/types.h>
 #include <vendor/nxp/nxpese/1.0/INxpEse.h>
 using vendor::nxp::nxpese::V1_0::INxpEse;
+using ::android::sp;
+class NxpEseDeathRecipient;
 
 class ThreadMutex {
  public:
@@ -77,11 +79,13 @@ class EseAdaptation {
   tHAL_ESE_ENTRY* GetHalEntryFuncs();
   ese_nxp_IoctlInOutData_t* mCurrentIoctlData;
   tHAL_ESE_ENTRY mSpiHalEntryFuncs;  // function pointers for HAL entry points
+  static android::sp<vendor::nxp::nxpese::V1_0::INxpEse> mHalNxpEse;
 
  private:
   EseAdaptation();
   void signal();
   static EseAdaptation* mpInstance;
+  sp<NxpEseDeathRecipient> mNxpEseDeathRecipient;
   static ThreadMutex sLock;
   static ThreadMutex sIoctlLock;
   ThreadCondVar mCondVar;
@@ -92,7 +96,6 @@ class EseAdaptation {
   static ThreadCondVar mHalIoctlEvent;
   static android::sp<android::hardware::secure_element::V1_0::ISecureElement>
       mHal;
-  static android::sp<vendor::nxp::nxpese::V1_0::INxpEse> mHalNxpEse;
 #if (NXP_EXTNS == TRUE)
   pthread_t mThreadId;
   static ThreadCondVar mHalCoreResetCompletedEvent;

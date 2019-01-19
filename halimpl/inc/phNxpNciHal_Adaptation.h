@@ -25,7 +25,7 @@
 
 using ::android::hardware::nfc::V1_1::NfcConfig;
 
-extern ese_update_state_t ese_update;
+extern ese_update_state_t eseUpdateSpi;
 
 /* NXP HAL functions */
 

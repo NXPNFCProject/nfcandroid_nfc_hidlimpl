@@ -33,6 +33,10 @@ using android::hardware::hidl_vec;
 using android::sp;
 
 using vendor::nxp::nxpese::V1_0::INxpEse;
+using ::android::hardware::hidl_death_recipient;
+using ::android::wp;
+using ::android::hidl::base::V1_0::IBase;
+
 
 extern bool nfc_debug_enabled;
 
@@ -60,6 +64,24 @@ ThreadCondVar EseAdaptation::mHalInitCompletedEvent;
 //static uint8_t isSignaled = SIGNAL_NONE;
 //static uint8_t evt_status;
 #endif
+
+class NxpEseDeathRecipient : public hidl_death_recipient {
+ public:
+  sp<INxpEse> mHalNxpEseDeathRsp;
+  NxpEseDeathRecipient(sp<INxpEse>& mHalNxpEse) {
+    mHalNxpEseDeathRsp = mHalNxpEse;
+  }
+  virtual void serviceDied(
+      uint64_t /* cookie */,
+      const wp<::android::hidl::base::V1_0::IBase>& /* who */) {
+    ALOGE("NxpEseDeathRecipient::serviceDied - Ese HalService died");
+    mHalNxpEseDeathRsp->unlinkToDeath(this);
+    mHalNxpEseDeathRsp = nullptr;
+    EseAdaptation::mHalNxpEse = nullptr;
+    EseAdaptation::GetInstance().InitializeHalDeviceContext();
+  }
+};
+
 
 /*******************************************************************************
 **
@@ -193,6 +215,8 @@ void EseAdaptation::InitializeHalDeviceContext() {
     ALOGD_IF(nfc_debug_enabled, "%s: INxpEse::getService() returned %p (%s)",
              func, mHalNxpEse.get(),
              (mHalNxpEse->isRemote() ? "remote" : "local"));
+    mNxpEseDeathRecipient = new NxpEseDeathRecipient(mHalNxpEse);
+    mHalNxpEse->linkToDeath(mNxpEseDeathRecipient, 0);
   }
   /*Transceive NCI_INIT_CMD*/
   ALOGD_IF(nfc_debug_enabled, "%s: exit", func);

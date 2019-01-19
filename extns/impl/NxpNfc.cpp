@@ -35,7 +35,7 @@
 #include "hal_nxpese.h"
 #include "phNxpNciHal_Adaptation.h"
 #include <log/log.h>
-#include "eSEClient.h"
+#include "DwpEseUpdater.h"
 
 namespace vendor {
 namespace nxp {
@@ -76,12 +76,12 @@ Return<void> NxpNfc::ioctl(uint64_t ioctlType,
       if(pInOutData->inp.data.nciCmd.p_cmd[0] == ESE_JCOP_UPDATE_COMPLETED
           || pInOutData->inp.data.nciCmd.p_cmd[0] == ESE_LS_UPDATE_COMPLETED) {
         ALOGD("NxpNfc::ioctl state == ESE_UPDATE_COMPLETED");
-        seteSEClientState(pInOutData->inp.data.nciCmd.p_cmd[0]);
-        eSEClientUpdate_NFC_Thread();
+        DwpEseUpdater::setSpiEseClientState(pInOutData->inp.data.nciCmd.p_cmd[0]);
+        DwpEseUpdater::eSEClientUpdate_NFC_Thread();
       }
   }
   else if(HAL_NFC_IOCTL_GET_ESE_UPDATE_STATE == ioctlType) {
-    inpOutData.out.data.status = (se_intf.isJcopUpdateRequired | (se_intf.isLSUpdateRequired << 8));
+    inpOutData.out.data.status = (nfc_intf.isJcopUpdateRequired | (nfc_intf.isLSUpdateRequired << 8));
   }
   /*copy data and additional fields indicating status of ioctl operation
    * and context of the caller. Then invoke the corresponding proxy callback*/

@@ -281,10 +281,10 @@ NFCSTATUS phNxpNfc_DeInitLib() {
 
 void HalOpen(tHAL_NFC_CBACK* p_hal_cback,
                             tHAL_NFC_DATA_CBACK* p_data_cback) {
-  ese_update_state_t old_state =  ese_update;
-  ese_update = ESE_UPDATE_COMPLETED;
+  ese_update_state_t old_state =  eseUpdateSpi;
+  eseUpdateSpi = ESE_UPDATE_COMPLETED;
   phNxpNciHal_open(p_hal_cback, p_data_cback);
-  ese_update = old_state;
+  eseUpdateSpi = old_state;
   ALOGE("HalOpen exit");
 }
 

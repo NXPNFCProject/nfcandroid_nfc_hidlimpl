@@ -93,7 +93,7 @@ typedef struct phNxpNciGpioInfo {
   uint8_t values[2];
 } phNxpNciGpioInfo_t;
 
-extern ese_update_state_t ese_update;
+extern ese_update_state_t eseUpdateSpi;
 
 /* Macros to enable and disable extensions */
 #define HAL_ENABLE_EXT() (nxpncihal_ctrl.hal_ext_enabled = 1)
