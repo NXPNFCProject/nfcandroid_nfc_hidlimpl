@@ -51,22 +51,16 @@
 #include <phNxpNciHal_Adaptation.h>
 
 #include "bt_types.h"
-#include "ce_int.h"
 #include "gki.h"
 #include "hal_nxpese.h"
 #include "nci_hmsgs.h"
 #include "nfa_sys.h"
 #include "nfc_int.h"
 #include "nfc_target.h"
-#include "rw_int.h"
-#include <config.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
 #if (NFC_RW_ONLY == FALSE)
-
-#include "llcp_int.h"
-
 #if (NXP_EXTNS == TRUE)
 #include "nfa_dm_int.h"
 #endif
@@ -88,7 +82,6 @@ using android::base::StringPrintf;
 using android::hardware::nfc::V1_1::NfcEvent;
 
 extern bool nfc_debug_enabled;
-extern void delete_stack_non_volatile_store(bool forceDelete);
 
 /****************************************************************************
 ** Declarations
@@ -597,10 +590,6 @@ void nfc_main_handle_hal_evt(tNFC_HAL_EVT_MSG *p_msg) {
       break;
     }
     break;
-  case (uint32_t)NfcEvent::HCI_NETWORK_RESET:
-    delete_stack_non_volatile_store(true);
-    property_set("persist.nfc.hci_network_reset_req", "false");
-    break;
 #if (NXP_EXTNS == TRUE)
   case HAL_NFC_POST_MIN_INIT_CPLT_EVT:
     nfa_sys_cback_notify_MinEnable_complete(0);
@@ -904,11 +893,7 @@ void NFC_Disable(void) {
 ** Returns          nothing
 **
 *******************************************************************************/
-//#if (NXP_EXTNS == TRUE)
-// void NFC_Init(tHAL_NFC_CONTEXT* p_hal_entry_cntxt)
-//#else
 void NFC_Init(tHAL_NFC_ENTRY *p_hal_entry_tbl)
-//#endif
 {
   int xx;
 
@@ -920,12 +905,7 @@ void NFC_Init(tHAL_NFC_ENTRY *p_hal_entry_tbl)
     nfc_cb.conn_cb[xx].conn_id = NFC_ILLEGAL_CONN_ID;
   }
 
-  /* NCI init */
-  //#if (NXP_EXTNS == TRUE)
-  //  nfc_cb.p_hal = p_hal_entry_cntxt->hal_entry_func;
-  //#else
   nfc_cb.p_hal = p_hal_entry_tbl;
-  //#endif
   nfc_cb.nfc_state = NFC_STATE_NONE;
   nfc_cb.nci_cmd_window = NCI_MAX_CMD_WINDOW;
   nfc_cb.nci_wait_rsp_tout = NFC_CMD_CMPL_TIMEOUT;
@@ -940,27 +920,6 @@ void NFC_Init(tHAL_NFC_ENTRY *p_hal_entry_tbl)
   nfc_cb.nci_ctrl_size = NCI_CTRL_INIT_SIZE;
   nfc_cb.reassembly = true;
   nfc_cb.nci_version = NCI_VERSION_UNKNOWN;
-  /*#if (NXP_EXTNS == TRUE)
-    nfc_cb.boot_mode = p_hal_entry_cntxt->boot_mode;
-    nfc_cb.bBlockWiredMode = false;
-    nfc_cb.bRetransmitDwpPacket = false;
-    nfc_cb.bIsCreditNtfRcvd = false;
-    nfc_cb.temp_data = NULL;
-    nfc_cb.bSetmodeOnReq = false;
-    nfc_cb.bIsDwpResPending = false;
-    nfc_cb.bIssueModeSetCmd = false;
-    nfc_cb.bCeActivatedeSE = false;
-    nfc_cb.pwr_link_cmd.bPwrLinkCmdRequested = false;
-    nfc_cb.bBlkPwrlinkAndModeSetCmd = false;
-    nfc_cb.isLowRam = p_hal_entry_cntxt->isLowRam;
-    if (p_hal_entry_cntxt->boot_mode != NFC_FAST_BOOT_MODE)
-  #endif*/
-  //  {
-  llcp_init();
-  /*#if (NXP_EXTNS == TRUE)
-    }
-  #endif*/
-
   NFC_SET_MAX_CONN_DEFAULT();
 }
 
@@ -1986,23 +1945,6 @@ bool NFC_IsLowRamDevice() {
   return nfc_cb.isLowRam;
 }
 #endif
-/*******************************************************************************
-**
-** Function         NFC_ISODEPNakPresCheck
-**
-** Description      This function is called to send the ISO DEP nak presenc
-**                  check cmd to check that the remote end point in RF field.
-**
-**                  The response from NFCC is reported by call back.The ntf
-**                  indicates success if card is present in field or failed
-**                  if card is lost.
-**
-** Returns          tNFC_STATUS
-**
-*******************************************************************************/
-tNFC_STATUS NFC_ISODEPNakPresCheck() {
-  return nci_snd_iso_dep_nak_presence_check_cmd();
-}
 /*******************************************************************************
 **
 ** Function         NFC_SetStaticHciCback

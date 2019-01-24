@@ -8,14 +8,11 @@ cc_library_shared {
     defaults: ["hidl_defaults"],
     proprietary: true,
     shared_libs: [
-        "libcutils",
         "liblog",
-        "libdl",
         "libhardware",
         "libpower",
         "libchrome",
         "libbase",
-        "libz",
 
         // Treble configuration
         "libhidlbase",
@@ -26,9 +23,6 @@ cc_library_shared {
         "android.hardware.nfc@1.0",
         "android.hardware.nfc@1.1",
         "vendor.nxp.nxpnfc@1.0",
-    ],
-    static_libs: [
-        "hal_libnfcutils",
     ],
     cflags: [
         "-DBUILDCFG=1",
@@ -52,18 +46,11 @@ cc_library_shared {
         "hardware/nxp/secure_element/extns/impl/",
     ],
     srcs: [
-        "nfa/ce/*.cc",
         "nfa/dm/*.cc",
-        "nfa/ee/*.cc",
         "nfa/hci/*.cc",
-        "nfa/p2p/*.cc",
-        "nfa/rw/*.cc",
         "nfa/sys/*.cc",
-        "nfc/llcp/*.cc",
         "nfc/nci/*.cc",
-        "nfc/ndef/*.cc",
         "nfc/nfc/*.cc",
-        "nfc/tags/*.cc",
         "adaptation/*.cc",
         "gki/common/*.cc",
         "gki/ulinux/*.cc",

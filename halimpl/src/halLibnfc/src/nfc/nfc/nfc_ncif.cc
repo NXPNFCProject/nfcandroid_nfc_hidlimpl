@@ -48,21 +48,15 @@
 #include "nfc_target.h"
 
 #include "hal_nxpese.h"
-#include "include/debug_nfcsnoop.h"
 #include "nci_defs.h"
 #include "nci_hmsgs.h"
 #include "nfc_api.h"
 #include "nfc_hal_api.h"
 #include "nfc_int.h"
-#include "rw_api.h"
-#include "rw_int.h"
 #include <sys/stat.h>
 #if (NXP_EXTNS == TRUE)
-#include "nfa_ce_int.h"
 #include "nfa_dm_int.h"
-#include "nfa_hci_int.h"
 #include "nfa_sys.h"
-#include <nfc_config.h>
 #endif
 
 using android::base::StringPrintf;
@@ -99,8 +93,6 @@ bool core_reset_init_num_buff = false;
 uint8_t nfcc_dh_conn_id = 0xFF;
 extern void nfa_hci_rsp_timeout();
 void disc_deact_ntf_timeout_handler(tNFC_RESPONSE_EVT event);
-void uicc_eeprom_get_config(uint8_t *config_resp);
-void uicc_eeprom_set_config(uint8_t *config_resp);
 #endif
 
 /*******************************************************************************
@@ -661,7 +653,6 @@ uint8_t nfc_ncif_send_data(tNFC_CONN_CB *p_cb, NFC_HDR *p_data) {
 
     /* send to HAL */
     HAL_WRITE(p);
-    nfcsnoop_capture(p, false);
 #if (NXP_EXTNS == TRUE)
     /* start NFC data ntf timeout timer */
     if (get_i2c_fragmentation_enabled() == I2C_FRAGMENATATION_ENABLED) {
@@ -850,19 +841,6 @@ void nfc_ncif_check_cmd_queue(NFC_HDR *p_buf) {
   }
 }
 
-#if (NXP_EXTNS == TRUE || APPL_DTA_MODE == TRUE)
-/*******************************************************************************
-**
-** Function         nfc_ncif_getFWVersion
-**
-** Description      This function is called to fet the FW Version
-**
-** Returns          tNFC_FW_VERSION
-**
-*******************************************************************************/
-tNFC_FW_VERSION nfc_ncif_getFWVersion() { return nfc_fw_version; }
-#endif
-
 /*******************************************************************************
 **
 ** Function         nfc_ncif_send_cmd
@@ -890,7 +868,6 @@ void nfc_ncif_send_cmd(NFC_HDR *p_buf) {
   /* post the p_buf to NCIT task */
   p_buf->event = BT_EVT_TO_NFC_NCI;
   p_buf->layer_specific = 0;
-  nfcsnoop_capture(p_buf, false);
   nfc_ncif_check_cmd_queue(p_buf);
 }
 
@@ -927,7 +904,6 @@ bool nfc_ncif_process_event(NFC_HDR *p_msg) {
     return free;
   }
 
-  nfcsnoop_capture(p_msg, true);
   switch (mt) {
   case NCI_MT_DATA:
     DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("NFC received data");
@@ -2441,10 +2417,8 @@ void nfc_ncif_proc_init_rsp(NFC_HDR *p_msg) {
 #if (NXP_EXTNS == TRUE)
   nfc_nci_IoctlInOutData_t inpOutData;
   static uint8_t retry_cnt = 0;
-  uint16_t fw_status, fw_dwnld_status = NCI_STATUS_FAILED,
-                      fw_mw_ver_status = NCI_STATUS_FAILED;
+  uint16_t fw_status, fw_mw_ver_status = NCI_STATUS_FAILED;
   tNFC_FWUpdate_Info_t fw_update_inf;
-  uint8_t config_resp[16];
   memset(&fw_update_inf, 0x00, sizeof(tNFC_FWUpdate_Info_t));
 #endif
   p = (uint8_t *)(p_msg + 1) + p_msg->offset;
@@ -2471,13 +2445,6 @@ void nfc_ncif_proc_init_rsp(NFC_HDR *p_msg) {
       && fw_status == NCI_STATUS_OK && NCI_STATUS_OK == fw_mw_ver_status
 #endif
   ) {
-#if (NXP_EXTNS == TRUE)
-    if (fw_dwnld_status == NCI_STATUS_OK) {
-      if (nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_EXT_SWITCH) {
-        uicc_eeprom_set_config(config_resp);
-      }
-    }
-#endif
 #if (NXP_EXTNS == TRUE)
     retry_cnt = 0;
 #endif
@@ -2739,13 +2706,7 @@ void nfc_data_event(tNFC_CONN_CB *p_cb) {
             if ((NFC_GetNCIVersion() == NCI_VERSION_2_0) &&
                 (p_cb->act_protocol == NCI_PROTOCOL_T2T) &&
                 (p_cb->act_interface == NCI_INTERFACE_FRAME)) {
-              if ((data_cevt.status != NFC_STATUS_OK) &&
-                  ((data_cevt.status >= T2T_STATUS_OK_1_BIT) &&
-                   (data_cevt.status <= T2T_STATUS_OK_7_BIT))) {
-                DLOG_IF(INFO, nfc_debug_enabled)
-                    << StringPrintf("nfc_data_event: T2T tag data xchange");
-                data_cevt.status = NFC_STATUS_OK;
-              }
+              //deleted tag related state
             }
           }
         }
@@ -3147,113 +3108,5 @@ tNFC_STATUS nfc_ncif_reset_nfcc() {
 TheEndReset:
   DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("%s : Exit", __func__);
   return status;
-}
-/*******************************************************************************
-**
-** Function         uicc_eeprom_get_config
-**
-** Description      get UICC configuration from EEPROM
-**
-** Returns          None
-**
-*******************************************************************************/
-void uicc_eeprom_get_config(uint8_t *config_resp) {
-  DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("%s : Enter", __func__);
-  if (!nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_EXT_SWITCH) {
-    DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("NFC_NXP_STAT_DUAL_UICC_EXT_SWITCH"
-                        " feature is not available!!");
-    return;
-  }
-  uint8_t cmd_get_dualUicc_config[] = {0x20, 0x03, 0x03, 0x01, 0xA0, 0xEC};
-  nfc_nci_IoctlInOutData_t inpOutData;
-  int uicc_mode = 0;
-  uint8_t config_status = NCI_STATUS_FAILED;
-  uint8_t retry_count = 0;
-
-  if (NfcConfig::hasKey(NAME_NXP_DUAL_UICC_ENABLE)) {
-    uicc_mode = NfcConfig::getUnsigned(NAME_NXP_DUAL_UICC_ENABLE);
-    DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("NXP_DUAL_UICC_ENABLE : 0x%02x", uicc_mode);
-  } else {
-    uicc_mode = 0x00;
-    DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf(
-        "NXP_DUAL_UICC_ENABLE not found; taking default value : 0x%02x",
-        uicc_mode);
-  }
-  memset(&inpOutData, 0x00, sizeof(nfc_nci_IoctlInOutData_t));
-  inpOutData.inp.data.nciCmd.cmd_len = sizeof(cmd_get_dualUicc_config);
-  memcpy(inpOutData.inp.data.nciCmd.p_cmd, cmd_get_dualUicc_config,
-         sizeof(cmd_get_dualUicc_config));
-  do {
-    config_status =
-        nfc_cb.p_hal->ioctl(HAL_NFC_IOCTL_NCI_TRANSCEIVE, &inpOutData);
-    retry_count++;
-  } while ((config_status != NCI_STATUS_OK) && (retry_count <= 3));
-  if (config_status == NCI_STATUS_OK &&
-      inpOutData.out.data.nciRsp.rsp_len > 0) {
-    memcpy(config_resp, inpOutData.out.data.nciRsp.p_rsp,
-           inpOutData.out.data.nciRsp.rsp_len);
-  } else {
-    DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("%s :HAL_NFC_IOCTL_NCI_TRANSCEIVE Failed", __func__);
-  }
-}
-
-/*******************************************************************************
-**
-** Function         uicc_eeprom_set_config
-**
-** Description      set UICC configuration in EEPROM
-**
-** Returns         No Data
-**
-*******************************************************************************/
-void uicc_eeprom_set_config(uint8_t *config_rsp) {
-  DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("%s : Enter", __func__);
-  if (!nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_EXT_SWITCH) {
-    DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("NFC_NXP_STAT_DUAL_UICC_EXT_SWITCH"
-                        " feature is not available!!");
-    return;
-  }
-  uint8_t cmd_set_dualUicc_config[] = {0x20, 0x02, 0x05, 0x01,
-                                       0xA0, 0xEC, 0x01, 0x11};
-  nfc_nci_IoctlInOutData_t inpOutData;
-  int uicc_mode = 0;
-  uint8_t config_status = NCI_STATUS_FAILED;
-  uint8_t retry_count = 0;
-
-  if (NfcConfig::hasKey(NAME_NXP_DUAL_UICC_ENABLE)) {
-    uicc_mode = NfcConfig::getUnsigned(NAME_NXP_DUAL_UICC_ENABLE);
-    DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("NXP_DUAL_UICC_ENABLE : 0x%02x", uicc_mode);
-  } else {
-    uicc_mode = 0x00;
-    DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf(
-        "NXP_DUAL_UICC_ENABLE not found; taking default value : 0x%02x",
-        uicc_mode);
-  }
-
-  memset(&inpOutData, 0x00, sizeof(nfc_nci_IoctlInOutData_t));
-
-  if (uicc_mode == 0x00) {
-    cmd_set_dualUicc_config[7] = 0x01;
-  } else if (config_rsp != NULL) {
-    cmd_set_dualUicc_config[7] = config_rsp[8];
-  }
-
-  inpOutData.inp.data.nciCmd.cmd_len = sizeof(cmd_set_dualUicc_config);
-  memcpy(inpOutData.inp.data.nciCmd.p_cmd, cmd_set_dualUicc_config,
-         sizeof(cmd_set_dualUicc_config));
-  do {
-    config_status =
-        nfc_cb.p_hal->ioctl(HAL_NFC_IOCTL_NCI_TRANSCEIVE, &inpOutData);
-    retry_count++;
-  } while ((config_status != NCI_STATUS_OK) && (retry_count <= 3));
-  if ((config_status != NCI_STATUS_OK) && (retry_count = 4)) {
-    DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("%s :HAL_NFC_IOCTL_NCI_TRANSCEIVE Failed", __func__);
-  }
 }
 #endif

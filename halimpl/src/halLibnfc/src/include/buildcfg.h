@@ -72,6 +72,4 @@
 #else
 #define GKI_NUM_FIXED_BUF_POOLS 4
 #endif
-
-void initializeGlobalAppDtaMode();
 #endif

@@ -47,17 +47,10 @@
 #include <base/logging.h>
 
 #include "bt_types.h"
-#include "ce_int.h"
 #include "gki.h"
 #include "nci_hmsgs.h"
 #include "nfc_int.h"
 #include "nfc_target.h"
-#include "rw_int.h"
-#if (NFC_RW_ONLY == FALSE)
-#include "llcp_int.h"
-#else
-#define llcp_cleanup()
-#endif
 
 #include "nfa_dm_int.h"
 
@@ -336,9 +329,6 @@ void nfc_task_shutdown_nfcc(void) {
   } else {
     nfc_set_state(NFC_STATE_W4_HAL_CLOSE);
     nfc_cb.p_hal->close();
-
-    /* Perform final clean up */
-    llcp_cleanup();
 
     /* Stop the timers */
     GKI_stop_timer(NFC_TIMER_ID);

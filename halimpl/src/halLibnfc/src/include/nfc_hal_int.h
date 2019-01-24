@@ -133,18 +133,6 @@ typedef union {
 ** Control block for NFC HAL
 *****************************************************************************/
 
-/* Information about current patch in NVM */
-typedef struct {
-  uint16_t project_id; /* Current project_id of patch in nvm       */
-  uint16_t ver_major;  /* Current major version of patch in nvm    */
-  uint16_t ver_minor;  /* Current minor version of patch in nvm    */
-  uint16_t fpm_size;   /* Current size of FPM patch in nvm         */
-  uint16_t lpm_size;   /* Current size of LPM patch in nvm         */
-  uint8_t flags;       /* See NFC_HAL_NVM_FLAGS_* flag definitions */
-  uint8_t nvm_type;    /* Current NVM Type - UICC/EEPROM           */
-  uint8_t chip_ver[NFC_HAL_PRM_MAX_CHIP_VER_LEN]; /* patch chip version       */
-} tNFC_HAL_NVM;
-
 /* Patch for I2C fix */
 typedef struct {
   uint8_t *p_patch;      /* patch for i2c fix                */
@@ -223,7 +211,6 @@ typedef struct {
 
   tNFC_HAL_NCIT_CB ncit_cb; /* NCI transport */
   tNFC_HAL_DEV_CB dev_cb;   /* device initialization */
-  tNFC_HAL_NVM nvm_cb;      /* Information about current patch in NVM */
 
   /* Patchram control block */
   tNFC_HAL_PRM_CB prm;

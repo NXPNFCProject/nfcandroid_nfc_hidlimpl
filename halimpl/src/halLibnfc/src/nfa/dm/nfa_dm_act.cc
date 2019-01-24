@@ -46,16 +46,11 @@
 #include <base/logging.h>
 
 #include "nci_hmsgs.h"
-#include "nfa_ce_int.h"
-#include "nfa_p2p_int.h"
-#include "nfa_rw_api.h"
-#include "nfa_rw_int.h"
+#include "nfa_dm_int.h"
 #include "nfc_api.h"
 
 #if (NFC_NFCEE_INCLUDED == true)
 #include "hal_nxpese.h"
-#include "nfa_ee_int.h"
-#include "nfa_hci_int.h"
 #include "nfc_int.h"
 #endif
 

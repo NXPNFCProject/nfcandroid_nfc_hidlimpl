@@ -57,7 +57,6 @@
 #if (NXP_EXTNS == TRUE)
 #include "nfa_sys.h"
 #endif
-#include "nfa_ee_int.h"
 
 using android::base::StringPrintf;
 

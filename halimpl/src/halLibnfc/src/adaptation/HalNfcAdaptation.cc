@@ -35,10 +35,8 @@
  *
  ******************************************************************************/
 #include "HalNfcAdaptation.h"
-#include "debug_nfcsnoop.h"
 #include "hal_nxpese.h"
 #include "nfa_api.h"
-#include "nfa_rw_api.h"
 #include "nfc_int.h"
 #include "nfc_target.h"
 #include "phNxpNciHal_Adaptation.h"
@@ -63,7 +61,6 @@ using android::hardware::Void;
 using android::hardware::nfc::V1_0::INfc;
 using android::hardware::nfc::V1_1::PresenceCheckAlgorithm;
 using INfcV1_1 = android::hardware::nfc::V1_1::INfc;
-using NfcVendorConfig = android::hardware::nfc::V1_1::NfcConfig;
 using ::android::wp;
 using android::hardware::configureRpcThreadpool;
 using ::android::hardware::hidl_death_recipient;
@@ -75,8 +72,6 @@ using vendor::nxp::nxpnfc::V1_0::INxpNfc;
 extern bool nfc_debug_enabled;
 
 extern void GKI_shutdown();
-extern void verify_stack_non_volatile_store();
-extern void delete_stack_non_volatile_store(bool forceDelete);
 
 HalNfcAdaptation *HalNfcAdaptation::mpInstance = NULL;
 ThreadMutex HalNfcAdaptation::sLock;
@@ -244,7 +239,6 @@ void HalNfcAdaptation::Initialize() {
     mCondVar.wait();
   }
 
-  debug_nfcsnoop_init();
   configureRpcThreadpool(2, false);
   DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("%s: exit", func);
 }
@@ -321,7 +315,7 @@ void HalNfcAdaptation::Finalize() {
 ** Returns:     None.
 **
 *******************************************************************************/
-void HalNfcAdaptation::Dump(int fd) { debug_nfcsnoop_dump(fd); }
+void HalNfcAdaptation::Dump(__attribute__((unused)) int fd) { }
 
 /*******************************************************************************
 **
@@ -849,17 +843,3 @@ AutoThreadMutex::AutoThreadMutex(ThreadMutex &m) : mm(m) { mm.lock(); }
 **
 *******************************************************************************/
 AutoThreadMutex::~AutoThreadMutex() { mm.unlock(); }
-
-/***************************************************************************
-**
-** Function         initializeGlobalAppDtaMode.
-**
-** Description      initialize Dta App Mode flag.
-**
-** Returns          None.
-**
-***************************************************************************/
-void initializeGlobalAppDtaMode() {
-  appl_dta_mode_flag = 0x01;
-  ALOGD("%s: DTA Enabled", __func__);
-}

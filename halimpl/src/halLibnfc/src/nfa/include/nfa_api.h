@@ -49,8 +49,6 @@
 #include "nfc_api.h"
 #include "nfc_hal_api.h"
 #include "nfc_target.h"
-#include "rw_api.h"
-#include "tags_defs.h"
 
 /*****************************************************************************
 **  Constants and data types
@@ -207,23 +205,6 @@ typedef uint8_t tNFA_PROTOCOL_MASK;
 /*Status when Transit Config is set*/
 #define NFA_DM_SET_TRANSIT_CONFIG_EVT 14
 #endif
-
-/* T1T HR length            */
-#define NFA_T1T_HR_LEN T1T_HR_LEN
-/* Max UID length of T1/T2  */
-#define NFA_MAX_UID_LEN TAG_MAX_UID_LEN
-/* UID len for T1T cmds     */
-#define NFA_T1T_CMD_UID_LEN T1T_CMD_UID_LEN
-/* Tag formated for NDEF */
-#define NFA_RW_NDEF_FL_FORMATED RW_NDEF_FL_FORMATED
-/* NDEF supported by the tag */
-#define NFA_RW_NDEF_FL_SUPPORTED RW_NDEF_FL_SUPPORTED
-/* Unable to find if tag is ndef capable/formated/read only */
-#define NFA_RW_NDEF_FL_UNKNOWN RW_NDEF_FL_UNKNOWN
-/* Tag supports format operation */
-#define NFA_RW_NDEF_FL_FORMATABLE RW_NDEF_FL_FORMATABLE
-
-typedef uint8_t tNFA_RW_NDEF_FLAG;
 
 /* Data for NFA_DM_SET_CONFIG_EVT */
 typedef struct {
@@ -430,41 +411,8 @@ typedef struct {
   tNFC_RESULT_DEVT discovery_ntf; /* RF discovery notification details */
 } tNFA_DISC_RESULT;
 
-/* Data for NFA_ACTIVATED_EVT */
-typedef struct {
-  uint8_t hr[NFA_T1T_HR_LEN];       /* HR of Type 1 tag         */
-  uint8_t uid[NFA_T1T_CMD_UID_LEN]; /* UID used in T1T Commands */
-} tNFA_T1T_PARAMS;
-
-typedef struct {
-  uint8_t uid[NFA_MAX_UID_LEN]; /* UID of T2T tag           */
-} tNFA_T2T_PARAMS;
-
-typedef struct {
-  uint8_t num_system_codes; /* Number of system codes supporte by tag   */
-  uint16_t *p_system_codes; /* Pointer to list of system codes          */
-} tNFA_T3T_PARAMS;
-
-typedef struct {
-  uint8_t uid[I93_UID_BYTE_LEN]; /* UID[0]:MSB, ... UID[7]:LSB */
-  uint8_t info_flags;   /* information flags                            */
-  uint8_t dsfid;        /* DSFID if I93_INFO_FLAG_DSFID                 */
-  uint8_t afi;          /* AFI if I93_INFO_FLAG_AFI                     */
-  uint16_t num_block;   /* number of blocks if I93_INFO_FLAG_MEM_SIZE   */
-  uint8_t block_size;   /* block size in byte if I93_INFO_FLAG_MEM_SIZE */
-  uint8_t IC_reference; /* IC Reference if I93_INFO_FLAG_IC_REF         */
-} tNFA_I93_PARAMS;
-
-typedef union {
-  tNFA_T1T_PARAMS t1t; /* HR and UID of T1T                */
-  tNFA_T2T_PARAMS t2t; /* UID of T2T                       */
-  tNFA_T3T_PARAMS t3t; /* System codes                     */
-  tNFA_I93_PARAMS i93; /* System Information of ISO 15693  */
-} tNFA_TAG_PARAMS;
-
 typedef struct {
   tNFC_ACTIVATE_DEVT activate_ntf; /* RF discovery activation details */
-  tNFA_TAG_PARAMS params;          /* additional informaiton of tag   */
 } tNFA_ACTIVATED;
 
 /* Data for NFA_DEACTIVATED_EVT */
@@ -473,80 +421,12 @@ typedef struct {
   tNFA_DEACTIVATE_TYPE type;
 } tNFA_DEACTIVATED;
 
-/* Structure for NFA_NDEF_DETECT_EVT event data */
-typedef struct {
-  tNFA_STATUS status;         /* Status of the ndef detecton */
-  tNFA_NFC_PROTOCOL protocol; /* protocol used to detect NDEF */
-  uint32_t max_size;          /* max number of bytes available for NDEF data */
-  uint32_t cur_size;          /* current size of stored NDEF data (in bytes) */
-  /* Flags to indicate NDEF capability, is formated, soft/hard lockable,
-   * formatable, otp and read only */
-  tNFA_RW_NDEF_FLAG flags;
-} tNFA_NDEF_DETECT;
-
-/* Structure for NFA_TLV_DETECT_EVT event data */
-typedef struct {
-  tNFA_STATUS status;         /* Status of the tlv detecton        */
-  tNFA_NFC_PROTOCOL protocol; /* protocol used to detect TLV       */
-  uint8_t num_tlvs;           /* number of tlvs present in the tag */
-  uint8_t num_bytes;          /* number of lock/reserved bytes     */
-} tNFA_TLV_DETECT;
-
 /* Structure for NFA_DATA_EVT data */
 typedef struct {
   tNFA_STATUS status; /* Status of Data received          */
   uint8_t *p_data;    /* Data buffer                      */
   uint16_t len;       /* Length of data                   */
 } tNFA_RX_DATA;
-
-/* Structure for NFA_CE_NDEF_WRITE_CPLT_EVT data */
-typedef struct {
-  tNFA_STATUS status; /* Status of the ndef write op      */
-  uint32_t len;       /* Update length of NDEF data       */
-  uint8_t *p_data;    /* data buffer                      */
-} tNFA_CE_NDEF_WRITE_CPLT;
-
-/* Data for NFA_LLCP_ACTIVATED_EVT */
-typedef struct {
-  bool is_initiator;        /* true if initiator                */
-  uint16_t remote_wks;      /* Well-Known service mask of peer  */
-  uint8_t remote_lsc;       /* Link Service Class of peer       */
-  uint16_t remote_link_miu; /* Link MIU of peer                 */
-  uint16_t local_link_miu;  /* Link MIU of local                */
-  uint8_t remote_version;   /* LLCP version of remote           */
-} tNFA_LLCP_ACTIVATED;
-
-/* Data for NFA_LLCP_DEACTIVATED_EVT */
-typedef struct {
-  uint8_t reason; /* reason of deactivation           */
-} tNFA_LLCP_DEACTIVATED;
-
-/* Data for NFA_I93_CMD_CPLT_EVT */
-typedef struct {
-  uint8_t dsfid;                 /* DSFID                       */
-  uint8_t uid[I93_UID_BYTE_LEN]; /* UID[0]:MSB, ... UID[7]:LSB  */
-} tNFA_I93_INVENTORY;
-
-typedef struct /* RW_I93_SYS_INFO_EVT                          */
-{
-  uint8_t info_flags; /* information flags                            */
-  uint8_t uid[I93_UID_BYTE_LEN]; /* UID */
-  uint8_t dsfid;        /* DSFID if I93_INFO_FLAG_DSFID                 */
-  uint8_t afi;          /* AFI if I93_INFO_FLAG_AFI                     */
-  uint16_t num_block;   /* number of blocks if I93_INFO_FLAG_MEM_SIZE   */
-  uint8_t block_size;   /* block size in byte if I93_INFO_FLAG_MEM_SIZE */
-  uint8_t IC_reference; /* IC Reference if I93_INFO_FLAG_IC_REF         */
-} tNFA_I93_SYS_INFO;
-
-typedef struct {
-  tNFA_STATUS status;   /* Status of sending command       */
-  uint8_t sent_command; /* sent command to tag             */
-  union {
-    uint8_t error_code;           /* error code defined in ISO 15693 */
-    tNFA_I93_INVENTORY inventory; /* inventory response              */
-    tNFA_I93_SYS_INFO sys_info;   /* system information              */
-  } params;
-} tNFA_I93_CMD_CPLT;
 
 /* Data for NFA_CE_REGISTERED_EVT */
 typedef struct {
@@ -588,13 +468,7 @@ typedef union {
   tNFA_DISC_RESULT disc_result; /* NFA_DISC_RESULT_EVT                  */
   tNFA_ACTIVATED activated;     /* NFA_ACTIVATED_EVT                    */
   tNFA_DEACTIVATED deactivated; /* NFA_DEACTIVATED_EVT                  */
-  tNFA_NDEF_DETECT ndef_detect; /* NFA_NDEF_DETECT_EVT                  */
-  tNFA_TLV_DETECT tlv_detect;   /* NFA_TLV_DETECT_EVT                   */
   tNFA_RX_DATA data;            /* NFA_DATA_EVT                         */
-  tNFA_CE_NDEF_WRITE_CPLT ndef_write_cplt; /* NFA_CE_NDEF_WRITE_CPLT_EVT */
-  tNFA_LLCP_ACTIVATED llcp_activated; /* NFA_LLCP_ACTIVATED_EVT               */
-  tNFA_LLCP_DEACTIVATED llcp_deactivated; /* NFA_LLCP_DEACTIVATED_EVT */
-  tNFA_I93_CMD_CPLT i93_cmd_cplt;   /* NFA_I93_CMD_CPLT_EVT                 */
   tNFA_CE_REGISTERED ce_registered; /* NFA_CE_REGISTERED_EVT                */
   tNFA_CE_DEREGISTERED ce_deregistered; /* NFA_CE_DEREGISTERED_EVT */
   tNFA_CE_ACTIVATED ce_activated;     /* NFA_CE_ACTIVATED_EVT                 */

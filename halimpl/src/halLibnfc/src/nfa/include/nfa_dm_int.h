@@ -579,25 +579,15 @@ typedef struct {
 } tNFA_DM_CB;
 
 /* Internal function prototypes */
-void nfa_dm_ndef_handle_message(tNFA_STATUS status, uint8_t *p_msg_buf,
-                                uint32_t len);
-void nfa_dm_ndef_dereg_all(void);
-void nfa_dm_act_conn_cback_notify(uint8_t event, tNFA_CONN_EVT_DATA *p_data);
-void nfa_dm_notify_activation_status(tNFA_STATUS status,
-                                     tNFA_TAG_PARAMS *p_params);
-
 bool nfa_dm_act_send_raw_vs(tNFA_DM_MSG *p_data);
 
 void nfa_dm_disable_complete(void);
 
 /* Internal functions from nfa_rw */
-void nfa_rw_init(void);
 void nfa_rw_proc_disc_evt(tNFA_DM_RF_DISC_EVT event, tNFC_DISCOVER *p_data,
                           bool excl_rf_not_active);
 tNFA_STATUS nfa_rw_send_raw_frame(NFC_HDR *p_data);
 
-/* Internal functions from nfa_ce */
-void nfa_ce_init(void);
 
 /* Pointer to compile-time configuration structure */
 extern tNFA_DM_DISC_FREQ_CFG *p_nfa_dm_rf_disc_freq_cfg;

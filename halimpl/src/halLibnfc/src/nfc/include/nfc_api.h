@@ -49,7 +49,6 @@
 #include "nci_defs.h"
 #include "nfc_hal_api.h"
 #include "nfc_target.h"
-//#include "vendor_cfg.h"
 
 /* NFC application return status codes */
 /* Command succeeded    */
@@ -1481,35 +1480,6 @@ extern int32_t NFC_SetP61Status(void *pdata, jcop_dwnld_state_t isJcopState);
 
 /*******************************************************************************
 **
-** Function         NFC_TestLoopback
-**
-** Description      This function is called to send the given data packet
-**                  to NFCC for loopback test.
-**                  When loopback data is received from NFCC, tNFC_TEST_CBACK .
-**                  reports a NFC_LOOPBACK_TEVT.
-**
-** Parameters       p_data - the data packet
-**
-** Returns          tNFC_STATUS
-**
-*******************************************************************************/
-extern tNFC_STATUS NFC_TestLoopback(NFC_HDR *p_data);
-
-/*******************************************************************************
-**
-** Function         NFC_ISODEPNakPresCheck
-**
-** Description      This function is called to send the ISO DEP nak presenc
-*check cmd
-**                  to check that the remote end point in RF field.
-**
-** Returns          tNFC_STATUS
-**
-*******************************************************************************/
-extern tNFC_STATUS NFC_ISODEPNakPresCheck();
-
-/*******************************************************************************
-**
 ** Function         NFC_GetStatusName
 **
 ** Description      This function returns the status name.
@@ -1520,20 +1490,6 @@ extern tNFC_STATUS NFC_ISODEPNakPresCheck();
 **
 *******************************************************************************/
 extern std::string NFC_GetStatusName(tNFC_STATUS status);
-
-#if (NXP_EXTNS == TRUE || APPL_DTA_MODE == TRUE)
-/*******************************************************************************
-**
-** Function         nfc_ncif_getFWVersion
-**
-** Description      This function sets the trace level for NFC.  If called with
-**                  a value of 0xFF, it simply returns the current trace level.
-**
-** Returns          The new or current trace level
-**
-*******************************************************************************/
-extern tNFC_FW_VERSION nfc_ncif_getFWVersion();
-#endif
 
 #if (NXP_EXTNS == TRUE)
 /*******************************************************************************

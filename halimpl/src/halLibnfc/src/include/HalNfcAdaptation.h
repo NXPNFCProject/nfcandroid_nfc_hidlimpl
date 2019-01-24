@@ -37,7 +37,6 @@
 #pragma once
 #include <pthread.h>
 
-#include "config.h"
 #include "nfc_hal_api.h"
 #include "nfc_target.h"
 #include <android/hardware/nfc/1.0/INfc.h>
@@ -115,8 +114,6 @@ public:
   static HalNfcAdaptation &GetInstance();
   tHAL_NFC_ENTRY *GetHalEntryFuncs();
   void DownloadFirmware();
-  void GetNxpConfigs(std::map<std::string, ConfigValue> &configMap);
-  void GetVendorConfigs(std::map<std::string, ConfigValue> &configMap);
   void Dump(int fd);
 #if (NXP_EXTNS == TRUE)
   void MinInitialize();
