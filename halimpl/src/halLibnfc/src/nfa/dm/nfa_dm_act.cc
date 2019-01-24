@@ -195,7 +195,6 @@ static void nfa_dm_nfc_response_cback(tNFC_RESPONSE_EVT event,
 **
 *******************************************************************************/
 bool nfa_dm_enable(tNFA_DM_MSG *p_data) {
-  tNFA_DM_CBACK_DATA dm_cback_data;
   DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("nfa_dm_enable ()");
 
   /* Check if NFA is already enabled */
@@ -213,9 +212,8 @@ bool nfa_dm_enable(tNFA_DM_MSG *p_data) {
     /* Enable NFC stack */
     NFC_Enable(nfa_dm_nfc_response_cback);
   } else {
-    LOG(ERROR) << StringPrintf("nfa_dm_enable: ERROR ALREADY ENABLED.");
-    dm_cback_data.status = NFA_STATUS_ALREADY_STARTED;
-    (*(p_data->enable.p_dm_cback))(NFA_DM_ENABLE_EVT, &dm_cback_data);
+    LOG(ERROR) << StringPrintf("nfa_dm_enable: ALREADY ENABLED, still registering halLibnfc Callback");
+    NFC_Enable(nfa_dm_nfc_response_cback);
   }
 
   return (true);

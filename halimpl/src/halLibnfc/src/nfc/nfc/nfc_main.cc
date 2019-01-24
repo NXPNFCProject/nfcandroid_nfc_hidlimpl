@@ -808,15 +808,6 @@ tNFC_STATUS NFC_Enable(tNFC_RESPONSE_CBACK *p_cback) {
   }
   nfc_cb.p_resp_cback = p_cback;
 
-  /* Open HAL transport. */
-  nfc_set_state(NFC_STATE_W4_HAL_OPEN);
-#if (NXP_EXTNS == TRUE)
-  if (nfc_cb.boot_mode != NFC_NORMAL_BOOT_MODE) {
-    nfc_nci_IoctlInOutData_t inpOutData;
-    inpOutData.inp.data.bootMode = nfc_cb.boot_mode;
-    nfc_cb.p_hal->ioctl(HAL_NFC_IOCTL_SET_BOOT_MODE, (void *)&inpOutData);
-  }
-#endif
 #ifdef HAL_LIBNFC_DISABLED
   nfc_cb.p_hal->open(nfc_main_hal_cback, nfc_main_hal_data_cback);
 #else

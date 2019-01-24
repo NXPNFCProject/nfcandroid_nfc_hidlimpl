@@ -371,7 +371,6 @@ extern void nfc_data_event(tNFC_CONN_CB *p_cb);
 
 extern uint8_t nfc_ncif_send_data(tNFC_CONN_CB *p_cb, NFC_HDR *p_data);
 extern void nfc_ncif_cmd_timeout(void);
-extern void nfc_wait_2_deactivate_timeout(void);
 extern void nfc_modeset_ntf_timeout(void);
 extern void nfc_ncif_credit_ntf_timeout(void);
 extern bool nfc_ncif_process_event(NFC_HDR *p_msg);
@@ -400,8 +399,6 @@ extern void nfc_ncif_proc_init_rsp(NFC_HDR *p_msg);
 extern void nfc_ncif_proc_get_config_rsp(NFC_HDR *p_msg);
 extern void nfc_ncif_proc_data(NFC_HDR *p_msg);
 #if (NXP_EXTNS == TRUE)
-extern tNFC_STATUS nfc_ncif_store_FWVersion(uint8_t *p_buf);
-extern uint8_t nfc_ncif_retransmit_data(tNFC_CONN_CB *p_cb, NFC_HDR *p_data);
 extern tNFC_STATUS nfc_ncif_set_MaxRoutingTableSize(uint8_t *p_buf);
 extern void nfc_ncif_empty_cmd_queue();
 extern void nfc_ncif_proc_rf_wtx_ntf(uint8_t *p, uint16_t plen);
