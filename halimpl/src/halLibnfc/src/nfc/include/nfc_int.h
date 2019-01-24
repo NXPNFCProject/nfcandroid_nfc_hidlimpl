@@ -68,7 +68,7 @@
 #define NFC_TTYPE_NCI_WAIT_RSP 0
 #define NFC_TTYPE_WAIT_2_DEACTIVATE 1
 #define NFC_WAIT_RSP_RAW_VS 0x02
-#define NFC_TTYPE_WAIT_SETMODE_NTF 6
+#define NFC_TTYPE_WAIT_MODE_SET_NTF 6
 #if (NXP_EXTNS == TRUE)
 #define NFC_TTYPE_NCI_WAIT_DATA_NTF 2
 #define NFC_TTYPE_NCI_WAIT_RF_FIELD_NTF 3
@@ -90,6 +90,9 @@
 #define NFC_TTYPE_P2P_PRIO_RESPONSE 110
 /* added for p2p prio logic clenaup */
 #define NFC_TTYPE_P2P_PRIO_LOGIC_CLEANUP 112
+
+#define NFC_MODE_SET_NTF_TIMEOUT 2
+
 #if (NXP_EXTNS == TRUE)
 /* added for listen activation timer */
 #define NFC_TTYPE_LISTEN_ACTIVATION 111
@@ -330,6 +333,8 @@ typedef struct {
   TIMER_LIST_ENT nci_setmode_ntf_timer; /*Mode notification timer*/
   uint8_t rawVsCbflag;
   uint8_t deact_reason;
+
+  TIMER_LIST_ENT nci_mode_set_ntf_timer; /*Mode set notification timer*/
 } tNFC_CB;
 
 #if (NXP_EXTNS == TRUE)
@@ -419,7 +424,7 @@ extern void nfc_ncif_proc_rf_field_ntf(uint8_t rf_status);
 /* From nfc_task.c */
 extern uint32_t nfc_task(uint32_t);
 void nfc_task_shutdown_nfcc(void);
-
+void  check_nfcee_session_and_reset();
 /* From nfc_main.c */
 void nfc_enabled(tNFC_STATUS nfc_status, NFC_HDR *p_init_rsp_msg);
 void nfc_set_state(tNFC_STATE nfc_state);

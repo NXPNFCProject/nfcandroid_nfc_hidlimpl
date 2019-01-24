@@ -827,20 +827,19 @@ bool nfc_ncif_process_event(NFC_HDR *p_msg) {
     case NCI_GID_CORE: /* 0000b NCI Core group */
       nci_proc_core_ntf(p_msg);
       break;
-    /*        case NCI_GID_RF_MANAGE: // 0001b NCI Discovery group
-              nci_proc_rf_management_ntf(p_msg);
-              break;
+    case NCI_GID_RF_MANAGE: // 0001b NCI Discovery group
+      nci_proc_rf_management_ntf(p_msg);
+      break;
     #if (NFC_NFCEE_INCLUDED == true)
     #if (NFC_RW_ONLY == FALSE)
-            case NCI_GID_EE_MANAGE: // 0x02 0010b NFCEE Discovery group
-              nci_proc_ee_management_ntf(p_msg);
-              break;
+    case NCI_GID_EE_MANAGE: // 0x02 0010b NFCEE Discovery group
+      nci_proc_ee_management_ntf(p_msg);
+      break;
     #endif
     #endif
-            case NCI_GID_PROP: // 1111b Proprietary
-              nci_proc_prop_ntf(p_msg);
-              break;
-    */
+    case NCI_GID_PROP: // 1111b Proprietary
+      //nci_proc_prop_ntf(p_msg);
+      //break;
     default:
       LOG(ERROR) << StringPrintf("NFC: Unknown gid:%d", gid);
       break;
@@ -2346,8 +2345,7 @@ void nfc_ncif_proc_get_config_rsp(NFC_HDR *p_evt) {
 void nfc_data_event(tNFC_CONN_CB *p_cb) {
   NFC_HDR *p_evt;
   tNFC_DATA_CEVT data_cevt;
-
-  uint8_t *p;
+if(halLibnfcDataCallback) {
   NFC_HDR *buffer = (NFC_HDR *)GKI_dequeue(&p_cb->rx_q);
   uint8_t *data = (uint8_t *)(buffer + 1) + buffer->offset;
 
@@ -2355,13 +2353,21 @@ void nfc_data_event(tNFC_CONN_CB *p_cb) {
     DLOG_IF(INFO, nfc_debug_enabled)
         << StringPrintf("p_cb->rx_q[%d] = %02x", i, data[i]);
   }
-  (*halLibnfcDataCallback)((uint8_t)NFC_DATA_CEVT, buffer->len, data);
-  if (true) {
+
+    (*halLibnfcDataCallback)((uint8_t)NFC_DATA_CEVT, buffer->len, data);
     return;
   }
-
+  if(p_cb->p_cback == NULL)
+  {
+              DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("p_cback NULL");
+  }
   if (p_cb->p_cback) {
+              DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("Sending data 2");
     while ((p_evt = (NFC_HDR *)GKI_getfirst(&p_cb->rx_q)) != NULL) {
+                    DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("Sending data 3");
       if (p_evt->layer_specific & NFC_RAS_FRAGMENTED) {
         /* Not the last fragment */
         if (!(p_evt->layer_specific & NFC_RAS_TOO_BIG)) {
@@ -2378,8 +2384,12 @@ void nfc_data_event(tNFC_CONN_CB *p_cb) {
       p_evt = (NFC_HDR *)GKI_dequeue(&p_cb->rx_q);
 
       if (p_evt == NULL) {
+              DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("p_evt is  NULL");
         break;
       }
+      DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("Sending data 4");
       /* report data event */
       p_evt->offset += NCI_MSG_HDR_SIZE;
       p_evt->len -= NCI_MSG_HDR_SIZE;
@@ -2393,29 +2403,15 @@ void nfc_data_event(tNFC_CONN_CB *p_cb) {
 
       data_cevt.p_data = p_evt;
       /* adjust payload, if needed */
-      if (p_cb->conn_id == NFC_RF_CONN_ID) {
-        /* if NCI_PROTOCOL_T1T/NCI_PROTOCOL_T2T/NCI_PROTOCOL_T3T, the status
-         * byte needs to be removed
-         */
-        if ((p_cb->act_protocol >= NCI_PROTOCOL_T1T) &&
-            (p_cb->act_protocol <= NCI_PROTOCOL_T3T)) {
-          {
-            p_evt->len--;
-            p = (uint8_t *)(p_evt + 1);
-            data_cevt.status = *(p + p_evt->offset + p_evt->len);
-            if ((NFC_GetNCIVersion() == NCI_VERSION_2_0) &&
-                (p_cb->act_protocol == NCI_PROTOCOL_T2T) &&
-                (p_cb->act_interface == NCI_INTERFACE_FRAME)) {
-              //deleted tag related state
-            }
-          }
-        }
-      }
       tNFC_CONN nfc_conn;
       nfc_conn.data = data_cevt;
+          DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("Sending data 5");
       (*p_cb->p_cback)(p_cb->conn_id, NFC_DATA_CEVT, &nfc_conn);
       p_evt = NULL;
     }
+                  DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("Sending data ");
   }
 }
 
@@ -2447,7 +2443,7 @@ void nfc_ncif_proc_data(NFC_HDR *p_msg) {
   p_cb = nfc_find_conn_cb_by_conn_id(cid);
   if (p_cb && (p_msg->len >= NCI_DATA_HDR_SIZE)) {
     DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("nfc_ncif_proc_data len:%d", len);
+        << StringPrintf("nfc_ncif_proc_data len 2:%d", len);
 
     p_msg->layer_specific = 0;
     if (pbf) {
@@ -2511,6 +2507,8 @@ void nfc_ncif_proc_data(NFC_HDR *p_msg) {
         GKI_enqueue(&p_cb->rx_q, p_msg);
       }
     } else {
+            DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf(
+          "nfc_ncif_proc_data send data to hci layer");
       /* if this is the first fragment on RF link */
       if ((p_msg->layer_specific & NFC_RAS_FRAGMENTED) &&
           (p_cb->conn_id == NFC_RF_CONN_ID) && (p_cb->p_cback)) {

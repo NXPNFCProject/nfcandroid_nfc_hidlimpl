@@ -95,9 +95,11 @@
 /* congested                                        */
 #define NFA_STATUS_CONGESTED NFC_STATUS_CONGESTED
 #if (NXP_EXTNS == TRUE)
+#define NFA_STATUS_HCI_WTX_TIMEOUT  0xE0
 #define NFA_STATUS_WIRED_SESSION_ABORTED                                       \
   NFC_STATUS_WIRED_SESSION_ABORTED /* WIRED_SESSION_ABORTED error */
 #define NFA_STATUS_ALREADY_INITIALIZED NFC_STATUS_ALREADY_INITIALIZED
+#define NFA_STATUS_REFUSED NFC_STATUS_REFUSED
 #endif
 typedef uint8_t tNFA_STATUS;
 
@@ -525,6 +527,10 @@ typedef struct {
   uint16_t hci_netwk_enable_timeout;
   /* Maximum time to wait for EE DISC REQ NTF(s) after HOT PLUG EVT(s) */
   uint16_t hcp_response_timeout;
+#if(NXP_EXTNS == TRUE)
+  /* Maximum  time to wait for HCI response */
+  uint8_t max_wtx_count;
+#endif
   /* Number of host in the whitelist of Terminal host */
   uint8_t num_whitelist_host;
   /* Whitelist of Terminal Host */

@@ -13,12 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#define LOG_TAG "eSEClient_DWP"
+#define LOG_TAG "JcDnld_DWP"
 #include <phNxpNfc_IntfApi.h>
-//#include <android-base/stringprintf.h>
-//#include <base/logging.h>
 #include <phNfcCommon.h>
-//#include <phNxpNciHal.h>
 
 #define ESE_HCI_APDU_PIPE_ID 0x19
 #define EVT_END_OF_APDU_TRANSFER 0x61
@@ -55,7 +52,7 @@ NFCSTATUS phNxpNfc_ResetEseJcopUpdate() {
 
   ALOGE("phNxpNfc_ResetEseJcopUpdate enter");
   tNFA_STATUS nfaStat = NFA_STATUS_FAILED;
-  nfaStat = NFA_SendPowerLinkCommand((uint8_t)ESE_HANDLE, (uint8_t)0x00, (tNFC_INTF_REQ_SRC)0x01);
+  nfaStat = NFA_SendPowerLinkCommand((uint8_t)ESE_HANDLE, 0x00);
   if(nfaStat ==  NFA_STATUS_OK) {
     if (SEM_WAIT(cb_powerlink)) {
       ALOGE("semaphore error");
@@ -70,11 +67,11 @@ NFCSTATUS phNxpNfc_ResetEseJcopUpdate() {
       ALOGE("semaphore error");
       return nfaStat;
     }
-    //usleep(500 * 1000);
-    usleep(10 * 1000);
+    usleep(500 * 1000);
+    //usleep(10 * 1000);
   }
   ALOGE("phNxpNfc_ResetEseJcopUpdate power link");
-  nfaStat = NFA_SendPowerLinkCommand((uint8_t)ESE_HANDLE, (uint8_t)0x03, (tNFC_INTF_REQ_SRC)0x01);
+  nfaStat = NFA_SendPowerLinkCommand((uint8_t)ESE_HANDLE, 0x03);
   if(nfaStat ==  NFA_STATUS_OK) {
     if (SEM_WAIT(cb_powerlink)) {
       ALOGE("semaphore error");
@@ -101,7 +98,7 @@ NFCSTATUS phNxpNfc_openEse() {
   tNFA_STATUS nfaStat = NFA_STATUS_FAILED;
   ALOGE("phNxpNfc_openEse enter");
 
-  nfaStat = NFA_SendPowerLinkCommand((uint8_t)ESE_HANDLE, (uint8_t)0x03, (tNFC_INTF_REQ_SRC)0x01);
+  nfaStat = NFA_SendPowerLinkCommand((uint8_t)ESE_HANDLE, 0x03);
   if(nfaStat ==  NFA_STATUS_OK) {
     if (SEM_WAIT(cb_powerlink)) {
       ALOGE("semaphore error");
@@ -127,7 +124,7 @@ NFCSTATUS phNxpNfc_closeEse() {
   tNFA_STATUS nfaStat = NFA_STATUS_FAILED;
   ALOGE("phNxpNfc_closeEse enter");
 
-  nfaStat = NFA_SendPowerLinkCommand((uint8_t)ESE_HANDLE, (uint8_t)0x01, (tNFC_INTF_REQ_SRC)0x01);
+  nfaStat = NFA_SendPowerLinkCommand((uint8_t)ESE_HANDLE, 0x01);
   if(nfaStat ==  NFA_STATUS_OK) {
     if (SEM_WAIT(cb_powerlink)) {
       ALOGE("semaphore error");
@@ -157,7 +154,9 @@ NFCSTATUS phNxpNfc_InitLib() {
         ALOGE("clock getitme  failed");
 
   //SEM_TIMED_WAIT(cb_data, ts);
-  NfcAdaptation& theInstance = NfcAdaptation::GetInstance();
+  /*NfcAdaptation& theInstance = NfcAdaptation::GetInstance();
+  theInstance.Initialize();  // start GKI, NCI task, NFC task*/
+  HalNfcAdaptation& theInstance = HalNfcAdaptation::GetInstance();
   theInstance.Initialize();  // start GKI, NCI task, NFC task
   {
     tHAL_NFC_ENTRY* halFuncEntries = theInstance.GetHalEntryFuncs();
@@ -254,6 +253,7 @@ static void nfaConnectionCallback(uint8_t connEvent,
                                   tNFA_CONN_EVT_DATA* eventData) {
 UNUSED(connEvent);
 UNUSED(eventData);
+  ALOGE("nfaConnectionCallback connEvent = %d", connEvent);
 }
 
 
@@ -281,16 +281,15 @@ NFCSTATUS phNxpNfc_DeInitLib() {
 
 void HalOpen(tHAL_NFC_CBACK* p_hal_cback,
                             tHAL_NFC_DATA_CBACK* p_data_cback) {
-  ese_update_state_t old_state =  eseUpdateSpi;
-  eseUpdateSpi = ESE_UPDATE_COMPLETED;
+  ese_update_state_t old_state_dwp =  eseUpdateDwp;
+  eseUpdateDwp = ESE_UPDATE_COMPLETED;
   phNxpNciHal_open(p_hal_cback, p_data_cback);
-  eseUpdateSpi = old_state;
-  ALOGE("HalOpen exit");
+  eseUpdateDwp = old_state_dwp;
 }
 
 void nfaEeCallback(tNFA_EE_EVT event,
                 tNFA_EE_CBACK_DATA* eventData) {
-  ALOGE("nfaEeCallback enter");
+  ALOGE("%s: event = %x",__func__, event);
   UNUSED(eventData);
   switch (event) {
     case NFA_EE_REGISTER_EVT: {
@@ -404,7 +403,7 @@ void nfaHciCallback(tNFA_HCI_EVT event,
       SEM_POST(&cb_data_trans);
 
     }
-/*    case NFA_HCI_RSP_APDU_RCVD_EVT:
+    case NFA_HCI_RSP_APDU_RCVD_EVT:
     {
             ALOGD("%s: NFA_HCI_RSP_APDU_RCVD_EVT", fn);
       if(eventData->apdu_rcvd.apdu_len > 0)
@@ -415,7 +414,7 @@ void nfaHciCallback(tNFA_HCI_EVT event,
 
             SEM_POST(&cb_data_trans);
     }
-    break;*/
+    break;
   }
 }
 
@@ -433,10 +432,10 @@ bool phNxpNfc_EseTransceive(uint8_t* xmitBuffer, int32_t xmitBufferSize, uint8_t
     {
       mActualResponseSize = 0;
       memset (mResponseData, 0, sizeof(mResponseData));
-      nfaStat = NFA_HciSendEvent(mNfaHciHandle, ESE_HCI_APDU_PIPE_ID, EVT_SEND_DATA,
+/*      nfaStat = NFA_HciSendEvent(mNfaHciHandle, ESE_HCI_APDU_PIPE_ID, EVT_SEND_DATA,
                                  xmitBufferSize, xmitBuffer, recvBufferMaxSize,
                                  recvBuffer, timeoutMillisec);
-      //nfaStat = NFA_HciSendApdu (mNfaHciHandle, mActiveEeHandle, xmitBufferSize, xmitBuffer, sizeof(mResponseData), mResponseData, timeoutMillisec);
+*/      nfaStat = NFA_HciSendApdu (mNfaHciHandle, mActiveEeHandle, xmitBufferSize, xmitBuffer, sizeof(mResponseData), mResponseData, timeoutMillisec);
       ALOGE("%s: status code; nfaStat=0x%X", fn, nfaStat);
       if (nfaStat == NFA_STATUS_OK)
       {

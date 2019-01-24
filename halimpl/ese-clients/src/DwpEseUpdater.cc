@@ -15,7 +15,7 @@
  *  limitations under the License.
  *
  ******************************************************************************/
-#define LOG_TAG "eSEClient_DWP"
+#define LOG_TAG "JcDnld_DWP"
 #include "DwpEseUpdater.h"
 #include <cutils/log.h>
 #include <dirent.h>
@@ -26,13 +26,15 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/stat.h>
-#include "eSEClientIntf.h"
+#include "EseUpdateChecker.h"
 #include "EseAdaptation.h"
 #include "DwpSeChannelCallback.h"
+#include "DwpSeEvtCallback.h"
 #include <phNxpNciHal_Adaptation.h>
 #include <phNxpConfig.h>
 #include "hal_nxpese.h"
 #include <vendor/nxp/nxpese/1.0/INxpEse.h>
+#include "phNxpNfc_IntfApi.h"
 
 using vendor::nxp::nxpese::V1_0::INxpEse;
 using android::hardware::hidl_vec;
@@ -43,11 +45,12 @@ using android::hardware::Void;
 android::sp<INxpEse> mHalNxpEse;
 uint8_t datahex(char c);
 se_extns_entry se_intf, nfc_intf;
-ese_update_state_t eseUpdateDwp;
 void* eSEClientUpdate_NFC_ThreadHandler(void* data);
 extern EseAdaptation *gpEseAdapt;
 
 DwpEseUpdater DwpEseUpdater::sEseClientInstance;
+spSeChannel DwpEseUpdater::sDwpSeChannelCallback = nullptr;
+spSeEvt DwpEseUpdater::sDwpSeEventCallback = nullptr;
 DwpEseUpdater::DwpEseUpdater() {}
 
 DwpEseUpdater &DwpEseUpdater::getInstance() { return sEseClientInstance; }
@@ -57,10 +60,10 @@ void DwpEseUpdater::checkIfEseClientUpdateReqd()
   ALOGD("%s enter:  ", __func__);
   bool nfcSEIntfPresent = false;
   char nfcterminal[5];
-  nfc_intf = eseClientIntf.checkEseUpdateRequired(ESE_INTF_NFC);
-  se_intf = eseClientIntf.checkEseUpdateRequired(ESE_INTF_SPI);
+  nfc_intf = eseUpdateChecker.checkEseUpdateRequired(ESE_INTF_NFC);
+  se_intf = eseUpdateChecker.checkEseUpdateRequired(ESE_INTF_SPI);
 
-  if(eseClientIntf.getNfcSeTerminalId(nfcterminal)) {
+  if(eseUpdateChecker.getNfcSeTerminalId(nfcterminal)) {
     nfcSEIntfPresent = true;
     ALOGD("%s SMB intf  is present  ", __func__);
   }
@@ -145,60 +148,22 @@ SESTATUS DwpEseUpdater::handleJcopOsDownload() {
   uint8_t status ;
   status = 0;
 
-  //phNxpNfc_InitLib();
+  phNxpNfc_InitLib();
 
   usleep(50 * 1000);
   ALOGE("%s: after init", __FUNCTION__);
   nfc_debug_enabled = true;
-/*  status = JCDNLD_Init(&Ch);
-  ALOGE("%s: JCDNLD_Init", __FUNCTION__);
 
-  if(status != STATUS_SUCCESS)
-  {
-      ALOGE("%s: JCDND initialization failed", __FUNCTION__);
-  }else
-  {
-      status = JCDNLD_StartDownload();
-      ALOGE("%s: JCDNLD_StartDownload", __FUNCTION__);
-      if(status != SESTATUS_SUCCESS)
-      {
-          ALOGE("%s: JCDNLD_StartDownload failed", __FUNCTION__);
-      }
-  }
-  JCDNLD_DeInit();*/
-  /*if(!(nfc_intf.isLSUpdateRequired && nfc_intf.sLsUpdateIntferface == ESE_INTF_NFC ))
-    phNxpNfc_DeInitLib();*/
-
-/*  seChannelCallback = std::make_shared<DwpSeChannelCallback>();
-  seEventCallback = std::make_shared<DwpSeEvtCallback>();
-  jcDnld.registerSeCallback(seChannelCallback, seEventCallback);
-  status = (SESTATUS) jcDnld.doUpdate();*/
+  sDwpSeChannelCallback = std::make_shared<DwpSeChannelCallback>();
+  sDwpSeEventCallback = std::make_shared<DwpSeEvtCallback>();
+  jcDnld.registerSeCallback(sDwpSeChannelCallback, sDwpSeEventCallback);
+  status = (SESTATUS) jcDnld.doUpdate();
   sleep(1);
 
   ALOGD("%s pthread_exit\n", __func__);
   return (SESTATUS)status;
 }
 
-/*uint8_t performLSUpdate()
-{
-  uint8_t status = SESTATUS_SUCCESS;
-
-  phNxpNfc_InitLib();
-
-  usleep(50 * 1000);
-  ALOGE("%s: after init", __FUNCTION__);
-  nfc_debug_enabled = true;
-  ESE_ChannelInit(&Ch);
-  ALOGE("%s: ESE_ChannelInit", __FUNCTION__);
-
-  status = performLSDownload(&Ch);
-
-  phNxpNfc_DeInitLib();
-  sleep(1);
-
-  return status;
-}
-*/
 void DwpEseUpdater::setSpiEseClientState(uint8_t state)
 {
   ALOGE("%s: State = %d", __FUNCTION__, state);
@@ -233,29 +198,18 @@ SESTATUS DwpEseUpdater::eSEUpdate_SeqHandler() {
         if(nfc_intf.isJcopUpdateRequired) {
           if(nfc_intf.sJcopUpdateIntferface == ESE_INTF_NFC) {
             DwpEseUpdater::handleJcopOsDownload();
-            //sendeSEUpdateState(ESE_JCOP_UPDATE_COMPLETED);
+            return SESTATUS_SUCCESS;
           }
           else if(nfc_intf.sJcopUpdateIntferface == ESE_INTF_SPI) {
             return SESTATUS_SUCCESS;
           }
         }
+      break;
       case ESE_JCOP_UPDATE_COMPLETED:
       case ESE_LS_UPDATE_REQUIRED:
         ALOGD("LSUpdate DWP commented");
-        /*if(nfc_intf.isLSUpdateRequired) {
-          if(nfc_intf.sLsUpdateIntferface == ESE_INTF_NFC) {
-            performLSUpdate();
-            sendeSEUpdateState(ESE_LS_UPDATE_COMPLETED);
-          }
-          else if(nfc_intf.sLsUpdateIntferface == ESE_INTF_SPI)
-          {
-            seteSEClientState(ESE_LS_UPDATE_REQUIRED);
-            return SESTATUS_SUCCESS;
-          }
-        }*/
       case ESE_LS_UPDATE_COMPLETED:
       case ESE_UPDATE_COMPLETED:
-
       {
         ese_nxp_IoctlInOutData_t inpOutData;
         DwpEseUpdater::setDwpEseClientState(ESE_UPDATE_COMPLETED);

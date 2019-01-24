@@ -79,9 +79,12 @@ extern bool nfc_debug_enabled;
 **
 *******************************************************************************/
 void NFA_Init(tHAL_NFC_ENTRY *p_hal_entry_tbl) {
+  nfc_debug_enabled = true;
   DLOG_IF(INFO, nfc_debug_enabled) << __func__;
   nfa_sys_init();
   nfa_dm_init();
+  nfa_hci_init();
+  nfa_ee_init();
   /* Initialize NFC module */
   NFC_Init(p_hal_entry_tbl);
 }
@@ -171,6 +174,18 @@ tNFA_STATUS NFA_Disable(bool graceful) {
 
   return (NFA_STATUS_FAILED);
 }
+
+/*******************************************************************************
+**
+** Function         NFA_GetNCIVersion
+**
+** Description      Returns the NCI version of the NFCC to upper layer
+**
+**
+** Returns          NCI version NCI2.0 / NCI1.0
+**
+*******************************************************************************/
+uint8_t NFA_GetNCIVersion() { return NFC_GetNCIVersion(); }
 
 /*******************************************************************************
 **

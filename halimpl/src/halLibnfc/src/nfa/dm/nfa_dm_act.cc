@@ -48,7 +48,7 @@
 #include "nci_hmsgs.h"
 #include "nfa_dm_int.h"
 #include "nfc_api.h"
-
+#include "nfa_ee_int.h"
 #if (NFC_NFCEE_INCLUDED == true)
 #include "hal_nxpese.h"
 #include "nfc_int.h"
@@ -161,9 +161,17 @@ static void nfa_dm_nfc_response_cback(tNFC_RESPONSE_EVT event,
     break;
 
 #if (NFC_NFCEE_INCLUDED == true)
+  case NFC_NFCEE_DISCOVER_REVT: /* NFCEE Discover response */
+  case NFC_NFCEE_INFO_REVT:     /* NFCEE Discover Notification */
   case NFC_EE_ACTION_REVT:      /* EE Action notification */
   case NFC_NFCEE_MODE_SET_REVT: /* NFCEE Mode Set response */
+  case NFC_NFCEE_PWR_LNK_CTRL_REVT:
+  case NFC_NFCEE_PL_CONTROL_REVT:
   case NFC_NFCEE_MODE_SET_INFO:
+  case NFC_SET_ROUTING_REVT:    /* Configure Routing response */
+  case NFC_EE_DISCOVER_REQ_REVT: /* EE Discover Req notification */
+    nfa_ee_proc_evt(event, p_data);
+      break;
   case NFC_RF_FIELD_REVT: /* RF Field information            */
     dm_cback_data.rf_field.status = NFA_STATUS_OK;
     dm_cback_data.rf_field.rf_field_status = p_data->rf_field.rf_field;
@@ -195,7 +203,8 @@ static void nfa_dm_nfc_response_cback(tNFC_RESPONSE_EVT event,
 **
 *******************************************************************************/
 bool nfa_dm_enable(tNFA_DM_MSG *p_data) {
-  DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("nfa_dm_enable ()");
+  LOG(ERROR) << StringPrintf(" nfa_dm_enable ()");
+  LOG(ERROR) << StringPrintf("  nfa_dm_enable ()");
 
   /* Check if NFA is already enabled */
   if (!(nfa_dm_cb.flags & NFA_DM_FLAGS_DM_IS_ACTIVE)) {
@@ -421,6 +430,13 @@ bool nfa_dm_act_send_raw_frame(tNFA_DM_MSG *p_data) {
   }
 }
 
+bool nfa_dm_is_hci_supported()
+{
+  bool status = false;
+  if(NFA_GetNCIVersion() == NCI_VERSION_2_0)
+    status = true;
+  return status;
+}
 /*******************************************************************************
 **
 ** Function         nfa_dm_act_set_rf_disc_duration

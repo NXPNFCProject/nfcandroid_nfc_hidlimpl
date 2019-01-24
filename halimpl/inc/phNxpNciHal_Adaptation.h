@@ -21,11 +21,12 @@
 #include <hardware/nfc.h>
 #include <android/hardware/nfc/1.1/INfc.h>
 #include <android/hardware/nfc/1.1/types.h>
-#include "eSEClientIntf.h"
+#include "EseUpdateChecker.h"
 
 using ::android::hardware::nfc::V1_1::NfcConfig;
 
 extern ese_update_state_t eseUpdateSpi;
+extern ese_update_state_t eseUpdateDwp;
 
 /* NXP HAL functions */
 

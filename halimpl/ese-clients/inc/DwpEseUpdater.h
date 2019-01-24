@@ -17,7 +17,7 @@
  ******************************************************************************/
 
 #pragma once
-#include "eSEClientIntf.h"
+#include "EseUpdateChecker.h"
 #include "JcDnld.h"
 
 extern bool nfc_debug_enabled;

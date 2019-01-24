@@ -19,7 +19,7 @@ cc_library_shared {
         "libhidltransport",
         "libhwbinder",
         "libutils",
-        "nfc_nci_nxp",
+        "se_extn_client",
         "android.hardware.nfc@1.0",
         "android.hardware.nfc@1.1",
         "vendor.nxp.nxpnfc@1.0",
@@ -34,12 +34,12 @@ cc_library_shared {
         "-DNFC_NXP_LISTEN_ROUTE_TBL_OPTIMIZATION=TRUE",
         "-DANDROID"
     ],
-    local_include_dirs: [
+    export_include_dirs: [
         "include",
+        "nfc/include",
+        "nfa/include",
         "gki/ulinux",
         "gki/common",
-        "nfa/include",
-        "nfc/include",
     ],
     include_dirs: [
         "hardware/nxp/nfc/extns/impl/",
@@ -48,6 +48,7 @@ cc_library_shared {
     srcs: [
         "nfa/dm/*.cc",
         "nfa/hci/*.cc",
+        "nfa/ee/*.cc",
         "nfa/sys/*.cc",
         "nfc/nci/*.cc",
         "nfc/nfc/*.cc",

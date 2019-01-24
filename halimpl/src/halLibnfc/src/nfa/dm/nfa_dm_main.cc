@@ -98,7 +98,7 @@ static std::string nfa_dm_evt_2_str(uint16_t event);
 **
 *******************************************************************************/
 void nfa_dm_init(void) {
-  DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("nfa_dm_init ()");
+  LOG(ERROR) << StringPrintf(" nfa_dm_init ()");
   memset(&nfa_dm_cb, 0, sizeof(tNFA_DM_CB));
   nfa_dm_cb.nfcc_pwr_mode = NFA_DM_PWR_MODE_FULL;
   /* register message handler on NFA SYS */

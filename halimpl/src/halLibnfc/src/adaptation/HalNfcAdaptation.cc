@@ -39,7 +39,7 @@
 #include "nfa_api.h"
 #include "nfc_int.h"
 #include "nfc_target.h"
-#include "phNxpNciHal_Adaptation.h"
+/*#include "phNxpNciHal_Adaptation.h"*/
 #include <android-base/stringprintf.h>
 #include <android/hardware/nfc/1.0/types.h>
 #include <android/hardware/nfc/1.1/INfc.h>
@@ -74,21 +74,21 @@ extern bool nfc_debug_enabled;
 extern void GKI_shutdown();
 
 HalNfcAdaptation *HalNfcAdaptation::mpInstance = NULL;
-ThreadMutex HalNfcAdaptation::sLock;
-ThreadMutex HalNfcAdaptation::sIoctlLock;
+HalAdaptationThreadMutex HalNfcAdaptation::sLock;
+HalAdaptationThreadMutex HalNfcAdaptation::sIoctlLock;
 sp<INxpNfc> HalNfcAdaptation::mHalNxpNfc;
 sp<INfc> HalNfcAdaptation::mHal;
 sp<INfcV1_1> HalNfcAdaptation::mHal_1_1;
 INfcClientCallback *HalNfcAdaptation::mCallback;
 tHAL_NFC_CBACK *HalNfcAdaptation::mHalCallback = NULL;
 tHAL_NFC_DATA_CBACK *HalNfcAdaptation::mHalDataCallback = NULL;
-ThreadCondVar HalNfcAdaptation::mHalOpenCompletedEvent;
-ThreadCondVar HalNfcAdaptation::mHalCloseCompletedEvent;
+HalAdaptationThreadCondVar HalNfcAdaptation::mHalOpenCompletedEvent;
+HalAdaptationThreadCondVar HalNfcAdaptation::mHalCloseCompletedEvent;
 
 #if (NXP_EXTNS == TRUE)
-ThreadCondVar HalNfcAdaptation::mHalCoreResetCompletedEvent;
-ThreadCondVar HalNfcAdaptation::mHalCoreInitCompletedEvent;
-ThreadCondVar HalNfcAdaptation::mHalInitCompletedEvent;
+HalAdaptationThreadCondVar HalNfcAdaptation::mHalCoreResetCompletedEvent;
+HalAdaptationThreadCondVar HalNfcAdaptation::mHalCoreInitCompletedEvent;
+HalAdaptationThreadCondVar HalNfcAdaptation::mHalInitCompletedEvent;
 #define SIGNAL_NONE 0
 #define SIGNAL_SIGNALED 1
 #endif
@@ -198,7 +198,7 @@ HalNfcAdaptation::~HalNfcAdaptation() {}
 **
 *******************************************************************************/
 HalNfcAdaptation &HalNfcAdaptation::GetInstance() {
-  AutoThreadMutex a(sLock);
+  HalAdaptationAutoThreadMutex a(sLock);
 
   if (!mpInstance) {
     mpInstance = new HalNfcAdaptation;
@@ -218,14 +218,13 @@ HalNfcAdaptation &HalNfcAdaptation::GetInstance() {
 *******************************************************************************/
 void HalNfcAdaptation::Initialize() {
   const char *func = "HalNfcAdaptation::Initialize";
-  const char *argv[] = {"libnfc_nci"};
+  const char *argv[] = {"halLibnfc"};
   // Init log tag
   base::CommandLine::Init(1, argv);
-
-  // Android already logs thread_id, proc_id, timestamp, so disable those.
+  nfc_storage_path = "data/vendor/nfc";
+    // Android already logs thread_id, proc_id, timestamp, so disable those.
   logging::SetLogItems(false, false, false, false);
   initializeGlobalDebugEnabledFlag();
-
   DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("%s: enter", func);
 
   GKI_init();
@@ -233,7 +232,7 @@ void HalNfcAdaptation::Initialize() {
   GKI_create_task((TASKPTR)NFCA_TASK, BTU_TASK, (int8_t *)"NFCA_TASK", 0, 0,
                   (pthread_cond_t *)NULL, NULL);
   {
-    AutoThreadMutex guard(mCondVar);
+    HalAdaptationAutoThreadMutex guard(mCondVar);
     GKI_create_task((TASKPTR)Thread, MMI_TASK, (int8_t *)"NFCA_THREAD", 0, 0,
                     (pthread_cond_t *)NULL, NULL);
     mCondVar.wait();
@@ -260,7 +259,7 @@ void HalNfcAdaptation::MinInitialize() {
   GKI_create_task((TASKPTR)NFCA_TASK, BTU_TASK, (int8_t *)"NFCA_TASK", 0, 0,
                   (pthread_cond_t *)NULL, NULL);
   {
-    AutoThreadMutex guard(mCondVar);
+    HalAdaptationAutoThreadMutex guard(mCondVar);
     GKI_create_task((TASKPTR)Thread, MMI_TASK, (int8_t *)"NFCA_THREAD", 0, 0,
                     (pthread_cond_t *)NULL, NULL);
     mCondVar.wait();
@@ -294,7 +293,7 @@ void HalNfcAdaptation::DeviceShutdown() {
 *******************************************************************************/
 void HalNfcAdaptation::Finalize() {
   const char *func = "HalNfcAdaptation::Finalize";
-  AutoThreadMutex a(sLock);
+  HalAdaptationAutoThreadMutex a(sLock);
 
   DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("%s: enter", func);
   GKI_shutdown();
@@ -359,8 +358,8 @@ uint32_t HalNfcAdaptation::Thread(__attribute__((unused)) uint32_t arg) {
   DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("%s: enter", func);
 
   {
-    ThreadCondVar CondVar;
-    AutoThreadMutex guard(CondVar);
+    HalAdaptationThreadCondVar CondVar;
+    HalAdaptationAutoThreadMutex guard(CondVar);
     GKI_create_task((TASKPTR)nfc_task, NFC_TASK, (int8_t *)"NFC_TASK", 0, 0,
                     (pthread_cond_t *)CondVar, (pthread_mutex_t *)CondVar);
     CondVar.wait();
@@ -549,7 +548,8 @@ void HalNfcAdaptation::HalWrite(uint16_t data_len, uint8_t *p_data) {
   DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("%s", func);
   ::android::hardware::nfc::V1_0::NfcData data;
   data.setToExternal(p_data, data_len);
-  phNxpNciHal_write(data_len, p_data);
+  //phNxpNciHal_write(data_len, p_data);
+  mHal_1_1->write(data);
 }
 
 #if (NXP_EXTNS == TRUE)
@@ -594,7 +594,7 @@ void IoctlCallback(::android::hardware::nfc::V1_0::NfcData outputData) {
 int HalNfcAdaptation::HalIoctl(long arg, void *p_data) {
   const char *func = "HalNfcAdaptation::HalIoctl";
   ::android::hardware::nfc::V1_0::NfcData data;
-  AutoThreadMutex a(sIoctlLock);
+  HalAdaptationAutoThreadMutex a(sIoctlLock);
   nfc_nci_IoctlInOutData_t *pInpOutData = (nfc_nci_IoctlInOutData_t *)p_data;
   DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("%s arg=%ld", func, arg);
   pInpOutData->inp.context = &HalNfcAdaptation::GetInstance();
@@ -717,14 +717,14 @@ void HalNfcAdaptation::HalControlGranted() {
 
 /*******************************************************************************
 **
-** Function:    ThreadMutex::ThreadMutex()
+** Function:    HalAdaptationThreadMutex::HalAdaptationThreadMutex()
 **
 ** Description: class constructor
 **
 ** Returns:     none
 **
 *******************************************************************************/
-ThreadMutex::ThreadMutex() {
+HalAdaptationThreadMutex::HalAdaptationThreadMutex() {
   pthread_mutexattr_t mutexAttr;
 
   pthread_mutexattr_init(&mutexAttr);
@@ -734,47 +734,47 @@ ThreadMutex::ThreadMutex() {
 
 /*******************************************************************************
 **
-** Function:    ThreadMutex::~ThreadMutex()
+** Function:    HalAdaptationThreadMutex::~HalAdaptationThreadMutex()
 **
 ** Description: class destructor
 **
 ** Returns:     none
 **
 *******************************************************************************/
-ThreadMutex::~ThreadMutex() { pthread_mutex_destroy(&mMutex); }
+HalAdaptationThreadMutex::~HalAdaptationThreadMutex() { pthread_mutex_destroy(&mMutex); }
 
 /*******************************************************************************
 **
-** Function:    ThreadMutex::lock()
+** Function:    HalAdaptationThreadMutex::lock()
 **
 ** Description: lock kthe mutex
 **
 ** Returns:     none
 **
 *******************************************************************************/
-void ThreadMutex::lock() { pthread_mutex_lock(&mMutex); }
+void HalAdaptationThreadMutex::lock() { pthread_mutex_lock(&mMutex); }
 
 /*******************************************************************************
 **
-** Function:    ThreadMutex::unblock()
+** Function:    HalAdaptationThreadMutex::unblock()
 **
 ** Description: unlock the mutex
 **
 ** Returns:     none
 **
 *******************************************************************************/
-void ThreadMutex::unlock() { pthread_mutex_unlock(&mMutex); }
+void HalAdaptationThreadMutex::unlock() { pthread_mutex_unlock(&mMutex); }
 
 /*******************************************************************************
 **
-** Function:    ThreadCondVar::ThreadCondVar()
+** Function:    HalAdaptationThreadCondVar::HalAdaptationThreadCondVar()
 **
 ** Description: class constructor
 **
 ** Returns:     none
 **
 *******************************************************************************/
-ThreadCondVar::ThreadCondVar() {
+HalAdaptationThreadCondVar::HalAdaptationThreadCondVar() {
   pthread_condattr_t CondAttr;
 
   pthread_condattr_init(&CondAttr);
@@ -785,61 +785,61 @@ ThreadCondVar::ThreadCondVar() {
 
 /*******************************************************************************
 **
-** Function:    ThreadCondVar::~ThreadCondVar()
+** Function:    HalAdaptationThreadCondVar::~HalAdaptationThreadCondVar()
 **
 ** Description: class destructor
 **
 ** Returns:     none
 **
 *******************************************************************************/
-ThreadCondVar::~ThreadCondVar() { pthread_cond_destroy(&mCondVar); }
+HalAdaptationThreadCondVar::~HalAdaptationThreadCondVar() { pthread_cond_destroy(&mCondVar); }
 
 /*******************************************************************************
 **
-** Function:    ThreadCondVar::wait()
+** Function:    HalAdaptationThreadCondVar::wait()
 **
 ** Description: wait on the mCondVar
 **
 ** Returns:     none
 **
 *******************************************************************************/
-void ThreadCondVar::wait() {
+void HalAdaptationThreadCondVar::wait() {
   pthread_cond_wait(&mCondVar, *this);
   pthread_mutex_unlock(*this);
 }
 
 /*******************************************************************************
 **
-** Function:    ThreadCondVar::signal()
+** Function:    HalAdaptationThreadCondVar::signal()
 **
 ** Description: signal the mCondVar
 **
 ** Returns:     none
 **
 *******************************************************************************/
-void ThreadCondVar::signal() {
-  AutoThreadMutex a(*this);
+void HalAdaptationThreadCondVar::signal() {
+  HalAdaptationAutoThreadMutex a(*this);
   pthread_cond_signal(&mCondVar);
 }
 
 /*******************************************************************************
 **
-** Function:    AutoThreadMutex::AutoThreadMutex()
+** Function:    HalAdaptationAutoThreadMutex::HalAdaptationAutoThreadMutex()
 **
 ** Description: class constructor, automatically lock the mutex
 **
 ** Returns:     none
 **
 *******************************************************************************/
-AutoThreadMutex::AutoThreadMutex(ThreadMutex &m) : mm(m) { mm.lock(); }
+HalAdaptationAutoThreadMutex::HalAdaptationAutoThreadMutex(HalAdaptationThreadMutex &m) : mm(m) { mm.lock(); }
 
 /*******************************************************************************
 **
-** Function:    AutoThreadMutex::~AutoThreadMutex()
+** Function:    HalAdaptationAutoThreadMutex::~HalAdaptationAutoThreadMutex()
 **
 ** Description: class destructor, automatically unlock the mutex
 **
 ** Returns:     none
 **
 *******************************************************************************/
-AutoThreadMutex::~AutoThreadMutex() { mm.unlock(); }
+HalAdaptationAutoThreadMutex::~HalAdaptationAutoThreadMutex() { mm.unlock(); }

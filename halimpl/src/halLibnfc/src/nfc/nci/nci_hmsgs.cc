@@ -339,60 +339,6 @@ uint8_t nci_snd_nfcee_discover(uint8_t discover_action) {
   nfc_ncif_send_cmd(p);
   return (NCI_STATUS_OK);
 }
-#if (NXP_EXTNS == TRUE)
-/*******************************************************************************
-**
-** Function         nci_snd_pwr_nd_lnk_ctrl_cmd
-**
-** Description      CMD for NFCC which manages the power supply and
-**                  communication links between the NFCC and its connected
-*NFCEEs.
-**
-** Returns          status
-**
-*******************************************************************************/
-uint8_t nci_snd_pwr_nd_lnk_ctrl_cmd(uint8_t nfcee_id, uint8_t cfg_value) {
-  DLOG_IF(INFO, nfc_debug_enabled)
-      << StringPrintf("nci_snd_pwr_nd_lnk_ctrl_cmd() Enter ");
-  if (!nfcFL.eseFL._WIRED_MODE_STANDBY) {
-    DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("WIRED_MODE_STANDBY not available. Returning");
-    return (NCI_STATUS_FAILED);
-  }
-  NFC_HDR *p;
-  uint8_t *pp;
-  if (nfcFL.eseFL._ESE_DUAL_MODE_PRIO_SCHEME ==
-      nfcFL.eseFL._ESE_WIRED_MODE_RESUME) {
-    if (nfc_cb.bBlkPwrlinkAndModeSetCmd) {
-      DLOG_IF(INFO, nfc_debug_enabled)
-          << StringPrintf("pwr link cmd ignored due to RF session");
-      nfc_cb.pwr_link_cmd.bPwrLinkCmdRequested = true;
-      nfc_cb.pwr_link_cmd.param = cfg_value;
-      nfc_start_quick_timer(&nfc_cb.nci_wait_pwrLinkRsp_timer,
-                            NFC_TTYPE_PWR_LINK_RSP,
-                            ((uint32_t)100) * QUICK_TIMER_TICKS_PER_SEC / 1000);
-      return (NCI_STATUS_OK);
-    }
-  }
-  if ((p = NCI_GET_CMD_BUF(nfcFL.nfcMwFL._NCI_PWR_LINK_PARAM_CMD_SIZE)) == NULL)
-    return (NCI_STATUS_FAILED);
-
-  p->event = BT_EVT_TO_NFC_NCI;
-  p->len = NCI_MSG_HDR_SIZE + nfcFL.nfcMwFL._NCI_PWR_LINK_PARAM_CMD_SIZE;
-  p->offset = NCI_MSG_OFFSET_SIZE;
-  p->layer_specific = 0;
-  pp = (uint8_t *)(p + 1) + p->offset;
-
-  NCI_MSG_BLD_HDR0(pp, NCI_MT_CMD, NCI_GID_EE_MANAGE);
-  NCI_MSG_BLD_HDR1(pp, NCI_MSG_NFCEE_PWR_LNK_CTRL);
-  UINT8_TO_STREAM(pp, nfcFL.nfcMwFL._NCI_PWR_LINK_PARAM_CMD_SIZE);
-  UINT8_TO_STREAM(pp, nfcee_id);
-  UINT8_TO_STREAM(pp, cfg_value);
-
-  nfc_ncif_send_cmd(p);
-  return (NCI_STATUS_OK);
-}
-#endif
 
 /*******************************************************************************
 **

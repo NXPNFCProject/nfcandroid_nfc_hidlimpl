@@ -302,7 +302,11 @@ void nci_proc_ee_management_rsp(NFC_HDR *p_msg) {
     event = NFC_NFCEE_MODE_SET_REVT;
     // mode_set.nfcee_id = *p_old++;
     nfc_response.mode_set.mode = *p_old++;
-    if (nfc_cb.nci_version != NCI_VERSION_2_0 || *pp != NCI_STATUS_OK) {
+  DLOG_IF(INFO, nfc_debug_enabled)
+      << StringPrintf("nci_proc_ee_management_rsp mode set:0x%x", nfc_response.mode_set.nfcee_id);
+    DLOG_IF(INFO, nfc_debug_enabled)
+      << StringPrintf("nci_proc_ee_management_rsp mode set:0x%x", nfc_response.mode_set.status);
+    if ((nfc_response.mode_set.nfcee_id != 0xC0 && nfc_cb.nci_version != NCI_VERSION_2_0 ) || *pp != NCI_STATUS_OK) {
       nfc_cb.flags &= ~NFC_FL_WAIT_MODE_SET_NTF;
       event = NFC_NFCEE_MODE_SET_REVT;
     } else {
@@ -311,31 +315,6 @@ void nci_proc_ee_management_rsp(NFC_HDR *p_msg) {
     }
     break;
 
-#if (NXP_EXTNS == TRUE)
-  case NCI_MSG_NFCEE_PWR_LNK_CTRL:
-    if (nfcFL.eseFL._WIRED_MODE_STANDBY) {
-      nfc_response.pl_control.status = *pp;
-      nfc_response.pl_control.nfcee_id = *p_old++;
-      nfc_response.pl_control.pl_control = *p_old++;
-      event = NFC_NFCEE_PWR_LNK_CTRL_REVT;
-      if (nfcFL.eseFL._ESE_DUAL_MODE_PRIO_SCHEME ==
-          nfcFL.eseFL._ESE_WIRED_MODE_RESUME) {
-        if (nfc_cb.bIssueModeSetCmd) {
-          DLOG_IF(INFO, nfc_debug_enabled)
-              << StringPrintf("mode set cmd send after pwrlink cmd");
-          nfc_cb.bSetmodeOnReq = true;
-          nci_snd_nfcee_mode_set(NFCEE_ID_ESE, NFC_MODE_ACTIVATE);
-          nfc_start_timer(&nfc_cb.nci_wait_setMode_Ntf_timer,
-                          (uint16_t)NFC_TYPE_NCI_WAIT_SETMODE_NTF,
-                          NFC_NCI_SETMODE_NTF_TIMEOUT);
-          nfc_cb.bIssueModeSetCmd = false;
-        } else {
-          nfc_cb.bIssueModeSetCmd = false;
-        }
-      }
-      break;
-    }
-#endif
   case NCI_MSG_NFCEE_POWER_LINK_CTRL:
     nfc_response.pl_control.status = *pp;
     nfc_response.pl_control.nfcee_id = *p_old++;
@@ -434,13 +413,14 @@ void nci_proc_ee_management_ntf(NFC_HDR *p_msg) {
     nfc_stop_timer(&nfc_cb.nci_wait_setMode_Ntf_timer);
     if (nfc_cb.nci_version != NCI_VERSION_2_0) {
       // p_evt = (tNFC_RESPONSE*)&mode_set_info;
-      event = NFC_NFCEE_MODE_SET_INFO;
+      event = NFC_NFCEE_MODE_SET_REVT;
       // ee_status = *pp++;
       // mode_set_info.nfcee_id = *pp++;
       // mode_set_info.status = ee_status;
       nfc_response.mode_set_info.status = *pp++;
       nfc_response.mode_set_info.nfcee_id = *pp++;
-
+      nfc_cb.flags &= ~NFC_FL_WAIT_MODE_SET_NTF;
+      nfc_stop_timer(&nfc_cb.nci_setmode_ntf_timer);
     } else {
       DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf(
           "nci_proc_ee_management_last ntf mode:0x%x, nfceeid:0x%x",

@@ -701,7 +701,7 @@ bool nfa_dm_is_raw_frame_session(void);
 bool nfa_dm_is_p2p_paused(void);
 void nfa_dm_p2p_prio_logic_cleanup(void);
 void nfa_dm_deact_ntf_timeout();
-
+bool nfa_dm_is_hci_supported();
 #if (NFC_NFCEE_INCLUDED == false)
 #define nfa_ee_get_tech_route(ps, ha)                                          \
   memset(ha, NFC_DH_ID, NFA_DM_MAX_TECH_ROUTE);

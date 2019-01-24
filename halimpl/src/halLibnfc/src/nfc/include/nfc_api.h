@@ -49,7 +49,7 @@
 #include "nci_defs.h"
 #include "nfc_hal_api.h"
 #include "nfc_target.h"
-
+#include "vendor_cfg.h"
 /* NFC application return status codes */
 /* Command succeeded    */
 #define NFC_STATUS_OK NCI_STATUS_OK
@@ -62,7 +62,9 @@
 /* failed               */
 #define NFC_STATUS_FAILED NCI_STATUS_FAILED
 /* not initialized      */
+#ifndef NFC_STATUS_NOT_INITIALIZED
 #define NFC_STATUS_NOT_INITIALIZED NCI_STATUS_NOT_INITIALIZED
+#endif
 /* Syntax error         */
 #define NFC_STATUS_SYNTAX_ERROR NCI_STATUS_SYNTAX_ERROR
 /* Semantic error       */
@@ -118,7 +120,7 @@
 #define NXP_EN_PN553_MR2 0
 #define NXP_EN_PN557 0
 #define NXP_EN_PN81T 0
-#define NXP_ANDROID_VER (9U)          /* NXP android version */
+/*#define NXP_ANDROID_VER (9U)*/          /* NXP android version */
 #define NFC_NXP_MW_VERSION_MAJ (0x02) /* MW Major Version */
 #define NFC_NXP_MW_VERSION_MIN (0x03) /* MW Minor Version */
 #endif
@@ -157,6 +159,9 @@
 #define NFC_STATUS_BAD_HANDLE 0xFE
 /* congested                  */
 #define NFC_STATUS_CONGESTED 0xFF
+
+#define NFC_STATUS_REFUSED 0xE6
+
 typedef uint8_t tNFC_STATUS;
 #if (NXP_EXTNS == TRUE)
 #define NFC_NFCC_INIT_MAX_RETRY 2
@@ -405,13 +410,13 @@ typedef struct {
             P61_STATE_JCP_DWNLD                                                \
             under p61_access_state_t inside pn553.h(NFCC driver header) */
 
-typedef enum jcop_dwnld_state {
-  JCP_DWNLD_IDLE = ESE_STATE_JCOP_DWNLD, /* jcop dwnld is not ongoing*/
-  JCP_DWNLD_INIT = 0x8010,               /* jcop dwonload init state*/
-  JCP_DWNLD_START = 0x8020,              /* download started */
-  JCP_SPI_DWNLD_COMPLETE = 0x8040, /* jcop download complete in spi interface*/
-  JCP_DWP_DWNLD_COMPLETE = 0x8080, /* jcop download complete */
-} jcop_dwnld_state_t;
+typedef enum libnfc_jcop_dwnld_state {
+  LIBNFC_JCP_DWNLD_IDLE = ESE_STATE_JCOP_DWNLD, /* jcop dwnld is not ongoing*/
+  LIBNFC_JCP_DWNLD_INIT = 0x8010,               /* jcop dwonload init state*/
+  LIBNFC_JCP_DWNLD_START = 0x8020,              /* download started */
+  LIBNFC_JCP_SPI_DWNLD_COMPLETE = 0x8040, /* jcop download complete in spi interface*/
+  LIBNFC_JCP_DWP_DWNLD_COMPLETE = 0x8080, /* jcop download complete */
+} libnfc_jcop_dwnld_state_t;
 #endif
 
 /* the data type associated with NFC_NFCEE_DISCOVER_REVT */
@@ -1475,7 +1480,7 @@ extern tNFC_STATUS NFC_SendRawVsCommand(NFC_HDR *p_data,
 ** Returns          0 if api call success, else -1
 **
 *******************************************************************************/
-extern int32_t NFC_SetP61Status(void *pdata, jcop_dwnld_state_t isJcopState);
+extern int32_t NFC_SetP61Status(void *pdata, libnfc_jcop_dwnld_state_t isJcopState);
 #endif
 
 /*******************************************************************************

@@ -130,7 +130,7 @@ void nfc_process_timer_evt(void) {
     case NFC_TTYPE_NCI_WAIT_RSP:
       nfc_ncif_cmd_timeout();
       break;
-    case NFC_TTYPE_WAIT_SETMODE_NTF:
+    case NFC_TTYPE_WAIT_MODE_SET_NTF:
       nfc_modeset_ntf_timeout();
       break;
 
@@ -332,9 +332,11 @@ uint32_t nfc_task(__attribute__((unused)) uint32_t arg) {
     if (event & NFC_TASK_EVT_TRANSPORT_READY) {
       DLOG_IF(INFO, nfc_debug_enabled)
           << StringPrintf("NFC_TASK got NFC_TASK_EVT_TRANSPORT_READY.");
-
-      /* Reset the NFC controller. */
+      check_nfcee_session_and_reset();
       nfc_set_state(NFC_STATE_CORE_INIT);
+      /* Reset the NFC controller. */
+      //check_nfcee_session_and_reset();
+      nci_snd_core_reset(NCI_RESET_TYPE_KEEP_CFG);
     }
 
     if (event & NFC_MBOX_EVT_MASK) {

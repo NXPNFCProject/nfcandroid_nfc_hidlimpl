@@ -2,6 +2,7 @@
 #include <cutils/log.h>
 #include "DwpSeChannelCallback.h"
 #include "phNxpEse_Api.h"
+#include "phNxpNfc_IntfApi.h"
   /** abstract class having pure virtual functions to be implemented be each
    * client  - spi, nfc etc**/
 
@@ -14,7 +15,15 @@
     ** Returns:         True if ok.
     **
     *******************************************************************************/
-    int16_t DwpSeChannelCallback :: open() { return SESTATUS_SUCCESS; }
+    int16_t DwpSeChannelCallback :: open() {
+      if(phNxpNfc_openEse() == SESTATUS_SUCCESS) {
+        ALOGD("%s enter: success ", __func__);
+        return SESTATUS_SUCCESS;
+        } else {
+          ALOGD("%s enter: failed ", __func__);
+          return SESTATUS_FAILED;
+        }
+    }
 
     /*******************************************************************************
     **
@@ -51,14 +60,10 @@
                                __attribute__((unused)) uint8_t* recvBuffer, int32_t recvBufferMaxSize,
                                __attribute__((unused)) int32_t& recvBufferActualSize,
                                int32_t timeoutMillisec) {
-      phNxpEse_data cmdData;
-
-      cmdData.len = xmitBufferSize;
-      cmdData.p_data = xmitBuffer;
-
-      recvBufferMaxSize++;
-      timeoutMillisec++;
-      return true;
+    bool isSuccess = false;
+    isSuccess = phNxpNfc_EseTransceive(xmitBuffer, xmitBufferSize, recvBuffer,
+                     recvBufferMaxSize, recvBufferActualSize, timeoutMillisec);
+      return isSuccess;
     }
 
     /*******************************************************************************
@@ -70,7 +75,7 @@
     ** Returns:         None.
     **
     *******************************************************************************/
-    void DwpSeChannelCallback::doEseHardReset() { return ;}
+    void DwpSeChannelCallback::doEseHardReset() { phNxpNfc_ResetEseJcopUpdate();}
 
     /*******************************************************************************
     **

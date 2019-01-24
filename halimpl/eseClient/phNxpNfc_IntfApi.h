@@ -16,7 +16,8 @@
 #include <phNfcStatus.h>
 #include <cutils/log.h>
 #include "nfa_api.h"
-#include "NfcAdaptation.h"
+/*#include "NfcAdaptation.h"*/
+#include "HalNfcAdaptation.h"
 #include "nfa_ee_api.h"
 #include "nfa_hci_api.h"
 #include <phNxpLog.h>

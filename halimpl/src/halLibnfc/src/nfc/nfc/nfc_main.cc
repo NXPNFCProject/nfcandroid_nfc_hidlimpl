@@ -48,7 +48,7 @@
 #include <android/hardware/nfc/1.1/types.h>
 #include <base/logging.h>
 #include <cutils/properties.h>
-#include <phNxpNciHal_Adaptation.h>
+//#include <phNxpNciHal_Adaptation.h>
 
 #include "bt_types.h"
 #include "gki.h"
@@ -63,6 +63,8 @@
 #if (NFC_RW_ONLY == FALSE)
 #if (NXP_EXTNS == TRUE)
 #include "nfa_dm_int.h"
+#include "HalNfcAdaptation.h"
+#include <fcntl.h>
 #endif
 
 /* NFC mandates support for at least one logical connection;
@@ -82,7 +84,7 @@ using android::base::StringPrintf;
 using android::hardware::nfc::V1_1::NfcEvent;
 
 extern bool nfc_debug_enabled;
-
+extern std::string nfc_storage_path;
 /****************************************************************************
 ** Declarations
 ****************************************************************************/
@@ -808,12 +810,19 @@ tNFC_STATUS NFC_Enable(tNFC_RESPONSE_CBACK *p_cback) {
   }
   nfc_cb.p_resp_cback = p_cback;
 
+  /* Open HAL transport. */
+  nfc_set_state(NFC_STATE_W4_HAL_OPEN);
+
 #ifdef HAL_LIBNFC_DISABLED
   nfc_cb.p_hal->open(nfc_main_hal_cback, nfc_main_hal_data_cback);
 #else
-  nfc_cb.nfc_state = NFC_STATE_OPEN;
-  phNxpNciHalAdaptation_callbak_reg(nfc_main_hal_cback,
+  nfc_cb.p_hal->open(nfc_main_hal_cback, nfc_main_hal_data_cback);
+  //nfc_cb.nfc_state = NFC_STATE_OPEN;
+  /*phNxpNciHalAdaptation_callbak_reg(nfc_main_hal_cback,
                                     nfc_main_hal_data_cback);
+  *//* Notify NFC_TASK that NCI tranport is initialized */
+  GKI_send_event(NFC_TASK, NFC_TASK_EVT_TRANSPORT_READY);
+#if 0
   tNFC_CONN_CB *p_cb = &nfc_cb.conn_cb[NFC_RF_CONN_ID];
   p_cb->init_credits = p_cb->num_buff = 1;
   p_cb->buff_size = 0xFF;
@@ -825,6 +834,7 @@ tNFC_STATUS NFC_Enable(tNFC_RESPONSE_CBACK *p_cback) {
   tNFA_DM_CBACK_DATA dm_cback_data;
   dm_cback_data.status = NFA_STATUS_OK;
   (*nfa_dm_cb.p_dm_cback)(NFA_DM_ENABLE_EVT, &dm_cback_data);
+#endif
 #endif
   return (NFC_STATUS_OK);
 }
@@ -931,17 +941,6 @@ uint16_t NFC_GetLmrtSize(void) {
 #endif
   return size;
 }
-/*******************************************************************************
-**
-** Function         NFC_GetNCIVersion
-**
-** Description      Called by higher layer to get the current nci
-**                  version of nfc.
-**
-** Returns          NCI version NCI2.0 / NCI1.0
-**
-*******************************************************************************/
-uint8_t NFC_GetNCIVersion() { return nfc_cb.nci_version; }
 
 /*******************************************************************************
 **
@@ -1574,6 +1573,19 @@ int32_t NFC_ReqWiredAccess(void *pdata) {
   *(tNFC_STATUS *)pdata = inpOutData.out.data.status;
   return status;
 }
+
+/*******************************************************************************
+**
+** Function         NFC_GetNCIVersion
+**
+** Description      Called by higher layer to get the current nci
+**                  version of nfc.
+**
+** Returns          NCI version NCI2.0 / NCI1.0
+**
+*******************************************************************************/
+uint8_t NFC_GetNCIVersion() { return nfc_cb.nci_version; }
+
 /*******************************************************************************
 **
 ** Function         NFC_RelWiredAccess
@@ -1678,32 +1690,29 @@ int32_t NFC_AcquireEsePwr(void *pdata) {
   *(tNFC_STATUS *)pdata = inpOutData.out.data.status;
   return status;
 }
+
 #if (NXP_EXTNS == TRUE)
 /*******************************************************************************
-+**
-** Function         NFC_Nfcee_PwrLinkCtrl
 **
-** Description      This function is called for NFCC which manages the power
-supply and
-**                  communication links between the NFCC and its connected
-NFCEEs.
+** Function         check_nfcee_session_and_reset
 **
-** Parameters       nfcee_id   - the NFCEE ID .
-**                  cfg_value  - 0x00 ->Default Value(NFCC decides)
-**                               0x01 ->NFCEE Power Supply always On
-**                               0x03 ->NFCC to NFCEE Communication link always
-**                                      active when the NFCEE is powered on
-** Returns          tNFC_STATUS
+** Description      check bin file not present call reset session
+**
+** Returns          void
 **
 *******************************************************************************/
-tNFC_STATUS NFC_Nfcee_PwrLinkCtrl(uint8_t nfcee_id, uint8_t cfg_value) {
-  if (!nfcFL.eseFL._WIRED_MODE_STANDBY) {
-    DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("NFC_Nfcee_PwrLinkCtrl :"
-                        "WIRED_MODE_STANDBY is not available.. Returning");
-    return NFC_STATUS_FAILED;
-  }
-  return nci_snd_pwr_nd_lnk_ctrl_cmd(nfcee_id, cfg_value);
+void  check_nfcee_session_and_reset()
+{
+      std::string filename(nfc_storage_path);
+      std::string sConfigFile = "/halStorage.bin1";
+      filename.append(sConfigFile);
+      int fileStream = open(filename.c_str(), O_RDONLY);
+      if (fileStream < 0) {
+        DLOG_IF(INFO, nfc_debug_enabled)
+            << StringPrintf("%s: file not found %s", __func__, filename.c_str());
+        HalNfcAdaptation& theInstance = HalNfcAdaptation::GetInstance();
+        theInstance.FactoryReset();
+      }
 }
 
 /*******************************************************************************
@@ -1716,7 +1725,7 @@ tNFC_STATUS NFC_Nfcee_PwrLinkCtrl(uint8_t nfcee_id, uint8_t cfg_value) {
 ** Returns          0 if api call success, else -1
 **
 *******************************************************************************/
-int32_t NFC_SetP61Status(void *pdata, jcop_dwnld_state_t isJcopState) {
+int32_t NFC_SetP61Status(void *pdata, libnfc_jcop_dwnld_state_t isJcopState) {
   if (!nfcFL.eseFL._ESE_JCOP_DWNLD_PROTECTION) {
     DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf(
         "NFC_SetP61Status :"
@@ -1724,11 +1733,11 @@ int32_t NFC_SetP61Status(void *pdata, jcop_dwnld_state_t isJcopState) {
     return -1;
   }
   nfc_nci_IoctlInOutData_t inpOutData;
-  if (isJcopState == JCP_DWNLD_START)
-    isJcopState = (jcop_dwnld_state_t)nfc_cb.p_hal->ioctl(
+  if (isJcopState == LIBNFC_JCP_DWNLD_START)
+    isJcopState = (libnfc_jcop_dwnld_state_t)nfc_cb.p_hal->ioctl(
         HAL_NFC_IOCTL_SET_JCP_DWNLD_ENABLE, &inpOutData);
-  else if (isJcopState == JCP_DWP_DWNLD_COMPLETE)
-    isJcopState = (jcop_dwnld_state_t)(
+  else if (isJcopState == LIBNFC_JCP_DWP_DWNLD_COMPLETE)
+    isJcopState = (libnfc_jcop_dwnld_state_t)(
         nfc_cb.p_hal->ioctl(HAL_NFC_IOCTL_SET_JCP_DWNLD_DISABLE, &inpOutData));
   *(tNFC_STATUS *)pdata = inpOutData.out.data.status;
   return isJcopState;
