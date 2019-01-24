@@ -48,6 +48,7 @@
 #include <android/hardware/nfc/1.1/types.h>
 #include <base/logging.h>
 #include <cutils/properties.h>
+#include <phNxpNciHal_Adaptation.h>
 
 #include "bt_types.h"
 #include "ce_int.h"
@@ -68,7 +69,6 @@
 
 #if (NXP_EXTNS == TRUE)
 #include "nfa_dm_int.h"
-extern void nfa_dm_init_cfgs(phNxpNci_getCfg_info_t *mGetCfg_info_main);
 #endif
 
 /* NFC mandates support for at least one logical connection;
@@ -510,8 +510,6 @@ void nfc_main_handle_hal_evt(tNFC_HAL_EVT_MSG *p_msg) {
             nfc_nci_IoctlInOutData_t inpOutData;
             nfc_cb.p_hal->ioctl(HAL_NFC_IOCTL_GET_CONFIG_INFO,
                                 (void *)&inpOutData);
-            nfa_dm_init_cfgs(
-                (phNxpNci_getCfg_info_t *)&inpOutData.out.data.nxpNciAtrInfo);
           }
 #endif
         } else /* if post initailization failed */
@@ -688,6 +686,8 @@ static void nfc_main_hal_cback(uint8_t event, tHAL_NFC_STATUS status) {
   DLOG_IF(INFO, nfc_debug_enabled)
       << StringPrintf("nfc_main_hal_cback event: %s(0x%x), status=%d",
                       nfc_hal_event_name(event).c_str(), event, status);
+  DLOG_IF(INFO, nfc_debug_enabled)
+      << StringPrintf("HAL_NFC_WRITE_COMPLETE = %x", HAL_NFC_WRITE_COMPLETE);
 #if (NXP_EXTNS == TRUE)
   tNFC_RESPONSE eventData;
 #endif
@@ -705,9 +705,6 @@ static void nfc_main_hal_cback(uint8_t event, tHAL_NFC_STATUS status) {
       } else {
         nfc_main_post_hal_evt(event, status);
       }
-      nfa_ee_max_ee_cfg = nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED;
-      DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf(
-          "NFA_EE_MAX_EE_SUPPORTED to use %d", nfa_ee_max_ee_cfg);
     }
     break;
 
@@ -742,6 +739,12 @@ static void nfc_main_hal_cback(uint8_t event, tHAL_NFC_STATUS status) {
         << StringPrintf("nfc_main_hal_cback handled  event  %x", event);
     set_i2c_fragmentation_enabled(I2C_FRAGMENATATION_ENABLED);
   } break;
+  case HAL_NFC_WRITE_COMPLETE: {
+    DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf(
+        "nfc_main_hal_cback handled  event  HAL_NFC_WRITE_COMPLETE %x", event);
+    eventData.write_status = (uint32_t)status;
+    (*nfc_cb.p_resp_cback)(HAL_NFC_WRITE_COMPLETE, &eventData);
+  }
   default:
     DLOG_IF(INFO, nfc_debug_enabled)
         << StringPrintf("nfc_main_hal_cback unhandled event %x", event);
@@ -825,7 +828,24 @@ tNFC_STATUS NFC_Enable(tNFC_RESPONSE_CBACK *p_cback) {
     nfc_cb.p_hal->ioctl(HAL_NFC_IOCTL_SET_BOOT_MODE, (void *)&inpOutData);
   }
 #endif
+#ifdef HAL_LIBNFC_DISABLED
   nfc_cb.p_hal->open(nfc_main_hal_cback, nfc_main_hal_data_cback);
+#else
+  nfc_cb.nfc_state = NFC_STATE_OPEN;
+  phNxpNciHalAdaptation_callbak_reg(nfc_main_hal_cback,
+                                    nfc_main_hal_data_cback);
+  tNFC_CONN_CB *p_cb = &nfc_cb.conn_cb[NFC_RF_CONN_ID];
+  p_cb->init_credits = p_cb->num_buff = 1;
+  p_cb->buff_size = 0xFF;
+  nfc_set_conn_id(p_cb, NFC_RF_CONN_ID);
+  p_cb = &nfc_cb.conn_cb[NFC_NFCEE_CONN_ID];
+  p_cb->init_credits = p_cb->num_buff = 1;
+  p_cb->buff_size = 0xFF;
+  nfc_set_conn_id(p_cb, NFC_NFCEE_CONN_ID);
+  tNFA_DM_CBACK_DATA dm_cback_data;
+  dm_cback_data.status = NFA_STATUS_OK;
+  (*nfa_dm_cb.p_dm_cback)(NFA_DM_ENABLE_EVT, &dm_cback_data);
+#endif
   return (NFC_STATUS_OK);
 }
 
@@ -884,11 +904,11 @@ void NFC_Disable(void) {
 ** Returns          nothing
 **
 *******************************************************************************/
-#if (NXP_EXTNS == TRUE)
-void NFC_Init(tHAL_NFC_CONTEXT *p_hal_entry_cntxt)
-#else
+//#if (NXP_EXTNS == TRUE)
+// void NFC_Init(tHAL_NFC_CONTEXT* p_hal_entry_cntxt)
+//#else
 void NFC_Init(tHAL_NFC_ENTRY *p_hal_entry_tbl)
-#endif
+//#endif
 {
   int xx;
 
@@ -900,12 +920,12 @@ void NFC_Init(tHAL_NFC_ENTRY *p_hal_entry_tbl)
     nfc_cb.conn_cb[xx].conn_id = NFC_ILLEGAL_CONN_ID;
   }
 
-/* NCI init */
-#if (NXP_EXTNS == TRUE)
-  nfc_cb.p_hal = p_hal_entry_cntxt->hal_entry_func;
-#else
+  /* NCI init */
+  //#if (NXP_EXTNS == TRUE)
+  //  nfc_cb.p_hal = p_hal_entry_cntxt->hal_entry_func;
+  //#else
   nfc_cb.p_hal = p_hal_entry_tbl;
-#endif
+  //#endif
   nfc_cb.nfc_state = NFC_STATE_NONE;
   nfc_cb.nci_cmd_window = NCI_MAX_CMD_WINDOW;
   nfc_cb.nci_wait_rsp_tout = NFC_CMD_CMPL_TIMEOUT;
@@ -920,28 +940,26 @@ void NFC_Init(tHAL_NFC_ENTRY *p_hal_entry_tbl)
   nfc_cb.nci_ctrl_size = NCI_CTRL_INIT_SIZE;
   nfc_cb.reassembly = true;
   nfc_cb.nci_version = NCI_VERSION_UNKNOWN;
-#if (NXP_EXTNS == TRUE)
-  nfc_cb.boot_mode = p_hal_entry_cntxt->boot_mode;
-  nfc_cb.bBlockWiredMode = false;
-  nfc_cb.bRetransmitDwpPacket = false;
-  nfc_cb.bIsCreditNtfRcvd = false;
-  nfc_cb.temp_data = NULL;
-  nfc_cb.bSetmodeOnReq = false;
-  nfc_cb.bIsDwpResPending = false;
-  nfc_cb.bIssueModeSetCmd = false;
-  nfc_cb.bCeActivatedeSE = false;
-  nfc_cb.pwr_link_cmd.bPwrLinkCmdRequested = false;
-  nfc_cb.bBlkPwrlinkAndModeSetCmd = false;
-  nfc_cb.isLowRam = p_hal_entry_cntxt->isLowRam;
-  if (p_hal_entry_cntxt->boot_mode != NFC_FAST_BOOT_MODE)
-#endif
-  {
-    rw_init();
-    ce_init();
-    llcp_init();
-#if (NXP_EXTNS == TRUE)
-  }
-#endif
+  /*#if (NXP_EXTNS == TRUE)
+    nfc_cb.boot_mode = p_hal_entry_cntxt->boot_mode;
+    nfc_cb.bBlockWiredMode = false;
+    nfc_cb.bRetransmitDwpPacket = false;
+    nfc_cb.bIsCreditNtfRcvd = false;
+    nfc_cb.temp_data = NULL;
+    nfc_cb.bSetmodeOnReq = false;
+    nfc_cb.bIsDwpResPending = false;
+    nfc_cb.bIssueModeSetCmd = false;
+    nfc_cb.bCeActivatedeSE = false;
+    nfc_cb.pwr_link_cmd.bPwrLinkCmdRequested = false;
+    nfc_cb.bBlkPwrlinkAndModeSetCmd = false;
+    nfc_cb.isLowRam = p_hal_entry_cntxt->isLowRam;
+    if (p_hal_entry_cntxt->boot_mode != NFC_FAST_BOOT_MODE)
+  #endif*/
+  //  {
+  llcp_init();
+  /*#if (NXP_EXTNS == TRUE)
+    }
+  #endif*/
 
   NFC_SET_MAX_CONN_DEFAULT();
 }
@@ -1271,6 +1289,10 @@ void NFC_SetStaticRfCback(tNFC_CONN_CBACK *p_cback) {
   nfc_data_event(p_cb);
 }
 
+void NFC_SetNfceeCback(tNFA_VSC_CBACK *p_cback) {
+  halLibnfcDataCallback = p_cback;
+}
+
 /*******************************************************************************
 **
 ** Function         NFC_SetReassemblyFlag
@@ -1411,7 +1433,7 @@ tNFC_STATUS NFC_Deactivate(tNFC_DEACT_TYPE deactivate_type) {
     nfc_cb.p_last_disc = nfc_cb.p_disc_pending;
     nfa_dm_cb.disc_cb.disc_flags &= ~NFA_DM_DISC_FLAGS_W4_RSP;
 #else
-      GKI_freebuf(nfc_cb.p_disc_pending);
+    GKI_freebuf(nfc_cb.p_disc_pending);
 #endif
     nfc_cb.p_disc_pending = NULL;
     return NFC_STATUS_OK;

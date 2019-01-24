@@ -195,49 +195,13 @@ void nci_proc_rf_management_rsp(NFC_HDR *p_msg) {
 
   switch (op_code) {
   case NCI_MSG_RF_DISCOVER:
-    nfa_dm_p2p_prio_logic(op_code, pp, NFA_DM_P2P_PRIO_RSP);
     nfc_ncif_rf_management_status(NFC_START_DEVT, *pp);
     break;
 
-  case NCI_MSG_RF_DISCOVER_SELECT:
-    nfc_ncif_rf_management_status(NFC_SELECT_DEVT, *pp);
-    break;
-
-  case NCI_MSG_RF_T3T_POLLING:
-    break;
-
-  case NCI_MSG_RF_DISCOVER_MAP:
-    nfc_ncif_rf_management_status(NFC_MAP_DEVT, *pp);
-    break;
-
   case NCI_MSG_RF_DEACTIVATE:
-    if (false == nfa_dm_p2p_prio_logic(op_code, pp, NFA_DM_P2P_PRIO_RSP)) {
-      return;
-    }
     nfc_ncif_proc_deactivate(*pp, *p_old, false);
     break;
 
-#if (NFC_NFCEE_INCLUDED == true)
-#if (NFC_RW_ONLY == FALSE)
-
-  case NCI_MSG_RF_SET_ROUTING:
-    nfc_ncif_event_status(NFC_SET_ROUTING_REVT, *pp);
-    break;
-
-  case NCI_MSG_RF_GET_ROUTING:
-    if (*pp != NFC_STATUS_OK)
-      nfc_ncif_event_status(NFC_GET_ROUTING_REVT, *pp);
-    break;
-#endif
-#endif
-
-  case NCI_MSG_RF_PARAMETER_UPDATE:
-    nfc_ncif_event_status(NFC_RF_COMM_PARAMS_UPDATE_REVT, *pp);
-    break;
-
-  case NCI_MSG_RF_ISO_DEP_NAK_PRESENCE:
-    nfc_ncif_proc_isodep_nak_presence_check_status(*pp, false);
-    break;
   default:
     LOG(ERROR) << StringPrintf("unknown opcode:0x%x", op_code);
     break;
@@ -269,19 +233,10 @@ void nci_proc_rf_management_ntf(NFC_HDR *p_msg) {
     break;
 
   case NCI_MSG_RF_DEACTIVATE:
-    if (false == nfa_dm_p2p_prio_logic(op_code, pp, NFA_DM_P2P_PRIO_NTF)) {
-      return;
-    }
-    if (NFC_GetNCIVersion() == NCI_VERSION_2_0) {
-      nfc_cb.deact_reason = *(pp + 1);
-    }
     nfc_ncif_proc_deactivate(NFC_STATUS_OK, *pp, true);
     break;
 
   case NCI_MSG_RF_INTF_ACTIVATED:
-    if (false == nfa_dm_p2p_prio_logic(op_code, pp, NFA_DM_P2P_PRIO_NTF)) {
-      return;
-    }
     nfc_ncif_proc_activate(pp, len);
     break;
 
@@ -289,29 +244,13 @@ void nci_proc_rf_management_ntf(NFC_HDR *p_msg) {
     nfc_ncif_proc_rf_field_ntf(*pp);
     break;
 
-  case NCI_MSG_RF_T3T_POLLING:
-    nfc_ncif_proc_t3t_polling_ntf(pp, len);
-    break;
-
 #if (NFC_NFCEE_INCLUDED == true)
 #if (NFC_RW_ONLY == FALSE)
-
-  case NCI_MSG_RF_GET_ROUTING:
-    nfc_ncif_proc_get_routing(pp, len);
-    break;
-
   case NCI_MSG_RF_EE_ACTION:
     nfc_ncif_proc_ee_action(pp, len);
     break;
-
-  case NCI_MSG_RF_EE_DISCOVERY_REQ:
-    nfc_ncif_proc_ee_discover_req(pp, len);
-    break;
 #endif
 #endif
-  case NCI_MSG_RF_ISO_DEP_NAK_PRESENCE:
-    nfc_ncif_proc_isodep_nak_presence_check_status(*pp, true);
-    break;
   default:
     LOG(ERROR) << StringPrintf("unknown opcode:0x%x", op_code);
     break;
@@ -508,8 +447,6 @@ void nci_proc_ee_management_ntf(NFC_HDR *p_msg) {
           "nci_proc_ee_management_last ntf mode:0x%x, nfceeid:0x%x",
           nfc_response.mode_set.mode, nfc_response.mode_set.nfcee_id);
       nfc_response.mode_set.status = *pp;
-      nfc_response.mode_set.nfcee_id = nfa_ee_cb.nfcee_id;
-      nfc_response.mode_set.mode = nfa_ee_cb.mode;
       /*mode_set.nfcee_id = *p_old++;
   mode_set.mode = *p_old++;*/
       /*mode_set.nfcee_id = nfa_ee_cb.nfcee_id;

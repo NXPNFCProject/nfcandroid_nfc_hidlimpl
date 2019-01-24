@@ -310,6 +310,7 @@ typedef union {
   tNFA_DM_RF_FIELD rf_field;           /* NFA_DM_RF_FIELD_EVT      */
   void *p_vs_evt_data;                 /* Vendor-specific evt data */
   tNFA_DM_POWER_STATE power_sub_state; /* power sub state */
+  uint32_t write_status;
 } tNFA_DM_CBACK_DATA;
 
 /* NFA_DM callback */
@@ -1300,7 +1301,9 @@ extern tNFA_STATUS NFA_Deactivate(bool sleep_mode);
 *******************************************************************************/
 extern tNFA_STATUS NFA_SendRawFrame(uint8_t *p_raw_data, uint16_t data_len,
                                     uint16_t presence_check_start_delay);
-
+extern tNFA_STATUS NFA_SendRawFrame(uint8_t *p_raw_data, uint16_t data_len,
+                                    uint16_t presence_check_start_delay,
+                                    tNFC_VS_CBACK *p_cback);
 /*******************************************************************************
 ** NDEF APIs
 *******************************************************************************/

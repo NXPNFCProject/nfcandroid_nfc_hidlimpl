@@ -101,15 +101,15 @@ extern void nfa_nv_co_read(uint8_t *pBuffer, uint16_t nbytes, uint8_t block) {
     if (actualReadData > 0) {
       DLOG_IF(INFO, nfc_debug_enabled)
           << StringPrintf("%s: data size=%zu", __func__, actualReadData);
-      nfa_nv_ci_read(actualReadData, NFA_NV_CO_OK, block);
+      // nfa_nv_ci_read(actualReadData, NFA_NV_CO_OK, block);
     } else {
       LOG(ERROR) << StringPrintf("%s: fail to read", __func__);
-      nfa_nv_ci_read(0, NFA_NV_CO_FAIL, block);
+      // nfa_nv_ci_read(0, NFA_NV_CO_FAIL, block);
     }
   } else {
     DLOG_IF(INFO, nfc_debug_enabled)
         << StringPrintf("%s: fail to open", __func__);
-    nfa_nv_ci_read(0, NFA_NV_CO_FAIL, block);
+    // nfa_nv_ci_read(0, NFA_NV_CO_FAIL, block);
   }
 }
 
@@ -146,15 +146,15 @@ extern void nfa_nv_co_write(const uint8_t *pBuffer, uint16_t nbytes,
         << StringPrintf("%s: %zu bytes written", __func__, actualWrittenData);
     if ((actualWrittenData == nbytes) &&
         (actualWrittenCrc == sizeof(checksum))) {
-      nfa_nv_ci_write(NFA_NV_CO_OK);
+      // nfa_nv_ci_write(NFA_NV_CO_OK);
     } else {
       LOG(ERROR) << StringPrintf("%s: fail to write", __func__);
-      nfa_nv_ci_write(NFA_NV_CO_FAIL);
+      // nfa_nv_ci_write(NFA_NV_CO_FAIL);
     }
     close(fileStream);
   } else {
     LOG(ERROR) << StringPrintf("%s: fail to open, error = %d", __func__, errno);
-    nfa_nv_ci_write(NFA_NV_CO_FAIL);
+    // nfa_nv_ci_write(NFA_NV_CO_FAIL);
   }
 }
 

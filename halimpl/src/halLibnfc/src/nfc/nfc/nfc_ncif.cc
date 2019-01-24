@@ -44,7 +44,6 @@
  ******************************************************************************/
 #include <android-base/stringprintf.h>
 #include <base/logging.h>
-#include <metricslogger/metrics_logger.h>
 
 #include "nfc_target.h"
 
@@ -88,18 +87,18 @@ uint8_t temp_buff[660];
 extern unsigned char appl_dta_mode_flag;
 extern bool nfc_debug_enabled;
 
+tNFC_VS_CBACK *halLibnfcDataCallback;
+
 #if (NXP_EXTNS == TRUE)
 // Global Structure varibale for FW Version
 static uint8_t gScreenState = 0x0; // SCREEN ON UNLOCKED
 static uint16_t maxRoutingTableSize;
 uint8_t sListenActivated;
-extern tNFA_CE_CB nfa_ce_cb;
 extern bool MW_RCVRY_FW_DNLD_ALLOWED;
 bool core_reset_init_num_buff = false;
 uint8_t nfcc_dh_conn_id = 0xFF;
 extern void nfa_hci_rsp_timeout();
 void disc_deact_ntf_timeout_handler(tNFC_RESPONSE_EVT event);
-extern bool etsi_reader_in_progress;
 void uicc_eeprom_get_config(uint8_t *config_resp);
 void uicc_eeprom_set_config(uint8_t *config_resp);
 #endif
@@ -329,9 +328,6 @@ void nfc_ncif_cmd_timeout(void) {
       buffer[1] = 0x01;
       /*NCI stack RF state set to DISCOVERY*/
       nfa_dm_cb.disc_cb.disc_state = 0x01;
-      /*Listen Mode flags initialized to 0x00*/
-      nfa_ce_cb.flags = 0x00;
-
       if (ps[0]) {
         /*Set the length of last DISCOVERY packet including header*/
         buffer[2] =
@@ -396,20 +392,6 @@ void nfc_ncif_cmd_timeout(void) {
         buffer[0] = 2; /*indicate last command was CORE_RESET*/
       else if (nfc_cb.last_hdr[0] == 0x20 && nfc_cb.last_hdr[1] == 0x01)
         buffer[0] = 3; /*indicate last command was CORE_INIT*/
-    }
-    /* if HCI state is in wait for response then stop the timer and send the
-     * response timeout event to the upper layer*/
-    if (nfa_hci_cb.hci_state == NFA_HCI_STATE_WAIT_RSP) {
-      NFC_HDR *p_msg;
-      nfa_sys_stop_timer(&nfa_hci_cb.timer);
-      if ((p_msg = (NFC_HDR *)GKI_getbuf(sizeof(NFC_HDR))) != NULL) {
-        DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf(
-            "nfc_ncif_cmd_timeout(): Sending HCI response timeout to upper "
-            "layer");
-        p_msg->event = NFA_HCI_RSP_TIMEOUT_EVT;
-        p_msg->layer_specific = 0;
-        nfa_sys_sendmsg(p_msg);
-      }
     }
     if (0xFF != nfcc_dh_conn_id) {
       /* Flush the data if any before proceeding further with the recovery */
@@ -963,32 +945,18 @@ bool nfc_ncif_process_event(NFC_HDR *p_msg) {
     /* make sure this is the RSP we are waiting for before updating the
      * command window */
     if ((old_gid != gid) || (old_oid != oid)) {
-      if ((nfcFL.nfcNxpEse && nfcFL.eseFL._ESE_ETSI_READER_ENABLE) &&
-          ((gid == NCI_GID_RF_MANAGE) && (oid == NCI_MSG_RF_DISCOVER)) &&
-          (etsi_reader_in_progress == true)) {
+      /*no response after the deactivate command, handling the error
+       * scenario after the recovery*/
+      if ((gid == NCI_GID_RF_MANAGE) && (oid == NCI_MSG_RF_DISCOVER) &&
+          (nfc_cb.nci_cmd_window == 0)) {
         DLOG_IF(INFO, nfc_debug_enabled)
-            << StringPrintf("Changing disc_state and disc_flags");
-        nfa_dm_cb.disc_cb.disc_state = NFA_DM_RFST_IDLE;
-        nfa_dm_cb.disc_cb.disc_flags &=
-            ~(NFA_DM_DISC_FLAGS_W4_NTF | NFA_DM_DISC_FLAGS_STOPPING);
-        nfa_dm_cb.disc_cb.disc_flags |=
-            (NFA_DM_DISC_FLAGS_W4_RSP | NFA_DM_DISC_FLAGS_NOTIFY |
-             NFA_DM_DISC_FLAGS_ENABLED);
-        disc_deact_ntf_timeout_handler(NFC_NFCC_TIMEOUT_REVT);
+            << StringPrintf("resetting the nci_cmd_window");
+        nfc_cb.nci_cmd_window++;
       } else {
-        /*no response after the deactivate command, handling the error
-         * scenario after the recovery*/
-        if ((gid == NCI_GID_RF_MANAGE) && (oid == NCI_MSG_RF_DISCOVER) &&
-            (nfc_cb.nci_cmd_window == 0)) {
-          DLOG_IF(INFO, nfc_debug_enabled)
-              << StringPrintf("resetting the nci_cmd_window");
-          nfc_cb.nci_cmd_window++;
-        } else {
-          LOG(ERROR) << StringPrintf(
-              "nfc_ncif_process_event unexpected rsp: gid:0x%x, oid:0x%x", gid,
-              oid);
-          return true;
-        }
+        LOG(ERROR) << StringPrintf(
+            "nfc_ncif_process_event unexpected rsp: gid:0x%x, oid:0x%x", gid,
+            oid);
+        return true;
       }
     }
 
@@ -1039,23 +1007,25 @@ bool nfc_ncif_process_event(NFC_HDR *p_msg) {
   case NCI_MT_NTF:
     DLOG_IF(INFO, nfc_debug_enabled)
         << StringPrintf("NFC received ntf gid:%d", gid);
+    nci_proc_prop_ntf(p_msg);
     switch (gid) {
     case NCI_GID_CORE: /* 0000b NCI Core group */
       nci_proc_core_ntf(p_msg);
       break;
-    case NCI_GID_RF_MANAGE: /* 0001b NCI Discovery group */
-      nci_proc_rf_management_ntf(p_msg);
-      break;
-#if (NFC_NFCEE_INCLUDED == true)
-#if (NFC_RW_ONLY == FALSE)
-    case NCI_GID_EE_MANAGE: /* 0x02 0010b NFCEE Discovery group */
-      nci_proc_ee_management_ntf(p_msg);
-      break;
-#endif
-#endif
-    case NCI_GID_PROP: /* 1111b Proprietary */
-      nci_proc_prop_ntf(p_msg);
-      break;
+    /*        case NCI_GID_RF_MANAGE: // 0001b NCI Discovery group
+              nci_proc_rf_management_ntf(p_msg);
+              break;
+    #if (NFC_NFCEE_INCLUDED == true)
+    #if (NFC_RW_ONLY == FALSE)
+            case NCI_GID_EE_MANAGE: // 0x02 0010b NFCEE Discovery group
+              nci_proc_ee_management_ntf(p_msg);
+              break;
+    #endif
+    #endif
+            case NCI_GID_PROP: // 1111b Proprietary
+              nci_proc_prop_ntf(p_msg);
+              break;
+    */
     default:
       LOG(ERROR) << StringPrintf("NFC: Unknown gid:%d", gid);
       break;
@@ -1124,42 +1094,6 @@ void nfc_ncif_set_config_status(uint8_t *p,
 *******************************************************************************/
 void nfc_ncif_event_status(tNFC_RESPONSE_EVT event, uint8_t status) {
   tNFC_RESPONSE evt_data;
-  if (event == NFC_NFCC_TIMEOUT_REVT && status == NFC_STATUS_HW_TIMEOUT)
-    android::metricslogger::LogCounter("nfc_hw_timeout_error", 1);
-#if (NXP_EXTNS == TRUE)
-  if ((nfcFL.eseFL._ESE_DUAL_MODE_PRIO_SCHEME ==
-       nfcFL.eseFL._ESE_WIRED_MODE_RESUME) &&
-      ((status == NFC_STATUS_WIRED_SESSION_ABORTED) ||
-       (status == NFC_STATUS_DWP_APDU_DROPPPED))) {
-    tNFC_CONN_CB *p_cb;
-    nfc_cb.bBlockWiredMode = true;
-    nfc_cb.bBlkPwrlinkAndModeSetCmd = true;
-    p_cb = nfc_find_conn_cb_by_conn_id(nfa_hci_cb.conn_id);
-    nfc_stop_timer(&nfc_cb.rf_filed_event_timeout_timer);
-    if (!nfc_cb.bIsCreditNtfRcvd) {
-      nfc_stop_timer(&nfc_cb.nci_wait_data_ntf_timer);
-      nfc_cb.bIsCreditNtfRcvd = true;
-
-      if ((p_cb) && !p_cb->num_buff)
-        p_cb->num_buff++;
-    }
-    nfc_cb.bSetmodeOnReq = true; /* Sending mode set ON is required on RF
-                                    deactivation to resume DWP */
-    nfa_hci_cb.bIsHciResponseTimedout = false;
-    if (status == NFC_STATUS_DWP_APDU_DROPPPED) {
-      nfc_cb.bRetransmitDwpPacket = true;
-    }
-    if (status == NFC_STATUS_WIRED_SESSION_ABORTED) {
-      nfc_cb.bIsDwpResPending = true;
-      nfa_hci_cb.IsWiredSessionAborted = true;
-    }
-    nfa_sys_stop_timer(&nfa_hci_cb.timer);
-    if (p_cb && p_cb->p_cback)
-      (*p_cb->p_cback)(nfa_hci_cb.conn_id, NFC_HCI_RESTART_TIMER,
-                       (tNFC_CONN *)&evt_data);
-  }
-#endif
-
   if (nfc_cb.p_resp_cback) {
     evt_data.status = (tNFC_STATUS)status;
     (*nfc_cb.p_resp_cback)(event, &evt_data);
@@ -1183,22 +1117,6 @@ void nfc_ncif_error_status(uint8_t conn_id, uint8_t status) {
     nfc_conn.status = status;
     (*p_cb->p_cback)(conn_id, NFC_ERROR_CEVT, &nfc_conn);
   }
-  if (status == NFC_STATUS_TIMEOUT)
-    android::metricslogger::LogCounter("nfc_rf_timeout_error", 1);
-  else if (status == NFC_STATUS_EE_TIMEOUT)
-    android::metricslogger::LogCounter("nfc_ee_timeout_error", 1);
-  else if (status == NFC_STATUS_ACTIVATION_FAILED)
-    android::metricslogger::LogCounter("nfc_rf_activation_failed", 1);
-  else if (status == NFC_STATUS_EE_INTF_ACTIVE_FAIL)
-    android::metricslogger::LogCounter("nfc_ee_activation_failed", 1);
-  else if (status == NFC_STATUS_RF_TRANSMISSION_ERR)
-    android::metricslogger::LogCounter("nfc_rf_transmission_error", 1);
-  else if (status == NFC_STATUS_EE_TRANSMISSION_ERR)
-    android::metricslogger::LogCounter("nfc_ee_transmission_error", 1);
-  else if (status == NFC_STATUS_RF_PROTOCOL_ERR)
-    android::metricslogger::LogCounter("nfc_rf_protocol_error", 1);
-  else if (status == NFC_STATUS_EE_PROTOCOL_ERR)
-    android::metricslogger::LogCounter("nfc_ee_protocol_error", 1);
 }
 
 /*******************************************************************************
@@ -1269,38 +1187,9 @@ void nfc_ncif_allow_dwp_transmission() {
         "DUAL_MODE_PRIO_SCHEME != WIRED_MODE_RESUME. Returning");
     return;
   }
-  tNFC_RESPONSE evt_data;
-  tNFC_CONN_CB *p_cb;
   DLOG_IF(INFO, nfc_debug_enabled)
       << StringPrintf("nfc_ncif_allow_dwp_transmission %d, %d ",
                       nfc_cb.bIsDwpResPending, nfc_cb.bRetransmitDwpPacket);
-  p_cb = nfc_find_conn_cb_by_conn_id(nfa_hci_cb.conn_id);
-
-  if ((p_cb) && (p_cb->conn_id == NFC_NFCEE_CONN_ID)) {
-    if (nfa_hci_cb.bIsHciResponseTimedout) {
-      nfa_hci_cb.IsHciTimerChanged = false;
-      nfc_cb.bRetransmitDwpPacket = false;
-      nfa_hci_cb.bIsHciResponseTimedout = false;
-      nfc_cb.bIsDwpResPending = false;
-    }
-    if (nfc_cb.bIsDwpResPending) {
-      nfa_sys_stop_timer(&nfa_hci_cb.timer);
-      nfc_cb.bIsDwpResPending = false;
-      nfa_hci_cb.IsHciTimerChanged = true;
-      if (p_cb->p_cback)
-        (*p_cb->p_cback)(nfa_hci_cb.conn_id, NFC_HCI_RESTART_TIMER,
-                         (tNFC_CONN *)&evt_data);
-    } else if (nfc_cb.bRetransmitDwpPacket) {
-      nfa_sys_stop_timer(&nfa_hci_cb.timer);
-      nfc_ncif_retransmit_data(p_cb, nfc_cb.temp_data);
-      nfc_cb.bRetransmitDwpPacket = false;
-      if (p_cb->p_cback)
-        (*p_cb->p_cback)(nfa_hci_cb.conn_id, NFC_HCI_RESTART_TIMER,
-                         (tNFC_CONN *)&evt_data);
-    } else {
-      nfc_ncif_send_data(p_cb, NULL);
-    }
-  }
 }
 /*******************************************************************************
 **
@@ -1343,35 +1232,6 @@ void nfc_ncif_resume_dwp_wired_mode() {
     DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf(
         "DUAL_MODE_PRIO_SCHEME != WIRED_MODE_RESUME. Returning");
     return;
-  }
-  tNFC_CONN_CB *p_cb;
-  p_cb = nfc_find_conn_cb_by_conn_id(nfa_hci_cb.conn_id);
-  if (p_cb == NULL) {
-    DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("Control block not found. Returning");
-    return;
-  }
-
-  nfc_cb.bBlkPwrlinkAndModeSetCmd = false;
-  nfc_cb.bIssueModeSetCmd = false;
-  if (nfc_cb.pwr_link_cmd.bPwrLinkCmdRequested) {
-    DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("pwr link cmd to send");
-    nci_snd_pwr_nd_lnk_ctrl_cmd(NFCEE_ID_ESE, nfc_cb.pwr_link_cmd.param);
-    nfc_cb.pwr_link_cmd.bPwrLinkCmdRequested = false;
-    if (!nfc_cb.bCeActivatedeSE)
-      nfc_cb.bIssueModeSetCmd = true;
-  } else if (((nfc_cb.bSetmodeOnReq) || (!GKI_queue_is_empty(&p_cb->tx_q))) &&
-             (!nfc_cb.bCeActivatedeSE)) {
-    DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("mode set cmd to send");
-    nfc_cb.bSetmodeOnReq = true;
-    nci_snd_nfcee_mode_set(NFCEE_ID_ESE, NFC_MODE_ACTIVATE);
-    nfc_start_timer(&nfc_cb.nci_wait_setMode_Ntf_timer,
-                    (uint16_t)NFC_TYPE_NCI_WAIT_SETMODE_NTF,
-                    NFC_NCI_SETMODE_NTF_TIMEOUT);
-  } else {
-    nfc_cb.bBlockWiredMode = false;
-    nfc_cb.bCeActivatedeSE = false;
-    nfc_ncif_allow_dwp_transmission();
   }
 }
 /*******************************************************************************
@@ -1617,14 +1477,6 @@ Available after Technology Detection
     p_i93->flag = *p++;
     p_i93->dsfid = *p++;
     STREAM_TO_ARRAY(p_i93->uid, p, NFC_ISO15693_UID_LEN);
-  } else if (NCI_DISCOVERY_TYPE_POLL_KOVIO == p_param->mode) {
-    p_param->param.pk.uid_len = len;
-    if (p_param->param.pk.uid_len > NFC_KOVIO_MAX_LEN) {
-      LOG(ERROR) << StringPrintf("Kovio UID len:0x%x exceeds max(0x%x)",
-                                 p_param->param.pk.uid_len, NFC_KOVIO_MAX_LEN);
-      p_param->param.pk.uid_len = NFC_KOVIO_MAX_LEN;
-    }
-    STREAM_TO_ARRAY(p_param->param.pk.uid, p, p_param->param.pk.uid_len);
   } else if (NCI_DISCOVERY_TYPE_POLL_ACTIVE == p_param->mode) {
     acm_p = &p_param->param.acm_p;
     acm_p->atr_res_len = *p++;
@@ -1700,21 +1552,6 @@ void nfc_ncif_proc_discover_ntf(uint8_t *p,
     (*nfc_cb.p_discv_cback)(NFC_RESULT_DEVT, &evt_data);
   }
 }
-/*******************************************************************************
-**
-** Function         nfc_ncif_proc_isodep_nak_presence_check_status
-**
-** Description      This function is called to handle response and notification
-*for
-**                  presence check nak command
-**
-** Returns          void
-**
-*******************************************************************************/
-void nfc_ncif_proc_isodep_nak_presence_check_status(uint8_t status,
-                                                    bool is_ntf) {
-  rw_t4t_handle_isodep_nak_rsp(status, is_ntf);
-}
 #if (NXP_EXTNS == TRUE)
 /*******************************************************************************
 **
@@ -1774,15 +1611,6 @@ void nfc_ncif_proc_activate(uint8_t *p, uint8_t len) {
   evt_data.activate.rf_disc_id = *p++;
   p_intf->type = *p++;
   evt_data.activate.protocol = *p++;
-
-  if (evt_data.activate.protocol == NCI_PROTOCOL_18092_ACTIVE)
-    evt_data.activate.protocol = NCI_PROTOCOL_NFC_DEP;
-
-#if (NXP_EXTNS == TRUE)
-  if ((evt_data.activate.protocol == NCI_PROTOCOL_UNKNOWN) &&
-      (p_intf->type == NCI_INTERFACE_FRAME))
-    evt_data.activate.protocol = NCI_PROTOCOL_T3BT;
-#endif
 
   evt_data.activate.rf_tech_param.mode = *p++;
   buff_size = *p++;
@@ -2032,9 +1860,6 @@ void nfc_ncif_proc_activate(uint8_t *p, uint8_t len) {
 void nfc_ncif_proc_deactivate(uint8_t status, uint8_t deact_type, bool is_ntf) {
   tNFC_DISCOVER evt_data;
   tNFC_CONN_CB *p_cb = &nfc_cb.conn_cb[NFC_RF_CONN_ID];
-#if (NXP_EXTNS == TRUE)
-  tRW_T3T_CB *p_t3tcb = &rw_cb.tcb.t3t;
-#endif
   void *p_data;
 
   nfc_set_state(NFC_STATE_IDLE);
@@ -2069,12 +1894,6 @@ void nfc_ncif_proc_deactivate(uint8_t status, uint8_t deact_type, bool is_ntf) {
                       (uint16_t)(NFC_TTYPE_NCI_WAIT_RF_FIELD_NTF),
                       NFC_NCI_RFFIELD_EVT_TIMEOUT);
     }
-  }
-
-  if (p_t3tcb->poll_timer.in_use) {
-    DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("%s: stopping t3t polling timer", __func__);
-    nfc_stop_quick_timer(&p_t3tcb->poll_timer);
   }
 
   if ((nfc_cb.flags & (NFC_FL_DISCOVER_PENDING | NFC_FL_CONTROL_REQUESTED)) &&
@@ -2167,31 +1986,6 @@ void nfc_ncif_proc_ee_action(uint8_t *p, uint16_t plen) {
     if (nfcFL.eseFL._ESE_DUAL_MODE_PRIO_SCHEME ==
         nfcFL.eseFL._ESE_WIRED_MODE_RESUME) {
       nfc_stop_timer(&nfc_cb.rf_filed_event_timeout_timer);
-      tNFC_CONN_CB *p_cb;
-      p_cb = nfc_find_conn_cb_by_conn_id(nfa_hci_cb.conn_id);
-      if (evt_data.nfcee_id != 0xC0) {
-        nfc_cb.bBlockWiredMode = true;
-        nfc_cb.bBlkPwrlinkAndModeSetCmd = true;
-        if (!nfc_cb.bIsDwpResPending && nfa_hci_cb.assembling) {
-          /* To faster transceive time out when CE is activated with UICC during
-           * chained response being received*/
-          DLOG_IF(INFO, nfc_debug_enabled)
-              << StringPrintf("restarted hci timer during chained response");
-          nfa_hci_cb.IsWiredSessionAborted = true;
-          nfa_sys_stop_timer(&nfa_hci_cb.timer);
-          if (p_cb && p_cb->p_cback)
-            (*p_cb->p_cback)(nfa_hci_cb.conn_id, NFC_HCI_RESTART_TIMER,
-                             (tNFC_CONN *)&evt_data);
-        }
-      } else {
-        if (evt_data.act_data.trigger == NCI_EE_TRIG_RF_TECHNOLOGY) {
-          nfc_cb.bBlockWiredMode = true;
-        } else if (nfc_cb.bBlockWiredMode) {
-          nfc_cb.bCeActivatedeSE = true;
-          nfc_ncif_resume_dwp_wired_mode();
-        }
-        nfc_main_flush_cmd_queue();
-      }
     }
 #endif
     tNFC_RESPONSE nfc_response;
@@ -2867,26 +2661,6 @@ void nfc_ncif_proc_get_config_rsp(NFC_HDR *p_evt) {
 
 /*******************************************************************************
 **
-** Function         nfc_ncif_proc_t3t_polling_ntf
-**
-** Description      Handle NCI_MSG_RF_T3T_POLLING NTF
-**
-** Returns          void
-**
-*******************************************************************************/
-void nfc_ncif_proc_t3t_polling_ntf(uint8_t *p, uint16_t plen) {
-  uint8_t status;
-  uint8_t num_responses;
-
-  /* Pass result to RW_T3T for processing */
-  STREAM_TO_UINT8(status, p);
-  STREAM_TO_UINT8(num_responses, p);
-  plen -= NFC_TL_SIZE;
-  rw_t3t_handle_nci_poll_ntf(status, num_responses, (uint8_t)plen, p);
-}
-
-/*******************************************************************************
-**
 ** Function         nfc_data_event
 **
 ** Description      Report Data event on the given connection control block
@@ -2899,6 +2673,17 @@ void nfc_data_event(tNFC_CONN_CB *p_cb) {
   tNFC_DATA_CEVT data_cevt;
 
   uint8_t *p;
+  NFC_HDR *buffer = (NFC_HDR *)GKI_dequeue(&p_cb->rx_q);
+  uint8_t *data = (uint8_t *)(buffer + 1) + buffer->offset;
+
+  for (int i = 0; i < buffer->len; i++) {
+    DLOG_IF(INFO, nfc_debug_enabled)
+        << StringPrintf("p_cb->rx_q[%d] = %02x", i, data[i]);
+  }
+  (*halLibnfcDataCallback)((uint8_t)NFC_DATA_CEVT, buffer->len, data);
+  if (true) {
+    return;
+  }
 
   if (p_cb->p_cback) {
     while ((p_evt = (NFC_HDR *)GKI_getfirst(&p_cb->rx_q)) != NULL) {
@@ -3153,10 +2938,6 @@ void nfc_ncif_credit_ntf_timeout() {
   } else {
     // No need to wait for response since credit ntf timeout calls recovery
     // Stop the response timer
-    nfa_sys_stop_timer(&nfa_hci_cb.timer);
-
-    // send timeout event to upper layer
-    nfa_hci_rsp_timeout();
 
     // will be used to reset credit buffer after recovery
     core_reset_init_num_buff = true;
@@ -3258,8 +3039,8 @@ bool nfc_ncif_proc_proprietary_rsp(uint8_t mt, uint8_t gid, uint8_t oid) {
 }
 
 #endif
-
 #if (NXP_EXTNS == TRUE)
+
 void disc_deact_ntf_timeout_handler(tNFC_RESPONSE_EVT event) {
   if (!(nfcFL.nfcNxpEse && nfcFL.eseFL._ESE_ETSI_READER_ENABLE)) {
     DLOG_IF(INFO, nfc_debug_enabled)
@@ -3268,7 +3049,6 @@ void disc_deact_ntf_timeout_handler(tNFC_RESPONSE_EVT event) {
     return;
   }
   tNFC_RESPONSE evt_data;
-  etsi_reader_in_progress = false;
   if (nfc_cb.p_resp_cback) {
     evt_data.status = (tNFC_STATUS)NFC_STATUS_HW_TIMEOUT;
     (*nfc_cb.p_resp_cback)(event, &evt_data);

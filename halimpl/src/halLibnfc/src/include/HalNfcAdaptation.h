@@ -105,14 +105,14 @@ private:
 
 class NfcDeathRecipient;
 
-class NfcAdaptation {
+class HalNfcAdaptation {
 public:
-  virtual ~NfcAdaptation();
+  virtual ~HalNfcAdaptation();
   void Initialize();
   void Finalize();
   void FactoryReset();
   void DeviceShutdown();
-  static NfcAdaptation &GetInstance();
+  static HalNfcAdaptation &GetInstance();
   tHAL_NFC_ENTRY *GetHalEntryFuncs();
   void DownloadFirmware();
   void GetNxpConfigs(std::map<std::string, ConfigValue> &configMap);
@@ -125,9 +125,9 @@ public:
 #endif
 
 private:
-  NfcAdaptation();
+  HalNfcAdaptation();
   void signal();
-  static NfcAdaptation *mpInstance;
+  static HalNfcAdaptation *mpInstance;
   static ThreadMutex sLock;
   static ThreadMutex sIoctlLock;
   ThreadCondVar mCondVar;
@@ -167,10 +167,4 @@ private:
 #endif
   static bool HalPrediscover();
   static void HalControlGranted();
-  static void HalPowerCycle();
-  static uint8_t HalGetMaxNfcee();
-  static void HalDownloadFirmwareCallback(nfc_event_t event,
-                                          nfc_status_t event_status);
-  static void HalDownloadFirmwareDataCallback(uint16_t data_len,
-                                              uint8_t *p_data);
 };

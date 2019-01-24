@@ -294,57 +294,6 @@ void nfc_process_quick_timer_evt(void) {
     GKI_remove_from_timer_list(&nfc_cb.quick_timer_queue, p_tle);
 
     switch (p_tle->event) {
-#if (NFC_RW_ONLY == FALSE)
-    case NFC_TTYPE_LLCP_LINK_MANAGER:
-    case NFC_TTYPE_LLCP_LINK_INACT:
-    case NFC_TTYPE_LLCP_DATA_LINK:
-    case NFC_TTYPE_LLCP_DELAY_FIRST_PDU:
-      llcp_process_timeout(p_tle);
-      break;
-#endif
-    case NFC_TTYPE_RW_T1T_RESPONSE:
-      rw_t1t_process_timeout(p_tle);
-      break;
-    case NFC_TTYPE_RW_T2T_RESPONSE:
-      rw_t2t_process_timeout();
-      break;
-    case NFC_TTYPE_RW_T3T_RESPONSE:
-      rw_t3t_process_timeout(p_tle);
-      break;
-    case NFC_TTYPE_RW_T4T_RESPONSE:
-      rw_t4t_process_timeout(p_tle);
-      break;
-    case NFC_TTYPE_RW_I93_RESPONSE:
-      rw_i93_process_timeout(p_tle);
-      break;
-    case NFC_TTYPE_P2P_PRIO_RESPONSE:
-      nfa_dm_p2p_timer_event();
-      break;
-    case NFC_TTYPE_P2P_PRIO_LOGIC_CLEANUP:
-      nfa_dm_p2p_prio_logic_cleanup();
-      break;
-    case NFC_TTYPE_P2P_PRIO_LOGIC_DEACT_NTF_TIMEOUT:
-      nfa_dm_deact_ntf_timeout();
-      break;
-#if (NFC_RW_ONLY == FALSE)
-    case NFC_TTYPE_CE_T4T_UPDATE:
-      ce_t4t_process_timeout(p_tle);
-      break;
-#endif
-#if (NXP_EXTNS == TRUE)
-    case NFC_TTYPE_PWR_LINK_RSP:
-      if (nfcFL.eseFL._ESE_DUAL_MODE_PRIO_SCHEME ==
-          nfcFL.eseFL._ESE_WIRED_MODE_RESUME) {
-        nfc_ncif_pwr_link_rsp_timeout();
-      }
-      break;
-    case NFC_TTYPE_SET_MODE_RSP:
-      if (nfcFL.eseFL._ESE_DUAL_MODE_PRIO_SCHEME ==
-          nfcFL.eseFL._ESE_WIRED_MODE_RESUME) {
-        nfc_ncif_modeSet_rsp_timeout();
-      }
-      break;
-#endif
     default:
       DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf(
           "nfc_process_quick_timer_evt: unhandled timer event (0x%04x)",

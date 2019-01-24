@@ -49,7 +49,7 @@
 #include "nci_defs.h"
 #include "nfc_hal_api.h"
 #include "nfc_target.h"
-#include "vendor_cfg.h"
+//#include "vendor_cfg.h"
 
 /* NFC application return status codes */
 /* Command succeeded    */
@@ -725,6 +725,7 @@ typedef union {
   tNFC_EE_ACTION_REVT ee_action;
   tNFC_EE_DISCOVER_REQ_REVT ee_discover_req;
   void *p_vs_evt_data;
+  uint32_t write_status;
 } tNFC_RESPONSE;
 
 /*************************************
@@ -1007,6 +1008,8 @@ typedef union {
 **************************************/
 typedef void(tNFC_CONN_CBACK)(uint8_t conn_id, tNFC_CONN_EVT event,
                               tNFC_CONN *p_data);
+void nfaDataCallback(uint8_t event, uint16_t param_len, uint8_t *p_data);
+extern tNFC_VS_CBACK *halLibnfcDataCallback;
 #define NFC_MAX_CONN_ID 15
 #define NFC_ILLEGAL_CONN_ID 0xFF
 #define NFC_RF_CONN_ID 0 /* the static connection ID for RF traffic */
@@ -1070,11 +1073,11 @@ extern void NFC_Disable(void);
 ** Returns          nothing
 **
 *******************************************************************************/
-#if (NXP_EXTNS == TRUE)
-extern void NFC_Init(tHAL_NFC_CONTEXT *p_hal_entry_cntxt);
-#else
+//#if (NXP_EXTNS == TRUE)
+// extern void NFC_Init(tHAL_NFC_CONTEXT* p_hal_entry_cntxt);
+//#else
 extern void NFC_Init(tHAL_NFC_ENTRY *p_hal_entry_tbl);
-#endif
+//#endif
 
 /*******************************************************************************
 **
@@ -1261,6 +1264,8 @@ extern tNFC_STATUS NFC_ConnClose(uint8_t conn_id);
 **
 *******************************************************************************/
 extern void NFC_SetStaticRfCback(tNFC_CONN_CBACK *p_cback);
+
+void NFC_SetNfceeCback(tNFC_VS_CBACK *p_cback);
 
 /*******************************************************************************
 **

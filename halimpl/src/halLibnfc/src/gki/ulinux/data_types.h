@@ -34,7 +34,7 @@
 #endif
 
 #ifndef true
-#define true(!false)
+#define true (!false)
 #endif
 
 #ifndef TRUE
