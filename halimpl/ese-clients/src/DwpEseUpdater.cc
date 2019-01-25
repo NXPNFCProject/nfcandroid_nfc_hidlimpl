@@ -63,7 +63,7 @@ void DwpEseUpdater::checkIfEseClientUpdateReqd()
   nfc_intf = eseUpdateChecker.checkEseUpdateRequired(ESE_INTF_NFC);
   se_intf = eseUpdateChecker.checkEseUpdateRequired(ESE_INTF_SPI);
 
-  if(eseUpdateChecker.getNfcSeTerminalId(nfcterminal)) {
+  if(eseUpdateChecker.isWiredSeTerminalAvailable(nfcterminal)) {
     nfcSEIntfPresent = true;
     ALOGD("%s SMB intf  is present  ", __func__);
   }
@@ -167,13 +167,13 @@ SESTATUS DwpEseUpdater::handleJcopOsDownload() {
 void DwpEseUpdater::setSpiEseClientState(uint8_t state)
 {
   ALOGE("%s: State = %d", __FUNCTION__, state);
-  eseUpdateSpi = (ese_update_state_t)state;
+  eseUpdateSpi = (ESE_UPDATE_STATE)state;
 }
 
 void DwpEseUpdater::setDwpEseClientState(uint8_t state)
 {
   ALOGE("%s: State = %d", __FUNCTION__, state);
-  eseUpdateDwp = (ese_update_state_t)state;
+  eseUpdateDwp = (ESE_UPDATE_STATE)state;
 }
 
 void DwpEseUpdater::sendeSEUpdateState(uint8_t state) {
@@ -196,11 +196,11 @@ SESTATUS DwpEseUpdater::eSEUpdate_SeqHandler() {
       case ESE_JCOP_UPDATE_REQUIRED:
         ALOGE("%s: ESE_JCOP_UPDATE_REQUIRED", __FUNCTION__);
         if(nfc_intf.isJcopUpdateRequired) {
-          if(nfc_intf.sJcopUpdateIntferface == ESE_INTF_NFC) {
+          if(nfc_intf.sJcopUpdateInterface == ESE_INTF_NFC) {
             DwpEseUpdater::handleJcopOsDownload();
             return SESTATUS_SUCCESS;
           }
-          else if(nfc_intf.sJcopUpdateIntferface == ESE_INTF_SPI) {
+          else if(nfc_intf.sJcopUpdateInterface == ESE_INTF_SPI) {
             return SESTATUS_SUCCESS;
           }
         }

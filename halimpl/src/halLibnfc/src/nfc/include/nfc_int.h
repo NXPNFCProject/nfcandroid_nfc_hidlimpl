@@ -91,7 +91,7 @@
 /* added for p2p prio logic clenaup */
 #define NFC_TTYPE_P2P_PRIO_LOGIC_CLEANUP 112
 
-#define NFC_MODE_SET_NTF_TIMEOUT 2
+#define NFC_MODE_SET_NTF_TIMEOUT_IN_SECS 2
 
 #if (NXP_EXTNS == TRUE)
 /* added for listen activation timer */

@@ -104,7 +104,7 @@ tNFC_STATUS NFC_NfceeModeSet(uint8_t nfcee_id, tNFC_NFCEE_MODE mode) {
     LOG(ERROR) << StringPrintf("%s invalid parameter:%d", __func__, mode);
     return NFC_STATUS_FAILED;
   }
-  if (nfc_cb.nci_version != NCI_VERSION_2_0)
+  if ((nfc_cb.nci_version != NCI_VERSION_2_0) && !(nfcee_id == 0xC0 && mode == 0x01))
     status = nci_snd_nfcee_mode_set(nfcee_id, mode);
   else {
     if (nfc_cb.flags & NFC_FL_WAIT_MODE_SET_NTF)
@@ -121,7 +121,7 @@ tNFC_STATUS NFC_NfceeModeSet(uint8_t nfcee_id, tNFC_NFCEE_MODE mode) {
         nfc_cb.flags |= NFC_FL_WAIT_MODE_SET_NTF;
         nfc_start_timer(&nfc_cb.nci_mode_set_ntf_timer,
                         (uint16_t)(NFC_TTYPE_WAIT_MODE_SET_NTF),
-                        NFC_MODE_SET_NTF_TIMEOUT);
+                        NFC_MODE_SET_NTF_TIMEOUT_IN_SECS);
       }
     }
   }

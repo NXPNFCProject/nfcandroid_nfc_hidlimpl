@@ -2363,11 +2363,7 @@ if(halLibnfcDataCallback) {
         << StringPrintf("p_cback NULL");
   }
   if (p_cb->p_cback) {
-              DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("Sending data 2");
     while ((p_evt = (NFC_HDR *)GKI_getfirst(&p_cb->rx_q)) != NULL) {
-                    DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("Sending data 3");
       if (p_evt->layer_specific & NFC_RAS_FRAGMENTED) {
         /* Not the last fragment */
         if (!(p_evt->layer_specific & NFC_RAS_TOO_BIG)) {
@@ -2388,8 +2384,6 @@ if(halLibnfcDataCallback) {
         << StringPrintf("p_evt is  NULL");
         break;
       }
-      DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("Sending data 4");
       /* report data event */
       p_evt->offset += NCI_MSG_HDR_SIZE;
       p_evt->len -= NCI_MSG_HDR_SIZE;
@@ -2405,13 +2399,9 @@ if(halLibnfcDataCallback) {
       /* adjust payload, if needed */
       tNFC_CONN nfc_conn;
       nfc_conn.data = data_cevt;
-          DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("Sending data 5");
       (*p_cb->p_cback)(p_cb->conn_id, NFC_DATA_CEVT, &nfc_conn);
       p_evt = NULL;
     }
-                  DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("Sending data ");
   }
 }
 

@@ -97,6 +97,7 @@ static void nfa_hci_set_receive_buf(uint8_t pipe);
 static void nfa_hci_assemble_msg(uint8_t* p_data, uint16_t data_len);
 #endif
 static void nfa_hci_handle_nv_read(uint8_t block, tNFA_STATUS status);
+void nfa_hci_network_enable(void);
 
 /*****************************************************************************
 **  Constants
@@ -735,19 +736,17 @@ void nfa_hci_dh_startup_complete(void) {
     nfa_sys_start_timer(&nfa_hci_cb.timer, NFA_HCI_RSP_TIMEOUT_EVT,
                         p_nfa_hci_cfg->hci_netwk_enable_timeout);
   } else {
-    /* Received EE DISC REQ Ntf(s) */
-#if(NXP_EXTNS == TRUE)
-      nfa_hci_cb.num_nfcee = NFA_HCI_MAX_HOST_IN_NETWORK;
-      NFA_EeGetInfo(&nfa_hci_cb.num_nfcee, nfa_hci_cb.ee_info);
+/* Received EE DISC REQ Ntf(s) */
+#if (NXP_EXTNS == TRUE)
+    nfa_hci_cb.num_nfcee = NFA_HCI_MAX_HOST_IN_NETWORK;
+    NFA_EeGetInfo(&nfa_hci_cb.num_nfcee, nfa_hci_cb.ee_info);
 #endif
-    if(nfa_hci_cb.num_nfcee > 1)
-        nfa_hciu_send_get_param_cmd(NFA_HCI_ADMIN_PIPE, NFA_HCI_HOST_LIST_INDEX);
-    else {
-          /* Received HOT PLUG EVT, we will also wait for EE DISC REQ Ntf(s) */
-    nfa_sys_start_timer(&nfa_hci_cb.timer, NFA_HCI_RSP_TIMEOUT_EVT,
-                        4000);
-    nfa_hci_cb.hci_state = NFA_HCI_STATE_WAIT_NETWK_ENABLE;
-  }
+
+    if (nfa_hci_cb.num_nfcee <= 1) {
+      /* Received HOT PLUG EVT, we will also wait for EE DISC REQ Ntf(s) */
+      nfa_sys_start_timer(&nfa_hci_cb.timer, NFA_HCI_RSP_TIMEOUT_EVT, 4000);
+      nfa_hci_cb.hci_state = NFA_HCI_STATE_WAIT_NETWK_ENABLE;
+    }
   }
 }
 
@@ -871,6 +870,10 @@ bool nfa_hci_enable_one_nfcee(void) {
                 else if(nfa_hci_cb.ee_info[xx].hci_enable_state == NFA_HCI_FL_EE_ENABLING ||
                         nfa_hci_cb.ee_info[xx].hci_enable_state == NFA_HCI_FL_EE_NONE)
                 {
+                  /* Mode set NTF are received before eSE initialization is
+                   * finished in some of NCI1.0 chips, if Mode set command
+                   * issued second time before previous mode set command NTF.*/
+                  usleep(1 * 1000 * 1000);
                     nfa_hci_cb.ee_info[xx].hci_enable_state = NFA_HCI_FL_EE_ENABLING;
                     if(nfa_hci_cb.ee_info[xx].ee_status == NFA_EE_STATUS_ACTIVE){
                         if(nfa_dm_is_hci_supported()) {
@@ -970,6 +973,34 @@ void nfa_hci_startup(void) {
       }
     }
   }
+}
+
+void nfa_hci_network_enable(void) {
+  tNFA_EE_INFO ee_info[2];
+  uint8_t num_nfcee = 2;
+  uint8_t target_handle;
+  bool found = false;
+  uint8_t count = 0;
+
+    NFA_EeGetInfo(&num_nfcee, ee_info);
+    while ((count < num_nfcee) && (!found)) {
+      target_handle = (uint8_t)ee_info[count].ee_handle;
+
+      if (ee_info[count].ee_interface[0] == NFA_EE_INTERFACE_HCI_ACCESS) {
+        found = true;
+        if (ee_info[count].ee_status == NFA_EE_STATUS_INACTIVE) {
+          NFC_NfceeModeSet(target_handle, NFC_MODE_ACTIVATE);
+          /*HCI network is Inactive wait*/
+                nfa_hci_cb.w4_hci_netwk_init = true;
+            }
+            else
+            {
+                /*HCI network is already active*/
+                nfa_hci_cb.w4_hci_netwk_init = false;
+        }
+      }
+      count++;
+    }
 }
 
 /*******************************************************************************

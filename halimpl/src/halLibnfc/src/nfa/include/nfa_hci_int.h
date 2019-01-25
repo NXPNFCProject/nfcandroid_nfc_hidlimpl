@@ -76,6 +76,12 @@ extern uint8_t HCI_LOOPBACK_DEBUG;
 
 #define NFA_HCI_SESSION_ID_LEN 8 /* HCI Session ID length */
 #if(NXP_EXTNS == TRUE)
+/* HCI Host Type length */
+#define NFA_HCI_HOST_TYPE_LEN 2
+/* HCI controller ETSI Version 9 */
+#define NFA_HCI_CONTROLLER_VERSION_9 9
+/* HCI controller ETSI Version 12 */
+#define NFA_HCI_CONTROLLER_VERSION_12 12
 /*Default pipe ID for prop host*/
 #define NFA_HCI_DEFAULT_ID_MANAGEMENT_PIPE 0x18
 /*Default conn pipe ID for prop host*/
@@ -198,7 +204,8 @@ enum {
   NFA_HCI_RSP_NV_READ_EVT,           /* Non volatile read complete event */
   NFA_HCI_RSP_NV_WRITE_EVT,          /* Non volatile write complete event */
   NFA_HCI_RSP_TIMEOUT_EVT,           /* Timeout to response for the HCP Command packet */
-  NFA_HCI_CHECK_QUEUE_EVT
+  NFA_HCI_CHECK_QUEUE_EVT,
+  NFA_HCI_NCI_1_0_MODE_SET_NTF_WORKAROUND
 };
 
 #define NFA_HCI_FIRST_API_EVENT NFA_HCI_API_REGISTER_APP_EVT
@@ -570,6 +577,7 @@ typedef struct {
   bool b_hci_netwk_reset; /* Command sent to reset HCI Network */
   bool w4_hci_netwk_init; /* Wait for other host in network to initialize */
   TIMER_LIST_ENT timer;   /* Timer to avoid indefinitely waiting for response */
+  TIMER_LIST_ENT modeSetWorkaroundTimer;   /* Timer to avoid indefinitely waiting for response */
   uint8_t conn_id;        /* Connection ID */
   uint8_t buff_size;      /* Connection buffer size */
   bool nv_read_cmplt;     /* NV Read completed */
@@ -594,6 +602,8 @@ typedef struct {
   uint8_t                         static_pipe[NFA_HCI_MAX_NUM_STATIC_PIPES]; /* Static pipes, Proprietary static pipes */
   tNFA_HCI_PIPE_CMDRSP_INFO       static_pipe_cmdrsp_info[NFA_HCI_MAX_NUM_STATIC_PIPES]; /* Reassembly buffer and reassembly state info for static pipe */
   uint8_t                         app_param[NFA_HCI_MAX_APP_CB + 1];
+  uint8_t host_controller_version; /* no of host controller version */
+  bool w4_nfcee_enable;
   tNFA_HCI_ADMIN_PIPE_INFO        admin_pipe;
   tNFA_HCI_LINK_MGMNT_PIPE_INFO   link_mgmnt_pipe;
   tNFA_HCI_LOOP_BACK_GATE_INFO    loop_back_gate;
@@ -653,6 +663,7 @@ extern void nfa_hci_restore_default_config(uint8_t* p_session_id);
 #if(NXP_EXTNS == TRUE)
 extern bool nfa_hci_enable_one_nfcee(void);
 extern void nfa_hci_release_transceive(uint8_t host_id);
+extern void nfa_hci_network_enable(void);
 #else
 extern void nfa_hci_enable_one_nfcee(void);
 #endif

@@ -111,7 +111,7 @@ Return<V1_0::NfcStatus> Nfc::powerCycle() {
 
 // Methods from ::android::hardware::nfc::V1_1::INfc follow.
 Return<void> Nfc::factoryReset() {
-  phNxpNciHal_reset_nfcee_session(false);
+  phNxpNciHal_reset_nfcee_session(true);
   return Void();
 }
 

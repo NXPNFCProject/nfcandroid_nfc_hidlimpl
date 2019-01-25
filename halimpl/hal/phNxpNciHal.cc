@@ -99,8 +99,8 @@ uint32_t gSvddSyncOff_Delay = 10;
 bool_t force_fw_download_req = false;
 bool_t gParserCreated = FALSE;
 bool nfc_debug_enabled = true;
-ese_update_state_t eseUpdateSpi = ESE_UPDATE_COMPLETED;
-ese_update_state_t eseUpdateDwp = ESE_UPDATE_COMPLETED;
+ESE_UPDATE_STATE eseUpdateSpi = ESE_UPDATE_COMPLETED;
+ESE_UPDATE_STATE eseUpdateDwp = ESE_UPDATE_COMPLETED;
 nfc_stack_callback_t* p_nfc_stack_cback_backup;
 /* global variable to get FW version from NCI response*/
 uint32_t wFwVerRsp;
@@ -3106,10 +3106,10 @@ void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
                      sizeof(num))) {
     pInpOutData->out.data.nxpConfigs.coreScrnOffAutonomousEnable = num;
   }
-  if (GetNxpNumValue(NAME_NXP_P61_LS_DEFAULT_INTERFACE, &num, sizeof(num))) {
+  if (GetNxpNumValue(NAME_NXP_ESE_LS_DEFAULT_INTERFACE, &num, sizeof(num))) {
     pInpOutData->out.data.nxpConfigs.p61LsDefaultInterface = num;
   }
-  if (GetNxpNumValue(NAME_NXP_P61_JCOP_DEFAULT_INTERFACE, &num, sizeof(num))) {
+  if (GetNxpNumValue(NAME_NXP_ESE_JCOP_DEFAULT_INTERFACE, &num, sizeof(num))) {
     pInpOutData->out.data.nxpConfigs.p61JcopDefaultInterface = num;
   }
   if (GetNxpNumValue(NAME_NXP_AGC_DEBUG_ENABLE, &num, sizeof(num))) {

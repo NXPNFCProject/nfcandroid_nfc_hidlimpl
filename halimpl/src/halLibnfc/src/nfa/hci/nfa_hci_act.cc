@@ -1464,6 +1464,8 @@ void nfa_hci_handle_admin_gate_rsp(uint8_t* p_data, uint8_t data_len) {
 #if(NXP_EXTNS != TRUE)
   uint8_t host_count = 0;
   uint8_t host_id = 0;
+#else
+  uint8_t terminal_host_type[NFA_HCI_HOST_TYPE_LEN] = {0x01, 0x00};
 #endif
   uint32_t os_tick;
 
@@ -1507,19 +1509,43 @@ void nfa_hci_handle_admin_gate_rsp(uint8_t* p_data, uint8_t data_len) {
           nfa_hciu_send_set_param_cmd(
               NFA_HCI_ADMIN_PIPE, NFA_HCI_WHITELIST_INDEX,
               p_nfa_hci_cfg->num_whitelist_host, p_nfa_hci_cfg->p_whitelist);
-        } else if (nfa_hci_cb.param_in_use == NFA_HCI_WHITELIST_INDEX) {
+        } /*else if (nfa_hci_cb.param_in_use == NFA_HCI_WHITELIST_INDEX) {
           if ((nfa_hci_cb.hci_state == NFA_HCI_STATE_STARTUP) ||
               (nfa_hci_cb.hci_state == NFA_HCI_STATE_RESTORE))
             //nfa_hci_network_enable();
             NFC_NfceeModeSet(0x01, NFC_MODE_ACTIVATE);
             nfa_hci_dh_startup_complete();
-          if (NFA_GetNCIVersion() == NCI_VERSION_2_0) {
+           if (NFA_GetNCIVersion() == NCI_VERSION_2_0) {
             nfa_hci_cb.hci_state = NFA_HCI_STATE_WAIT_NETWK_ENABLE;
             NFA_EeGetInfo(&nfa_hci_cb.num_nfcee, nfa_hci_cb.ee_info);
+            usleep(1*1000*1000);
             nfa_hci_enable_one_nfcee();
           }
+        }*/
+        else if (nfa_hci_cb.param_in_use == NFA_HCI_WHITELIST_INDEX) {
+           DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf(
+              "nfa_hci_handle_admin_gate_rsp - Set the HOST_TYPE as per ETSI "
+              "12 !!!");
+          /* Set the HOST_TYPE as per ETSI 12 */
+           usleep(1*1000*1000);
+            nfa_hciu_send_set_param_cmd(
+              NFA_HCI_ADMIN_PIPE, NFA_HCI_HOST_TYPE_INDEX,
+              NFA_HCI_HOST_TYPE_LEN, terminal_host_type);
+        } else if (nfa_hci_cb.param_in_use == NFA_HCI_HOST_TYPE_INDEX) {
+          if ((nfa_hci_cb.hci_state == NFA_HCI_STATE_STARTUP) ||
+              (nfa_hci_cb.hci_state == NFA_HCI_STATE_RESTORE))
+            //nfa_hci_network_enable();
+            NFC_NfceeModeSet(0x01, NFC_MODE_ACTIVATE);
+            nfa_hci_dh_startup_complete();
+           /*if (NFA_GetNCIVersion() == NCI_VERSION_2_0) {*/
+            nfa_hci_cb.hci_state = NFA_HCI_STATE_WAIT_NETWK_ENABLE;
+            NFA_EeGetInfo(&nfa_hci_cb.num_nfcee, nfa_hci_cb.ee_info);
+              /*nfa_sys_start_timer(&nfa_hci_cb.modeSetWorkaroundTimer, NFA_HCI_NCI_1_0_MODE_SET_NTF_WORKAROUND, 1000);*/
+            nfa_hci_enable_one_nfcee();
+          /*}*/
         }
-        break;
+
+    break;
 
       case NFA_HCI_ANY_GET_PARAMETER:
         if (nfa_hci_cb.param_in_use == NFA_HCI_HOST_LIST_INDEX) {
@@ -1540,7 +1566,6 @@ void nfa_hci_handle_admin_gate_rsp(uint8_t* p_data, uint8_t data_len) {
           /* Collect active host in the Host Network */
           while (host_count < data_len) {
             host_id = (uint8_t)*p_data++;
-
             if ((host_id >= NFA_HCI_HOST_ID_UICC0) &&
                 (host_id <
                  NFA_HCI_HOST_ID_UICC0 + NFA_HCI_MAX_HOST_IN_NETWORK)) {
@@ -1564,7 +1589,7 @@ void nfa_hci_handle_admin_gate_rsp(uint8_t* p_data, uint8_t data_len) {
           } else {
             /* Something wrong, NVRAM data could be corrupt or first start with
              * default session id */
-            nfa_hciu_send_clear_all_pipe_cmd();
+              nfa_hciu_send_clear_all_pipe_cmd();
             nfa_hci_cb.b_hci_netwk_reset = true;
           }
         }
@@ -1616,9 +1641,8 @@ void nfa_hci_handle_admin_gate_rsp(uint8_t* p_data, uint8_t data_len) {
               ||(dest_gate != nfa_hci_cb.remote_gate_in_use)
               ||(dest_host != nfa_hci_cb.remote_host_in_use)  )
           {
-              LOG(ERROR) << StringPrintf(" nfa_hci_handle_admin_gate_rsp sent create pipe with gate: %u got back: %u",
+              LOG(ERROR) << StringPrintf("nfa_hci_handle_admin_gate_rsp sent create pipe with gate: %u got back: %u",
                                   nfa_hci_cb.local_gate_in_use, source_gate);
-
               if (!nfa_hci_enable_one_nfcee ())
                   nfa_hci_startup_complete (NFA_STATUS_OK);
               break;

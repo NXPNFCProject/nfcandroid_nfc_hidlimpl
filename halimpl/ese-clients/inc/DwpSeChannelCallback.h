@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- *  Copyright 2018 NXP
+ *  Copyright 2019 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,8 +17,18 @@
  ******************************************************************************/
 #pragma once
 #include "DwpEseUpdater.h"
+#include <phNxpNciHal_utils.h>
+#include "nfa_api.h"
+#include <SyncEvent.h>
+
 class DwpSeChannelCallback : public ISeChannelCallback {
  public:
+  static SyncEvent mModeSetEvt;
+  static SyncEvent mPowerLinkEvt;
+  static SyncEvent mTransEvt;
+  static tNFA_HANDLE mNfaHciHandle; /* NFA handle to NFA's HCI component */
+  static int mActualResponseSize;   /* number of bytes in the response received
+                                       from secure element */
   /*******************************************************************************
   **
   ** Function:        Open
@@ -57,9 +67,8 @@ class DwpSeChannelCallback : public ISeChannelCallback {
   **
   *******************************************************************************/
   bool transceive(uint8_t* xmitBuffer, int32_t xmitBufferSize,
-                          uint8_t* recvBuffer, int32_t recvBufferMaxSize,
-                          int32_t& recvBufferActualSize,
-                          int32_t timeoutMillisec);
+                  uint8_t* recvBuffer, int32_t recvBufferMaxSize,
+                  int32_t& recvBufferActualSize, int32_t timeoutMillisec);
 
   /*******************************************************************************
   **
@@ -87,4 +96,10 @@ class DwpSeChannelCallback : public ISeChannelCallback {
     INTF_NFC = 0,
     INTF_SE = 1,
   } IntfInfo;
+
+ private:
+  static const int ESE_HANDLE = 0x4C0;
+  static const unsigned int MAX_RESPONSE_SIZE = 0x8800;  // 1024; //34K
+  tNFA_HANDLE mActiveEeHandle = 0x4C0;
+  uint8_t mResponseData[MAX_RESPONSE_SIZE];
 };
