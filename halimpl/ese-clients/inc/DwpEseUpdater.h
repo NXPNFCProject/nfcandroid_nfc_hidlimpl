@@ -21,7 +21,6 @@
 #include "JcDnld.h"
 
 extern bool nfc_debug_enabled;
-extern se_extns_entry nfc_intf;
 
 #define eseClient (DwpEseUpdater::getInstance())
 class DwpEseUpdater {
@@ -119,6 +118,7 @@ class DwpEseUpdater {
   static DwpEseUpdater sEseClientInstance;
   static spSeChannel sDwpSeChannelCallback;
   static spSeEvt sDwpSeEventCallback;
+  static eseUpdateInfo_t msEseSpiIntfInfo, msEseDwpIntfInfo;
   DwpEseUpdater();
 
   /*******************************************************************************

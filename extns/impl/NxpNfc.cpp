@@ -80,9 +80,6 @@ Return<void> NxpNfc::ioctl(uint64_t ioctlType,
         DwpEseUpdater::eSEClientUpdate_NFC_Thread();
       }
   }
-  else if(HAL_NFC_IOCTL_GET_ESE_UPDATE_STATE == ioctlType) {
-    inpOutData.out.data.status = (nfc_intf.isJcopUpdateRequired | (nfc_intf.isLSUpdateRequired << 8));
-  }
   /*copy data and additional fields indicating status of ioctl operation
    * and context of the caller. Then invoke the corresponding proxy callback*/
   inpOutData.out.ioctlType = ioctlType;

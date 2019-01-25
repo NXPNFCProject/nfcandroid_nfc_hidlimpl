@@ -44,13 +44,13 @@ using android::hardware::Void;
 
 android::sp<INxpEse> mHalNxpEse;
 uint8_t datahex(char c);
-se_extns_entry se_intf, nfc_intf;
 void* eSEClientUpdate_NFC_ThreadHandler(void* data);
 extern EseAdaptation *gpEseAdapt;
 
 DwpEseUpdater DwpEseUpdater::sEseClientInstance;
 spSeChannel DwpEseUpdater::sDwpSeChannelCallback = nullptr;
 spSeEvt DwpEseUpdater::sDwpSeEventCallback = nullptr;
+eseUpdateInfo_t DwpEseUpdater::msEseSpiIntfInfo, DwpEseUpdater::msEseDwpIntfInfo;
 DwpEseUpdater::DwpEseUpdater() {}
 
 DwpEseUpdater &DwpEseUpdater::getInstance() { return sEseClientInstance; }
@@ -58,22 +58,16 @@ DwpEseUpdater &DwpEseUpdater::getInstance() { return sEseClientInstance; }
 void DwpEseUpdater::checkIfEseClientUpdateReqd()
 {
   ALOGD("%s enter:  ", __func__);
-  bool nfcSEIntfPresent = false;
-  char nfcterminal[5];
-  nfc_intf = eseUpdateChecker.checkEseUpdateRequired(ESE_INTF_NFC);
-  se_intf = eseUpdateChecker.checkEseUpdateRequired(ESE_INTF_SPI);
+  msEseDwpIntfInfo = eseUpdateChecker.checkEseUpdateRequired(ESE_INTF_NFC);
+  msEseSpiIntfInfo = eseUpdateChecker.checkEseUpdateRequired(ESE_INTF_SPI);
 
-  if(eseUpdateChecker.isWiredSeTerminalAvailable(nfcterminal)) {
-    nfcSEIntfPresent = true;
-    ALOGD("%s SMB intf  is present  ", __func__);
-  }
-  if((nfc_intf.isJcopUpdateRequired|| nfc_intf.isLSUpdateRequired) && (nfcSEIntfPresent)) {
+  if((msEseDwpIntfInfo.isJcopUpdateRequired || msEseDwpIntfInfo.isLSUpdateRequired)) {
     DwpEseUpdater::setDwpEseClientState(ESE_UPDATE_STARTED);
   }
   else
   {
-     nfc_intf.isJcopUpdateRequired = false;
-     nfc_intf.isLSUpdateRequired = false;
+     msEseDwpIntfInfo.isJcopUpdateRequired = false;
+     msEseDwpIntfInfo.isLSUpdateRequired = false;
      ALOGD("%s LS and JCOP download not required ", __func__);
   }
 }
@@ -127,9 +121,9 @@ void DwpEseUpdater::eSeClientUpdateHandler() {
 
   ALOGD("%s Enter\n", __func__);
 
-  if (nfc_intf.isJcopUpdateRequired)
+  if (msEseDwpIntfInfo.isJcopUpdateRequired)
     DwpEseUpdater::setDwpEseClientState(ESE_JCOP_UPDATE_REQUIRED);
-  else if (se_intf.isJcopUpdateRequired) {
+  else if (msEseSpiIntfInfo.isJcopUpdateRequired) {
     DwpEseUpdater::setSpiEseClientState(ESE_JCOP_UPDATE_REQUIRED);
     return;
   }
@@ -195,12 +189,12 @@ SESTATUS DwpEseUpdater::eSEUpdate_SeqHandler() {
         break;
       case ESE_JCOP_UPDATE_REQUIRED:
         ALOGE("%s: ESE_JCOP_UPDATE_REQUIRED", __FUNCTION__);
-        if(nfc_intf.isJcopUpdateRequired) {
-          if(nfc_intf.sJcopUpdateInterface == ESE_INTF_NFC) {
+        if(msEseDwpIntfInfo.isJcopUpdateRequired) {
+          if(msEseDwpIntfInfo.sJcopUpdateInterface == ESE_INTF_NFC) {
             DwpEseUpdater::handleJcopOsDownload();
             return SESTATUS_SUCCESS;
           }
-          else if(nfc_intf.sJcopUpdateInterface == ESE_INTF_SPI) {
+          else if(msEseDwpIntfInfo.sJcopUpdateInterface == ESE_INTF_SPI) {
             return SESTATUS_SUCCESS;
           }
         }
