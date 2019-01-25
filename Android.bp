@@ -17,7 +17,7 @@ cc_library_shared {
         "halimpl/ese-clients/src/DwpEseUpdater.cc",
         "halimpl/ese-clients/src/DwpSeChannelCallback.cc",
         "halimpl/ese-clients/src/DwpSeEvtCallback.cc",
-        "halimpl/eseClient/phNxpNfc_IntfApi.cc",
+        "halimpl/ese-clients/src/HalLibnfcInteface.cc",
     ],
     shared_libs: [
         "libbase",
@@ -36,8 +36,7 @@ cc_library_shared {
         "ese_spi_nxp",
         "vendor.nxp.nxpese@1.0",
         "vendor.nxp.nxpnfc@1.0",
-        "se_extn_client",
-        "jcos_client",
+        "ese_client",
         "hal_libnfc"
     ],
     local_include_dirs: [
@@ -59,7 +58,6 @@ cc_library_shared {
         "halimpl/common",
         "halimpl/utils",
         "halimpl/ese-clients/inc",
-        "halimpl/eseClient"
     ],
     cflags: [
         "-DBUILDCFG=1",
@@ -106,12 +104,10 @@ cc_binary {
         "vendor.nxp.nxpnfc@1.0",
         "vendor.nxp.nxpese@1.0",
         "android.hardware.secure_element@1.0",
-        "se_extn_client",
-        "jcos_client",
+        "ese_client",
         "hal_libnfc",
     ],
     local_include_dirs: [
-        "halimpl/eseClient",
         "halimpl/inc",
         "halimpl/hal",
         "halimpl/inc",
@@ -121,8 +117,5 @@ cc_binary {
     ],
     include_dirs: [
         "hardware/nxp/nfc/halimpl/src/include",
-        "hardware/nxp/secure_element_extns/inc",
-        "hardware/nxp/secure_element/extns/impl",
-        "hardware/nxp/secure_element_extns/jcos_client/inc",
     ],
 }

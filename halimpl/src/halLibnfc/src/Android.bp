@@ -19,7 +19,7 @@ cc_library_shared {
         "libhidltransport",
         "libhwbinder",
         "libutils",
-        "se_extn_client",
+        "ese_client",
         "android.hardware.nfc@1.0",
         "android.hardware.nfc@1.1",
         "vendor.nxp.nxpnfc@1.0",

@@ -23,12 +23,6 @@
 
 class DwpSeChannelCallback : public ISeChannelCallback {
  public:
-  static SyncEvent mModeSetEvt;
-  static SyncEvent mPowerLinkEvt;
-  static SyncEvent mTransEvt;
-  static tNFA_HANDLE mNfaHciHandle; /* NFA handle to NFA's HCI component */
-  static int mActualResponseSize;   /* number of bytes in the response received
-                                       from secure element */
   /*******************************************************************************
   **
   ** Function:        Open
@@ -98,8 +92,5 @@ class DwpSeChannelCallback : public ISeChannelCallback {
   } IntfInfo;
 
  private:
-  static const int ESE_HANDLE = 0x4C0;
-  static const unsigned int MAX_RESPONSE_SIZE = 0x8800;  // 1024; //34K
-  tNFA_HANDLE mActiveEeHandle = 0x4C0;
-  uint8_t mResponseData[MAX_RESPONSE_SIZE];
+
 };

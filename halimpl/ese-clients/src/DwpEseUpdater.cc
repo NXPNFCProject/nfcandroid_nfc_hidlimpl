@@ -34,7 +34,6 @@
 #include <phNxpConfig.h>
 #include "hal_nxpese.h"
 #include <vendor/nxp/nxpese/1.0/INxpEse.h>
-#include "phNxpNfc_IntfApi.h"
 
 using vendor::nxp::nxpese::V1_0::INxpEse;
 using android::hardware::hidl_vec;
@@ -141,10 +140,6 @@ SESTATUS DwpEseUpdater::handleJcopOsDownload() {
 
   uint8_t status ;
   status = 0;
-
-  phNxpNfc_InitLib();
-
-  usleep(50 * 1000);
   ALOGE("%s: after init", __FUNCTION__);
   nfc_debug_enabled = true;
 
