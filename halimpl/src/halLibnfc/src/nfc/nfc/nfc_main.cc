@@ -813,29 +813,8 @@ tNFC_STATUS NFC_Enable(tNFC_RESPONSE_CBACK *p_cback) {
   /* Open HAL transport. */
   nfc_set_state(NFC_STATE_W4_HAL_OPEN);
 
-#ifdef HAL_LIBNFC_DISABLED
   nfc_cb.p_hal->open(nfc_main_hal_cback, nfc_main_hal_data_cback);
-#else
-  nfc_cb.p_hal->open(nfc_main_hal_cback, nfc_main_hal_data_cback);
-  //nfc_cb.nfc_state = NFC_STATE_OPEN;
-  /*phNxpNciHalAdaptation_callbak_reg(nfc_main_hal_cback,
-                                    nfc_main_hal_data_cback);
-  *//* Notify NFC_TASK that NCI tranport is initialized */
-  GKI_send_event(NFC_TASK, NFC_TASK_EVT_TRANSPORT_READY);
-#if 0
-  tNFC_CONN_CB *p_cb = &nfc_cb.conn_cb[NFC_RF_CONN_ID];
-  p_cb->init_credits = p_cb->num_buff = 1;
-  p_cb->buff_size = 0xFF;
-  nfc_set_conn_id(p_cb, NFC_RF_CONN_ID);
-  p_cb = &nfc_cb.conn_cb[NFC_NFCEE_CONN_ID];
-  p_cb->init_credits = p_cb->num_buff = 1;
-  p_cb->buff_size = 0xFF;
-  nfc_set_conn_id(p_cb, NFC_NFCEE_CONN_ID);
-  tNFA_DM_CBACK_DATA dm_cback_data;
-  dm_cback_data.status = NFA_STATUS_OK;
-  (*nfa_dm_cb.p_dm_cback)(NFA_DM_ENABLE_EVT, &dm_cback_data);
-#endif
-#endif
+
   return (NFC_STATUS_OK);
 }
 

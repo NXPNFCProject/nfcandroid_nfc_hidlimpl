@@ -18,11 +18,14 @@
 #include <phNfcCommon.h>
 #include <SyncEvent.h>
 
+#define MAX_TRANSCEIVE_RETRY_COUNT 0x03
+
 SyncEvent HalLibnfcInteface::mModeSetEvt;
 SyncEvent HalLibnfcInteface::mPowerLinkEvt;
 SyncEvent HalLibnfcInteface::mTransEvt;
 tNFA_HANDLE HalLibnfcInteface::mNfaHciHandle;
 int HalLibnfcInteface::mActualResponseSize;
+bool gbIsTransceiveSuccess = true;
 HalLibnfcInteface HalLibnfcInteface::sHalLibnfcIntefaceInstance;
 
 HalLibnfcInteface::HalLibnfcInteface(){}
@@ -130,25 +133,35 @@ bool HalLibnfcInteface::phNxpNfc_EseTransceive(uint8_t* xmitBuffer, int32_t xmit
   static const char fn[] = "SE_Transmit";
   tNFA_STATUS nfaStat = NFA_STATUS_FAILED;
   bool isSuccess = false;
+  gbIsTransceiveSuccess = true;
+  uint8_t retryCount = 0;
 
   ALOGE("phNxpNfc_EseTransceive enter");
-  {
-    mActualResponseSize = 0;
-    memset(mResponseData, 0, sizeof(mResponseData));
-    SyncEventGuard guard(mTransEvt);
-    nfaStat = NFA_HciSendApdu(mNfaHciHandle, mActiveEeHandle, xmitBufferSize,
-                              xmitBuffer, sizeof(mResponseData), mResponseData,
-                              timeoutMillisec);
-    ALOGE("%s: status code; nfaStat=0x%X", fn, nfaStat);
-    if (nfaStat == NFA_STATUS_OK) {
-      ALOGE("phNxpNfc_EseTransceive before waiting");
-      mTransEvt.wait();
-      ALOGE("phNxpNfc_EseTransceive after waiting");
-    } else {
-      ALOGE("%s: fail send data; error=0x%X", fn, nfaStat);
-      goto TheEnd;
-    }
-  }
+  do
+    {
+      if(!gbIsTransceiveSuccess) {
+        ALOGE("Transcieve failed. HCI Network Init may be ongoing. retry after 1sec");
+        usleep(1*1000*1000);
+      }
+      mActualResponseSize = 0;
+      memset(mResponseData, 0, sizeof(mResponseData));
+      {
+        SyncEventGuard guard(mTransEvt);
+        nfaStat = NFA_HciSendApdu(mNfaHciHandle, mActiveEeHandle, xmitBufferSize,
+                                  xmitBuffer, sizeof(mResponseData), mResponseData,
+                                  timeoutMillisec);
+        ALOGE("%s: status code; nfaStat=0x%X", fn, nfaStat);
+        retryCount++;
+        if (nfaStat == NFA_STATUS_OK) {
+          ALOGE("phNxpNfc_EseTransceive before waiting");
+          mTransEvt.wait();
+          ALOGE("phNxpNfc_EseTransceive after waiting");
+        } else {
+          ALOGE("%s: fail send data; error=0x%X", fn, nfaStat);
+          goto TheEnd;
+        }
+      }
+    } while (!gbIsTransceiveSuccess && (retryCount < MAX_TRANSCEIVE_RETRY_COUNT));
   if (mActualResponseSize > recvBufferMaxSize)
     recvBufferActualSize = recvBufferMaxSize;
   else
@@ -331,6 +344,12 @@ void HalLibnfcInteface::nfaHciCallback(tNFA_HCI_EVT event,
             (eventData->apdu_rcvd.apdu_len > MAX_RESPONSE_SIZE)
                 ? MAX_RESPONSE_SIZE
                 : eventData->apdu_rcvd.apdu_len;
+      }
+      if (eventData->apdu_rcvd.status != NFA_STATUS_OK) {
+        ALOGD("%s: DWP transceive failed.", __func__);
+        gbIsTransceiveSuccess = false;
+      } else {
+        gbIsTransceiveSuccess = true;
       }
       SyncEventGuard guard(mTransEvt);
       mTransEvt.notifyOne();
