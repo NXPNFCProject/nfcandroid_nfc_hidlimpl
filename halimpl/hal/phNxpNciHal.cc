@@ -1353,7 +1353,7 @@ int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t* p_data) {
   /* check for write synchronyztion */
   if(phNxpNciHal_check_ncicmd_write_window(nxpncihal_ctrl.cmd_len,
                          nxpncihal_ctrl.p_cmd_data) != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_D("phNxpNciHal_write_unlocked Create cb data failed");
+    NXPLOG_NCIHAL_D("phNxpNciHal_write_unlocked write synchronization failed");
     data_len = 0;
     goto clean_and_return;
   }
@@ -1691,6 +1691,11 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
         return NFCSTATUS_FAILED;
     }
 
+    int sem_val;
+    sem_getvalue(&(nxpncihal_ctrl.syncSpiNfc), &sem_val);
+    if (sem_val == 0) {
+      sem_post(&(nxpncihal_ctrl.syncSpiNfc));
+    }
     status = phTmlNfc_IoCtl(phTmlNfc_e_ResetDevice);
     if (NFCSTATUS_SUCCESS == status) {
       NXPLOG_NCIHAL_D("PN54X Reset - SUCCESS\n");
