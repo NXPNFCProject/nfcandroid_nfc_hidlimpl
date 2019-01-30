@@ -39,6 +39,7 @@ class HalLibnfcInteface {
 
   NFCSTATUS phNxpNfc_ResetEseJcopUpdate();
   NFCSTATUS phNxpNfc_openEse();
+  void phNxpNfc_closeEse();
   bool phNxpNfc_EseTransceive(uint8_t* xmitBuffer, int32_t xmitBufferSize,
                               uint8_t* recvBuffer, int32_t recvBufferMaxSize,
                               int32_t& recvBufferActualSize,
@@ -57,6 +58,7 @@ private:
                                        from secure element */
   HalLibnfcInteface();
   NFCSTATUS initHalLibnfc();
+  NFCSTATUS deInitHalLibnfc();
   static HalLibnfcInteface sHalLibnfcIntefaceInstance;
   static void nfaDeviceManagementCallback(uint8_t dmEvent,
                                    tNFA_DM_CBACK_DATA* eventData);

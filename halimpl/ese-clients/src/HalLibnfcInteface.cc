@@ -123,6 +123,24 @@ NFCSTATUS HalLibnfcInteface::initHalLibnfc() {
   return stat;
 }
 
+NFCSTATUS HalLibnfcInteface::deInitHalLibnfc() {
+  ALOGD("phNxpNfc_DeInitLib enter");
+  tNFA_STATUS stat = NFA_STATUS_FAILED;
+  if (sIsNfaEnabled) {
+    SyncEventGuard guard(mTransEvt);
+    tNFA_STATUS stat = NFA_Disable(TRUE /* graceful */);
+    if (stat == NFA_STATUS_OK) {
+      ALOGE("%s: wait for completion", __func__);
+      mTransEvt.wait();
+  } else {
+      ALOGE("%s: fail disable; error=0x%X", __func__, stat);
+    }
+  }
+  isNfcInitialzed = false;
+  NXPLOG_NCIHAL_E("phNxpNfc_DeInitLib exit");
+  return stat;
+}
+
 bool HalLibnfcInteface::phNxpNfc_EseTransceive(uint8_t* xmitBuffer, int32_t xmitBufferSize,
                             uint8_t* recvBuffer, int32_t recvBufferMaxSize,
                             int32_t& recvBufferActualSize,
@@ -271,6 +289,8 @@ void HalLibnfcInteface::nfaEeCallback(tNFA_EE_EVT event,
     } break;
   }
 }
+
+void HalLibnfcInteface::phNxpNfc_closeEse() { deInitHalLibnfc();}
 
 void HalLibnfcInteface::HalClose() { phNxpNciHal_close(false); }
 /*******************************************************************************

@@ -46,6 +46,8 @@ using android::base::WriteStringToFile;
 #define CORE_RES_STATUS_BYTE 3
 #define SIGNAL_TRIGGER_NOT_REQD 0x10
 
+static ThreadMutex gsHalOpenCloseLock;
+
 const char RF_BLOCK_LIST[6][18] =
 {
     NAME_NXP_RF_CONF_BLK_1,
@@ -1114,6 +1116,7 @@ minCleanAndreturn:
  ******************************************************************************/
 int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
                      nfc_stack_data_callback_t* p_data_cback) {
+  AutoThreadMutex a(gsHalOpenCloseLock);
   NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
 
   if((eseUpdateSpi != ESE_UPDATE_COMPLETED) || (eseUpdateDwp != ESE_UPDATE_COMPLETED))
@@ -2824,6 +2827,7 @@ static void phNxpNciHal_release_info(void) {
  *
  ******************************************************************************/
 int phNxpNciHal_close(bool bShutdown) {
+  AutoThreadMutex a(gsHalOpenCloseLock);
   NFCSTATUS status = NFCSTATUS_FAILED;
   static uint8_t cmd_core_reset_nci[] = {0x20, 0x00, 0x01, 0x00};
   static uint8_t cmd_ven_disable_nci[] = {0x20, 0x02, 0x05, 0x01,
@@ -2911,7 +2915,6 @@ close_and_return:
     phDal4Nfc_msgrelease(nxpncihal_ctrl.gDrvCfg.nClientId);
 
     memset(&nxpncihal_ctrl, 0x00, sizeof(nxpncihal_ctrl));
-    p_nfc_stack_cback_backup = NULL;
 
     NXPLOG_NCIHAL_D("phNxpNciHal_close - phOsalNfc_DeInit completed");
   }
@@ -3699,7 +3702,7 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
         }
         else
         {
-            NXPLOG_NCIHAL_D("p_nfc_stack_cback_backup cback NULL \n");
+          NXPLOG_NCIHAL_D("p_nfc_stack_cback_backup cback NULL \n");
         }
         ret = 0;
         break;

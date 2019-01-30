@@ -54,6 +54,7 @@ int16_t DwpSeChannelCallback::open() {
 **
 *******************************************************************************/
 bool DwpSeChannelCallback::close(int16_t mHandle) {
+  halLibnfcInteface.phNxpNfc_closeEse();
   if (mHandle != 0)
     return true;
   else
