@@ -96,6 +96,7 @@ extern int phNxpNciHal_CheckFwRegFlashRequired(uint8_t* fw_update_req,
                                                uint8_t* rf_update_req);
 extern int phPalEse_spi_ioctl(phPalEse_ControlCode_t eControlCode,
                               void* pDevHandle, long level);
+static void phNxpNciHal_MinCloseForOmapiClose(nfc_nci_IoctlInOutData_t *pInpOutData);
 phNxpNci_getCfg_info_t* mGetCfg_info = NULL;
 uint32_t gSvddSyncOff_Delay = 10;
 bool_t force_fw_download_req = false;
@@ -3428,6 +3429,14 @@ int phNxpNciHal_check_ncicmd_write_window(uint16_t cmd_len, uint8_t* p_cmd) {
   return status;
 }
 
+void phNxpNciHal_MinCloseForOmapiClose(nfc_nci_IoctlInOutData_t *pInpOutData) {
+  if ((nxpncihal_ctrl.halStatus == HAL_STATUS_MIN_OPEN) &&
+      (pInpOutData->inp.data.nciCmd.p_cmd[0] == 0x2F) &&
+      (pInpOutData->inp.data.nciCmd.p_cmd[1] == 0x01) &&
+      (pInpOutData->inp.data.nciCmd.p_cmd[3] == 0x00)) {
+    phNxpNciHal_Minclose();
+  }
+}
 /******************************************************************************
  * Function         phNxpNciHal_ioctl
  *
@@ -3716,6 +3725,7 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
                  "phNxpNciHal_ioctl HAL_NFC_IOCTL_SPI_DWP_SYNC not supported. "
                  "Returning..");
         ret = 0;
+        phNxpNciHal_MinCloseForOmapiClose(pInpOutData);
         break;
       }
       ret = phNxpNciHal_send_ese_hal_cmd(pInpOutData->inp.data.nciCmd.cmd_len,
@@ -3759,6 +3769,7 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
         ret = pInpOutData->out.data.nciRsp.p_rsp[3] =
             3;  // magic number for omapi failure
       }
+      phNxpNciHal_MinCloseForOmapiClose(pInpOutData);
     } break;
     case HAL_NFC_SET_SPM_PWR:
       level = pInpOutData->inp.level;
@@ -3769,9 +3780,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
                                 gpphTmlNfc_Context->pDevHandle, level);
       } else {
         ret = NFCSTATUS_FEATURE_NOT_SUPPORTED;
-      }
-      if ((nxpncihal_ctrl.halStatus == HAL_STATUS_MIN_OPEN) && ((level & 0x03) == 0x00)) {
-        phNxpNciHal_Minclose();
       }
       break;
     case HAL_NFC_SET_POWER_SCHEME:
