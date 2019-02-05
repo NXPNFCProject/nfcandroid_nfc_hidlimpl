@@ -97,7 +97,6 @@ class EseAdaptation {
   static android::sp<android::hardware::secure_element::V1_0::ISecureElement>
       mHal;
 #if (NXP_EXTNS == TRUE)
-  pthread_t mThreadId;
   static ThreadCondVar mHalCoreResetCompletedEvent;
   static ThreadCondVar mHalCoreInitCompletedEvent;
   static ThreadCondVar mHalInitCompletedEvent;

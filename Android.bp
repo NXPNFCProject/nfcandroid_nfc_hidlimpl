@@ -61,9 +61,8 @@ cc_library_shared {
     ],
     cflags: [
         "-DBUILDCFG=1",
-        "-Wno-deprecated-register",
-        "-Wno-unused-parameter",
-        "-Wno-missing-field-initializers",
+        "-Wall",
+        "-Werror",
         "-DNFC_HAL_TARGET=TRUE",
         "-DNFC_RW_ONLY=TRUE",
         "-DNXP_EXTNS=TRUE",

@@ -97,6 +97,7 @@ extern int phNxpNciHal_CheckFwRegFlashRequired(uint8_t* fw_update_req,
 extern int phPalEse_spi_ioctl(phPalEse_ControlCode_t eControlCode,
                               void* pDevHandle, long level);
 static void phNxpNciHal_MinCloseForOmapiClose(nfc_nci_IoctlInOutData_t *pInpOutData);
+static int phNxpNciHal_fw_mw_ver_check();
 phNxpNci_getCfg_info_t* mGetCfg_info = NULL;
 uint32_t gSvddSyncOff_Delay = 10;
 bool_t force_fw_download_req = false;
@@ -1184,7 +1185,7 @@ clean_and_return:
  * Returns          int.
  *
  ******************************************************************************/
-int phNxpNciHal_fw_mw_ver_check() {
+static int phNxpNciHal_fw_mw_ver_check() {
     NFCSTATUS status = NFCSTATUS_FAILED;
     if (((nfcFL.chipType == pn557)||(nfcFL.chipType == pn81T)) &&
            (rom_version == FW_MOBILE_ROM_VERSION_PN557) && (fw_maj_ver == 0x01)) {

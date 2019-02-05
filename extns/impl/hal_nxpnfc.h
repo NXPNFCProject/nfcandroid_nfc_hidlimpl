@@ -189,24 +189,4 @@ enum NxpNfcHalStatus {
     HAL_NFC_HCI_NV_RESET = 0x40,
 };
 
-/*
- * nxpnfc_nci_device_t :data structure for nxp's extended nfc_nci_device
- * Extra features added are
- * -ioctl(manage sync between  and DWP & SPI)
- * -check request for fw download
- */
-typedef struct nxpnfc_nci_device {
-  // nfc_nci_device_t nci_device;
-  /*
-  * (*ioctl)() For P61 power management synchronization
-  * between NFC Wired and SPI.
-  */
-  int (*ioctl)(const struct nxpnfc_nci_device* p_dev, long arg, void* p_data);
-  /*
-  * (*check_fw_dwnld_flag)() Is called to get FW downlaod request.
-  */
-  int (*check_fw_dwnld_flag)(const struct nxpnfc_nci_device* p_dev,
-                             uint8_t* param1);
-} nxpnfc_nci_device_t;
-
 #endif  // ANDROID_HARDWARE_HAL_NXPNFC_V1_0_H
