@@ -45,6 +45,7 @@
 
 #include <phNxpLog.h>
 #include "sparse_crc32.h"
+#include <cutils/properties.h>
 
 #if GENERIC_TARGET
 const char alternative_config_path[] = "/data/vendor/nfc/";
@@ -53,7 +54,7 @@ const char alternative_config_path[] = "";
 #endif
 
 #if 1
-const char* transport_config_paths[] = {"/odm/etc/", "/vendor/etc/", "/etc/"};
+const char* transport_config_paths[] = {"/odm/etc/", "/vendor/etc/"};
 const char transit_config_path[] = "/data/vendor/nfc/libnfc-nxpTransit.conf";
 #else
 const char* transport_config_paths[] = {"res/"};
@@ -109,7 +110,6 @@ using namespace ::std;
 
 namespace nxp {
 
-void readOptionalConfig(const char* optional);
 
 class CNfcParam : public string {
  public:
@@ -130,7 +130,6 @@ class CNfcConfig : public vector<const CNfcParam*> {
  public:
   virtual ~CNfcConfig();
   static CNfcConfig& GetInstance();
-  friend void readOptionalConfig(const char* optional);
   bool isModified();
   bool isModified(const char* pName);
   void resetModified();
@@ -230,7 +229,7 @@ inline int getDigitValue(char c, int base) {
 *******************************************************************************/
 void findConfigFilePathFromTransportConfigPaths(const string& configName,
                                                 string& filePath) {
-  for (int i = 0; i < transport_config_path_size - 1; i++) {
+  for (int i = 0; i < transport_config_path_size; i++) {
     filePath.assign(transport_config_paths[i]);
     filePath += configName;
     struct stat file_stat;
@@ -238,8 +237,8 @@ void findConfigFilePathFromTransportConfigPaths(const string& configName,
       return;
     }
   }
-  filePath.assign(transport_config_paths[transport_config_path_size - 1]);
-  filePath += configName;
+  // Config file didnt exist in any of the transport config_paths.
+  filePath.assign("");
 }
 
 /*******************************************************************************
@@ -467,7 +466,8 @@ CNfcConfig::~CNfcConfig() {}
 *******************************************************************************/
 CNfcConfig& CNfcConfig::GetInstance() {
   static CNfcConfig theInstance;
-
+  char valueStr[PROPERTY_VALUE_MAX] = {0};
+  string config_file_name = "libnfc-nxp";
   if (theInstance.size() == 0 && theInstance.mValidFile) {
     string strPath;
     if (alternative_config_path[0] != '\0') {
@@ -478,10 +478,26 @@ CNfcConfig& CNfcConfig::GetInstance() {
         return theInstance;
       }
     }
-    findConfigFilePathFromTransportConfigPaths(config_name, strPath);
+    // update config file based on system property
+    int len = property_get("persist.nfc.config_file_name", valueStr, "");
+
+    if (len > 0) {
+      config_file_name = config_file_name + "_" + valueStr + ".conf";
+    } else {
+      config_file_name = config_name;
+    }
+    ALOGD("nxp config referred : %s", config_file_name.c_str());
+
+    findConfigFilePathFromTransportConfigPaths(config_file_name, strPath);
+    if (strPath.length() == 0) {
+      ALOGD("Unable to find nxp Config file - %s. Using Default Config file.",
+            config_file_name.c_str());
+      findConfigFilePathFromTransportConfigPaths(config_name, strPath);
+    }
+
+    ALOGD("nxp config file : %s", strPath.c_str());
     theInstance.readConfig(strPath.c_str(), true);
 #if (NXP_EXTNS == TRUE)
-    readOptionalConfig("brcm");
     theInstance.readNxpTransitConfig(transit_config_path);
     theInstance.readNxpRFConfig(nxp_rf_config_path);
 #endif
@@ -884,30 +900,6 @@ CNfcParam::CNfcParam(const char* name, const string& value)
 CNfcParam::CNfcParam(const char* name, unsigned long value)
     : string(name), m_numValue(value) {}
 
-/*******************************************************************************
-**
-** Function:    readOptionalConfig()
-**
-** Description: read Config settings from an optional conf file
-**
-** Returns:     none
-**
-*******************************************************************************/
-void readOptionalConfig(const char* extra) {
-  string strPath;
-  string configName(extra_config_base);
-  configName += extra;
-  configName += extra_config_ext;
-
-  if (alternative_config_path[0] != '\0') {
-    strPath.assign(alternative_config_path);
-    strPath += configName;
-  } else {
-    findConfigFilePathFromTransportConfigPaths(configName, strPath);
-  }
-
-  CNfcConfig::GetInstance().readConfig(strPath.c_str(), false);
-}
 
 }  // namespace nxp
 /*******************************************************************************
@@ -919,8 +911,7 @@ void readOptionalConfig(const char* extra) {
 ** Returns:     True if found, otherwise False.
 **
 *******************************************************************************/
-extern int GetNxpStrValue(const char* name, char* pValue,
-                              unsigned long len) {
+extern int GetNxpStrValue(const char* name, char* pValue, unsigned long len) {
   nxp::CNfcConfig& rConfig = nxp::CNfcConfig::GetInstance();
 
   return rConfig.getValue(name, pValue, len);
@@ -943,8 +934,8 @@ extern int GetNxpStrValue(const char* name, char* pValue,
 **              false[0]
 **
 *******************************************************************************/
-extern int GetNxpByteArrayValue(const char* name, char* pValue,
-                                    long bufflen, long* len) {
+extern int GetNxpByteArrayValue(const char* name, char* pValue, long bufflen,
+                                long* len) {
   nxp::CNfcConfig& rConfig = nxp::CNfcConfig::GetInstance();
 
   return rConfig.getValue(name, pValue, bufflen, len);
