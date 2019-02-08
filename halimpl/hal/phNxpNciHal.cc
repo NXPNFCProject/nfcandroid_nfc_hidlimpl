@@ -889,8 +889,6 @@ int phNxpNciHal_MinOpen() {
     NXPLOG_NCIHAL_E("phNxpNciHal_MinOpen(): already open");
     return NFCSTATUS_SUCCESS;
   }
-  /* reset config cache */
-  resetNxpConfig();
 
   int init_retry_cnt = 0;
   int8_t ret_val = 0x00;
@@ -2931,6 +2929,8 @@ close_and_return:
   phNxpNciHal_cleanup_monitor();
   write_unlocked_status = NFCSTATUS_SUCCESS;
   phNxpNciHal_release_info();
+  /* reset config cache */
+  resetNxpConfig();
   /* Return success always */
   return NFCSTATUS_SUCCESS;
 }
@@ -2984,6 +2984,8 @@ int phNxpNciHal_Minclose(void) {
 
   write_unlocked_status = NFCSTATUS_SUCCESS;
   phNxpNciHal_release_info();
+  /* reset config cache */
+  resetNxpConfig();
   /* Return success always */
   return NFCSTATUS_SUCCESS;
 }
