@@ -1218,7 +1218,7 @@ NFCSTATUS phNxpNciHal_TestMode_open(void) {
   pthread_attr_destroy(&attr);
   if (ret_val != 0) {
     NXPLOG_NCIHAL_E("pthread_create failed");
-    phTmlNfc_Shutdown();
+    phTmlNfc_Shutdown_CleanUp();
     goto clean_and_return;
   }
 
@@ -1266,7 +1266,7 @@ void phNxpNciHal_TestMode_close() {
 
     phOsalNfc_Timer_Cleanup();
 
-    status = phTmlNfc_Shutdown();
+    status = phTmlNfc_Shutdown_CleanUp();
 
     NXPLOG_NCIHAL_D("phNxpNciHal_close return status = %d", status);
 
