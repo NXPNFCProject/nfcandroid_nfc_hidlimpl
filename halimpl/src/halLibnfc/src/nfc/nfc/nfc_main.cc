@@ -493,6 +493,10 @@ void nfc_main_handle_hal_evt(tNFC_HAL_EVT_MSG *p_msg) {
       */
       if (nfc_cb.nfc_state == NFC_STATE_W4_POST_INIT_CPLT) {
         if (p_msg->status == HAL_NFC_STATUS_OK) {
+          //disable UICC
+          uint8_t disableUiccCmd[] = {0x20, 0x02, 0x09, 0x02, 0xA0, 0xEC, 0x01, 0x00,
+                                                0xA0, 0xD4, 0x01, 0x00};
+          NFC_SetConfig(disableUiccCmd[2], disableUiccCmd);
           nfc_enabled(NCI_STATUS_OK, nfc_cb.p_nci_init_rsp);
 #if (NXP_EXTNS == TRUE)
           /*
@@ -1682,16 +1686,13 @@ int32_t NFC_AcquireEsePwr(void *pdata) {
 *******************************************************************************/
 void  check_nfcee_session_and_reset()
 {
-      std::string filename(nfc_storage_path);
-      std::string sConfigFile = "/halStorage.bin1";
-      filename.append(sConfigFile);
-      int fileStream = open(filename.c_str(), O_RDONLY);
-      if (fileStream < 0) {
-        DLOG_IF(INFO, nfc_debug_enabled)
-            << StringPrintf("%s: file not found %s", __func__, filename.c_str());
-        HalNfcAdaptation& theInstance = HalNfcAdaptation::GetInstance();
-        theInstance.FactoryReset();
-      }
+  std::string filename(nfc_storage_path);
+  std::string sConfigFile = "/halStorage.bin1";
+  filename.append(sConfigFile);
+  remove(filename.c_str());
+  uint8_t resetEseSessionCmd[] = {0x20, 0x02, 0x0C, 0x01, 0xA0, 0xEB, 0x08, 0xFF, 0xFF,
+                                  0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  NFC_SetConfig(resetEseSessionCmd[2], resetEseSessionCmd);
 }
 
 /*******************************************************************************

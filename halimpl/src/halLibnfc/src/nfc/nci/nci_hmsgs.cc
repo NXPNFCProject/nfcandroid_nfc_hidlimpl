@@ -196,37 +196,21 @@ uint8_t nci_snd_core_get_config(uint8_t *param_ids, uint8_t num_ids) {
 uint8_t nci_snd_core_set_config(uint8_t *p_param_tlvs, uint8_t tlv_size) {
   NFC_HDR *p;
   uint8_t *pp;
-  uint8_t num = 0, ulen, len, *pt;
-
-  p = NCI_GET_CMD_BUF(tlv_size + 1);
+  p = NCI_GET_CMD_BUF(tlv_size);
   if (p == NULL)
     return (NCI_STATUS_FAILED);
 
   p->event = BT_EVT_TO_NFC_NCI;
-  p->len = NCI_MSG_HDR_SIZE + tlv_size + 1;
+  p->len = NCI_MSG_HDR_SIZE + tlv_size;
   p->offset = NCI_MSG_OFFSET_SIZE;
   pp = (uint8_t *)(p + 1) + p->offset;
 
   NCI_MSG_BLD_HDR0(pp, NCI_MT_CMD, NCI_GID_CORE);
   NCI_MSG_BLD_HDR1(pp, NCI_MSG_CORE_SET_CONFIG);
-  UINT8_TO_STREAM(pp, (uint8_t)(tlv_size + 1));
-  len = tlv_size;
-  pt = p_param_tlvs;
-  while (len > 1) {
-    len -= 2;
-    pt++;
-    num++;
-    ulen = *pt++;
-    pt += ulen;
-    if (len >= ulen) {
-      len -= ulen;
-    } else {
-      GKI_freebuf(p);
-      return NCI_STATUS_FAILED;
-    }
-  }
-
-  UINT8_TO_STREAM(pp, num);
+  UINT8_TO_STREAM(pp, tlv_size);
+  ++p_param_tlvs;
+  ++p_param_tlvs;
+  ++p_param_tlvs;
   ARRAY_TO_STREAM(pp, p_param_tlvs, tlv_size);
   nfc_ncif_send_cmd(p);
 
