@@ -61,8 +61,8 @@ Return<void> NxpNfc::ioctl(uint64_t ioctlType, const hidl_vec<uint8_t>& inOutDat
       || pInOutData->inp.data.nciCmd.p_cmd[0] == ESE_LS_UPDATE_COMPLETED)
       {
         ALOGD("NxpNfc::ioctl state == ESE_UPDATE_COMPLETED");
-        seteSEClientState(pInOutData->inp.data.nciCmd.p_cmd[0]);
-        eSEClientUpdate_NFC_Thread();
+        //seteSEClientState(pInOutData->inp.data.nciCmd.p_cmd[0]);
+        //eSEClientUpdate_NFC_Thread();
       }
     }
     else if(HAL_NFC_IOCTL_GET_ESE_UPDATE_STATE == ioctlType)

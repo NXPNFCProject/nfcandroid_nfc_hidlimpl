@@ -360,8 +360,8 @@ bool CNfcConfig::readConfig(const char* name, bool bResetContent) {
           state = END_LINE;
           break;
         }
-      // fall through to numValue to handle numValue
-
+        // fall through to numValue to handle numValue
+        [[fallthrough]];
       case NUM_VALUE:
         if (isDigit(c, base)) {
           numValue *= base;
