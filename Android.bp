@@ -17,10 +17,10 @@ subdirs = [
 ]
 
 cc_binary {
-    name: "android.hardware.nfc@1.1-service",
+    name: "android.hardware.nfc@1.2-service",
     defaults: ["hidl_defaults"],
     proprietary: true,
-    init_rc: ["1.1/android.hardware.nfc@1.1-service.rc"],
+    init_rc: ["1.2/android.hardware.nfc@1.2-service.rc"],
     relative_install_path: "hw",
     cflags: [
          "-Wall",
@@ -30,8 +30,8 @@ cc_binary {
      ],
 
     srcs: [
-        "1.1/NxpNfcService.cpp",
-        "1.1/Nfc.cpp",
+        "1.2/NxpNfcService.cpp",
+        "1.2/Nfc.cpp",
         "SN100x/extns/impl/NxpNfc.cpp",
         //"SN100x/halimpl/ese-clients/src/eSEClient.cc",
         //"SN100x/halimpl/eseClient/phNxpNfc_IntfApi.cc",
@@ -47,6 +47,7 @@ cc_binary {
         "libutils",
         "android.hardware.nfc@1.0",
         "android.hardware.nfc@1.1",
+        "android.hardware.nfc@1.2",
         "libhidlbase",
         "libhidltransport",
         "libhwbinder",
