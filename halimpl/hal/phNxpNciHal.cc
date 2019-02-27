@@ -1593,23 +1593,7 @@ void read_retry() {
     /* TODO: Not sure how to handle this ? */
   }
 }
-/*******************************************************************************
- **
- ** Function:        phNxpNciHal_lastResetNtfReason()
- **
- ** Description:     Returns and clears last reset notification reason.
- **                      Intended to be called only once during recovery.
- **
- ** Returns:         reasonCode
- **
- ********************************************************************************/
-uint8_t phNxpNciHal_lastResetNtfReason(void) {
-  uint8_t reasonCode = nxpncihal_ctrl.nci_info.lastResetNtfReason;
 
-  nxpncihal_ctrl.nci_info.lastResetNtfReason = 0;
-
-  return reasonCode;
-}
 /******************************************************************************
  * Function         phNxpNciHal_core_initialized
  *
@@ -1628,7 +1612,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   uint8_t setConfigAlways = false;
   char valueStr[PROPERTY_VALUE_MAX] = {0};
   bool persist_hci_network_reset_req =false;
-  int len = property_get("persist.nfc.hci_network_reset_req", valueStr, "false");
+  bool persist_core_reset_debug_info_req = false;
   static uint8_t retry_core_init_cnt = 0;
   static uint8_t p2p_listen_mode_routing_cmd[] = {0x21, 0x01, 0x07, 0x00, 0x01,
                                                   0x01, 0x03, 0x00, 0x01, 0x05};
@@ -1655,6 +1639,16 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
   static uint8_t android_l_aid_matching_mode_on_cmd[] = {
       0x20, 0x02, 0x05, 0x01, 0xA0, 0x91, 0x01, 0x01};
+
+  int len = property_get("persist.nfc.hci_network_reset_req", valueStr, "false");
+  if (len > 0) {
+    persist_hci_network_reset_req = (len == 4 && (memcmp(valueStr, "true", len) == 0)) ? true : false;
+  }
+  len = property_get("persist.nfc.core_reset_debug_info", valueStr, "false");
+    if (len > 0) {
+    persist_core_reset_debug_info_req = (len == 4 && (memcmp(valueStr, "true", len) == 0)) ? true : false;
+  }
+
   /*initialize dummy FW recovery variables*/
   if(nfcFL.chipType != pn547C2) {
       gRecFwRetryCount = 0;
@@ -1890,10 +1884,10 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     }
   }
 #endif
-  if(phNxpNciHal_lastResetNtfReason() == FW_DBG_REASON_AVAILABLE){
-
+  if(persist_core_reset_debug_info_req){
     phNxpNciHal_send_ext_cmd(sizeof(cmd_get_cfg_dbg_info), cmd_get_cfg_dbg_info);
     NXPLOG_NCIHAL_D("NFCC txed reset ntf with reason code 0xA3");
+    property_set("persist.nfc.core_reset_debug_info", "false");
   }
   setConfigAlways = false;
   isfound = GetNxpNumValue(NAME_NXP_SET_CONFIG_ALWAYS, &num, sizeof(num));
@@ -2230,9 +2224,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     }
   }
 
-  if (len > 0) {
-    persist_hci_network_reset_req = (len == 4 && (memcmp(valueStr, "true", len) == 0)) ? true : false;
-  }
   if (persist_hci_network_reset_req) {
     phNxpNciHal_hci_network_reset();
   }

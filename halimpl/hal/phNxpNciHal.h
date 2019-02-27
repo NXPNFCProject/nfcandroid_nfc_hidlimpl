@@ -103,7 +103,6 @@ extern ESE_UPDATE_STATE eseUpdateDwp;
 typedef struct phNxpNciInfo {
   uint8_t   nci_version;
   bool_t    wait_for_ntf;
-  uint8_t   lastResetNtfReason;
 }phNxpNciInfo_t;
 /* NCI Control structure */
 typedef struct phNxpNciHal_Control {
