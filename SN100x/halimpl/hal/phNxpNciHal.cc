@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2018 NXP Semiconductors
+ * Copyright (C) 2012-2019 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1775,7 +1775,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
         NXPLOG_NCIHAL_E("NXP Update MW EEPROM Proprietary Ext failed");
       }
     }
-    fw_dwnld_flag = false;
 
   retlen = 0;
   config_access = false;
@@ -1874,32 +1873,32 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
 
     config_access = false;
   {
-    if(true == setConfigAlways)
-    {
-        if(nfcFL.chipType == sn100u)
-        {
-          status = phNxpNciHal_ext_send_sram_config_to_flash();
-        }
-        status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
-        if (status == NFCSTATUS_SUCCESS) {
-            if (nxpncihal_ctrl.nci_info.nci_version == NCI_VERSION_2_0) {
-              status = phNxpNciHal_send_ext_cmd(sizeof(cmd_init_nci2_0), cmd_init_nci2_0);
-            } else {
+    if(isNxpRFConfigModified() || isNxpConfigModified()
+            || fw_dwnld_flag || setConfigAlways){
+      if(nfcFL.chipType == sn100u) {
+        status = phNxpNciHal_ext_send_sram_config_to_flash();
+      }
+      status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
+      if (status == NFCSTATUS_SUCCESS) {
+        if (nxpncihal_ctrl.nci_info.nci_version == NCI_VERSION_2_0) {
+          status = phNxpNciHal_send_ext_cmd(sizeof(cmd_init_nci2_0), cmd_init_nci2_0);
+        } else {
           status = phNxpNciHal_send_ext_cmd(sizeof(cmd_init_nci), cmd_init_nci);
         }
         if (status != NFCSTATUS_SUCCESS)
-            return status;
-        } else {
-          return NFCSTATUS_FAILED;
-        }
+          return status;
+      } else {
+        return NFCSTATUS_FAILED;
+      }
+    }
+    status = phNxpNciHal_send_get_cfgs();
+    if (status == NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("Send get Configs SUCCESS");
+    } else {
+      NXPLOG_NCIHAL_E("Send get Configs FAILED");
+    }
   }
-  status = phNxpNciHal_send_get_cfgs();
-  if (status == NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("Send get Configs SUCCESS");
-  } else {
-    NXPLOG_NCIHAL_E("Send get Configs FAILED");
-  }
- }
+  fw_dwnld_flag = false;
   retry_core_init_cnt = 0;
 
   if (buffer) {
