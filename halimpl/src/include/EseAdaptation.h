@@ -21,12 +21,14 @@
 
 #include "ese_hal_api.h"
 #include "hal_nxpese.h"
-#include <utils/RefBase.h>
 #include <android/hardware/secure_element/1.0/ISecureElement.h>
 #include <android/hardware/secure_element/1.0/ISecureElementHalCallback.h>
 #include <android/hardware/secure_element/1.0/types.h>
+#include <utils/RefBase.h>
+#include <vendor/nxp/eventprocessor/1.0/INxpEseEvtProcessor.h>
 #include <vendor/nxp/nxpese/1.0/INxpEse.h>
 using vendor::nxp::nxpese::V1_0::INxpEse;
+using vendor::nxp::eventprocessor::V1_0::INxpEseEvtProcessor;
 using ::android::sp;
 class NxpEseDeathRecipient;
 
@@ -80,8 +82,10 @@ class EseAdaptation {
   ese_nxp_IoctlInOutData_t* mCurrentIoctlData;
   tHAL_ESE_ENTRY mSpiHalEntryFuncs;  // function pointers for HAL entry points
   static android::sp<vendor::nxp::nxpese::V1_0::INxpEse> mHalNxpEse;
+  static android::sp<vendor::nxp::eventprocessor::V1_0::INxpEseEvtProcessor>
+      mHalNxpEseEvtProcessor;
 
- private:
+private:
   EseAdaptation();
   void signal();
   static EseAdaptation* mpInstance;

@@ -35,6 +35,7 @@ cc_library_shared {
         "android.hardware.secure_element@1.0",
         "ese_spi_nxp",
         "vendor.nxp.nxpese@1.0",
+        "vendor.nxp.eventprocessor@1.0",
         "vendor.nxp.nxpnfc@1.0",
         "ese_client",
         "hal_libnfc"

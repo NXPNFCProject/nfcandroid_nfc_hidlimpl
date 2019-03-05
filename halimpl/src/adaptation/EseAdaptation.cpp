@@ -33,6 +33,7 @@ using android::hardware::hidl_vec;
 using android::sp;
 
 using vendor::nxp::nxpese::V1_0::INxpEse;
+using vendor::nxp::eventprocessor::V1_0::INxpEseEvtProcessor;
 using ::android::hardware::hidl_death_recipient;
 using ::android::wp;
 using ::android::hidl::base::V1_0::IBase;
@@ -49,6 +50,7 @@ EseAdaptation* EseAdaptation::mpInstance = NULL;
 ThreadMutex EseAdaptation::sLock;
 ThreadMutex EseAdaptation::sIoctlLock;
 sp<INxpEse> EseAdaptation::mHalNxpEse;
+sp<INxpEseEvtProcessor> EseAdaptation::mHalNxpEseEvtProcessor;
 sp<ISecureElement> EseAdaptation::mHal;
 tHAL_ESE_CBACK* EseAdaptation::mHalCallback = NULL;
 tHAL_ESE_DATA_CBACK* EseAdaptation::mHalDataCallback = NULL;
@@ -78,10 +80,13 @@ class NxpEseDeathRecipient : public hidl_death_recipient {
     mHalNxpEseDeathRsp->unlinkToDeath(this);
     mHalNxpEseDeathRsp = nullptr;
     EseAdaptation::mHalNxpEse = nullptr;
+    /* mHalNxpEseEvtProcessor & mHalNxpEse are Interfaces of
+     * android.hardware.secure_element hidl-service. So seperate HIDL
+     * DeathRecipient Implementation is not needed for each Intf. */
+    EseAdaptation::mHalNxpEseEvtProcessor = nullptr;
     EseAdaptation::GetInstance().InitializeHalDeviceContext();
   }
 };
-
 
 /*******************************************************************************
 **
@@ -222,6 +227,20 @@ void EseAdaptation::InitializeHalDeviceContext() {
     mNxpEseDeathRecipient = new NxpEseDeathRecipient(mHalNxpEse);
     mHalNxpEse->linkToDeath(mNxpEseDeathRecipient, 0);
   }
+
+  for (int cnt = 0; ((mHalNxpEseEvtProcessor == nullptr) && (cnt < 3)); cnt++) {
+    mHalNxpEseEvtProcessor = INxpEseEvtProcessor::tryGetService();
+    ALOGD_IF(mHalNxpEseEvtProcessor == nullptr,
+             "%s: Failed to retrieve the NXP ESE EVT PROCESSOR!", func);
+    if (mHalNxpEseEvtProcessor == nullptr)
+      usleep(100 * 1000);
+  }
+  if (mHalNxpEseEvtProcessor != nullptr) {
+    ALOGD_IF(nfc_debug_enabled,
+             "%s: INxpEseEvtProcessor::getService() returned %p (%s)", func,
+             mHalNxpEseEvtProcessor.get(),
+             (mHalNxpEseEvtProcessor->isRemote() ? "remote" : "local"));
+  }
   /*Transceive NCI_INIT_CMD*/
   ALOGD_IF(nfc_debug_enabled, "%s: exit", func);
 }
@@ -313,8 +332,8 @@ void EseAdaptation::HalNfccNtf(long arg, void *p_data) {
   pInpOutData->inp.context = &EseAdaptation::GetInstance();
   EseAdaptation::GetInstance().mCurrentIoctlData = pInpOutData;
   data.setToExternal((uint8_t *)pInpOutData, sizeof(ese_nxp_IoctlInOutData_t));
-  if (mHalNxpEse != nullptr)
-    mHalNxpEse->nfccNtf(arg, data);
+  if (mHalNxpEseEvtProcessor != nullptr)
+    mHalNxpEseEvtProcessor->nfccNtf(arg, data);
   ALOGD_IF(nfc_debug_enabled, "%s Ioctl Completed for Type=%lu", func,
            (unsigned long)pInpOutData->out.ioctlType);
   return;
