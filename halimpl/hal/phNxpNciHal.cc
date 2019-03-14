@@ -787,7 +787,7 @@ int phNxpNciHal_MinInit(nfc_stack_callback_t* p_cback,
     NXPLOG_NCIHAL_E(
         "Invalid nfc device node name keeping the default device node "
         "/dev/pn54x");
-    strcpy(nfc_dev_node, "/dev/pn54x");
+    strncpy(nfc_dev_node, "/dev/pn54x", strlen("/dev/pn54x") + 1);
   }
 
   tTmlConfig.pDevName = (int8_t*)nfc_dev_node;
@@ -943,11 +943,11 @@ int phNxpNciHal_MinOpen() {
     NXPLOG_NCIHAL_E("malloc of nfc_dev_node failed ");
     goto minCleanAndreturn;
   } else if (!GetNxpStrValue(NAME_NXP_NFC_DEV_NODE, nfc_dev_node,
-                             sizeof(nfc_dev_node))) {
+                             max_len * sizeof(char))) {
     NXPLOG_NCIHAL_E(
         "Invalid nfc device node name keeping the default device node "
         "/dev/pn54x");
-    strcpy(nfc_dev_node, "/dev/pn54x");
+    strncpy(nfc_dev_node, "/dev/pn54x", strlen("/dev/pn54x") + 1);
   }
 
   /* Configure hardware link */
@@ -2127,8 +2127,8 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
             uint16_t timeout = num * 1000;
             unsigned int timeoutHx = 0x0000;
 
-            uint8_t tmpbuffer[10];
-            snprintf((char*) tmpbuffer, 10, "%04x", timeout);
+            uint8_t tmpbuffer[4];
+            snprintf((char *)tmpbuffer, 4, "%04x", timeout);
             sscanf((const char*) tmpbuffer, "%x", (unsigned int*) &timeoutHx);
 
             swp_switch_timeout_cmd[7] = (timeoutHx & 0xFF);
@@ -3180,9 +3180,13 @@ void phNxpNciHal_setNxpTransitConfig(char *transitConfValue) {
   NXPLOG_NCIHAL_D("%s : Enter", __func__);
   std::string transitConfFileName = "/data/vendor/nfc/libnfc-nxpTransit.conf";
   if (transitConfValue != NULL) {
-    WriteStringToFile(transitConfValue, transitConfFileName);
+    if (!WriteStringToFile(transitConfValue, transitConfFileName)) {
+      NXPLOG_NCIHAL_D("Failed to write transit values in the config values");
+    }
   } else {
-    remove(transitConfFileName.c_str());
+    if (remove(transitConfFileName.c_str())) {
+      NXPLOG_NCIHAL_D("File deletion failed");
+    }
   }
   NXPLOG_NCIHAL_D("%s : Exit", __func__);
 }
@@ -3914,10 +3918,10 @@ if(nfcFL.chipType == pn553) {
     uint8_t setClkCmdLen = sizeof(set_clock_cmd);
     unsigned long  clockSource, frequency;
     uint32_t pllSetRetryCount = 3, dpllSetRetryCount = 3,setClockCmdWriteRetryCnt = 0;
-    uint8_t *pCmd4PllSetting;
-    uint8_t *pCmd4DpllSetting;
-    uint32_t pllCmdLen, dpllCmdLen;
-    int srcCfgFound, freqCfgFound;
+    uint8_t *pCmd4PllSetting = NULL;
+    uint8_t *pCmd4DpllSetting = NULL;
+    uint32_t pllCmdLen = 0, dpllCmdLen = 0;
+    int srcCfgFound = 0, freqCfgFound = 0;
 
     srcCfgFound = (GetNxpNumValue(NAME_NXP_SYS_CLK_SRC_SEL, &clockSource, sizeof(clockSource)) > 0);
 
@@ -4349,8 +4353,10 @@ __attribute__((unused)) void phNxpNciHal_enable_i2c_fragmentation() {
   static uint8_t cmd_init_nci2_0[] = {0x20,0x01,0x02,0x00,0x00};
   static uint8_t get_i2c_fragmentation_cmd[] = {0x20, 0x03, 0x03,
                                                 0x01, 0xA0, 0x05};
-  (GetNxpNumValue(NAME_NXP_I2C_FRAGMENTATION_ENABLED,
-                            (void*)&i2c_status, sizeof(i2c_status)));
+  if (GetNxpNumValue(NAME_NXP_I2C_FRAGMENTATION_ENABLED, (void *)&i2c_status,
+                     sizeof(i2c_status))) {
+    NXPLOG_NCIHAL_D("NAME_NXP_I2C_FRAGMENTATION_ENABLED : %lu", i2c_status);
+  }
   status = phNxpNciHal_send_ext_cmd(sizeof(get_i2c_fragmentation_cmd),
                                     get_i2c_fragmentation_cmd);
   if (status != NFCSTATUS_SUCCESS) {

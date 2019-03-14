@@ -734,18 +734,17 @@ NFCSTATUS phDnldNfc_InitImgInfo(void) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   uint8_t* pImageInfo = NULL;
   uint16_t ImageInfoLen = 0;
-  char fwFileName[256];
-  char fwpathName[256];
+  char fwFileName[128] = {0};
+  char fwpathName[256] = {0};
   char* pathName = NULL;
 
   /* if memory is not allocated then allocate memory for download context
    * structure */
   phDnldNfc_SetHwDevHandle();
-
   /*Read Firmware file name from config file*/
   if (GetNxpStrValue(NAME_NXP_FW_NAME, (char*)fwFileName, sizeof(fwFileName)) ==
       true) {
-    strcpy(fwpathName, FW_DLL_ROOT_DIR);
+    strncpy(fwpathName, FW_DLL_ROOT_DIR, strlen(FW_DLL_ROOT_DIR) + 1);
     strncat(fwpathName, fwFileName, strlen(fwFileName));
     pathName = fwpathName;
   }

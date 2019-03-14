@@ -109,7 +109,6 @@ static void phNxpLog_SetExtnsLogLevel(uint8_t level) {
   if (GetNxpNumValue(NAME_NXPLOG_EXTNS_LOGLEVEL, &num, sizeof(num))) {
     gLog_level.extns_log_level =
         (level > (unsigned char)num) ? level : (unsigned char)num;
-    ;
   }
 
   len = property_get(PROP_NAME_NXPLOG_EXTNS_LOGLEVEL, valueStr, "");
@@ -136,7 +135,6 @@ static void phNxpLog_SetTmlLogLevel(uint8_t level) {
   if (GetNxpNumValue(NAME_NXPLOG_TML_LOGLEVEL, &num, sizeof(num))) {
     gLog_level.tml_log_level =
         (level > (unsigned char)num) ? level : (unsigned char)num;
-    ;
   }
 
   len = property_get(PROP_NAME_NXPLOG_TML_LOGLEVEL, valueStr, "");

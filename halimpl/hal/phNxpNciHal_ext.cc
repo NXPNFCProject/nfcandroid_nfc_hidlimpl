@@ -472,7 +472,7 @@ if (((nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT) &&
 ******************************************************************************/
 static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf, uint16_t* p_len) {
    NFCSTATUS status = NFCSTATUS_SUCCESS;
-   uint8_t nfcdep_detected = 0x00;
+
     /* Parsing CORE_RESET_RSP and CORE_RESET_NTF to update NCI version.*/
     if(p_ntf == NULL || *p_len == 0x00) {
       return NFCSTATUS_FAILED;
@@ -509,16 +509,7 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf, uint16_t* 
             }
             NXPLOG_NCIHAL_E("CORE_RESET_NTF received !");
             NXPLOG_NCIR_E("len = %3d > %s", *p_len, print_buffer);
-              if(nfcFL.chipType == pn548C2) {
-                  if (nfcdep_detected &&
-                          !(p_ntf[2] == 0x06 && p_ntf[3] == 0xA0 && p_ntf[4] == 0x00 &&
-                                  ((p_ntf[5] == 0xC9 && p_ntf[6] == 0x95 && p_ntf[7] == 0x00 &&
-                                          p_ntf[8] == 0x00) ||
-                                          (p_ntf[5] == 0x07 && p_ntf[6] == 0x39 && p_ntf[7] == 0xF2 &&
-                                                  p_ntf[8] == 0x00)))) {
-                      nfcdep_detected = 0x00;
-                  }
-              }
+
             /*Retreive reset ntf reason code irrespective of NCI 1.0 or 2.0*/
             if (p_ntf[3] == FW_DBG_REASON_AVAILABLE)
               property_set("persist.nfc.core_reset_debug_info", "true");
@@ -725,8 +716,10 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
   NFCSTATUS status = NFCSTATUS_SUCCESS;
 
   unsigned long retval = 0;
-  GetNxpNumValue(NAME_MIFARE_READER_ENABLE, &retval, sizeof(unsigned long));
-
+  if (GetNxpNumValue(NAME_MIFARE_READER_ENABLE, &retval,
+                     sizeof(unsigned long))) {
+    NXPLOG_NCIHAL_D("NAME_MIFARE_READER_ENABLE : %lu", retval);
+  }
   phNxpNciHal_NfcDep_cmd_ext(p_cmd_data, cmd_len);
 
   if (phNxpDta_IsEnable() == true) {

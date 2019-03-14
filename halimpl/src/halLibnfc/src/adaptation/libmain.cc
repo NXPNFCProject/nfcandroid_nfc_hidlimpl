@@ -174,11 +174,16 @@ void delete_stack_non_volatile_store(bool forceDelete) {
 
   DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("%s", __func__);
 
-  remove(getFilenameForBlock(DH_NV_BLOCK).c_str());
-  remove(getFilenameForBlock(HC_F2_NV_BLOCK).c_str());
-  remove(getFilenameForBlock(HC_F3_NV_BLOCK).c_str());
-  remove(getFilenameForBlock(HC_F4_NV_BLOCK).c_str());
-  remove(getFilenameForBlock(HC_F5_NV_BLOCK).c_str());
+  if (remove(getFilenameForBlock(DH_NV_BLOCK).c_str()))
+    LOG(ERROR) << StringPrintf("Failed to rempove DH_NV_BLOCK");
+  if (remove(getFilenameForBlock(HC_F2_NV_BLOCK).c_str()))
+    LOG(ERROR) << StringPrintf("Failed to rempove HC_F2_NV_BLOCK");
+  if (remove(getFilenameForBlock(HC_F3_NV_BLOCK).c_str()))
+    LOG(ERROR) << StringPrintf("Failed to rempove HC_F3_NV_BLOCK");
+  if (remove(getFilenameForBlock(HC_F4_NV_BLOCK).c_str()))
+    LOG(ERROR) << StringPrintf("Failed to rempove HC_F4_NV_BLOCK");
+  if (remove(getFilenameForBlock(HC_F5_NV_BLOCK).c_str()))
+    LOG(ERROR) << StringPrintf("Failed to rempove HC_F5_NV_BLOCK");
 }
 
 /*******************************************************************************

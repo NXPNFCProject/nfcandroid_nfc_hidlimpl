@@ -788,7 +788,9 @@ bool CNfcConfig::isModified() {
   }
 
   uint32_t stored_crc32 = 0;
-  fread(&stored_crc32, sizeof(uint32_t), 1, fd);
+  if (fread(&stored_crc32, sizeof(uint32_t), 1, fd) != 1)
+    ALOGE("%s Failed to Read file", __func__);
+
   fclose(fd);
 
   return stored_crc32 != config_crc32_;
@@ -809,7 +811,9 @@ bool CNfcConfig::isModified(const char* pName) {
   }
 
   uint32_t stored_crc32 = 0;
-  fread(&stored_crc32, sizeof(uint32_t), 1, fd);
+  if (fread(&stored_crc32, sizeof(uint32_t), 1, fd) != 1)
+    ALOGE("%s Failed to Read file", __func__);
+
   fclose(fd);
 
   if(isRfFile)
