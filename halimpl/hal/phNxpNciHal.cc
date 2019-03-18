@@ -2855,6 +2855,7 @@ int phNxpNciHal_close(bool bShutdown) {
   }
 
   CONCURRENCY_LOCK();
+  phNxpNciHal_sendRfEvtToEseHal(0x00);
   if (nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT &&
           read_failed_disable_nfc) {
       read_failed_disable_nfc = false;

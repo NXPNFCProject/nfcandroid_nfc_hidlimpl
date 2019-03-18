@@ -65,6 +65,8 @@ extern uint32_t gSvddSyncOff_Delay; /*default delay*/
 tNfc_featureList nfcFL;
 
 extern NFCSTATUS read_retry();
+void phNxpNciHal_sendRfEvtToEseHal(uint8_t rfEvtType);
+
 /************** HAL extension functions ***************************************/
 static void hal_extns_write_rsp_timeout_cb(uint32_t TimerId, void* pContext);
 
@@ -91,6 +93,27 @@ void phNxpNciHal_ext_init(void) {
   icode_send_eof = 0x00;
   setEEModeDone = 0x00;
   EnableP2P_PrioLogic = false;
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_sendRfEvtToEseHal
+**
+** Description      send RF Events to Ese Hal.
+**                  rfEvtType : 0x00 for RF OFF
+**                            : 0X01 for RF ON
+**
+*******************************************************************************/
+void phNxpNciHal_sendRfEvtToEseHal(uint8_t rfEvtType) {
+  nfc_nci_IoctlInOutData_t inpOutData;
+  uint8_t rf_state_update[] = {0x00};
+  memset(&inpOutData, 0x00, sizeof(nfc_nci_IoctlInOutData_t));
+  inpOutData.inp.data.nciCmd.cmd_len = sizeof(rf_state_update);
+  rf_state_update[0] = rfEvtType;
+  memcpy(inpOutData.inp.data.nciCmd.p_cmd, rf_state_update,
+         sizeof(rf_state_update));
+  inpOutData.inp.data_source = 2;
+  phNxpNciHal_ioctl(HAL_NFC_IOCTL_RF_STATUS_UPDATE, &inpOutData);
 }
 
 /*******************************************************************************
@@ -302,15 +325,7 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
       NXPLOG_NCIHAL_D("RF_STATUS_UPDATE_ENABLE : %lu", rf_update_enable);
     }
     if (rf_update_enable == 0x01) {
-      nfc_nci_IoctlInOutData_t inpOutData;
-      uint8_t rf_state_update[] = {0x00};
-      memset(&inpOutData, 0x00, sizeof(nfc_nci_IoctlInOutData_t));
-      inpOutData.inp.data.nciCmd.cmd_len = sizeof(rf_state_update);
-      rf_state_update[0] = p_ntf[3];
-      memcpy(inpOutData.inp.data.nciCmd.p_cmd, rf_state_update,
-             sizeof(rf_state_update));
-      inpOutData.inp.data_source = 2;
-      phNxpNciHal_ioctl(HAL_NFC_IOCTL_RF_STATUS_UPDATE, &inpOutData);
+      phNxpNciHal_sendRfEvtToEseHal(p_ntf[3]);
     }
   } else if (p_ntf[0] == 0x61 && p_ntf[1] == 0x09) {
     unsigned long rf_update_enable = 0;
