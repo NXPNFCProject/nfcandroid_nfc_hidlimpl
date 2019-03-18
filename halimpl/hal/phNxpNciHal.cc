@@ -37,7 +37,6 @@
 
 using namespace android::hardware::nfc::V1_1;
 using android::hardware::nfc::V1_1::NfcEvent;
-using vendor::nxp::nxpnfc::V1_0::NxpNfcEvent;
 using android::base::WriteStringToFile;
 
 /*********************** Global Variables *************************************/
@@ -3697,7 +3696,7 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
         if(p_nfc_stack_cback_backup != NULL)
         {
           (*p_nfc_stack_cback_backup)(
-              (uint32_t)NxpNfcEvent::HAL_NXPNFC_HCI_NETWORK_RESET, HAL_NFC_STATUS_OK);
+              (uint32_t)HAL_NFC_HCI_NV_RESET, HAL_NFC_STATUS_OK);
         }
         ret = 0;
         break;
@@ -3705,7 +3704,7 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
         NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE \n");
         if(p_nfc_stack_cback_backup != NULL)
         {
-          (*p_nfc_stack_cback_backup)((uint32_t)NxpNfcEvent::HAL_NXPNFC_RESTART,
+          (*p_nfc_stack_cback_backup)((uint32_t)HAL_NFC_STATUS_RESTART,
             HAL_NFC_STATUS_OK);
         }
         else
