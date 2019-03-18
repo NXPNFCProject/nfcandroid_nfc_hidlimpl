@@ -25,15 +25,16 @@
 
 
 /*******************Lx_DEBUG_CFG*******************/
-#define LX_DEBUG_CFG_DISABLE               0x00
-#define LX_DEBUG_CFG_ENABLE_L2_EVENT       0x01
-#define LX_DEBUG_CFG_ENABLE_FELICA_RF      0x02
-#define LX_DEBUG_CFG_ENABLE_FELICA_SYSCODE 0x04
-#define LX_DEBUG_CFG_ENABLE_L1_EVENT       0x10
-#define LX_DEBUG_CFG_ENABLE_7816_4_RETCODE 0x40
-#define LX_DEBUG_CFG_MASK_RFU              0xA8
-#define LX_DEBUG_CFG_MASK_RSSI             0xFF00
-#define LX_DEBUG_CFG_ENABLE_RSSI           0x01
+#define LX_DEBUG_CFG_DISABLE                  0x00
+#define LX_DEBUG_CFG_ENABLE_L2_EVENT          0x01
+#define LX_DEBUG_CFG_ENABLE_FELICA_RF         0x02
+#define LX_DEBUG_CFG_ENABLE_FELICA_SYSCODE    0x04
+#define LX_DEBUG_CFG_ENABLE_L2_EVENT_READER   0x08
+#define LX_DEBUG_CFG_ENABLE_L1_EVENT          0x10
+#define LX_DEBUG_CFG_MASK_RFU                 0xE0
+#define LX_DEBUG_CFG_MASK_RSSI                0xFF00
+#define LX_DEBUG_CFG_ENABLE_RSSI              0x01
+
 typedef void* (*tHAL_API_NATIVE_CREATE_PARSER)();
 typedef void  (*tHAL_API_NATIVE_DESTROY_PARSER)(void*);
 typedef void  (*tHAL_API_NATIVE_INIT_PARSER)(void*);
