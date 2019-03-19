@@ -1437,14 +1437,12 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       goto retry_core_init;
     }
   }
-  if(nfcFL.chipType != sn100u) {
-    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ven_enable), cmd_ven_enable);
-      if (status != NFCSTATUS_SUCCESS) {
-        NXPLOG_NCIHAL_E("CMD_VEN_ENABLE: Failed");
-        retry_core_init_cnt++;
-        goto retry_core_init;
-      }
-  }
+  status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ven_enable), cmd_ven_enable);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("CMD_VEN_ENABLE: Failed");
+      retry_core_init_cnt++;
+      goto retry_core_init;
+    }
   config_access = false;
 
   if (fw_download_success == 1) {
@@ -2076,7 +2074,7 @@ int phNxpNciHal_close(bool bShutdown) {
   };
   static uint8_t cmd_reset_nci[] = {0x20, 0x00, 0x01, 0x00};
   static uint8_t cmd_ven_disable_nci[] = {0x20, 0x02, 0x05, 0x01,
-                                         0xA0, 0x07, 0x01, 0x02};
+                                         0xA0, 0x07, 0x01, 0x00};
   uint8_t length = 0;
   uint8_t numPrms = 0;
   uint8_t ptr = 4;
@@ -2115,12 +2113,10 @@ int phNxpNciHal_close(bool bShutdown) {
       status = phNxpNciHal_ext_send_sram_config_to_flash();
 #endif
   CONCURRENCY_LOCK();
-  if(nfcFL.chipType != sn100u) {
-    if(!bShutdown){
-      status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ven_disable_nci), cmd_ven_disable_nci);
-      if(status != NFCSTATUS_SUCCESS) {
-        NXPLOG_NCIHAL_E("CMD_VEN_DISABLE_NCI: Failed");
-      }
+  if(!bShutdown){
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ven_disable_nci), cmd_ven_disable_nci);
+    if(status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("CMD_VEN_DISABLE_NCI: Failed");
     }
   }
   if (nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT &&
