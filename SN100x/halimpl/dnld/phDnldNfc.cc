@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2018 NXP Semiconductors
+ * Copyright (C) 2010-2019 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -738,7 +738,7 @@ NFCSTATUS phDnldNfc_InitImgInfo(void) {
   phDnldNfc_SetHwDevHandle();
 
   gpphDnldContext->FwFormat = FW_FORMAT_UNKNOWN;
-
+  phDnldNfc_SetDlRspTimeout((uint16_t)PHDNLDNFC_RSP_TIMEOUT);
   /*Read Firmware file name from config file*/
   if (GetNxpNumValue(NAME_NXP_FW_TYPE, &fwType, sizeof(fwType)) == true) {
     NXPLOG_FWDNLD_D("firmware type from conf file: %lu",fwType);
@@ -1177,6 +1177,22 @@ NFCSTATUS phDnldNfc_UnloadFW(void) {
   }
 
   return wStatus;
+}
+
+/*******************************************************************************
+**
+** Function         phDnldNfc_SetDlRspTimeout
+**
+** Description      This function sets the timeout value dnld cmd response
+**
+** Parameters       timeout : timeout value for dnld response
+**
+** Returns          None
+**
+*******************************************************************************/
+void phDnldNfc_SetDlRspTimeout(uint16_t timeout) {
+  gpphDnldContext->TimerInfo.rspTimeout = timeout;
+  NXPLOG_FWDNLD_E("phDnldNfc_SetDlRspTimeout timeout value =%x",timeout);
 }
 
 #ifdef EEPROM_Read_Mem_IMP

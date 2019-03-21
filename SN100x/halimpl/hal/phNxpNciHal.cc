@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2018 NXP Semiconductors
+ * Copyright (C) 2012-2019 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -383,7 +383,6 @@ static NFCSTATUS phNxpNciHal_fw_download(void) {
         nxpncihal_ctrl.p_cmd_data, NCI_MAX_DATA_LEN,
         (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete, NULL);
 
-    if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD) usleep(100 * 1000);
     if (wConfigStatus != NFCSTATUS_PENDING) {
       NXPLOG_NCIHAL_E("TML Read status error status B= %x", status);
       status = NFCSTATUS_FAILED;

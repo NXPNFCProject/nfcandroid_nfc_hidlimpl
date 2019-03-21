@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2018 NXP Semiconductors
+ * Copyright (C) 2010-2019 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,11 @@
  */
 typedef void (*pphDnldNfc_RspCb_t)(void* pContext, NFCSTATUS wStatus,
                                    void* pInfo);
+
+/* Timeout value to wait for response from NFCC */
+#define PHDNLDNFC_RSP_TIMEOUT (2500)
+/* Timeout value to wait for dnld  reset rsp */
+#define PHDNLDNFC_RESET_RSP_TIMEOUT (15)
 
 #define PHLIBNFC_FWDNLD_SESSNOPEN (0x01U)   /* download session is Open */
 #define PHLIBNFC_FWDNLD_SESSNCLOSED (0x00U) /* download session is Closed */
@@ -143,4 +148,5 @@ extern NFCSTATUS phDnldNfc_LoadRecoveryFW(const char* pathName, uint8_t** pImgIn
                                           uint32_t* pImgInfoLen);
 extern NFCSTATUS phDnldNfc_LoadBinFW(uint8_t** pImgInfo, uint32_t* pImgInfoLen);
 extern NFCSTATUS phDnldNfc_UnloadFW(void);
+extern void phDnldNfc_SetDlRspTimeout(uint16_t timeout);
 #endif /* PHDNLDNFC_H */
