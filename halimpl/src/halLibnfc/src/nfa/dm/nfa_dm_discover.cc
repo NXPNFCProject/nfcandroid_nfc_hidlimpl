@@ -384,16 +384,16 @@ static void nfa_dm_disc_notify_deactivation(tNFA_DM_RF_DISC_SM_EVENT sm_event,
         << StringPrintf("nfa_dm_disc_notify_deactivation (): STORE handle for sleep");
       zz = nfa_dm_cb.disc_cb.activated_handle;
     }
-    else if(zz == nfa_dm_cb.disc_cb.activated_handle ||
+    else if(zz == nfa_dm_cb.disc_cb.activated_handle || 
       nfa_dm_cb.disc_cb.activated_handle == NFA_HANDLE_INVALID)
     {
       zz = NFA_HANDLE_INVALID;
       DLOG_IF(INFO, nfc_debug_enabled)
         << StringPrintf("nfa_dm_disc_notify_deactivation (): CLEAR handle");
     }
-
-    if(zz != NFA_HANDLE_INVALID &&
-       zz != nfa_dm_cb.disc_cb.activated_handle &&
+  
+    if(zz != NFA_HANDLE_INVALID && 
+       zz != nfa_dm_cb.disc_cb.activated_handle && 
        p_data->deactivate.type != NFA_DEACTIVATE_TYPE_SLEEP)
     {
       if ((zz < NFA_DM_DISC_NUM_ENTRIES) &&

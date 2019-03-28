@@ -115,3 +115,5 @@ extern tNFC_chipType getChipType() {
     ALOGD ("%s", __FUNCTION__);
     return capability::chipType;
 }
+
+
