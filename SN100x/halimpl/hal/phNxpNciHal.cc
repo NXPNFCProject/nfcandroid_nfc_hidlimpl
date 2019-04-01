@@ -604,7 +604,8 @@ int phNxpNciHal_MinOpen (){
 
   /*Init binary semaphore for Spi Nfc synchronization*/
   if (0 != sem_init(&nxpncihal_ctrl.syncSpiNfc, 0, 1)) {
-          wConfigStatus = NFCSTATUS_FAILED;
+    NXPLOG_NCIHAL_E("sem_init() FAiled, errno = 0x%02X", errno);
+    goto clean_and_return;
   }
 
   /* By default HAL status is HAL_STATUS_OPEN */
@@ -739,6 +740,9 @@ init_retry:
 
   /*Get FW version from device*/
   status = phDnldNfc_InitImgInfo();
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("Image information extraction Failed!!");
+  }
   NXPLOG_NCIHAL_D("FW version from device = 0x%x", wFwVerRsp);
   if (!wFwUpdateReq) {
     NXPLOG_NCIHAL_D("FW update not required");
@@ -1884,6 +1888,9 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
         if(nfcFL.chipType == sn100u)
         {
           status = phNxpNciHal_ext_send_sram_config_to_flash();
+          if(status != NFCSTATUS_SUCCESS) {
+            NXPLOG_NCIHAL_E("Updation of the SRAM contents failed");
+          }
         }
         status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
         if (status == NFCSTATUS_SUCCESS) {
