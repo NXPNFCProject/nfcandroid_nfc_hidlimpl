@@ -4030,5 +4030,71 @@ void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
   if (GetNxpNumValue(NAME_NXP_SE_COLD_TEMP_ERROR_DELAY, &num, sizeof(num))) {
     pInpOutData->out.data.nxpConfigs.eSeLowTempErrorDelay = num;
   }
+    if (GetNxpNumValue(NAME_NXP_SWP_RD_TAG_OP_TIMEOUT, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.tagOpTimeout = num;
+  }
+      if (GetNxpNumValue(NAME_NXP_DUAL_UICC_ENABLE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.dualUiccEnable = num;
+  }
+      if (GetNxpNumValue(NAME_DEFAULT_AID_ROUTE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.defaultAidRoute = num;
+  }
+      if (GetNxpNumValue(NAME_DEFAULT_MIFARE_CLT_ROUTE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.defaultMifareCltRoute = num;
+  }
+      if (GetNxpNumValue(NAME_DEFAULT_FELICA_CLT_ROUTE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.defautlFelicaCltRoute = num;
+  }
+      if (GetNxpNumValue(NAME_DEFAULT_AID_PWR_STATE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.defaultAidPwrState = num;
+  }
+      if (GetNxpNumValue(NAME_DEFAULT_DESFIRE_PWR_STATE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.defaultDesfirePwrState = num;
+  }
+      if (GetNxpNumValue(NAME_DEFAULT_MIFARE_CLT_PWR_STATE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.defaultMifareCltPwrState = num;
+  }
+      if (GetNxpNumValue(NAME_HOST_LISTEN_TECH_MASK, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.hostListenTechMask = num;
+  }
+      if (GetNxpNumValue(NAME_FORWARD_FUNCTIONALITY_ENABLE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.fwdFunctionalityEnable = num;
+  }
+      if (GetNxpNumValue(NAME_DEFUALT_GSMA_PWR_STATE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.gsmaPwrState = num;
+  }
+      if (GetNxpNumValue(NAME_NXP_DEFAULT_UICC2_SELECT, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.defaultUicc2Select = num;
+  }
+      if (GetNxpNumValue(NAME_NXP_SMB_TRANSCEIVE_TIMEOUT, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.smbTransceiveTimeout = num;
+  }
+      if (GetNxpNumValue(NAME_NXP_SMB_ERROR_RETRY, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.smbErrorRetry = num;
+  }
+      if (GetNxpNumValue(NAME_DEFAULT_FELICA_CLT_PWR_STATE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.felicaCltPowerState = num;
+  }
+      if (GetNxpNumValue(NAME_CHECK_DEFAULT_PROTO_SE_ID, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.checkDefaultProtoSeId = num;
+  }
+      if (GetNxpNumValue(NAME_NXPLOG_NCIHAL_LOGLEVEL, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.nxpLogHalLoglevel = num;
+  }
+  if (GetNxpNumValue(NAME_NXPLOG_EXTNS_LOGLEVEL, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.nxpLogExtnsLogLevel = num;
+  }
+        if (GetNxpNumValue(NAME_NXPLOG_TML_LOGLEVEL, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.nxpLogTmlLogLevel = num;
+  }
+        if (GetNxpNumValue(NAME_NXPLOG_FWDNLD_LOGLEVEL, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.nxpLogFwDnldLogLevel = num;
+  }
+        if (GetNxpNumValue(NAME_NXPLOG_NCIX_LOGLEVEL, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.nxpLogNcixLogLevel = num;
+  }
+        if (GetNxpNumValue(NAME_NXPLOG_NCIR_LOGLEVEL, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.nxpLogNcirLogLevel = num;
+  }
 }
 #endif

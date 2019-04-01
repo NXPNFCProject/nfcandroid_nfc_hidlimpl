@@ -81,13 +81,13 @@ static void phNxpLog_SetHALLogLevel(uint8_t level) {
   int len;
   char valueStr[PROPERTY_VALUE_MAX] = {0};
 
-  if (GetNxpNumValue(NAME_NXPLOG_HAL_LOGLEVEL, &num, sizeof(num))) {
+  if (GetNxpNumValue(NAME_NXPLOG_NCIHAL_LOGLEVEL, &num, sizeof(num))) {
     gLog_level.hal_log_level =
         (level > (unsigned char)num) ? level : (unsigned char)num;
     ;
   }
 
-  len = property_get(PROP_NAME_NXPLOG_HAL_LOGLEVEL, valueStr, "");
+  len = property_get(PROP_NAME_NXPLOG_NCIHAL_LOGLEVEL, valueStr, "");
   if (len > 0) {
     /* let Android property override .conf variable */
     sscanf(valueStr, "%lu", &num);
