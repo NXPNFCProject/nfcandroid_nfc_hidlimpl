@@ -2997,7 +2997,7 @@ int phNxpNciHal_determineClockDelayRequest(uint8_t nfcc_cfg_clock_src)
         }
     }
     /*Check if the clock source is PLL as per config*/
-    else if(nfcc_cfg_clock_src >= 0 && nfcc_cfg_clock_src < 6)
+    else if(nfcc_cfg_clock_src < 6)
     {
         if(nfcc_clock_delay_req != (phNxpNciClock.p_rx_data[CLK_REQ_DELAY_PLL_OFFSET] & CLK_REQ_DELAY_MASK))
         {
