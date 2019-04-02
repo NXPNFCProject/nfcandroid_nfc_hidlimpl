@@ -69,6 +69,7 @@ ThreadCondVar EseAdaptation::mHalInitCompletedEvent;
 **
 *******************************************************************************/
 EseAdaptation::EseAdaptation() {
+  mCurrentIoctlData = NULL;
   memset(&mSpiHalEntryFuncs, 0, sizeof(mSpiHalEntryFuncs));
 }
 
