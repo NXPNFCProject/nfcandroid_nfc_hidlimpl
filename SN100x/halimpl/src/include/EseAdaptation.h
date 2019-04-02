@@ -93,7 +93,6 @@ class EseAdaptation {
       mHal;
   static android::sp<vendor::nxp::nxpese::V1_0::INxpEse> mHalNxpEse;
 #if (NXP_EXTNS == TRUE)
-  pthread_t mThreadId;
   static ThreadCondVar mHalCoreResetCompletedEvent;
   static ThreadCondVar mHalCoreInitCompletedEvent;
   static ThreadCondVar mHalInitCompletedEvent;

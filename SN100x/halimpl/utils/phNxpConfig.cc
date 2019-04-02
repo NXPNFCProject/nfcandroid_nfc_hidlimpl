@@ -444,6 +444,9 @@ bool CNfcConfig::readConfig(const char* name, bool bResetContent) {
 *******************************************************************************/
 CNfcConfig::CNfcConfig()
     : mValidFile(true),
+      config_crc32_(0),
+      config_rf_crc32_(0),
+      config_tr_crc32_(0),
       state(0) {}
 
 /*******************************************************************************
