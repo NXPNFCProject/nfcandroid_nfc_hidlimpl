@@ -91,14 +91,20 @@ namespace {
 
 size_t readConfigFile(const char* fileName, uint8_t** p_data) {
   FILE* fd = fopen(fileName, "rb");
+  uint8_t* buffer = NULL;
+  size_t read = 0;
   if (fd == nullptr) return 0;
 
   fseek(fd, 0L, SEEK_END);
   const size_t file_size = ftell(fd);
   rewind(fd);
 
-  uint8_t* buffer = new uint8_t[file_size];
-  size_t read = fread(buffer, file_size, 1, fd);
+  if (file_size > 0) {
+    buffer = new uint8_t[file_size];
+    read = fread(buffer, file_size, 1, fd);
+  } else {
+    ALOGE("%s Invalid file size file_size = %zu\n", __func__, file_size);
+  }
   fclose(fd);
 
   if (read == 1) {
@@ -106,7 +112,8 @@ size_t readConfigFile(const char* fileName, uint8_t** p_data) {
     return file_size;
   }
 
-  delete[] buffer;
+  if(buffer)
+    delete[] buffer;
   return 0;
 }
 
