@@ -2144,6 +2144,11 @@ int phNxpNciHal_close(bool bShutdown) {
       status = phNxpNciHal_ext_send_sram_config_to_flash();
 #endif
   CONCURRENCY_LOCK();
+  int sem_val;
+  sem_getvalue(&(nxpncihal_ctrl.syncSpiNfc), &sem_val);
+  if(sem_val == 0 ) {
+      sem_post(&(nxpncihal_ctrl.syncSpiNfc));
+  }
   if(nfcFL.chipType != sn100u) {
     if(!bShutdown){
       status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ven_disable_nci), cmd_ven_disable_nci);
