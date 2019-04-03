@@ -690,8 +690,8 @@ init_retry:
   if ((status != NFCSTATUS_SUCCESS) &&
       (nxpncihal_ctrl.retry_cnt >= MAX_RETRY_COUNT)) {
     NXPLOG_NCIHAL_E("Force FW Download, NFCC not coming out from Standby");
-    goto force_download;
     wConfigStatus = NFCSTATUS_FAILED;
+    goto force_download;
   } else if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed");
     if (init_retry_cnt < 3) {
