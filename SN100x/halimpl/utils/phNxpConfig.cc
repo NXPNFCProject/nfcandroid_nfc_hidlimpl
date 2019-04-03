@@ -46,6 +46,7 @@
 #include <phNxpConfig.h>
 #include <phNxpLog.h>
 #include "sparse_crc32.h"
+#include <errno.h>
 #if GENERIC_TARGET
 const char alternative_config_path[] = "/data/vendor/nfc/";
 #else
@@ -790,7 +791,10 @@ bool CNfcConfig::isModified(tNXP_CONF_FILE aType) {
   }
 
   uint32_t stored_crc32 = 0;
-  fread(&stored_crc32, sizeof(uint32_t), 1, fd);
+  if (fread(&stored_crc32, sizeof(uint32_t), 1, fd) != 1) {
+    ALOGE("%s File read is not successfull errno = %d", __func__, errno);
+  }
+
   fclose(fd);
   ALOGD("stored_crc32 is %d config_crc32_ is %d", stored_crc32, config_crc32_);
 
