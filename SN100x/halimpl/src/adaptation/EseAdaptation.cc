@@ -118,6 +118,10 @@ void EseAdaptation::Initialize() {
   ese_nxp_IoctlInOutData_t* pInpOutData;
   pInpOutData =
       (ese_nxp_IoctlInOutData_t*)malloc(sizeof(ese_nxp_IoctlInOutData_t));
+  if (!pInpOutData) {
+    ALOGE("%s Unable to intialize", __func__);
+    return;
+  }
   memset(pInpOutData, 0x00, sizeof(ese_nxp_IoctlInOutData_t));
   pInpOutData->inp.data.nxpCmd.cmd_len = sizeof(cmd_ese_nxp);
   memcpy(pInpOutData->inp.data.nxpCmd.p_cmd, cmd_ese_nxp, sizeof(cmd_ese_nxp));
