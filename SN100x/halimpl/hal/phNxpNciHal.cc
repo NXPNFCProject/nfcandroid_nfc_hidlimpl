@@ -2187,7 +2187,7 @@ int phNxpNciHal_close(bool bShutdown) {
     cmd_ce_discovery_nci[ptr++] = 0x01;
     length += 2;
   }
-  if((uiccListenMask & 0x2) == 0x02 || (eseListenMask & 0x4) == 0x02) {
+  if((uiccListenMask & 0x2) == 0x02 || (eseListenMask & 0x4) == 0x04) {
     NXPLOG_NCIHAL_D("phNxpNciHal_close (): Adding B passive listen");
     numPrms++;
     cmd_ce_discovery_nci[ptr++] = 0x81;
@@ -3417,7 +3417,7 @@ retry_send_ext:
 
     isfound = (GetNxpNumValue(NAME_NXP_CN_TRANSIT_CMA_BYPASSMODE_ENABLE, (void *)&cma_bypass_enable, sizeof(cma_bypass_enable)));
     if(isfound >0) {
-        if(cma_bypass_enable == 0 && ((phNxpNciRfSet.p_rx_data[10] & 0x80) == 1)) {
+        if(cma_bypass_enable == 0 && ((phNxpNciRfSet.p_rx_data[10] & 0x80) == 0x80)) {
             NXPLOG_NCIHAL_D("Disable CMA_BYPASSMODE Supports EMVCo PICC Complaincy");
             phNxpNciRfSet.p_rx_data[10] &=~0x80;        //set 24th bit of RF MISC SETTING to 0 for EMVCo PICC Complaincy support
         }
