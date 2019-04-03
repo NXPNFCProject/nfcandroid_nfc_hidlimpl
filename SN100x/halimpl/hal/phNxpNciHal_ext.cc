@@ -704,7 +704,9 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
       (nxpprofile_ctrl.profile_type == NFC_FORUM_PROFILE)) {
     unsigned long retval = 0;
 
-    GetNxpNumValue(NAME_MIFARE_READER_ENABLE, &retval, sizeof(unsigned long));
+    if (!GetNxpNumValue(NAME_MIFARE_READER_ENABLE, &retval, sizeof(unsigned long))) {
+      NXPLOG_NCIHAL_E("Reading of MIFARE_READER_ENABLE failed. Default retval = %d", retval);
+    }
     if(retval == 0x01) {
       NXPLOG_NCIHAL_D("Going through extns - Adding Mifare in RF Discovery");
       p_cmd_data[2] += 3;

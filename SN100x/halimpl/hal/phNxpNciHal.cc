@@ -355,7 +355,10 @@ static NFCSTATUS phNxpNciHal_fw_download(void) {
   {
       static uint8_t cmd_reset_nci_dwnld[] = {0x20,0x00,0x01,0x80};
       nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
-      phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci_dwnld), cmd_reset_nci_dwnld);
+      status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci_dwnld), cmd_reset_nci_dwnld);
+      if (status != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("Core reset FW download command failed \n");
+      }
       nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
    }
   if (NFCSTATUS_SUCCESS == status) {
@@ -1034,7 +1037,10 @@ int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data) {
   if (icode_send_eof == 1) {
     usleep(10000);
     icode_send_eof = 2;
-    phNxpNciHal_send_ext_cmd(3, cmd_icode_eof);
+    status = phNxpNciHal_send_ext_cmd(3, cmd_icode_eof);
+    if (status != NFCSTATUS_SUCCESS) {
+       NXPLOG_NCIHAL_E("ICODE end of frame command failed");
+    }
   }
 
 clean_and_return:
@@ -1619,7 +1625,10 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     }
   if(phNxpNciHal_lastResetNtfReason() == FW_DBG_REASON_AVAILABLE){
 
-    phNxpNciHal_send_ext_cmd(sizeof(cmd_get_cfg_dbg_info), cmd_get_cfg_dbg_info);
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_get_cfg_dbg_info), cmd_get_cfg_dbg_info);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("NFCC texted reset ntf failed");
+    }
     NXPLOG_NCIHAL_D("NFCC txed reset ntf with reason code 0xA3");
   }
 
@@ -2369,9 +2378,13 @@ void phNxpNciHal_setNxpTransitConfig(char *transitConfValue) {
   NXPLOG_NCIHAL_D("%s : Enter", __func__);
   std::string transitConfFileName = "/data/vendor/nfc/libnfc-nxpTransit.conf";
   if (transitConfValue != NULL) {
-    WriteStringToFile(transitConfValue, transitConfFileName);
+    if (!WriteStringToFile(transitConfValue, transitConfFileName)) {
+      NXPLOG_NCIHAL_E("WriteStringToFile: Failed");
+    }
   } else {
-    WriteStringToFile("", transitConfFileName);
+    if (!WriteStringToFile("", transitConfFileName)) {
+      NXPLOG_NCIHAL_E("WriteStringToFile: Failed");
+    }
     remove(transitConfFileName.c_str());
   }
   NXPLOG_NCIHAL_D("%s : Exit", __func__);
@@ -3594,8 +3607,12 @@ void phNxpNciHal_enable_i2c_fragmentation() {
   static uint8_t cmd_init_nci2_0[] = {0x20, 0x01, 0x02, 0x00, 0x00};
   static uint8_t get_i2c_fragmentation_cmd[] = {0x20, 0x03, 0x03,
                                                 0x01, 0xA0, 0x05};
-  GetNxpNumValue(NAME_NXP_I2C_FRAGMENTATION_ENABLED, (void*)&i2c_status,
-                 sizeof(i2c_status));
+  if ((GetNxpNumValue(NAME_NXP_I2C_FRAGMENTATION_ENABLED, (void*)&i2c_status,
+                  sizeof(i2c_status)) == true) {
+    NXPLOG_FWDNLD_D("I2C status : %ld",i2c_status);
+  } else {
+    NXPLOG_FWDNLD_E("I2C status read not succeeded. Default value : %ld",i2c_status);
+  }
   status = phNxpNciHal_send_ext_cmd(sizeof(get_i2c_fragmentation_cmd),
                                     get_i2c_fragmentation_cmd);
   if (status != NFCSTATUS_SUCCESS) {
