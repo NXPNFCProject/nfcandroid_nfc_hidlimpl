@@ -197,6 +197,7 @@ SESTATUS DwpEseUpdater::eSEUpdate_SeqHandler() {
       case ESE_JCOP_UPDATE_COMPLETED:
       case ESE_LS_UPDATE_REQUIRED:
         ALOGD("LSUpdate DWP commented");
+        [[fallthrough]];
       case ESE_LS_UPDATE_COMPLETED:
       case ESE_UPDATE_COMPLETED:
       {

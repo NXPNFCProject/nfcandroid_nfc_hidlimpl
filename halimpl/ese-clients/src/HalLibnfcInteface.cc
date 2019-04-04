@@ -357,6 +357,7 @@ void HalLibnfcInteface::nfaHciCallback(tNFA_HCI_EVT event,
       SyncEventGuard guard(mTransEvt);
       mTransEvt.notifyOne();
     }
+      [[fallthrough]];
     case NFA_HCI_RSP_APDU_RCVD_EVT: {
       ALOGD("%s: NFA_HCI_RSP_APDU_RCVD_EVT", fn);
       if (eventData->apdu_rcvd.apdu_len > 0) {

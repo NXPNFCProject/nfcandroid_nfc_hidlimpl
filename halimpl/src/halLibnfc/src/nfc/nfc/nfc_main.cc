@@ -740,6 +740,7 @@ static void nfc_main_hal_cback(uint8_t event, tHAL_NFC_STATUS status) {
     eventData.write_status = (uint32_t)status;
     (*nfc_cb.p_resp_cback)(HAL_NFC_WRITE_COMPLETE, &eventData);
   }
+    [[fallthrough]];
   default:
     DLOG_IF(INFO, nfc_debug_enabled)
         << StringPrintf("nfc_main_hal_cback unhandled event %x", event);

@@ -232,6 +232,7 @@ static void phDnldNfc_ProcessSeqState(void* pContext,
         }
         pDlCtxt->tCurrState = phDnldNfc_StateSend;
       }
+        [[fallthrough]];
       case phDnldNfc_StateSend: {
         wStatus = phDnldNfc_BuildFramePkt(pDlCtxt);
 
@@ -280,6 +281,7 @@ static void phDnldNfc_ProcessSeqState(void* pContext,
           pDlCtxt->tCurrState = phDnldNfc_StateResponse;
         }
       }
+        [[fallthrough]];
       case phDnldNfc_StateTimer: {
         if (1 == (pDlCtxt->TimerInfo.TimerStatus)) /*Is Timer Running*/
         {
@@ -289,6 +291,7 @@ static void phDnldNfc_ProcessSeqState(void* pContext,
         }
         pDlCtxt->tCurrState = phDnldNfc_StateResponse;
       }
+        [[fallthrough]];
       case phDnldNfc_StateResponse: {
         if (NFCSTATUS_RF_TIMEOUT != (pDlCtxt->TimerInfo.wTimerExpStatus)) {
           /* Process response */
@@ -378,6 +381,7 @@ static void phDnldNfc_ProcessRWSeqState(void* pContext,
         }
         pDlCtxt->tCurrState = phDnldNfc_StateSend;
       }
+        [[fallthrough]];
       case phDnldNfc_StateSend: {
         if (false == pDlCtxt->bResendLastFrame) {
           wStatus = phDnldNfc_BuildFramePkt(pDlCtxt);
@@ -432,6 +436,7 @@ static void phDnldNfc_ProcessRWSeqState(void* pContext,
           pDlCtxt->tCurrState = phDnldNfc_StateResponse;
         }
       }
+        [[fallthrough]];
       case phDnldNfc_StateTimer: {
         if (1 == (pDlCtxt->TimerInfo.TimerStatus)) /*Is Timer Running*/
         {
@@ -441,6 +446,7 @@ static void phDnldNfc_ProcessRWSeqState(void* pContext,
         }
         pDlCtxt->tCurrState = phDnldNfc_StateResponse;
       }
+        [[fallthrough]];
       case phDnldNfc_StateResponse: {
         if (NFCSTATUS_RF_TIMEOUT != (pDlCtxt->TimerInfo.wTimerExpStatus)) {
           /* Process response */
