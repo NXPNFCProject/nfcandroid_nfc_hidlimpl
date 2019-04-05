@@ -2385,7 +2385,9 @@ void phNxpNciHal_setNxpTransitConfig(char *transitConfValue) {
     if (!WriteStringToFile("", transitConfFileName)) {
       NXPLOG_NCIHAL_E("WriteStringToFile: Failed");
     }
-    remove(transitConfFileName.c_str());
+    if (!remove(transitConfFileName.c_str())) {
+      NXPLOG_NCIHAL_E("Unable to remove file");
+    }
   }
   NXPLOG_NCIHAL_D("%s : Exit", __func__);
 }

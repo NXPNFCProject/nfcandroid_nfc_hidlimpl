@@ -277,7 +277,9 @@ int phTmlNfc_i2c_write(void* pDevHandle, uint8_t* pBuffer,
       }
     }
 #if(NXP_EXTNS == TRUE)
-    sem_wait(&txrxSemaphore);
+    if (-1 == sem_wait(&txrxSemaphore)) {
+      NXPLOG_TML_E("%s:sem_wait failed  \n",__func__);
+    }
 #endif
     ret = write((intptr_t)pDevHandle, pBuffer + numWrote, numBytes - numWrote);
 #if(NXP_EXTNS == TRUE)
