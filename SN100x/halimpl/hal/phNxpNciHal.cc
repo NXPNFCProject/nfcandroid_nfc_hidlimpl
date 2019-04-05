@@ -2487,7 +2487,7 @@ void phNxpNciHal_getVendorConfig_1_2(android::hardware::nfc::V1_2::NfcConfig& co
       config.offHostRouteEse[i] = buffer[i];
   }
 
-  if ((GetNxpNumValue(NAME_DEFAULT_ISODEP_ROUTE, &num, sizeof(num))) && (num <= 2) ) {
+  if ((GetNxpNumValue(NAME_DEFAULT_ISODEP_ROUTE, &num, sizeof(num))) && (num <= 4) ) {
       config.defaultIsoDepRoute = num;
   }
 
@@ -2830,7 +2830,7 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
             if ((nxpncihal_ctrl.halStatus == HAL_STATUS_MIN_OPEN) && (level == 0x01)) {
               NXPLOG_NCIHAL_D(" HAL close after SPI close , while NFC is Off");
               phNxpNciHal_close(false);
-            }            
+            }
           } else
           {
             if(0x05 == level) {
