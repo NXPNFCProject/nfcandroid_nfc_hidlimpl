@@ -2487,7 +2487,7 @@ void phNxpNciHal_getVendorConfig_1_2(android::hardware::nfc::V1_2::NfcConfig& co
       config.offHostRouteEse[i] = buffer[i];
   }
 
-  if ((GetNxpNumValue(NAME_DEFAULT_ISODEP_ROUTE, &num, sizeof(num))) && (num <= 2) ) {
+  if ((GetNxpNumValue(NAME_DEFAULT_ISODEP_ROUTE, &num, sizeof(num))) && (num <= 4) ) {
       config.defaultIsoDepRoute = num;
   }
 
