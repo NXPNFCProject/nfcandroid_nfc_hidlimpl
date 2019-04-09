@@ -51,7 +51,7 @@ int main() {
     }
 
     configureRpcThreadpool(1, true /*callerWillJoin*/);
-    //checkEseClientUpdate();
+    checkEseClientUpdate();
     status = nfc_service->registerAsService();
     if (status != OK) {
         LOG_ALWAYS_FATAL("Could not register service for NFC HAL Iface (%d).", status);
