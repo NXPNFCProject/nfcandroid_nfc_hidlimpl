@@ -33,7 +33,7 @@ cc_binary {
         "1.2/NxpNfcService.cpp",
         "1.2/Nfc.cpp",
         "SN100x/extns/impl/NxpNfc.cpp",
-        //"SN100x/halimpl/ese-clients/src/eSEClient.cc",
+        "SN100x/halimpl/ese-clients/src/eSEClient.cc",
         //"SN100x/halimpl/eseClient/phNxpNfc_IntfApi.cc",
     ],
 
@@ -48,6 +48,7 @@ cc_binary {
         "android.hardware.nfc@1.0",
         "android.hardware.nfc@1.1",
         "android.hardware.nfc@1.2",
+        "android.hardware.secure_element@1.0",
         "libhidlbase",
         "libhidltransport",
         "libhwbinder",
@@ -75,6 +76,7 @@ cc_binary {
 
     include_dirs: [
         "hardware/nxp/nfc/SN100x/extns/impl",
+        "hardware/nxp/nfc/SN100x/halimpl/src/include",
         "hardware/nxp/secure_element/extns/impl",
         "hardware/nxp/secure_element_extns/inc",
         "hardware/nxp/secure_element_extns/inc",
