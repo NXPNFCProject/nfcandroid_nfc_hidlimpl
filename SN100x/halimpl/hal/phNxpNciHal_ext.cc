@@ -1259,7 +1259,7 @@ NFCSTATUS phNxpNciHal_enableDefaultUICC2SWPline(uint8_t uicc2_sel) {
   NXPLOG_NCIHAL_D("phNxpNciHal_enableDefaultUICC2SWPline %d",uicc2_sel);
   p_data[LEN_INDEX] = 1;
   p += 4;
-    if(uicc2_sel & 0x04) {
+    if(uicc2_sel == 0x03) {
       UINT8_TO_STREAM(p, NXP_NFC_SET_CONFIG_PARAM_EXT);
       UINT8_TO_STREAM(p, NXP_NFC_PARAM_ID_SWP2);
       UINT8_TO_STREAM(p, 0x01);
@@ -1267,7 +1267,7 @@ NFCSTATUS phNxpNciHal_enableDefaultUICC2SWPline(uint8_t uicc2_sel) {
       p_data[LEN_INDEX]+= 4;
       p_data[PARAM_INDEX]+= 1;
     }
-    if(uicc2_sel & 0x08) {
+    if(uicc2_sel == 0x04) {
       UINT8_TO_STREAM(p, NXP_NFC_SET_CONFIG_PARAM_EXT);
       UINT8_TO_STREAM(p, NXP_NFC_PARAM_ID_SWPUICC3);
       UINT8_TO_STREAM(p, 0x01);
