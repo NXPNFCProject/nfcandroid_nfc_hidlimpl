@@ -17,13 +17,13 @@
 #ifndef _PHNXPNCIHAL_ADAPTATION_H_
 #define _PHNXPNCIHAL_ADAPTATION_H_
 
+#include "EseUpdateChecker.h"
+#include <android/hardware/nfc/1.2/INfc.h>
+#include <android/hardware/nfc/1.2/types.h>
 #include <hardware/hardware.h>
 #include <hardware/nfc.h>
-#include <android/hardware/nfc/1.1/INfc.h>
-#include <android/hardware/nfc/1.1/types.h>
-#include "EseUpdateChecker.h"
 
-using ::android::hardware::nfc::V1_1::NfcConfig;
+using ::android::hardware::nfc::V1_2::NfcConfig;
 
 extern ESE_UPDATE_STATE eseUpdateSpi;
 extern ESE_UPDATE_STATE eseUpdateDwp;
@@ -40,7 +40,9 @@ int phNxpNciHal_close(bool);
 int phNxpNciHal_configDiscShutdown(void);
 int phNxpNciHal_control_granted(void);
 int phNxpNciHal_power_cycle(void);
-void phNxpNciHal_getVendorConfig(NfcConfig& config);
+void phNxpNciHal_getVendorConfig(
+    android::hardware::nfc::V1_1::NfcConfig &config);
+void phNxpNciHal_getVendorConfig_1_2(NfcConfig &config);
 int phNxpNciHal_MinInit(nfc_stack_callback_t* p_cback,
                         nfc_stack_data_callback_t* p_data_cback);
 void phNxpNciHal_reset_nfcee_session(bool force_session_reset);
