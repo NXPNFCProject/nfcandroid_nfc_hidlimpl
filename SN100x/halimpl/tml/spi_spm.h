@@ -53,3 +53,4 @@ typedef enum {
 **
 *******************************************************************************/
 int phPalEse_spi_ioctl(phPalEse_ControlCode_t eControlCode,void *pDevHandle, long level);
+
