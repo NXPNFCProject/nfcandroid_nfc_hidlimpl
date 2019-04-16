@@ -1809,7 +1809,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
         NXPLOG_NCIHAL_E("NXP Update MW EEPROM Proprietary Ext failed");
       }
     }
-    fw_dwnld_flag = false;
 
   retlen = 0;
   config_access = false;
@@ -1908,10 +1907,9 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
 
     config_access = false;
   {
-    if(true == setConfigAlways)
-    {
-        if(nfcFL.chipType == sn100u)
-        {
+    if(isNxpRFConfigModified() || isNxpConfigModified()
+            || fw_dwnld_flag || setConfigAlways){
+        if(nfcFL.chipType == sn100u) {
           status = phNxpNciHal_ext_send_sram_config_to_flash();
           if(status != NFCSTATUS_SUCCESS) {
             NXPLOG_NCIHAL_E("Updation of the SRAM contents failed");
@@ -1937,6 +1935,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     NXPLOG_NCIHAL_E("Send get Configs FAILED");
   }
  }
+  fw_dwnld_flag = false;
   retry_core_init_cnt = 0;
 
   if (buffer) {
