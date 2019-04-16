@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 NXP Semiconductors
+ * Copyright (C) 2012-2019 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1217,7 +1217,7 @@ NFCSTATUS phNxpNciHal_TestMode_open(void) {
   pthread_attr_destroy(&attr);
   if (ret_val != 0) {
     NXPLOG_NCIHAL_E("pthread_create failed");
-    phTmlNfc_Shutdown();
+    phTmlNfc_Shutdown_CleanUp();
     goto clean_and_return;
   }
 
@@ -1265,7 +1265,7 @@ void phNxpNciHal_TestMode_close() {
 
     phOsalNfc_Timer_Cleanup();
 
-    status = phTmlNfc_Shutdown();
+    status = phTmlNfc_Shutdown_CleanUp();
 
     NXPLOG_NCIHAL_D("phNxpNciHal_close return status = %d", status);
 
