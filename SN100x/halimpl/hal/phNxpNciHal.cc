@@ -2680,6 +2680,7 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
   phNxpNciHal_FwRfupdateInfo_t* FwRfInfo;
   NFCSTATUS fm_mw_ver_check = NFCSTATUS_FAILED;
   long level;
+  bool minOpen = false;
   level=pInpOutData->inp.level;
   if(nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE &&
     (arg != HAL_NFC_IOCTL_ESE_JCOP_DWNLD && arg
@@ -2693,6 +2694,7 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
          pInpOutData->out.data.nciRsp.p_rsp[3]=1;
          return -1;
        }
+       minOpen = true;
    }
     if(gpEseAdapt == NULL) {
         gpEseAdapt = &EseAdaptation::GetInstance();
@@ -2826,6 +2828,9 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
                   }
        }
       break;
+#if(NXP_EXTNS == TRUE)
+    case HAL_NFC_IOCTL_ESE_HARD_RESET:
+#endif
     case HAL_NFC_SET_SPM_PWR:
           if(nfcFL.chipType != sn100u)
           {
@@ -2836,7 +2841,7 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
             }
           } else
           {
-            if(0x05 == level) {
+            if(NCI_ESE_HARD_RESET_IOCTL == level) {
               ret = phNxpNciHal_PropEsePowerCycle();
             }
           }
@@ -2875,8 +2880,14 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
       NXPLOG_NCIHAL_E("%s : Wrong arg = %ld", __func__, arg);
       break;
     }
-  NXPLOG_NCIHAL_D("%s : exit - ret = %d", __func__, ret);
-  return ret;
+#if (NXP_EXTNS == TRUE)
+    if (minOpen == true) {
+      phNxpNciHal_close(false);
+    }
+#endif
+
+    NXPLOG_NCIHAL_D("%s : exit - ret = %d", __func__, ret);
+    return ret;
 }
 
 /******************************************************************************
