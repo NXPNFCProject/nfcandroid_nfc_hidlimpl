@@ -1298,15 +1298,16 @@ static void phNxpNciHal_read_complete(void* pContext,
     NXPLOG_NCIHAL_E(" Ignoring read , HAL close triggered");
     return;
   }
-  /* Read again because read must be pending always.*/
-  status = phTmlNfc_Read(
-      Rx_data, NCI_MAX_DATA_LEN,
-      (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete, NULL);
-  if (status != NFCSTATUS_PENDING) {
-    NXPLOG_NCIHAL_E("read status error status = %x", status);
-    /* TODO: Not sure how to handle this ? */
+  /* Read again because read must be pending always except FWDNLD.*/
+  if(TRUE != nxpncihal_ctrl.fwdnld_mode_reqd){
+    status = phTmlNfc_Read(
+        Rx_data, NCI_MAX_DATA_LEN,
+        (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete, NULL);
+    if (status != NFCSTATUS_PENDING) {
+      NXPLOG_NCIHAL_E("read status error status = %x", status);
+      /* TODO: Not sure how to handle this ? */
+    }
   }
-
   return;
 }
 
