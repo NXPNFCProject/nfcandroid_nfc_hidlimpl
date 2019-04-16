@@ -1035,7 +1035,7 @@ int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data) {
                                         nxpncihal_ctrl.p_cmd_data);
   CONCURRENCY_UNLOCK();
 
-  if (icode_send_eof == 1) {
+  if (nfcFL.chipType != sn100u && icode_send_eof == 1) {
     usleep(10000);
     icode_send_eof = 2;
     status = phNxpNciHal_send_ext_cmd(3, cmd_icode_eof);
@@ -1243,7 +1243,7 @@ static void phNxpNciHal_read_complete(void* pContext,
       }
       /* Unlock semaphore only for responses*/
       if ((nxpncihal_ctrl.p_rx_data[0x00] & NCI_MT_MASK) == NCI_MT_RSP ||
-          ((icode_detected == true) && (icode_send_eof == 3))) {
+          ((nfcFL.chipType != sn100u) && (icode_detected == true) && (icode_send_eof == 3))) {
         /* Unlock semaphore */
         SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
       }

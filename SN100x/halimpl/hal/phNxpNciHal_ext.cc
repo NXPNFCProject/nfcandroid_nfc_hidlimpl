@@ -89,7 +89,9 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
 *******************************************************************************/
 void phNxpNciHal_ext_init(void) {
   icode_detected = 0x00;
-  icode_send_eof = 0x00;
+  if(nfcFL.chipType != sn100u){
+    icode_send_eof = 0x00;
+  }
   setEEModeDone = 0x00;
   EnableP2P_PrioLogic = false;
 }
@@ -284,15 +286,16 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
       nxpncihal_ctrl.nci_info.wait_for_ntf = TRUE;
       NXPLOG_NCIHAL_D(" Mode set received");
     }
-  } else if (p_ntf[0] == 0x61 && p_ntf[1] == 0x05 && p_ntf[2] == 0x15 &&
-      p_ntf[4] == 0x01 && p_ntf[5] == 0x06 && p_ntf[6] == 0x06) {
+  } else if (p_ntf[0] == 0x61 && p_ntf[1] == 0x05 && p_ntf[2] == 0x15
+          && p_ntf[4] == 0x01 && p_ntf[5] == 0x06 && p_ntf[6] == 0x06) {
     NXPLOG_NCIHAL_D("> Going through workaround - notification of ISO 15693");
     icode_detected = 0x01;
     p_ntf[21] = 0x01;
     p_ntf[22] = 0x01;
-  } else if (icode_detected == 1 && icode_send_eof == 2) {
+  } else if (nfcFL.chipType != sn100u && icode_detected == 1 && icode_send_eof == 2) {
     icode_send_eof = 3;
-  } else if (p_ntf[0] == 0x00 && p_ntf[1] == 0x00 && icode_detected == 1) {
+  } else if (nfcFL.chipType != sn100u && p_ntf[0] == 0x00 && p_ntf[1] == 0x00 &&
+          icode_detected == 1) {
     if (icode_send_eof == 3) {
       icode_send_eof = 0;
     }
@@ -305,12 +308,14 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
         p_ntf[p_ntf[2] + 2] |= 0x01;
       }
     }
-  } else if (p_ntf[2] == 0x02 && p_ntf[1] == 0x00 && icode_detected == 1) {
+  } else if (nfcFL.chipType != sn100u && p_ntf[2] == 0x02 &&
+          p_ntf[1] == 0x00 && icode_detected == 1) {
     NXPLOG_NCIHAL_D("> ICODE EOF response do not send to upper layer");
   } else if (p_ntf[0] == 0x61 && p_ntf[1] == 0x06 && icode_detected == 1) {
     NXPLOG_NCIHAL_D("> Polling Loop Re-Started");
     icode_detected = 0;
-    icode_send_eof = 0;
+    if (nfcFL.chipType != sn100u)
+      icode_send_eof = 0;
   } else if (*p_len == 4 && p_ntf[0] == 0x40 && p_ntf[1] == 0x02 &&
              p_ntf[2] == 0x01 && p_ntf[3] == 0x06) {
     NXPLOG_NCIHAL_D("> Deinit workaround for LLCP set_config 0x%x 0x%x 0x%x",
@@ -743,7 +748,7 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
         }
     status = NFCSTATUS_SUCCESS;
   } else if (icode_detected) {
-    if ((p_cmd_data[3] & 0x40) == 0x40 &&
+    if (nfcFL.chipType != sn100u && (p_cmd_data[3] & 0x40) == 0x40 &&
         (p_cmd_data[4] == 0x21 || p_cmd_data[4] == 0x22 ||
          p_cmd_data[4] == 0x24 || p_cmd_data[4] == 0x27 ||
          p_cmd_data[4] == 0x28 || p_cmd_data[4] == 0x29 ||
@@ -760,7 +765,9 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
   } else if (p_cmd_data[0] == 0x21 && p_cmd_data[1] == 0x03) {
     NXPLOG_NCIHAL_D("> Polling Loop Started");
     icode_detected = 0;
-    icode_send_eof = 0;
+    if(nfcFL.chipType != sn100u){
+      icode_send_eof = 0;
+    }
   }
   // 22000100
   else if (p_cmd_data[0] == 0x22 && p_cmd_data[1] == 0x00 &&
