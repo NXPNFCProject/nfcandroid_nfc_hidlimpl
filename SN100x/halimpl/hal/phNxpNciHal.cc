@@ -2112,9 +2112,9 @@ int phNxpNciHal_close(bool bShutdown) {
   uint8_t cmd_ce_discovery_nci[10] = {
       0x21, 0x03,
   };
-  static uint8_t cmd_reset_nci[] = {0x20, 0x00, 0x01, 0x00};
-  static uint8_t cmd_ven_disable_nci[] = {0x20, 0x02, 0x05, 0x01,
-                                         0xA0, 0x07, 0x01, 0x02};
+  uint8_t cmd_reset_nci[] = {0x20, 0x00, 0x01, 0x00};
+  uint8_t cmd_ven_disable_nci[] = {0x20, 0x02, 0x05, 0x01,
+                                   0xA0, 0x07, 0x01, 0x00};
   uint8_t length = 0;
   uint8_t numPrms = 0;
   uint8_t ptr = 4;
@@ -2159,14 +2159,13 @@ int phNxpNciHal_close(bool bShutdown) {
   if(sem_val == 0 ) {
       sem_post(&(nxpncihal_ctrl.syncSpiNfc));
   }
-  if(nfcFL.chipType != sn100u) {
+
     if(!bShutdown){
       status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ven_disable_nci), cmd_ven_disable_nci);
       if(status != NFCSTATUS_SUCCESS) {
         NXPLOG_NCIHAL_E("CMD_VEN_DISABLE_NCI: Failed");
       }
     }
-  }
   if (nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT &&
           read_failed_disable_nfc) {
       read_failed_disable_nfc = false;
@@ -2329,8 +2328,8 @@ int phNxpNciHal_configDiscShutdown(void) {
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("CMD_DISABLE_DISCOVERY: Failed");
   }
-#if(NXP_EXTNS == TRUE)
-  if(nfcFL.chipType != sn100u){
+#if (NXP_EXTNS == TRUE)
+  if (nfcFL.chipType != sn100u) {
 #endif
     status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ven_pulld_enable_nci), cmd_ven_pulld_enable_nci);
     if (status != NFCSTATUS_SUCCESS) {
