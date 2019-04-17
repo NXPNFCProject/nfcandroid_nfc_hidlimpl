@@ -1055,6 +1055,21 @@ clean_and_return:
 }
 
 /******************************************************************************
+ * Function         phNxpNciHal_reset_cmd_window
+ *
+ * Description      This function will reset the NFC driver's command window
+ *                  only if last sent packet is NCI Command
+ *
+ * Returns          void
+ *
+ ******************************************************************************/
+void phNxpNciHal_reset_cmd_window(void) {
+  if (nxpncihal_ctrl.ese_cld_rst_frm_drv &&
+      (nxpncihal_ctrl.p_cmd_data[0] & 0xF0) == 0x20)
+    phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, MODE_RESET_CMD_WINDOW);
+}
+
+/******************************************************************************
  * Function         phNxpNciHal_write_unlocked
  *
  * Description      This is the actual function which is being called by
@@ -1141,6 +1156,8 @@ retry:
               "recovery\n");
           // Send the Core Reset NTF to upper layer, which will trigger the
           // recovery.
+          /* Reset Driver's Command Window state */
+          phNxpNciHal_reset_cmd_window();
 #if(NXP_EXTNS == TRUE)
           abort();
 #endif

@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2013-2018 NXP Semiconductors
+ *  Copyright (C) 2013-2019 NXP Semiconductors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -470,6 +470,7 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
 
 void phNxpNciHal_emergency_recovery(uint8_t status) {
   NXPLOG_NCIHAL_D("%s: %d", __func__, status);
+  phNxpNciHal_reset_cmd_window();
   switch(status){
   case NCI2_0_CORE_RESET_TRIGGER_TYPE_OVER_TEMPERATURE:
       NXPLOG_NCIHAL_E("abort()");
