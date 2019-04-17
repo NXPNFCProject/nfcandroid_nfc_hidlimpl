@@ -619,8 +619,8 @@ int phNxpNciHal_MinOpen (){
   nxpncihal_ctrl.halStatus = HAL_STATUS_OPEN;
 
 
-  /*nci version NCI_VERSION_UNKNOWN version by default*/
-  nxpncihal_ctrl.nci_info.nci_version = NCI_VERSION_UNKNOWN;
+  /*nci version NCI_VERSION_2_0 version by default for SN100 chip type*/
+  nxpncihal_ctrl.nci_info.nci_version = NCI_VERSION_2_0;
   /* Read the nfc device node name */
   nfc_dev_node = (char*)malloc(max_len * sizeof(char));
   if (nfc_dev_node == NULL) {
