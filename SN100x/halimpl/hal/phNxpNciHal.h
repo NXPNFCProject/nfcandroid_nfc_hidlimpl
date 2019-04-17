@@ -32,6 +32,7 @@
 #define NCI_VERSION_1_1 0x11
 #define NCI_VERSION_1_0 0x10
 #define NCI_VERSION_UNKNOWN 0x00
+#define NXP_AUTH_TIMEOUT_BUF_LEN 0x04
 
 /*Mem alloc with 8 byte alignment*/
 #define size_align(sz) ((((sz)-1) | 7) + 1)
@@ -214,7 +215,8 @@ typedef enum {
   EEPROM_SWP1_INTF,
   EEPROM_SWP1A_INTF,
   EEPROM_SWP2_INTF,
-  EEPROM_FLASH_UPDATE
+  EEPROM_FLASH_UPDATE,
+  EEPROM_AUTH_CMD_TIMEOUT
 } phNxpNci_EEPROM_request_type_t;
 
 typedef struct phNxpNci_EEPROM_info {
@@ -235,6 +237,8 @@ typedef struct phNxpNci_getCfg_info {
   uint8_t atr_res_gen_bytes_len;
   uint8_t pmid_wt[3];
   uint8_t pmid_wt_len;
+  uint8_t auth_cmd_timeout[NXP_AUTH_TIMEOUT_BUF_LEN];
+  uint8_t auth_cmd_timeoutlen;
 } phNxpNci_getCfg_info_t;
 typedef enum {
   NFC_FORUM_PROFILE,
