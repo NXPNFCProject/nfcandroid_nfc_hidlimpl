@@ -57,8 +57,7 @@ cc_binary {
         "ls_client",
         "se_extn_client",
         "jcos_client",
-        //"libnfc-nci",
-        "libchrome",
+        //"libnfc-nci"
     ],
 
     local_include_dirs: [
