@@ -4035,7 +4035,7 @@ void phNxpNciHal_configNciParser(bool enable)
         }
         if(lx_debug_cfg & LX_DEBUG_CFG_ENABLE_L2_EVENT)
         {
-            NXPLOG_NCIHAL_D("Enable L2 RF NTF debugs");
+          NXPLOG_NCIHAL_D("Enable L2 RF NTF debugs (CE)");
         }
         if(lx_debug_cfg & LX_DEBUG_CFG_ENABLE_FELICA_RF)
         {
@@ -4045,9 +4045,8 @@ void phNxpNciHal_configNciParser(bool enable)
         {
             NXPLOG_NCIHAL_D("Enable Felica System Code");
         }
-        if(lx_debug_cfg & LX_DEBUG_CFG_ENABLE_7816_4_RETCODE)
-        {
-            NXPLOG_NCIHAL_D("Enable 7816-4 RetCode");
+        if (lx_debug_cfg & LX_DEBUG_CFG_ENABLE_L2_EVENT_READER) {
+          NXPLOG_NCIHAL_D("Enable L2 RF NTF debugs (Reader)");
         }
         cmd_lxdebug[7] = lx_debug_cfg & ~LX_DEBUG_CFG_MASK_RSSI;
         if((lx_debug_cfg & LX_DEBUG_CFG_MASK_RSSI) == 0x0100)
