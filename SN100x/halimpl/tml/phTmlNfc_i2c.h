@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2018 NXP Semiconductors
+ * Copyright (C) 2010-2019 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,10 @@ typedef enum {
   MODE_ISO_RST,
   MODE_FW_DWND_HIGH,
   MODE_POWER_RESET,
-  MODE_FW_GPIO_LOW
-}MODE_I2C_SET_PWR;
+  MODE_FW_GPIO_LOW,
+  MODE_SET_CMD_WINDOW,
+  MODE_RESET_CMD_WINDOW,
+} MODE_I2C_SET_PWR;
 
 /* Function declarations */
 void phTmlNfc_i2c_close(void* pDevHandle);
