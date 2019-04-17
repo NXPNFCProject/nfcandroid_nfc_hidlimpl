@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2018 NXP Semiconductors
+ * Copyright (C) 2012-2019 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -966,6 +966,7 @@ static void hal_extns_write_rsp_timeout_cb(uint32_t timerId, void* pContext) {
   UNUSED_PROP(pContext);
   NXPLOG_NCIHAL_E("hal_extns_write_rsp_timeout_cb - write timeout!!!");
   nxpncihal_ctrl.ext_cb_data.status = NFCSTATUS_FAILED;
+  phNxpNciHal_reset_cmd_window();
   usleep(1);
   sem_post(&(nxpncihal_ctrl.syncSpiNfc));
   SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
