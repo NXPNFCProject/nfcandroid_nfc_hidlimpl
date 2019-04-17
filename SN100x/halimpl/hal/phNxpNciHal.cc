@@ -68,6 +68,7 @@ static uint8_t config_access = false;
 static uint8_t config_success = true;
 static ThreadMutex sHalFnLock;
 static NFCSTATUS phNxpNciHal_FwDwnld(uint16_t aType);
+static bool phNxpNciHal_minOpenRequired(long arg);
 /* NCI HAL Control structure */
 phNxpNciHal_Control_t nxpncihal_ctrl;
 
@@ -2705,10 +2706,7 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
   long level;
   bool minOpen = false;
   level=pInpOutData->inp.level;
-  if(nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE &&
-    (arg != HAL_NFC_IOCTL_ESE_JCOP_DWNLD && arg
-    != HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE && arg != HAL_ESE_IOCTL_NFC_JCOP_DWNLD
-	&& arg != HAL_NFC_IOCTL_GET_ESE_UPDATE_STATE))
+  if(phNxpNciHal_minOpenRequired(arg))
    {
        NFCSTATUS status = NFCSTATUS_FAILED;
        status = phNxpNciHal_MinOpen();
@@ -3941,6 +3939,31 @@ void phNxpNciHal_configFeatureList(uint8_t* init_rsp, uint16_t rsp_len) {
 *******************************************************************************/
 tNFC_chipType phNxpNciHal_getChipType() {
     return nxpncihal_ctrl.chipType;
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_minOpenRequired
+**
+** Description      Based on the ioctl functionality whether hal open is required
+**                  or not condition evaluation.
+**
+** Parameters       none
+**
+** Returns          TRUE/FALSE
+*******************************************************************************/
+static bool phNxpNciHal_minOpenRequired(long arg)
+{
+  bool required = false;
+  if(nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE &&
+    (arg != HAL_NFC_IOCTL_ESE_JCOP_DWNLD &&
+     arg != HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE &&
+     arg != HAL_ESE_IOCTL_NFC_JCOP_DWNLD &&
+     arg != HAL_NFC_IOCTL_GET_ESE_UPDATE_STATE &&
+     arg != HAL_NFC_IOCTL_GET_NXP_CONFIG)) {
+    required = true;
+  }
+  return required;
 }
 
 #if(NXP_EXTNS == TRUE)
