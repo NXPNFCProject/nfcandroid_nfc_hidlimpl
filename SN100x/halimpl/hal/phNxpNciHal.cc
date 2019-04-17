@@ -564,6 +564,7 @@ static void phNxpNciHal_get_clk_freq(void) {
 int phNxpNciHal_MinOpen (){
   phOsalNfc_Config_t tOsalConfig;
   phTmlNfc_Config_t tTmlConfig;
+  unsigned long num;
   char* nfc_dev_node = NULL;
   const uint16_t max_len = 260;
   NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
@@ -619,6 +620,14 @@ int phNxpNciHal_MinOpen (){
   /* By default HAL status is HAL_STATUS_OPEN */
   nxpncihal_ctrl.halStatus = HAL_STATUS_OPEN;
 
+  /* Check if ESE_COLD_RESET is supported from driver */
+  if (GetNxpNumValue(NAME_NXP_SUPPORT_COLD_RESET_FROM_DRIVER, &num,
+                     sizeof(num))) {
+    if (num) {
+      nxpncihal_ctrl.ese_cld_rst_frm_drv = true;
+      NXPLOG_NCIHAL_D("ese_cold_reset is supported from the driver");
+    }
+  }
 
   /*nci version NCI_VERSION_2_0 version by default for SN100 chip type*/
   nxpncihal_ctrl.nci_info.nci_version = NCI_VERSION_2_0;
@@ -1161,6 +1170,10 @@ clean_and_return:
         sem_post(&(nxpncihal_ctrl.syncSpiNfc));
         NXPLOG_NCIHAL_D(
               "HAL write  failed CMD window check releasing \n");
+        if (nxpncihal_ctrl
+                .ese_cld_rst_frm_drv) /* Reset Driver's Command Window state */
+          phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle,
+                             MODE_RESET_CMD_WINDOW);
       }
     }
   phNxpNciHal_cleanup_cb_data(&cb_data);
@@ -1219,6 +1232,10 @@ static void phNxpNciHal_read_complete(void* pContext,
     sem_getvalue(&(nxpncihal_ctrl.syncSpiNfc), &sem_val);
     if(((pInfo->pBuff[0] & NCI_MT_MASK) == NCI_MT_RSP)  && sem_val == 0 ) {
         sem_post(&(nxpncihal_ctrl.syncSpiNfc));
+        if (nxpncihal_ctrl.ese_cld_rst_frm_drv) /* Reset Driver's
+             Command Window state */
+          phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle,
+                             MODE_RESET_CMD_WINDOW);
     }
     /*Check the Omapi command response and store in dedicated buffer to solve sync issue*/
     if(pInfo->pBuff[0] == 0x4F && pInfo->pBuff[1] == 0x01 && pInfo->pBuff[2] == 0x01) {
@@ -2677,6 +2694,9 @@ int phNxpNciHal_check_ncicmd_write_window(uint16_t cmd_len, uint8_t* p_cmd) {
     }
     if (s != -1) {
       status = NFCSTATUS_SUCCESS;
+      if (nxpncihal_ctrl
+              .ese_cld_rst_frm_drv) /* Set Driver's Command Window state */
+        phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, MODE_SET_CMD_WINDOW);
     }
   } else {
     /* cmd window check not required for writing data packet */

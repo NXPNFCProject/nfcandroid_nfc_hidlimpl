@@ -162,6 +162,8 @@ extern char Fw_Lib_Path[256];
 #define NAME_NXP_SMB_TRANSCEIVE_TIMEOUT "NXP_SMB_TRANSCEIVE_TIMEOUT"
 #define NAME_NXP_SMB_ERROR_RETRY "NXP_SMB_ERROR_RETRY"
 #define NAME_DEFUALT_GSMA_PWR_STATE "DEFUALT_GSMA_PWR_STATE"
+#define NAME_NXP_SUPPORT_COLD_RESET_FROM_DRIVER                                \
+  "NXP_SUPPORT_COLD_RESET_FROM_DRIVER"
 #endif
 /* default configuration */
 #define default_storage_location "/data/vendor/nfc"
