@@ -361,7 +361,7 @@ static NFCSTATUS phNxpNciHal_fw_download(void) {
       if (status != NFCSTATUS_SUCCESS) {
         NXPLOG_NCIHAL_E("Core reset FW download command failed \n");
       }
-      nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
+
    }
   if (NFCSTATUS_SUCCESS == status) {
     /* Set the obtained device handle to download module */
@@ -374,16 +374,10 @@ static NFCSTATUS phNxpNciHal_fw_download(void) {
       nxpncihal_ctrl.hal_ext_enabled = TRUE;
       nxpncihal_ctrl.nci_info.wait_for_ntf = TRUE;
     }
-#if 0
-    if (status != NFCSTATUS_SUCCESS) {
-      /* Abort any pending read and write */
-      phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
-      phTmlNfc_ReadAbort();
-      phTmlNfc_WriteAbort();
-    }
-#endif
+
     phDnldNfc_ReSetHwDevHandle();
 
+    nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
     /* call read pending */
     wConfigStatus = phTmlNfc_Read(
         nxpncihal_ctrl.p_cmd_data, NCI_MAX_DATA_LEN,
@@ -398,6 +392,7 @@ static NFCSTATUS phNxpNciHal_fw_download(void) {
     /* FW download done.Therefore if previous I2C write failed then we can change the state to NFCSTATUS_SUCCESS*/
     write_unlocked_status = NFCSTATUS_SUCCESS;
   } else {
+    nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
     status = NFCSTATUS_FAILED;
   }
 
