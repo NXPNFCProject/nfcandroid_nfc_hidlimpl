@@ -1153,6 +1153,7 @@ static void hal_extns_write_rsp_timeout_cb(uint32_t timerId, void* pContext) {
   NXPLOG_NCIHAL_E("hal_extns_write_rsp_timeout_cb - write timeout!!!");
   nxpncihal_ctrl.ext_cb_data.status = NFCSTATUS_FAILED;
   usleep(1);
+  sem_post(&(nxpncihal_ctrl.syncSpiNfc));
   SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
 
   return;
