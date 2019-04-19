@@ -52,7 +52,7 @@ using android::base::WriteStringToFile;
 #define PN547C2_CLOCK_SETTING
 #define CORE_RES_STATUS_BYTE 3
 #define MAX_NXP_HAL_EXTN_BYTES 10
-
+#define TERMINAL_LEN  5
 /* Processing of ISO 15693 EOF */
 extern uint8_t icode_send_eof;
 extern uint8_t icode_detected;
@@ -4171,6 +4171,7 @@ NFCSTATUS phNxpNciHal_PropEsePowerCycle(void) {
  ******************************************************************************/
 void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
   unsigned long num = 0;
+  char val[TERMINAL_LEN]={0};
   memset(&pInpOutData->out.data.nxpConfigs, 0x00, sizeof(pInpOutData->out.data.nxpConfigs));
   NXPLOG_NCIHAL_D("phNxpNciHal_getNxpConfig: Enter");
   if (GetNxpNumValue(NAME_NXP_SE_COLD_TEMP_ERROR_DELAY, &num, sizeof(num))) {
@@ -4241,6 +4242,12 @@ void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
   }
         if (GetNxpNumValue(NAME_NXPLOG_NCIR_LOGLEVEL, &num, sizeof(num))) {
     pInpOutData->out.data.nxpConfigs.nxpLogNcirLogLevel = num;
+  }
+  if(GetNxpStrValue(NAME_NXP_NFC_SE_TERMINAL_NUM, val, TERMINAL_LEN)){
+    NXPLOG_NCIHAL_D("NfcSeTerminalId found val = %s ", val);
+    pInpOutData->out.data.nxpConfigs.seApduGateEnabled = 1;
+  } else {
+    pInpOutData->out.data.nxpConfigs.seApduGateEnabled = 0;
   }
 }
 #endif

@@ -164,6 +164,7 @@ extern char Fw_Lib_Path[256];
 #define NAME_DEFUALT_GSMA_PWR_STATE "DEFUALT_GSMA_PWR_STATE"
 #define NAME_NXP_SUPPORT_COLD_RESET_FROM_DRIVER                                \
   "NXP_SUPPORT_COLD_RESET_FROM_DRIVER"
+#define NAME_NXP_NFC_SE_TERMINAL_NUM "NXP_NFC_SE_TERMINAL_NUM"
 #endif
 /* default configuration */
 #define default_storage_location "/data/vendor/nfc"
