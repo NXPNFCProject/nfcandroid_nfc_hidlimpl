@@ -30,9 +30,7 @@ typedef enum {
   MODE_ISO_RST,
   MODE_FW_DWND_HIGH,
   MODE_POWER_RESET,
-  MODE_FW_GPIO_LOW,
-  MODE_SET_CMD_WINDOW,
-  MODE_RESET_CMD_WINDOW,
+  MODE_FW_GPIO_LOW
 } MODE_I2C_SET_PWR;
 
 /* Function declarations */
