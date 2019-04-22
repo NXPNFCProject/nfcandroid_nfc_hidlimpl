@@ -154,7 +154,6 @@ typedef struct phNxpNciHal_Control {
   /* to store and restore gpio values */
   phNxpNciGpioInfo_t phNxpNciGpioInfo;
   tNFC_chipType chipType;
-  bool ese_cld_rst_frm_drv;
 } phNxpNciHal_Control_t;
 
 typedef struct {
@@ -276,7 +275,6 @@ NFCSTATUS phNxpNciHal_send_get_cfgs();
 int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t* p_data);
 NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info);
 NFCSTATUS phNxpNciHal_send_nfcee_pwr_cntl_cmd(uint8_t type);
-void phNxpNciHal_reset_cmd_window(void);
 /*******************************************************************************
 **
 ** Function         phNxpNciHal_configFeatureList

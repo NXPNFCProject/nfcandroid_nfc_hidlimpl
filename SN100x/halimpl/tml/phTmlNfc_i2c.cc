@@ -320,7 +320,7 @@ int phTmlNfc_i2c_write(void* pDevHandle, uint8_t* pBuffer,
 **
 *******************************************************************************/
 int phTmlNfc_i2c_reset(void* pDevHandle, long level) {
-  int ret;
+  int ret = -1;;
   NXPLOG_TML_D("phTmlNfc_i2c_reset(), VEN level %ld", level);
 
   if (NULL == pDevHandle) {
@@ -330,23 +330,17 @@ int phTmlNfc_i2c_reset(void* pDevHandle, long level) {
   ret = ioctl((intptr_t)pDevHandle, PN544_SET_PWR, level);
   if (ret < 0) {
     NXPLOG_TML_E("%s :failed errno = 0x%x", __func__, errno);
-    if (level != MODE_SET_CMD_WINDOW && level != MODE_RESET_CMD_WINDOW) {
-      if ((level == MODE_FW_DWNLD_WITH_VEN || level == MODE_FW_DWND_HIGH) &&
-          errno == EBUSY) {
-        notifyFwrequest = true;
-      } else {
-        notifyFwrequest = false;
-      }
-    }
-  }
-  if (level != MODE_SET_CMD_WINDOW && level != MODE_RESET_CMD_WINDOW) {
-    if ((level == MODE_FW_DWNLD_WITH_VEN || level == MODE_FW_DWND_HIGH) &&
-        ret == 0) {
-      bFwDnldFlag = true;
+    if ((level == MODE_FW_DWNLD_WITH_VEN || level == MODE_FW_DWND_HIGH) && errno == EBUSY) {
+         notifyFwrequest = true;
     } else {
-      bFwDnldFlag = false;
+         notifyFwrequest = false;
     }
   }
+  if ((level == MODE_FW_DWNLD_WITH_VEN || level == MODE_FW_DWND_HIGH) && ret == 0) {
+        bFwDnldFlag = true;
+     } else {
+        bFwDnldFlag = false;
+     }
   return ret;
 }
 
