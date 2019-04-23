@@ -45,6 +45,7 @@ using android::base::WriteStringToFile;
 #undef PN547C2_FACTORY_RESET_DEBUG
 #define CORE_RES_STATUS_BYTE 3
 #define SIGNAL_TRIGGER_NOT_REQD 0x10
+#define MAX_NXP_HAL_EXTN_BYTES 10
 
 static ThreadMutex gsHalOpenCloseLock;
 
@@ -916,7 +917,8 @@ int phNxpNciHal_MinOpen() {
 
   /*Init binary semaphore for Spi Nfc synchronization*/
   if (0 != sem_init(&nxpncihal_ctrl.syncSpiNfc, 0, 1)) {
-    wConfigStatus = NFCSTATUS_FAILED;
+    NXPLOG_NCIHAL_E("sem_init() FAiled, errno = 0x%02X", errno);
+    goto minCleanAndreturn;
   }
 
   /* By default HAL status is HAL_STATUS_OPEN */
@@ -1005,16 +1007,15 @@ init_retry:
     NXPLOG_NCIHAL_E("NFCC not coming out from Standby");
     NXPLOG_NCIHAL_E("Trying Force FW download");
     nxpncihal_ctrl.bIsForceFwDwnld = true;
-    goto force_download;
     wConfigStatus = NFCSTATUS_FAILED;
+    goto force_download;
   } else if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed");
     if (init_retry_cnt < 3) {
       init_retry_cnt++;
       (void)phNxpNciHal_power_cycle();
       goto init_retry;
-    } else
-      init_retry_cnt = 0;
+    }
     wConfigStatus = phTmlNfc_Shutdown_CleanUp();
     wConfigStatus = NFCSTATUS_FAILED;
     goto minCleanAndreturn;
@@ -1274,7 +1275,7 @@ int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data) {
 
   /* Create local copy of cmd_data */
   nxpncihal_ctrl.cmd_len = data_len;
-  if (nxpncihal_ctrl.cmd_len > NCI_MAX_DATA_LEN) {
+  if (nxpncihal_ctrl.cmd_len + MAX_NXP_HAL_EXTN_BYTES > NCI_MAX_DATA_LEN) {
     NXPLOG_NCIHAL_D("cmd_len exceeds limit NCI_MAX_DATA_LEN");
     goto clean_and_return;
   }
@@ -1309,7 +1310,10 @@ int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data) {
   if (icode_send_eof == 1) {
     usleep(10000);
     icode_send_eof = 2;
-    phNxpNciHal_send_ext_cmd(3, cmd_icode_eof);
+    status = phNxpNciHal_send_ext_cmd(3, cmd_icode_eof);
+    if (status != NFCSTATUS_SUCCESS) {
+       NXPLOG_NCIHAL_E("ICODE end of frame command failed");
+    }
   }
 
 clean_and_return:
@@ -1874,7 +1878,10 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   }
 #endif
   if(persist_core_reset_debug_info_req){
-    phNxpNciHal_send_ext_cmd(sizeof(cmd_get_cfg_dbg_info), cmd_get_cfg_dbg_info);
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_get_cfg_dbg_info), cmd_get_cfg_dbg_info);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("NFCC texted reset ntf failed");
+    }
     NXPLOG_NCIHAL_D("NFCC txed reset ntf with reason code 0xA3");
     property_set("persist.nfc.core_reset_debug_info", "false");
   }
@@ -4337,7 +4344,7 @@ retry_send_ext:
 
     isfound = (GetNxpNumValue(NAME_NXP_CN_TRANSIT_CMA_BYPASSMODE_ENABLE, (void *)&cma_bypass_enable, sizeof(cma_bypass_enable)));
     if(isfound >0) {
-        if(cma_bypass_enable == 0 && ((phNxpNciRfSet.p_rx_data[10] & 0x80) == 1)) {
+        if(cma_bypass_enable == 0 && ((phNxpNciRfSet.p_rx_data[10] & 0x80) == 0x80)) {
             NXPLOG_NCIHAL_D("Disable CMA_BYPASSMODE Supports EMVCo PICC Complaincy");
             phNxpNciRfSet.p_rx_data[10] &=~0x80;        //set 24th bit of RF MISC SETTING to 0 for EMVCo PICC Complaincy support
         }
