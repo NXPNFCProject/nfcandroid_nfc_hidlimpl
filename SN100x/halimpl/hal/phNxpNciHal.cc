@@ -4209,5 +4209,8 @@ void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
   } else {
     pInpOutData->out.data.nxpConfigs.seApduGateEnabled = 0;
   }
+  if (GetNxpNumValue(NAME_NXP_POLL_FOR_EFD_TIMEDELAY, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.pollEfdDelay = num;
+  }
 }
 #endif
