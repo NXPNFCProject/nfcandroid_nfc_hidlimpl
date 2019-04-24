@@ -1464,14 +1464,12 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       goto retry_core_init;
     }
   }
-  if(nfcFL.chipType != sn100u) {
-    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ven_enable), cmd_ven_enable);
-      if (status != NFCSTATUS_SUCCESS) {
-        NXPLOG_NCIHAL_E("CMD_VEN_ENABLE: Failed");
-        retry_core_init_cnt++;
-        goto retry_core_init;
-      }
-  }
+  status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ven_enable), cmd_ven_enable);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("CMD_VEN_ENABLE: Failed");
+      retry_core_init_cnt++;
+      goto retry_core_init;
+    }
   config_access = false;
 
   if (fw_download_success == 1) {
