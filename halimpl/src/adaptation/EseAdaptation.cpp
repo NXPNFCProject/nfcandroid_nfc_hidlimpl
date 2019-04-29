@@ -98,6 +98,7 @@ class NxpEseDeathRecipient : public hidl_death_recipient {
 **
 *******************************************************************************/
 EseAdaptation::EseAdaptation() {
+  mCurrentIoctlData = NULL;
   memset(&mSpiHalEntryFuncs, 0, sizeof(mSpiHalEntryFuncs));
 }
 
@@ -146,11 +147,13 @@ void EseAdaptation::Initialize() {
   ese_nxp_IoctlInOutData_t* pInpOutData;
   pInpOutData =
       (ese_nxp_IoctlInOutData_t*)malloc(sizeof(ese_nxp_IoctlInOutData_t));
-  memset(pInpOutData, 0x00, sizeof(ese_nxp_IoctlInOutData_t));
-  pInpOutData->inp.data.nxpCmd.cmd_len = sizeof(cmd_ese_nxp);
-  memcpy(pInpOutData->inp.data.nxpCmd.p_cmd, cmd_ese_nxp, sizeof(cmd_ese_nxp));
-  InitializeHalDeviceContext();
-  if (pInpOutData != NULL) free(pInpOutData);
+  if (pInpOutData != NULL){
+    memset(pInpOutData, 0x00, sizeof(ese_nxp_IoctlInOutData_t));
+    pInpOutData->inp.data.nxpCmd.cmd_len = sizeof(cmd_ese_nxp);
+    memcpy(pInpOutData->inp.data.nxpCmd.p_cmd, cmd_ese_nxp, sizeof(cmd_ese_nxp));
+    InitializeHalDeviceContext();
+    free(pInpOutData);
+  }
   ALOGD_IF(nfc_debug_enabled, "%s: exit", func);
 }
 

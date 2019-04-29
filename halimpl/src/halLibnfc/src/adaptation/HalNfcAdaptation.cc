@@ -173,6 +173,7 @@ public:
 **
 *******************************************************************************/
 HalNfcAdaptation::HalNfcAdaptation() {
+  mCurrentIoctlData = NULL;
   mNfcHalDeathRecipient = new NfcDeathRecipient(mHal);
   memset(&mHalEntryFuncs, 0, sizeof(mHalEntryFuncs));
 }

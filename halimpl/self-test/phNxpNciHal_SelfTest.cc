@@ -1160,7 +1160,6 @@ NFCSTATUS phNxpNciHal_initialize_chipType()
         memcpy(pCoreResetCmd->exp_ntf.p_data, nfcc_core_reset_nci20_ntf, pCoreResetCmd->exp_ntf.len);
         if(phNxpNciHal_readLocked(pCoreResetCmd) != NFCSTATUS_SUCCESS){
           NXPLOG_NCIHAL_D("NCI 2.0 Notification is not received");
-          status = NFCSTATUS_FAILED;
         }else{
           phNxpNciHal_configFeatureList(mSelfTestHdlr.mTransInfo.pBuff,mSelfTestHdlr.mTransInfo.wLength);
         }
