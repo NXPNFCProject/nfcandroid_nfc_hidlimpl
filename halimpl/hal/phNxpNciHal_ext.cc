@@ -65,7 +65,6 @@ extern uint32_t timeoutTimerId;
 extern uint32_t gSvddSyncOff_Delay; /*default delay*/
 tNfc_featureList nfcFL;
 
-extern NFCSTATUS read_retry();
 void phNxpNciHal_sendRfEvtToEseHal(uint8_t rfEvtType);
 
 /************** HAL extension functions ***************************************/
@@ -532,7 +531,7 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf, uint16_t* 
             for (i = 0; i < *p_len; i++) {
               snprintf(&print_buffer[i * 2], 3, "%02X", p_ntf[i]);
             }
-            NXPLOG_NCIHAL_E("CORE_RESET_NTF received !");
+            NXPLOG_NCIHAL_D("CORE_RESET_NTF received !");
             NXPLOG_NCIR_E("len = %3d > %s", *p_len, print_buffer);
 
             /*Retreive reset ntf reason code irrespective of NCI 1.0 or 2.0*/
@@ -1160,7 +1159,7 @@ bool_t phNxpNciHal_check_wait_for_ntf() {
 static void hal_extns_write_rsp_timeout_cb(uint32_t timerId, void* pContext) {
   UNUSED(timerId);
   UNUSED(pContext);
-  NXPLOG_NCIHAL_E("hal_extns_write_rsp_timeout_cb - write timeout!!!");
+  NXPLOG_NCIHAL_D("hal_extns_write_rsp_timeout_cb - write timeout!!!");
   nxpncihal_ctrl.ext_cb_data.status = NFCSTATUS_FAILED;
   usleep(1);
   sem_post(&(nxpncihal_ctrl.syncSpiNfc));
