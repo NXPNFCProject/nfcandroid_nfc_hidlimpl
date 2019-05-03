@@ -161,6 +161,7 @@ static NFCSTATUS phNxpNciHal_uicc_baud_rate();
 static void phNxpNciHal_gpio_restore(phNxpNciHal_GpioInfoState state);
 NFCSTATUS phNxpNciHal_nfcc_core_reset_init();
 NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(void);
+static void phNxpNciHal_notifyHciEvtProcessComplete();
 
 /******************************************************************************
  * Function         phNxpNciHal_initialize_debug_enabled_flag
@@ -3809,6 +3810,7 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
         NXPLOG_NCIHAL_D("OMAPI COMMAND for Switch Allowed SUCCESS : 0x%x",
                         pInpOutData->out.data.nciRsp.p_rsp[3]);
         ret = pInpOutData->out.data.nciRsp.p_rsp[3];
+        phNxpNciHal_notifyHciEvtProcessComplete();
       } else {
         NXPLOG_NCIHAL_D("OMAPI COMMAND FAILURE : 0x%x",
                         pInpOutData->out.data.nciRsp.p_rsp[3]);
@@ -3873,9 +3875,20 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
       phNxpNciHal_reset_nfcee_session(true);
       ret = 0;
       break;
-    default:
-      NXPLOG_NCIHAL_E("%s : Wrong arg = %ld", __func__, arg);
+      case HAL_NFC_IOCTL_HCI_INIT_STATUS_UPDATE:
+      nxpncihal_ctrl.isHciCfgEvtRequested = true;
+      NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_HCI_INIT_STATUS_UPDATE value is %d: \n",
+                      pInpOutData->inp.data.nciCmd.p_cmd[0]);
+      if (gpEseAdapt != NULL)
+        gpEseAdapt->HalNfccNtf(HAL_NFC_IOCTL_HCI_INIT_STATUS_UPDATE, pInpOutData);
+      ret = 0;
       break;
+      case HAL_NFC_IOCTL_HCI_INIT_STATUS_UPDATE_COMPLETE:
+        phNxpNciHal_notifyHciEvtProcessComplete();
+        break;
+      default:
+        NXPLOG_NCIHAL_E("%s : Wrong arg = %ld", __func__, arg);
+        break;
   }
   NXPLOG_NCIHAL_D("%s : exit - ret = %d", __func__, ret);
   return ret;
@@ -4804,4 +4817,23 @@ void phNxpNciHal_configNciParser(void)
     } else {
         NXPLOG_NCIHAL_E("Parser Library Not Available");
     }
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_notifyHciEvtProcessComplete
+ *
+ * Description      This function is called for to notify HCI Event process
+ *                  completion to libnfc
+ *
+ * Returns          void.
+ *
+ ******************************************************************************/
+static void phNxpNciHal_notifyHciEvtProcessComplete() {
+  NXPLOG_NCIHAL_D("%s Enter ", __func__);
+  if (nxpncihal_ctrl.isHciCfgEvtRequested &&
+      nxpncihal_ctrl.p_nfc_stack_cback != NULL) {
+    nxpncihal_ctrl.isHciCfgEvtRequested = false;
+    (*nxpncihal_ctrl.p_nfc_stack_cback)(
+        (uint32_t)HAL_NFC_CONFIG_ESE_LINK_COMPLETE, HAL_NFC_STATUS_OK);
+  }
 }
