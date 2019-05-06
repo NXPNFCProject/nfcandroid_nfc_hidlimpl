@@ -546,11 +546,15 @@ static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
   nxpncihal_ctrl.ext_cb_data.status = NFCSTATUS_SUCCESS;
 
   /* Send ext command */
+  CONCURRENCY_LOCK();
   data_written = phNxpNciHal_write_unlocked(cmd_len, p_cmd);
+  CONCURRENCY_UNLOCK();
   if (data_written != cmd_len) {
     NXPLOG_NCIHAL_D("phNxpNciHal_write failed for hal ext");
     goto clean_and_return;
   }
+
+  HAL_ENABLE_EXT();
 
   /* Start timer */
   status = phOsalNfc_Timer_Start(timeoutTimerId, HAL_EXTNS_WRITE_RSP_TIMEOUT,
@@ -624,6 +628,7 @@ static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
 clean_and_return:
   phNxpNciHal_cleanup_cb_data(&nxpncihal_ctrl.ext_cb_data);
   nxpncihal_ctrl.nci_info.wait_for_ntf = FALSE;
+  HAL_DISABLE_EXT();
   return status;
 }
 
@@ -923,12 +928,10 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_send_ext_cmd(uint16_t cmd_len, uint8_t* p_cmd) {
   NFCSTATUS status = NFCSTATUS_FAILED;
-  HAL_ENABLE_EXT();
   nxpncihal_ctrl.cmd_len = cmd_len;
   memcpy(nxpncihal_ctrl.p_cmd_data, p_cmd, cmd_len);
   status = phNxpNciHal_process_ext_cmd_rsp(nxpncihal_ctrl.cmd_len,
                                            nxpncihal_ctrl.p_cmd_data);
-  HAL_DISABLE_EXT();
 
   return status;
 }

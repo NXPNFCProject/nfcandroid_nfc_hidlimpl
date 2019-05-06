@@ -1210,10 +1210,6 @@ static void phNxpNciHal_read_complete(void* pContext,
   if (pInfo->wStatus == NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_D("read successful status = 0x%x", pInfo->wStatus);
 
-    sem_getvalue(&(nxpncihal_ctrl.syncSpiNfc), &sem_val);
-    if(((pInfo->pBuff[0] & NCI_MT_MASK) == NCI_MT_RSP)  && sem_val == 0 ) {
-        sem_post(&(nxpncihal_ctrl.syncSpiNfc));
-    }
     /*Check the Omapi command response and store in dedicated buffer to solve sync issue*/
     if(pInfo->pBuff[0] == 0x4F && pInfo->pBuff[1] == 0x01 && pInfo->pBuff[2] == 0x01) {
         nxpncihal_ctrl.p_rx_ese_data = pInfo->pBuff;
@@ -1277,6 +1273,11 @@ static void phNxpNciHal_read_complete(void* pContext,
                                                nfcee_notifiations[i]);
         }
       }
+    }
+    /* Unblock next Write Command Window */
+    sem_getvalue(&(nxpncihal_ctrl.syncSpiNfc), &sem_val);
+    if(((pInfo->pBuff[0] & NCI_MT_MASK) == NCI_MT_RSP)  && sem_val == 0 ) {
+      sem_post(&(nxpncihal_ctrl.syncSpiNfc));
     }
   } else {
     NXPLOG_NCIHAL_E("read error status = 0x%x", pInfo->wStatus);
