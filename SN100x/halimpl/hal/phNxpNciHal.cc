@@ -2162,21 +2162,14 @@ int phNxpNciHal_close(bool bShutdown) {
 #if(NXP_EXTNS == TRUE)
   }
 #endif
-    /* Avoiding sending flush RAM to flash during NFC close.
-       This is called during recovery sequence also.
-       To be taken up after all discussion.
-     */
-#if 0
-  if(nfcFL.chipType == sn100u)
-      status = phNxpNciHal_ext_send_sram_config_to_flash();
-#endif
+
+
   CONCURRENCY_LOCK();
   int sem_val;
   sem_getvalue(&(nxpncihal_ctrl.syncSpiNfc), &sem_val);
   if(sem_val == 0 ) {
       sem_post(&(nxpncihal_ctrl.syncSpiNfc));
   }
-
     if(!bShutdown){
       status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ven_disable_nci), cmd_ven_disable_nci);
       if(status != NFCSTATUS_SUCCESS) {
@@ -2356,6 +2349,8 @@ int phNxpNciHal_configDiscShutdown(void) {
   }
 #endif
 
+  if(nfcFL.chipType == sn100u)
+      status = phNxpNciHal_ext_send_sram_config_to_flash();
   status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_disc_nci), cmd_ce_disc_nci);
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("CMD_CE_DISC_NCI: Failed");
