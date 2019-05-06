@@ -2347,6 +2347,9 @@ void nfc_data_event(tNFC_CONN_CB *p_cb) {
   tNFC_DATA_CEVT data_cevt;
 if(halLibnfcDataCallback) {
   NFC_HDR *buffer = (NFC_HDR *)GKI_dequeue(&p_cb->rx_q);
+  if (!buffer) {
+    DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("buffer is NULL");
+  }
   uint8_t *data = (uint8_t *)(buffer + 1) + buffer->offset;
 
   for (int i = 0; i < buffer->len; i++) {

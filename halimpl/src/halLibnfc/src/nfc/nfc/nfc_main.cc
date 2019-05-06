@@ -1690,7 +1690,9 @@ void  check_nfcee_session_and_reset()
   std::string filename(nfc_storage_path);
   std::string sConfigFile = "/halStorage.bin1";
   filename.append(sConfigFile);
-  remove(filename.c_str());
+  if (remove(filename.c_str())) {
+    LOG(ERROR) << StringPrintf("Unable to remove file");
+  }
   uint8_t resetEseSessionCmd[] = {0x20, 0x02, 0x0C, 0x01, 0xA0, 0xEB, 0x08, 0xFF, 0xFF,
                                   0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
   NFC_SetConfig(resetEseSessionCmd[2], resetEseSessionCmd);
