@@ -100,7 +100,7 @@ size_t readConfigFile(const char* fileName, uint8_t** p_data) {
   rewind(fd);
 
   if (file_size > 0) {
-    buffer = new uint8_t[file_size];
+    buffer = new uint8_t[file_size + 1];
     read = fread(buffer, file_size, 1, fd);
   } else {
     ALOGE("%s Invalid file size file_size = %zu\n", __func__, file_size);
@@ -108,8 +108,9 @@ size_t readConfigFile(const char* fileName, uint8_t** p_data) {
   fclose(fd);
 
   if (read == 1) {
+    buffer[file_size] = '\n';
     *p_data = buffer;
-    return file_size;
+    return file_size+1;
   }
 
   if(buffer)
