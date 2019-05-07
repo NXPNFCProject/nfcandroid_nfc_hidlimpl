@@ -64,13 +64,10 @@ Return<void> NxpNfc::ioctl(uint64_t ioctlType, const hidl_vec<uint8_t>& inOutDat
         //seteSEClientState(pInOutData->inp.data.nciCmd.p_cmd[0]);
         //eSEClientUpdate_NFC_Thread();
       }
-      if(pInOutData->inp.data.nciCmd.p_cmd[0] == ESE_UPDATE_COMPLETED) {
-        status = phNxpNciHal_ioctl(HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE, &inpOutData);
-      }
     }
     else if(HAL_NFC_IOCTL_GET_ESE_UPDATE_STATE == ioctlType)
     {
-    	inpOutData.out.data.status = (getJcopUpdateRequired() | (getLsUpdateRequired() << 8));
+        inpOutData.out.data.status = (getJcopUpdateRequired() | (getLsUpdateRequired() << 8));
     }
     /*copy data and additional fields indicating status of ioctl operation
      * and context of the caller. Then invoke the corresponding proxy callback*/
