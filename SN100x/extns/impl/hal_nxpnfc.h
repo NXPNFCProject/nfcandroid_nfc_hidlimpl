@@ -68,8 +68,9 @@ enum {
 #endif
 };
 enum {
-    //HAL_NFC_ENABLE_I2C_FRAGMENTATION_EVT = 0x07,
-    HAL_NFC_POST_MIN_INIT_CPLT_EVT       = 0x08
+  //HAL_NFC_ENABLE_I2C_FRAGMENTATION_EVT = 0x07,
+  HAL_NFC_POST_MIN_INIT_CPLT_EVT = 0x08,
+  HAL_NFC_WRITE_COMPLETE = 0x09
 };
 /*
  * Data structures provided below are used of Hal Ioctl calls
