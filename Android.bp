@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2018 The Android Open Source Project
+// Copyright (C) 2018-2019 The Android Open Source Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,8 +33,7 @@ cc_binary {
         "1.2/NxpNfcService.cpp",
         "1.2/Nfc.cpp",
         "SN100x/extns/impl/NxpNfc.cpp",
-        //"SN100x/halimpl/ese-clients/src/eSEClient.cc",
-        //"SN100x/halimpl/eseClient/phNxpNfc_IntfApi.cc",
+        "SN100x/halimpl/eseclients_extns/src/eSEClientExtns.cc",
     ],
 
     shared_libs: [
@@ -56,7 +55,6 @@ cc_binary {
         "ls_client",
         "se_extn_client",
         "jcos_client",
-        //"libnfc-nci"
     ],
 
     local_include_dirs: [
@@ -68,8 +66,7 @@ cc_binary {
         "SN100x/halimpl/self-test",
         "SN100x/halimpl/tml",
         "SN100x/halimpl/utils",
-        "SN100x/halimpl/ese-clients/inc",
-        "SN100x/halimpl/eseClient"
+        "SN100x/halimpl/eseclients_extns/inc/",
     ],
 
     include_dirs: [
@@ -79,11 +76,5 @@ cc_binary {
         "hardware/nxp/secure_element_extns/inc",
         "hardware/nxp/secure_element_extns/ls_client/inc",
         "hardware/nxp/secure_element_extns/jcos_client/inc",
-       // "system/nfc/SN100x/src/nfa/include",
-       // "system/nfc/SN100x/src/nfc/include",
-        //"system/nfc/SN100x/src/include",
-        //"system/nfc/SN100x/utils/include",
-        //"system/nfc/SN100x/src/gki/common",
-        //"system/nfc/SN100x/src/gki/ulinux",
     ],
 }
