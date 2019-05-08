@@ -546,9 +546,7 @@ static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
   nxpncihal_ctrl.ext_cb_data.status = NFCSTATUS_SUCCESS;
 
   /* Send ext command */
-  CONCURRENCY_LOCK();
   data_written = phNxpNciHal_write_unlocked(cmd_len, p_cmd);
-  CONCURRENCY_UNLOCK();
   if (data_written != cmd_len) {
     NXPLOG_NCIHAL_D("phNxpNciHal_write failed for hal ext");
     goto clean_and_return;
