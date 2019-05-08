@@ -4108,8 +4108,10 @@ void phNxpNciHal_deinitializeRegRfFwDnld() {
 NFCSTATUS phNxpNciHal_PropEsePowerCycle(void) {
   NFCSTATUS status = NFCSTATUS_FAILED;
   uint8_t cmd_ese_pwrcycle[] = {0x2F, 0x1E, 0x00};
+  CONCURRENCY_LOCK();
   status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ese_pwrcycle)/sizeof(cmd_ese_pwrcycle[0]),
                                     cmd_ese_pwrcycle);
+  CONCURRENCY_UNLOCK();
   if (status != NFCSTATUS_SUCCESS)
   {
     NXPLOG_NCIHAL_E("EsePowerCycle failed");
