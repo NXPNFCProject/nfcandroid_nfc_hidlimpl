@@ -884,9 +884,12 @@ bool nfa_hci_enable_one_nfcee(void) {
                         }
                     }
                     //if(nfcFL.eseFL._NCI_NFCEE_PWR_LINK_CMD)
-                    {
-                      if(nfceeid == NFA_HCI_FIRST_PROP_HOST)
-                        status = NFC_NfceePLConfig(nfceeid, 0x03);
+                    if(nfceeid == NFA_HCI_FIRST_PROP_HOST){
+                      status = NFC_NfceePLConfig(nfceeid, 0x03);
+                      if (status != NFA_STATUS_OK) {
+                          LOG(ERROR) << StringPrintf(
+                              "%s: Power link configuration is unsuccessfull",__func__);
+                      }
                     }
                     status = NFC_NfceeModeSet(nfceeid, NFC_MODE_ACTIVATE);
                     if(status == NFA_STATUS_OK) {
@@ -1751,15 +1754,12 @@ void nfa_hci_release_transceive(uint8_t host_id) {
   tNFA_HCI_DYN_GATE         *p_gate;
 
   p_pipe = nfa_hciu_find_dyn_apdu_pipe_for_host (host_id);
-  if ((p_pipe == NULL) || (p_pipe->pipe_id != NFA_HCI_INVALID_PIPE))
-  {
-      p_pipe_cmdrsp_info = nfa_hciu_get_pipe_cmdrsp_info (p_pipe->pipe_id);
+  if ((p_pipe == NULL) || (p_pipe->pipe_id == NFA_HCI_INVALID_PIPE)) {
+    LOG(ERROR) << StringPrintf(
+        "nfa_hci_release_transcieve ():pipe is not valid or NULL ");
   }
-  else
-  {
-    DLOG_IF(INFO, nfc_debug_enabled)
-      << StringPrintf("nfa_hci_release_transcieve ():pipe is not valid or NULL ");
-  }
+  p_pipe_cmdrsp_info = nfa_hciu_get_pipe_cmdrsp_info (p_pipe->pipe_id);
+
   if(p_pipe_cmdrsp_info == NULL) return;
 
   if (p_pipe_cmdrsp_info->w4_cmd_rsp)
@@ -1905,6 +1905,11 @@ static void nfa_hci_timer_cback (TIMER_LIST_ENT *p_tle)
 
         p_pipe = nfa_hciu_find_pipe_by_pid (*p_pipe_id);
         p_pipe_cmdrsp_info = nfa_hciu_get_pipe_cmdrsp_info (*p_pipe_id);
+        if (!p_pipe_cmdrsp_info) {
+          LOG(ERROR) << StringPrintf(
+              "nfa_hci_timer_cback - Pipe Info is NULL returning...");
+        }
+
 
         memset (&evt_data, 0, sizeof (evt_data));
 
