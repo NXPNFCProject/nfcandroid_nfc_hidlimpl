@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2018 The Android Open Source Project
+// Copyright (C) 2018-2019 The Android Open Source Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ cc_library_shared {
         "halimpl/utils/phNxpConfig.cc",
         "halimpl/utils/phNxpNciHal_utils.cc",
         "halimpl/utils/sparse_crc32.cc",
+        "halimpl/eseclients_extns/src/*.cc",
     ],
 
     local_include_dirs: [
@@ -58,7 +59,7 @@ cc_library_shared {
         "halimpl/self-test",
         "halimpl/tml",
         "halimpl/utils",
-        "halimpl/ese-clients/inc",
+        "halimpl/eseclients_extns/inc",
         "halimpl/src/include"
     ],
 

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- *  Copyright 2018 NXP
+ *  Copyright 2019 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,19 +16,21 @@
  *
  ******************************************************************************/
 
-#include "../../../secure_element_extns/inc/eSEClientIntf.h"
-
 #ifndef ESE_UPDATE_3_H_
 #define ESE_UPDATE_3_H_
 
 extern bool nfc_debug_enabled;
 
+typedef void (*fpCheckEseClientUpdate_t)();
+typedef void (*fpPerformEseClientUpdate_t)();
+typedef void (*fpEseClientUpdate_Nfc_Thread_t)();
+typedef void (*fpSeteSEClientState_t)(uint8_t state);
+
+void initializeEseClient();
 void checkEseClientUpdate();
-
-SESTATUS perform_eSEClientUpdate();
-
-void eSEClientUpdate_NFC_Thread();
-
+void perform_eSEClientUpdate();
 void seteSEClientState(uint8_t state);
-SESTATUS LSUpdate();
-#endif /* LSCLIENT_H_ */
+void eSEClientUpdate_NFC_Thread();
+void deinitializeEseClient();
+
+#endif

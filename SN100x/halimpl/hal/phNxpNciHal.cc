@@ -37,7 +37,6 @@
 #include <EseAdaptation.h>
 #include "hal_nxpnfc.h"
 #include "spi_spm.h"
-#include "eSEClient.h"
 
 #include <android-base/stringprintf.h>
 

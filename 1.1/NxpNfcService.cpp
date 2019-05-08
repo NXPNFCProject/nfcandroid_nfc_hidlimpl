@@ -24,7 +24,7 @@
 #include <hidl/LegacySupport.h>
 #include "Nfc.h"
 #include "NxpNfc.h"
-#include "eSEClient.h"
+#include "eSEClientExtns.h"
 
 // Generated HIDL files
 using android::hardware::nfc::V1_1::INfc;
@@ -50,8 +50,9 @@ int main() {
         return -1;
     }
 
+    initializeEseClient();
     configureRpcThreadpool(1, true /*callerWillJoin*/);
-    //checkEseClientUpdate();
+    checkEseClientUpdate();
     status = nfc_service->registerAsService();
     if (status != OK) {
         LOG_ALWAYS_FATAL("Could not register service for NFC HAL Iface (%d).", status);
@@ -70,7 +71,7 @@ int main() {
         ALOGE("Could not register service for NXP NFC Extn Iface (%d).", status);
     }
     ALOGE("Before calling JCOP JCOS_doDownload");
-    //perform_eSEClientUpdate();
+    perform_eSEClientUpdate();
     ALOGE("After calling JCOS_doDownload");
     ALOGI("NFC service is ready");
     joinRpcThreadpool();
