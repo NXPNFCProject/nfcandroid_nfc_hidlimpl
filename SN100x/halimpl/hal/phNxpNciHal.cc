@@ -581,9 +581,6 @@ int phNxpNciHal_MinOpen (){
   setNxpFwConfigPath("/system/vendor/lib64/libsn100u_fw.so");
   phNxpNciHal_initializeRegRfFwDnld();
 
-  /* reset config cache */
-  resetNxpConfig();
-
   int init_retry_cnt = 0;
   int8_t ret_val = 0x00;
 
@@ -2283,6 +2280,8 @@ close_and_return:
   phNxpNciHal_cleanup_monitor();
   write_unlocked_status = NFCSTATUS_SUCCESS;
   phNxpNciHal_release_info();
+  /* reset config cache */
+  resetNxpConfig();
   /* Return success always */
   return NFCSTATUS_SUCCESS;
 }
