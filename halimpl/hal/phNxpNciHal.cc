@@ -1020,9 +1020,6 @@ init_retry:
       (void)phNxpNciHal_power_cycle();
       goto init_retry;
     }
-    wConfigStatus = phTmlNfc_Shutdown_CleanUp();
-    wConfigStatus = NFCSTATUS_FAILED;
-    goto minCleanAndreturn;
   }
   if (nxpncihal_ctrl.nci_info.nci_version == NCI_VERSION_2_0) {
     status = phNxpNciHal_send_ext_cmd(sizeof(cmd_init_nci2_0), cmd_init_nci2_0);

@@ -183,9 +183,7 @@ static void nfa_dm_nfc_response_cback(tNFC_RESPONSE_EVT event,
   case NFC_NFCC_TRANSPORT_ERR_REVT:
     DLOG_IF(INFO, nfc_debug_enabled)
         << StringPrintf("flags:0x%08x", nfa_dm_cb.flags);
-    dm_cback_evt = ((event == NFC_NFCC_TIMEOUT_REVT)
-                       ? NFA_DM_NFCC_TIMEOUT_EVT
-                       : NFA_DM_NFCC_TRANSPORT_ERR_EVT);
+    dm_cback_evt = NFA_DM_NFCC_TRANSPORT_ERR_EVT;
     (*nfa_dm_cb.p_dm_cback)(dm_cback_evt, NULL);
     break;
   default:
