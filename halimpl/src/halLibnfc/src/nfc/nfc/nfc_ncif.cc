@@ -47,7 +47,7 @@
 
 #include "nfc_target.h"
 
-#include "hal_nxpese.h"
+#include "hal_nxpnfc.h"
 #include "nci_defs.h"
 #include "nci_hmsgs.h"
 #include "nfc_api.h"

@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <phNxpNciHal_ext.h>
-#include <phNxpNciHal.h>
-#include <phTmlNfc.h>
+#include "hal_nxpnfc.h"
+#include "phNxpNciHal_nciParser.h"
+#include <cutils/properties.h>
 #include <log/log.h>
 #include <phDal4Nfc_messageQueueLib.h>
-#include <phNxpNciHal_NfcDepSWPrio.h>
-#include <phNxpLog.h>
-#include <phNxpConfig.h>
 #include <phDnldNfc.h>
-#include <cutils/properties.h>
-#include "phNxpNciHal_nciParser.h"
-#include "hal_nxpese.h"
+#include <phNxpConfig.h>
+#include <phNxpLog.h>
+#include <phNxpNciHal.h>
 #include <phNxpNciHal_Adaptation.h>
+#include <phNxpNciHal_NfcDepSWPrio.h>
+#include <phNxpNciHal_ext.h>
+#include <phTmlNfc.h>
 
 /* Timeout value to wait for response from PN548AD */
 #define HAL_EXTNS_WRITE_RSP_TIMEOUT (2500)

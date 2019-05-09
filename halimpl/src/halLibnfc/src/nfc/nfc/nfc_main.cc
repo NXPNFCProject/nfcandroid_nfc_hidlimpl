@@ -52,7 +52,7 @@
 
 #include "bt_types.h"
 #include "gki.h"
-#include "hal_nxpese.h"
+#include "hal_nxpnfc.h"
 #include "nci_hmsgs.h"
 #include "nfa_sys.h"
 #include "nfc_int.h"

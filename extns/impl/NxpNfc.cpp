@@ -32,10 +32,10 @@
  ******************************************************************************/
 #define LOG_TAG "vendor.nxp.nxpnfc@1.0-impl"
 #include "NxpNfc.h"
-#include "hal_nxpese.h"
+#include "DwpEseUpdater.h"
+#include "hal_nxpnfc.h"
 #include "phNxpNciHal_Adaptation.h"
 #include <log/log.h>
-#include "DwpEseUpdater.h"
 
 namespace vendor {
 namespace nxp {

@@ -35,7 +35,7 @@
  *
  ******************************************************************************/
 #include "HalNfcAdaptation.h"
-#include "hal_nxpese.h"
+#include "hal_nxpnfc.h"
 #include "nfa_api.h"
 #include "nfc_int.h"
 #include "nfc_target.h"

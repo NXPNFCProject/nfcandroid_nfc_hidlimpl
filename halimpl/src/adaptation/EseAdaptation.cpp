@@ -140,20 +140,11 @@ EseAdaptation& EseAdaptation::GetInstance() {
 *******************************************************************************/
 void EseAdaptation::Initialize() {
   const char* func = "EseAdaptation::Initialize";
-  uint8_t cmd_ese_nxp[] = {0x2F, 0x01, 0x01, 0x01};
   ALOGD_IF(nfc_debug_enabled, "%s: enter", func);
 
   mHalCallback = NULL;
-  ese_nxp_IoctlInOutData_t* pInpOutData;
-  pInpOutData =
-      (ese_nxp_IoctlInOutData_t*)malloc(sizeof(ese_nxp_IoctlInOutData_t));
-  if (pInpOutData != NULL){
-    memset(pInpOutData, 0x00, sizeof(ese_nxp_IoctlInOutData_t));
-    pInpOutData->inp.data.nxpCmd.cmd_len = sizeof(cmd_ese_nxp);
-    memcpy(pInpOutData->inp.data.nxpCmd.p_cmd, cmd_ese_nxp, sizeof(cmd_ese_nxp));
-    InitializeHalDeviceContext();
-    free(pInpOutData);
-  }
+  InitializeHalDeviceContext();
+
   ALOGD_IF(nfc_debug_enabled, "%s: exit", func);
 }
 

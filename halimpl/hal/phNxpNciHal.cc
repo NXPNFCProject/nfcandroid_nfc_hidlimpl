@@ -31,7 +31,6 @@
 #include "phNxpNciHal_nciParser.h"
 #include <EseAdaptation.h>
 #include "hal_nxpnfc.h"
-#include "hal_nxpese.h"
 #include "spi_spm.h"
 #include <vendor/nxp/nxpnfc/1.0/types.h>
 
@@ -41,6 +40,7 @@ using android::hardware::nfc::V1_1::NfcEvent;
 using android::base::WriteStringToFile;
 
 /*********************** Global Variables *************************************/
+#define HAL_ESE_IOCTL_NFC_JCOP_DWNLD 176
 #define PN547C2_CLOCK_SETTING
 #undef PN547C2_FACTORY_RESET_DEBUG
 #define CORE_RES_STATUS_BYTE 3
