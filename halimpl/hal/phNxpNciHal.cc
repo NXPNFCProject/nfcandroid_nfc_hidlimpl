@@ -2746,9 +2746,6 @@ void phNxpNciHal_isFactoryOTAModeActive() {
       NXPLOG_NCIHAL_E("FactoryOTA mode is active");
     } else {
       NXPLOG_NCIHAL_D("FactoryOTA mode is disabled");
-      if (property_set("persist.factoryota.reboot", "terminated") < 0) {
-        NXPLOG_NCIHAL_E("Fail to set factoryOTA property");
-      }
     }
   } else {
     NXPLOG_NCIHAL_E("Fail to get FactoryOTA mode status");
