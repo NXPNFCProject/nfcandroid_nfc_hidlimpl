@@ -36,7 +36,6 @@
 #include <sys/stat.h>
 #include <EseAdaptation.h>
 #include "hal_nxpnfc.h"
-#include "hal_nxpese.h"
 #include "spi_spm.h"
 #include "eSEClient.h"
 

@@ -20,7 +20,7 @@
 
 #include "NxpNfc.h"
 #include "phNxpNciHal_Adaptation.h"
-#include "hal_nxpese.h"
+#include "hal_nxpnfc.h"
 #include "eSEClientIntf.h"
 #include "phNxpNciHal.h"
 #include "eSEClient.h"
