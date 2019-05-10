@@ -163,6 +163,8 @@ NFCSTATUS phNxpNciHal_nfcc_core_reset_init();
 NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(void);
 static void phNxpNciHal_notifyHciEvtProcessComplete();
 void phNxpNciHal_phase_tirm_offset_sign_update();
+void phNxpNciHal_isFactoryOTAModeActive();
+static NFCSTATUS phNxpNciHal_disableFactoryOTAMode(void);
 
 /******************************************************************************
  * Function         phNxpNciHal_initialize_debug_enabled_flag
@@ -2731,6 +2733,48 @@ static NFCSTATUS phNxpNciHal_uicc_baud_rate() {
   return status;
 }
 
+
+void phNxpNciHal_isFactoryOTAModeActive() {
+  uint8_t check_factoryOTA[] = {0x20, 0x03, 0x05, 0x02, 0xA0, 0x08, 0xA0, 0x88};
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  NXPLOG_NCIHAL_D("check FactoryOTA mode status");
+
+  status = phNxpNciHal_send_ext_cmd(sizeof(check_factoryOTA), check_factoryOTA);
+
+  if (status == NFCSTATUS_SUCCESS) {
+    if(nxpncihal_ctrl.p_rx_data[9] == 0x1 && nxpncihal_ctrl.p_rx_data[13] == 0x1) {
+      NXPLOG_NCIHAL_E("FactoryOTA mode is active");
+    } else {
+      NXPLOG_NCIHAL_D("FactoryOTA mode is disabled");
+      if (property_set("persist.factoryota.reboot", "terminated") < 0) {
+        NXPLOG_NCIHAL_E("Fail to set factoryOTA property");
+      }
+    }
+  } else {
+    NXPLOG_NCIHAL_E("Fail to get FactoryOTA mode status");
+  }
+  return;
+}
+
+NFCSTATUS phNxpNciHal_disableFactoryOTAMode() {
+  // NFCC GPIO output control
+  uint8_t nfcc_system_gpio[] = {0x20, 0x02, 0x06, 0x01, 0xA0, 0x08, 0x02, 0x00, 0x00};
+  // NFCC automatically sets GPIO once a specific RF pattern is detected
+  uint8_t nfcc_gpio_pattern[] = {0x20, 0x02, 0x08, 0x01, 0xA0, 0x88, 0x04, 0x00, 0x96, 0x96, 0x03};
+
+  NFCSTATUS status = NFCSTATUS_SUCCESS;
+  NXPLOG_NCIHAL_D("Disable FactoryOTA mode");
+  status = phNxpNciHal_send_ext_cmd(sizeof(nfcc_system_gpio), nfcc_system_gpio);
+  if (status != NFCSTATUS_SUCCESS ) {
+    NXPLOG_NCIHAL_E("Can't disable A008 for FactoryOTA mode");
+  }
+  status = phNxpNciHal_send_ext_cmd(sizeof(nfcc_gpio_pattern), nfcc_gpio_pattern);
+  if (status != NFCSTATUS_SUCCESS ) {
+    NXPLOG_NCIHAL_E("Can't disable A088 for FactoryOTA mode");
+  }
+  return status;
+}
+
 void phNxpNciHal_phase_tirm_offset_sign_update() {
   uint8_t phase_tirm_offset_read[] = {0x20, 0x03, 0x03, 0x01, 0xA0, 0x17};
   uint8_t phase_tirm_offset_write[] = {0x20, 0x02, 0x05, 0x01, 0xA0, 0x17, 0x01, 0x80};
@@ -2861,6 +2905,10 @@ int phNxpNciHal_close(bool bShutdown) {
   unsigned long uiccListenMask = 0x00;
   unsigned long eseListenMask = 0x00;
 
+  char valueStr[PROPERTY_VALUE_MAX] = {0};
+  bool factoryOTA_terminate = false;
+  int len;
+
   if (!(GetNxpNumValue(NAME_NXP_UICC_LISTEN_TECH_MASK, &uiccListenMask,
                        sizeof(uiccListenMask)))) {
     uiccListenMask = 0x07;
@@ -2909,6 +2957,16 @@ int phNxpNciHal_close(bool bShutdown) {
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("CMD_VEN_DISABLE_NCI: Failed");
     }
+  }
+
+  len = property_get("persist.factoryota.reboot", valueStr, "normal");
+  if (len > 0) {
+    factoryOTA_terminate = (len == 9 && (memcmp(valueStr, "terminate", len) == 0)) ? true : false;
+  }
+  NXPLOG_NCIHAL_D("factoryOTA_terminate: %d", factoryOTA_terminate);
+  if (factoryOTA_terminate) {
+    phNxpNciHal_disableFactoryOTAMode();
+    phNxpNciHal_isFactoryOTAModeActive();
   }
 
   nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
