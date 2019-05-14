@@ -1044,8 +1044,7 @@ init_retry:
       init_retry_cnt++;
       (void)phNxpNciHal_power_cycle();
       goto init_retry;
-    } else
-      init_retry_cnt = 0;
+    }
     wConfigStatus = phTmlNfc_Shutdown_CleanUp();
     wConfigStatus = NFCSTATUS_FAILED;
     goto minCleanAndreturn;

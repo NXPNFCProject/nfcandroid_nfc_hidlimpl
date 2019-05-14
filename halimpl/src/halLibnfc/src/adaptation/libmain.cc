@@ -90,7 +90,7 @@ extern void nfa_nv_co_read(uint8_t* pBuffer, uint16_t nbytes, uint8_t block) {
   if (fileStream >= 0) {
     unsigned short checksum = 0;
     size_t  checksumData = read(fileStream, &checksum, sizeof(checksum));
-    if (0 > checksumData) {
+    if (0 > (long)checksumData) {
       LOG(ERROR) << StringPrintf("%s: fail to read", __func__);
     }
     size_t actualReadData = read(fileStream, pBuffer, nbytes);

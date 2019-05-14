@@ -2349,6 +2349,7 @@ if(halLibnfcDataCallback) {
   NFC_HDR *buffer = (NFC_HDR *)GKI_dequeue(&p_cb->rx_q);
   if (!buffer) {
     DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("buffer is NULL");
+    return;
   }
   uint8_t *data = (uint8_t *)(buffer + 1) + buffer->offset;
 

@@ -1757,6 +1757,7 @@ void nfa_hci_release_transceive(uint8_t host_id) {
   if ((p_pipe == NULL) || (p_pipe->pipe_id == NFA_HCI_INVALID_PIPE)) {
     LOG(ERROR) << StringPrintf(
         "nfa_hci_release_transcieve ():pipe is not valid or NULL ");
+    return;
   }
   p_pipe_cmdrsp_info = nfa_hciu_get_pipe_cmdrsp_info (p_pipe->pipe_id);
 
@@ -1908,6 +1909,7 @@ static void nfa_hci_timer_cback (TIMER_LIST_ENT *p_tle)
         if (!p_pipe_cmdrsp_info) {
           LOG(ERROR) << StringPrintf(
               "nfa_hci_timer_cback - Pipe Info is NULL returning...");
+          return;
         }
 
 
