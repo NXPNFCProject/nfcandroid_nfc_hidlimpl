@@ -1045,9 +1045,6 @@ init_retry:
       (void)phNxpNciHal_power_cycle();
       goto init_retry;
     }
-    wConfigStatus = phTmlNfc_Shutdown_CleanUp();
-    wConfigStatus = NFCSTATUS_FAILED;
-    goto minCleanAndreturn;
   }
 
   if (!nxpncihal_ctrl.bIsForceFwDwnld) {
