@@ -2347,8 +2347,12 @@ int phNxpNciHal_configDiscShutdown(void) {
   }
 #endif
 
-  if(nfcFL.chipType == sn100u)
-      status = phNxpNciHal_ext_send_sram_config_to_flash();
+  if(nfcFL.chipType == sn100u) {
+    status = phNxpNciHal_ext_send_sram_config_to_flash();
+    if(status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("Updation of the SRAM contents failed");
+    }
+  }
   status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_disc_nci), cmd_ce_disc_nci);
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("CMD_CE_DISC_NCI: Failed");
