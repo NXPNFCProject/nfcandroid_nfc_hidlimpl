@@ -2883,10 +2883,14 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
         ret = 0;
         break;
 #if(NXP_EXTNS == TRUE)
+    case HAL_NFC_IOCTL_SET_RF_CONFIG_PATH:
+        setNxpRfConfigPath(pInpOutData->inp.data.nxpConfig.val);
+        ret = 0;
+        break;
     case HAL_NFC_IOCTL_GET_NXP_CONFIG:
-      phNxpNciHal_getNxpConfig(pInpOutData);
-      ret = 0;
-      break;
+        phNxpNciHal_getNxpConfig(pInpOutData);
+        ret = 0;
+        break;
 #endif
     default:
       NXPLOG_NCIHAL_E("%s : Wrong arg = %ld", __func__, arg);
@@ -4133,6 +4137,11 @@ NFCSTATUS phNxpNciHal_PropEsePowerCycle(void) {
 void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
   unsigned long num = 0;
   char val[TERMINAL_LEN]={0};
+  uint8_t* buffer = NULL;
+  long bufflen = 260;
+  long retlen = 0;
+
+  buffer = (uint8_t*)malloc(bufflen * sizeof(uint8_t));
   memset(&pInpOutData->out.data.nxpConfigs, 0x00, sizeof(pInpOutData->out.data.nxpConfigs));
   NXPLOG_NCIHAL_D("phNxpNciHal_getNxpConfig: Enter");
   if (GetNxpNumValue(NAME_NXP_SE_COLD_TEMP_ERROR_DELAY, &num, sizeof(num))) {
@@ -4212,6 +4221,36 @@ void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
   }
   if (GetNxpNumValue(NAME_NXP_POLL_FOR_EFD_TIMEDELAY, &num, sizeof(num))) {
     pInpOutData->out.data.nxpConfigs.pollEfdDelay = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_NFCC_MERGE_SAK_ENABLE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.mergeSakEnable = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_STAG_TIMEOUT_CFG, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.stagTimeoutCfg = num;
+  }
+
+  if(buffer){
+    if(GetNxpStrValue(NAME_RF_STORAGE, (char*)buffer, bufflen)){
+      retlen = strlen((char*)buffer)+1;
+      memcpy(pInpOutData->out.data.nxpConfigs.rfStorage.path,(char*)buffer,retlen);
+      pInpOutData->out.data.nxpConfigs.rfStorage.len =retlen;
+    }
+
+    if(GetNxpStrValue(NAME_FW_STORAGE, (char*)buffer, bufflen)){
+      retlen = strlen((char*)buffer)+1;
+      memcpy(pInpOutData->out.data.nxpConfigs.fwStorage.path,(char*)buffer,retlen);
+      pInpOutData->out.data.nxpConfigs.fwStorage.len =retlen;
+    }
+    if (GetNxpByteArrayValue(NAME_NXP_CORE_CONF, (char*)buffer, bufflen, &retlen)){
+      memcpy(pInpOutData->out.data.nxpConfigs.coreConf.cmd ,(char*)buffer,retlen);
+      pInpOutData->out.data.nxpConfigs.coreConf.len = retlen;
+    }
+    if (GetNxpByteArrayValue(NAME_NXP_RF_FILE_VERSION_INFO, (char*)buffer,bufflen, &retlen)){
+      memcpy(pInpOutData->out.data.nxpConfigs.rfFileVersInfo.ver ,(char*)buffer,retlen);
+      pInpOutData->out.data.nxpConfigs.rfFileVersInfo.len = retlen;
+    }
+    free(buffer);
+    buffer = NULL;
   }
 }
 #endif
