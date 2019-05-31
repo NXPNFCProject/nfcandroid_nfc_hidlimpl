@@ -52,6 +52,15 @@ Return<void> NxpNfc::ioctl(uint64_t ioctlType, const hidl_vec<uint8_t>& inOutDat
       inpOutData.inp.data.transitConfig.val =
           ((char *)pInOutData) + sizeof(nfc_nci_IoctlInOutData_t);
       }
+  }else if(ioctlType == HAL_NFC_IOCTL_SET_RF_CONFIG_PATH){
+    /*As Nxp configurations are appended at the end of nfc_nci_IoctlInOutData_t,
+     * Assign appropriate pointer to nxpConfig*/
+    if (inpOutData.inp.data.nxpConfig.len == 0) {
+      inpOutData.inp.data.nxpConfig.val = NULL;
+    } else {
+      inpOutData.inp.data.nxpConfig.val =
+          ((char *)pInOutData) + sizeof(nfc_nci_IoctlInOutData_t);
+    }
   }
     status = phNxpNciHal_ioctl(ioctlType, &inpOutData);
     if(HAL_NFC_IOCTL_ESE_JCOP_DWNLD == ioctlType)
