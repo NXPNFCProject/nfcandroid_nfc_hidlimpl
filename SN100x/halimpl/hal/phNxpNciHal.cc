@@ -2423,7 +2423,9 @@ void phNxpNciHal_getVendorConfig(android::hardware::nfc::V1_1::NfcConfig& config
   long retlen = 0;
   memset(&config, 0x00, sizeof(android::hardware::nfc::V1_1::NfcConfig));
 
-  config.nfaPollBailOutMode = true;
+  if (GetNxpNumValue(NAME_NFA_POLL_BAIL_OUT_MODE, &num, sizeof(num))) {
+    config.nfaPollBailOutMode = num;
+  }
   if (GetNxpNumValue(NAME_ISO_DEP_MAX_TRANSCEIVE, &num, sizeof(num))) {
     config.maxIsoDepTransceiveLength = num;
   }
