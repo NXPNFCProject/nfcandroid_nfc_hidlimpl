@@ -1,12 +1,18 @@
 # nfcandroid_nfc_hidlimpl
 
-####Git Repository
+#### Git Repository
 
 | DESCRIPTION        | CHECKOUT COMMAND          |
 | :-------------: |:-------------:| 
 | nfcandroid_nfc_hidlimpl    |  git clone https://github.com/NXPNFCProject/nfcandroid_nfc_hidlimpl.git |
 
-####Supported Versions on "br_android_ncihalx_row_p" Branch
+#### Supported Version on "br_android_ncihalx_row_q" branch
+| Android Version        | NXP Release          | NXP Tag  |
+| :-------------: |:---------------------:| :-----:|
+| aosp-master                |  10.01.00 (PN80T/PN81T/PN553/PN557) |  NFC_AR_00_18C0_10.01.00_OpnSrc  |
+
+
+#### Supported Versions on "br_android_ncihalx_row_p" Branch
 
 | Android Version        | NXP Release          | NXP Tag  |
 | :-------------: |:-------------:| :-----:|
