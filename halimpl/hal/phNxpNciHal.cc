@@ -1081,6 +1081,7 @@ force_download:
   if (status == NFCSTATUS_SUCCESS) {
     uint8_t p_core_init_rsp_params = 0;
     phNxpNciHal_core_initialized(&p_core_init_rsp_params);
+    wConfigStatus = NFCSTATUS_SUCCESS;
   }
   goto init_retry;
 
