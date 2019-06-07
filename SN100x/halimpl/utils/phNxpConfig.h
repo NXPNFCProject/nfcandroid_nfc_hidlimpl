@@ -20,7 +20,7 @@
  *
  *  The original Work has been changed by NXP Semiconductors.
  *
- *  Copyright (C) 2013-2018 NXP Semiconductors
+ *  Copyright (C) 2013-2019 NXP Semiconductors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -144,8 +144,10 @@ extern char Fw_Lib_Path[256];
 #define NAME_HOST_LISTEN_TECH_MASK "HOST_LISTEN_TECH_MASK"
 #define NAME_UICC_LISTEN_TECH_MASK "UICC_LISTEN_TECH_MASK"
 #define NAME_POLLING_TECH_MASK "POLLING_TECH_MASK"
+#define NAME_FORWARD_FUNCTIONALITY_ENABLE "FORWARD_FUNCTIONALITY_ENABLE"
+#define NAME_NXP_NFC_SE_TERMINAL_NUM "NXP_NFC_SE_TERMINAL_NUM"
 #endif
 /* default configuration */
 #define default_storage_location "/data/vendor/nfc"
-
+#define NAME_NXP_AUTH_TIMEOUT_CFG "NXP_AUTH_TIMEOUT_CFG"
 #endif

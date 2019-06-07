@@ -84,7 +84,6 @@ cc_library_shared {
         "libutils",
         "vendor.nxp.nxpese@1.0",
         "libicuuc",
-        "libchrome",
     ],
     static_libs: [
         "libnfcutils",

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2018 NXP Semiconductors
+ * Copyright (C) 2010-2019 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -217,6 +217,8 @@ typedef enum {
 /* Function declarations */
 NFCSTATUS phTmlNfc_Init(pphTmlNfc_Config_t pConfig);
 NFCSTATUS phTmlNfc_Shutdown(void);
+NFCSTATUS phTmlNfc_Shutdown_CleanUp();
+void phTmlNfc_CleanUp(void);
 NFCSTATUS phTmlNfc_Write(uint8_t* pBuffer, uint16_t wLength,
                          pphTmlNfc_TransactCompletionCb_t pTmlWriteComplete,
                          void* pContext);

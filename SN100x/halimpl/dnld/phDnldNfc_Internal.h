@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2018 NXP Semiconductors
+ * Copyright (C) 2010-2019 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -152,6 +152,7 @@ typedef struct phDnldNfc_RspTimerInfo {
   uint32_t dwRspTimerId;     /* Timer for Core to handle response */
   uint8_t TimerStatus;       /* 0 = Timer not running 1 = timer running*/
   NFCSTATUS wTimerExpStatus; /* Holds the status code on timer expiry */
+  uint16_t rspTimeout;      /*FW download rsp timeout value*/
 } phDnldNfc_RspTimerInfo_t;
 
 /*

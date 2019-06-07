@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2018 NXP
+ *  Copyright 2018-2019 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -22,10 +22,12 @@
 #define MAX_IOCTL_TRANSCEIVE_CMD_LEN  256
 #define MAX_IOCTL_TRANSCEIVE_RESP_LEN 256
 #define MAX_ATR_INFO_LEN              128
+#define NCI_ESE_HARD_RESET_IOCTL      5
 
 enum {
     HAL_NFC_IOCTL_NCI_TRANSCEIVE = 0xF1,
     HAL_NFC_IOCTL_NFC_JCOP_DWNLD,
+    HAL_NFC_IOCTL_ESE_HARD_RESET,
 };
 
 enum {
@@ -44,6 +46,18 @@ typedef struct
     uint8_t  p_cmd[MAX_IOCTL_TRANSCEIVE_CMD_LEN];
 } nfc_nci_ExtnCmd_t;
 
+#if(NXP_EXTNS == TRUE)
+/*
+ * nxp_nfc_config_t shall contain the respective flag value from the
+ * libnfc-nxp.conf
+ */
+typedef struct {
+  uint8_t eSeLowTempErrorDelay;
+  uint8_t fwdFunctionality;
+  uint8_t hostListenTechMask;
+  uint8_t seApduGateEnabled;
+} nxp_nfc_config_t;
+#endif
 /*
  * nfc_nci_ExtnRsp_t shall contain response for command sent in transceive command
  */
@@ -102,6 +116,9 @@ typedef union{
     uint16_t            fwDwnldStatus;
     uint16_t            fwMwVerStatus;
     uint8_t             chipType;
+#if(NXP_EXTNS == TRUE)
+    nxp_nfc_config_t nxpConfigs;
+#endif
 }outputData_t;
 
 /*

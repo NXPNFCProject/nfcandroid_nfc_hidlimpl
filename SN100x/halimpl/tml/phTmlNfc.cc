@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2018 NXP Semiconductors
+ * Copyright (C) 2010-2019 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@ static uint8_t bCurrentRetryCount = (2000 / PHTMLNFC_MAXTIME_RETRANSMIT) + 1;
 phTmlNfc_Context_t* gpphTmlNfc_Context = NULL;
 /* Local Function prototypes */
 static NFCSTATUS phTmlNfc_StartThread(void);
-static void phTmlNfc_CleanUp(void);
 static void phTmlNfc_ReadDeferredCb(void* pParams);
 static void phTmlNfc_WriteDeferredCb(void* pParams);
 static void * phTmlNfc_TmlThread(void* pParam);
@@ -563,7 +562,7 @@ static void * phTmlNfc_TmlWriterThread(void* pParam) {
 ** Returns          None
 **
 *******************************************************************************/
-static void phTmlNfc_CleanUp(void) {
+void phTmlNfc_CleanUp(void) {
   if (NULL == gpphTmlNfc_Context) {
     return;
   }
@@ -632,8 +631,6 @@ NFCSTATUS phTmlNfc_Shutdown(void) {
       NXPLOG_TML_E("Fail to kill writer thread!");
     }
     NXPLOG_TML_D("bThreadDone == 0");
-
-    phTmlNfc_CleanUp();
   } else {
     wShutdownStatus = PHNFCSTVAL(CID_NFC_TML, NFCSTATUS_NOT_INITIALISED);
   }
@@ -1106,3 +1103,21 @@ static int phTmlNfc_WaitReadInit(void) {
   }
   return ret;
 }
+
+/*******************************************************************************
+**
+** Function         phTmlNfc_Shutdown_CleanUp
+**
+** Description      wrapper function  for shutdown  and cleanup of resources
+**
+** Parameters       None
+**
+** Returns          NFCSTATUS
+**
+*******************************************************************************/
+NFCSTATUS phTmlNfc_Shutdown_CleanUp() {
+  NFCSTATUS wShutdownStatus = phTmlNfc_Shutdown();
+  phTmlNfc_CleanUp();
+  return wShutdownStatus;
+}
+

@@ -1322,3 +1322,4 @@ NCI_LxDebug_Decoder::decodeFelicaMiscCode(psLxNtfCoded_t        psLxNtfCoded,
             break;
     }
 }
+

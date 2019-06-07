@@ -67,7 +67,7 @@ Return<void> NxpNfc::ioctl(uint64_t ioctlType, const hidl_vec<uint8_t>& inOutDat
     }
     else if(HAL_NFC_IOCTL_GET_ESE_UPDATE_STATE == ioctlType)
     {
-	inpOutData.out.data.status = (getJcopUpdateRequired() | (getLsUpdateRequired() << 8));
+    	inpOutData.out.data.status = (getJcopUpdateRequired() | (getLsUpdateRequired() << 8));
     }
     /*copy data and additional fields indicating status of ioctl operation
      * and context of the caller. Then invoke the corresponding proxy callback*/

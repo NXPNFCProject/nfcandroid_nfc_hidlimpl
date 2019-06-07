@@ -28,3 +28,4 @@ NCI_LxDebug_Decoder&
 NCI_Decoder_Prop::getLxDebugDecoder() {
     return NCI_LxDebug_Decoder::getInstance();
 }
+

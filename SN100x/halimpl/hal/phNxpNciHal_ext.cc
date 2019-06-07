@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2018 NXP Semiconductors
+ * Copyright (C) 2012-2019 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,7 +88,9 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
 *******************************************************************************/
 void phNxpNciHal_ext_init(void) {
   icode_detected = 0x00;
-  icode_send_eof = 0x00;
+  if(nfcFL.chipType != sn100u){
+    icode_send_eof = 0x00;
+  }
   setEEModeDone = 0x00;
   EnableP2P_PrioLogic = false;
 }
@@ -274,15 +276,16 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
       nxpncihal_ctrl.nci_info.wait_for_ntf = TRUE;
       NXPLOG_NCIHAL_D(" Mode set received");
     }
-  } else if (p_ntf[0] == 0x61 && p_ntf[1] == 0x05 && p_ntf[2] == 0x15 &&
-      p_ntf[4] == 0x01 && p_ntf[5] == 0x06 && p_ntf[6] == 0x06) {
+  } else if (p_ntf[0] == 0x61 && p_ntf[1] == 0x05 && p_ntf[2] == 0x15
+          && p_ntf[4] == 0x01 && p_ntf[5] == 0x06 && p_ntf[6] == 0x06) {
     NXPLOG_NCIHAL_D("> Going through workaround - notification of ISO 15693");
     icode_detected = 0x01;
     p_ntf[21] = 0x01;
     p_ntf[22] = 0x01;
-  } else if (icode_detected == 1 && icode_send_eof == 2) {
+  } else if (nfcFL.chipType != sn100u && icode_detected == 1 && icode_send_eof == 2) {
     icode_send_eof = 3;
-  } else if (p_ntf[0] == 0x00 && p_ntf[1] == 0x00 && icode_detected == 1) {
+  } else if (nfcFL.chipType != sn100u && p_ntf[0] == 0x00 && p_ntf[1] == 0x00 &&
+          icode_detected == 1) {
     if (icode_send_eof == 3) {
       icode_send_eof = 0;
     }
@@ -295,12 +298,14 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
         p_ntf[p_ntf[2] + 2] |= 0x01;
       }
     }
-  } else if (p_ntf[2] == 0x02 && p_ntf[1] == 0x00 && icode_detected == 1) {
+  } else if (nfcFL.chipType != sn100u && p_ntf[2] == 0x02 &&
+          p_ntf[1] == 0x00 && icode_detected == 1) {
     NXPLOG_NCIHAL_D("> ICODE EOF response do not send to upper layer");
   } else if (p_ntf[0] == 0x61 && p_ntf[1] == 0x06 && icode_detected == 1) {
     NXPLOG_NCIHAL_D("> Polling Loop Re-Started");
     icode_detected = 0;
-    icode_send_eof = 0;
+    if (nfcFL.chipType != sn100u)
+      icode_send_eof = 0;
   } else if (*p_len == 4 && p_ntf[0] == 0x40 && p_ntf[1] == 0x02 &&
              p_ntf[2] == 0x01 && p_ntf[3] == 0x06) {
     NXPLOG_NCIHAL_D("> Deinit workaround for LLCP set_config 0x%x 0x%x 0x%x",
@@ -537,6 +542,8 @@ static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
     goto clean_and_return;
   }
 
+  HAL_ENABLE_EXT();
+
   /* Start timer */
   status = phOsalNfc_Timer_Start(timeoutTimerId, HAL_EXTNS_WRITE_RSP_TIMEOUT,
                                  &hal_extns_write_rsp_timeout_cb, NULL);
@@ -609,6 +616,7 @@ static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
 clean_and_return:
   phNxpNciHal_cleanup_cb_data(&nxpncihal_ctrl.ext_cb_data);
   nxpncihal_ctrl.nci_info.wait_for_ntf = FALSE;
+  HAL_DISABLE_EXT();
   return status;
 }
 
@@ -731,7 +739,7 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
         }
     status = NFCSTATUS_SUCCESS;
   } else if (icode_detected) {
-    if ((p_cmd_data[3] & 0x40) == 0x40 &&
+    if (nfcFL.chipType != sn100u && (p_cmd_data[3] & 0x40) == 0x40 &&
         (p_cmd_data[4] == 0x21 || p_cmd_data[4] == 0x22 ||
          p_cmd_data[4] == 0x24 || p_cmd_data[4] == 0x27 ||
          p_cmd_data[4] == 0x28 || p_cmd_data[4] == 0x29 ||
@@ -748,7 +756,9 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
   } else if (p_cmd_data[0] == 0x21 && p_cmd_data[1] == 0x03) {
     NXPLOG_NCIHAL_D("> Polling Loop Started");
     icode_detected = 0;
-    icode_send_eof = 0;
+    if(nfcFL.chipType != sn100u){
+      icode_send_eof = 0;
+    }
   }
   // 22000100
   else if (p_cmd_data[0] == 0x22 && p_cmd_data[1] == 0x00 &&
@@ -904,12 +914,10 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_send_ext_cmd(uint16_t cmd_len, uint8_t* p_cmd) {
   NFCSTATUS status = NFCSTATUS_FAILED;
-  HAL_ENABLE_EXT();
   nxpncihal_ctrl.cmd_len = cmd_len;
   memcpy(nxpncihal_ctrl.p_cmd_data, p_cmd, cmd_len);
   status = phNxpNciHal_process_ext_cmd_rsp(nxpncihal_ctrl.cmd_len,
                                            nxpncihal_ctrl.p_cmd_data);
-  HAL_DISABLE_EXT();
 
   return status;
 }
@@ -1070,6 +1078,14 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
       len = fieldLen + 4;
       addr[0] = 0xA0;
       addr[1] = 0x0F;
+      break;
+    case EEPROM_AUTH_CMD_TIMEOUT:
+      mEEPROM_info->update_mode = BYTEWISE;
+      memIndex = 0x00;
+      fieldLen = 0x05;
+      len = fieldLen + 4;
+      addr[0] = 0xA0;
+      addr[1] = 0xF7;
       break;
     default:
       ALOGE("No valid request information found");
