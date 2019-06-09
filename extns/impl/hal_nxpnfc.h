@@ -107,7 +107,6 @@ typedef struct {
   uint8_t dualUiccEnable;
   uint8_t ceRouteStrictDisable;
   uint32_t osDownloadTimeoutValue;
-  uint8_t nxpDefaultSe;
   uint8_t defaultAidRoute;
   uint8_t defaultAidPwrState;
   uint8_t defaultRoutePwrState;

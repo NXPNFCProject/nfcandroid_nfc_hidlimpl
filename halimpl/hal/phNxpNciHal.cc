@@ -3166,9 +3166,6 @@ void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
   if (GetNxpNumValue(NAME_OS_DOWNLOAD_TIMEOUT_VALUE, &num, sizeof(num))) {
     pInpOutData->out.data.nxpConfigs.osDownloadTimeoutValue = num;
   }
-  if (GetNxpNumValue(NAME_NXP_DEFAULT_SE, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.nxpDefaultSe = num;
-  }
   if (GetNxpNumValue(NAME_DEFAULT_AID_ROUTE, &num, sizeof(num))) {
     pInpOutData->out.data.nxpConfigs.defaultAidRoute = num;
   }
