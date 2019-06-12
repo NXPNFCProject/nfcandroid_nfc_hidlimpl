@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2018 NXP Semiconductors
+ * Copyright (C) 2012-2019 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -419,7 +419,8 @@ void* tmp_thread(void* tmp) {
   switch (*((int*)tmp)) {
     case START_POLLING: {
       CONCURRENCY_LOCK();
-      data_len = phNxpNciHal_write_unlocked(cmd_poll_len, cmd_poll);
+      data_len =
+          phNxpNciHal_write_unlocked(cmd_poll_len, cmd_poll, ORIG_NXPHAL);
       CONCURRENCY_UNLOCK();
 
       if (data_len != cmd_poll_len) {
@@ -430,8 +431,9 @@ void* tmp_thread(void* tmp) {
 
     case RESUME_POLLING: {
       CONCURRENCY_LOCK();
-      data_len = phNxpNciHal_write_unlocked(sizeof(cmd_resume_rf_discovery),
-                                            cmd_resume_rf_discovery);
+      data_len =
+          phNxpNciHal_write_unlocked(sizeof(cmd_resume_rf_discovery),
+                                     cmd_resume_rf_discovery, ORIG_NXPHAL);
       CONCURRENCY_UNLOCK();
 
       if (data_len != sizeof(cmd_resume_rf_discovery)) {
@@ -443,7 +445,7 @@ void* tmp_thread(void* tmp) {
     case STOP_POLLING: {
       CONCURRENCY_LOCK();
       data_len = phNxpNciHal_write_unlocked(sizeof(cmd_stop_rf_discovery),
-                                            cmd_stop_rf_discovery);
+                                            cmd_stop_rf_discovery, ORIG_NXPHAL);
       CONCURRENCY_UNLOCK();
 
       if (data_len != sizeof(cmd_stop_rf_discovery)) {
@@ -454,8 +456,9 @@ void* tmp_thread(void* tmp) {
 
     case DISCOVER_SELECT: {
       CONCURRENCY_LOCK();
-      data_len = phNxpNciHal_write_unlocked(sizeof(cmd_select_rf_discovery),
-                                            cmd_select_rf_discovery);
+      data_len =
+          phNxpNciHal_write_unlocked(sizeof(cmd_select_rf_discovery),
+                                     cmd_select_rf_discovery, ORIG_NXPHAL);
       CONCURRENCY_UNLOCK();
 
       if (data_len != sizeof(cmd_resume_rf_discovery)) {

@@ -68,6 +68,8 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 #if (NXP_EXTNS == TRUE)
 /* GID: Group Identifier (byte 0) */
 #define NCI_GID_MASK                 0x0F
+#define ORIG_NXPHAL 0x01
+#define ORIG_LIBNFC 0x02
 #endif
 #define NXP_PROPCMD_GID              0x2F
 #define NXP_FLUSH_SRAM_AO_TO_FLASH   0x21
@@ -272,7 +274,8 @@ int phNxpNciHal_check_ncicmd_write_window(uint16_t cmd_len, uint8_t* p_cmd);
 void phNxpNciHal_request_control(void);
 void phNxpNciHal_release_control(void);
 NFCSTATUS phNxpNciHal_send_get_cfgs();
-int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t* p_data);
+int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t *p_data,
+                               int origin);
 NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info);
 NFCSTATUS phNxpNciHal_send_nfcee_pwr_cntl_cmd(uint8_t type);
 /*******************************************************************************
