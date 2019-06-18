@@ -167,7 +167,7 @@ int phTmlNfc_i2c_read(void* pDevHandle, uint8_t* pBuffer, int nNbBytesToRead) {
     return -1;
   } else {
     ret_Read = read((intptr_t)pDevHandle, pBuffer, totalBtyesToRead - numRead);
-    if (ret_Read > 0) {
+    if (ret_Read > 0 && !(pBuffer[0] == 0xFF && pBuffer[1] == 0xFF)) {
 #if(NXP_EXTNS == TRUE)
       phTmlNfc_sem_timed_wait();
 #endif
@@ -177,6 +177,7 @@ int phTmlNfc_i2c_read(void* pDevHandle, uint8_t* pBuffer, int nNbBytesToRead) {
       return -1;
     } else {
       NXPLOG_TML_E("_i2c_read() [hdr] errno : %x", errno);
+      NXPLOG_TML_E(" _i2c_read: pBuffer[0] = %x pBuffer[1]= %x", pBuffer[0], pBuffer[1]);
       return -1;
     }
 
