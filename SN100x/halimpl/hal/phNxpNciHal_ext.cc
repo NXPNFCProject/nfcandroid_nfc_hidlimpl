@@ -406,36 +406,6 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
     }
   }
 
-  if(nfcFL.chipType != sn100u) {
-  if (*p_len == 4 && p_ntf[0] == 0x61 && p_ntf[1] == 0x07 ) {
-    unsigned long rf_update_enable = 0;
-    if(GetNxpNumValue(NAME_RF_STATUS_UPDATE_ENABLE, &rf_update_enable, sizeof(unsigned long))) {
-      NXPLOG_NCIHAL_D(
-        "RF_STATUS_UPDATE_ENABLE : %lu",rf_update_enable);
-    }
-    if(rf_update_enable == 0x01) {
-      nfc_nci_IoctlInOutData_t inpOutData;
-      uint8_t rf_state_update[] = {0x00};
-      memset(&inpOutData, 0x00, sizeof(nfc_nci_IoctlInOutData_t));
-      inpOutData.inp.data.nciCmd.cmd_len = sizeof(rf_state_update);
-      rf_state_update[0]=p_ntf[3];
-      memcpy(inpOutData.inp.data.nciCmd.p_cmd, rf_state_update,sizeof(rf_state_update));
-      inpOutData.inp.data_source = 2;
-      phNxpNciHal_ioctl(HAL_NFC_IOCTL_RF_STATUS_UPDATE, &inpOutData);
-    }
-  }
-  }
-  /*
-  else if(p_ntf[0] == 0x61 && p_ntf[1] == 0x05 && p_ntf[4] == 0x01 && p_ntf[5]
-  == 0x00 && p_ntf[6] == 0x01)
-  {
-      NXPLOG_NCIHAL_D("Picopass type 3-B with undefined protocol is not
-  supported, disabling");
-      p_ntf[4] = 0xFF;
-      p_ntf[5] = 0xFF;
-      p_ntf[6] = 0xFF;
-  }*/
-
   return status;
 }
 
@@ -1193,64 +1163,6 @@ retryget:
     base_addr = NULL;
   }
   retry_cnt = 0;
-  return status;
-}
-
-/*******************************************************************************
- **
- ** Function:        phNxpNciHal_CheckFwRegFlashRequired()
- **
- ** Description:     Updates FW and Reg configurations if required
- **
- ** Returns:         status
- **
- ********************************************************************************/
-int phNxpNciHal_CheckFwRegFlashRequired(uint8_t* fw_update_req,
-                                        uint8_t* rf_update_req,
-                                        uint8_t skipEEPROMRead) {
-  NXPLOG_NCIHAL_D("phNxpNciHal_CheckFwRegFlashRequired() : enter");
-  UNUSED_PROP(rf_update_req);
-  int status = NFCSTATUS_OK;
-  long option;
-  if (fpRegRfFwDndl != NULL) {
-    status = fpRegRfFwDndl(fw_update_req, rf_update_req, skipEEPROMRead);
-  } else {
-    status = phDnldNfc_InitImgInfo();
-    NXPLOG_NCIHAL_D("FW version of the libsn100u.so binary = 0x%x", wFwVer);
-    NXPLOG_NCIHAL_D("FW version found on the device = 0x%x", wFwVerRsp);
-
-  if (!GetNxpNumValue(NAME_NXP_FLASH_CONFIG, &option, sizeof(unsigned long))) {
-    NXPLOG_NCIHAL_D("Flash option not found; giving default value");
-    option = 1;
-  }
-    switch (option) {
-      case FLASH_UPPER_VERSION:
-        wFwUpdateReq = (utf8_t)wFwVer > (utf8_t)wFwVerRsp ? true : false;
-        break;
-      case FLASH_DIFFERENT_VERSION:
-        wFwUpdateReq = ((wFwVerRsp & 0x0000FFFF) != wFwVer) ? true : false;
-        break;
-      case FLASH_ALWAYS:
-        wFwUpdateReq = true;
-        break;
-      default:
-        NXPLOG_NCIHAL_D("Invalid flash option selected");
-        status = NFCSTATUS_INVALID_PARAMETER;
-        break;
-    }
-  }
-  *fw_update_req = wFwUpdateReq;
-
-  if (false == wFwUpdateReq) {
-    NXPLOG_NCIHAL_D("FW update not required");
-    phDnldNfc_ReSetHwDevHandle();
-  } else {
-    property_set("nfc.fw.downloadmode_force", "1");
-  }
-
-  NXPLOG_NCIHAL_D("phNxpNciHal_CheckFwRegFlashRequired() : exit - status = %x "
-                   "wFwUpdateReq=%u, wRfUpdateReq=%u", status, *fw_update_req,
-                  *rf_update_req);
   return status;
 }
 

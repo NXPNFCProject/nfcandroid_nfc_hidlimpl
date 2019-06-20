@@ -48,6 +48,7 @@ cc_library_shared {
         "halimpl/utils/phNxpNciHal_utils.cc",
         "halimpl/utils/sparse_crc32.cc",
         "halimpl/eseclients_extns/src/*.cc",
+        "halimpl/hal/phNxpNciHal_IoctlOperations.cc",
     ],
 
     local_include_dirs: [
