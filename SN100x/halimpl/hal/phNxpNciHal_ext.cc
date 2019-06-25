@@ -608,7 +608,7 @@ static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
     }
   }
 
-  if (nxpncihal_ctrl.ext_cb_data.status != NFCSTATUS_SUCCESS && p_cmd[0] != 0x2F && p_cmd[1] != 0x1 &&  p_cmd[2] == 0x01) {
+  if (nxpncihal_ctrl.ext_cb_data.status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E(
         "Callback Status is failed!! Timer Expired!! Couldn't read it! 0x%x",
         nxpncihal_ctrl.ext_cb_data.status);
