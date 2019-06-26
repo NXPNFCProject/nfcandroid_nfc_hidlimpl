@@ -3172,7 +3172,7 @@ void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
   if (GetNxpNumValue(NAME_DEFAULT_AID_PWR_STATE, &num, sizeof(num))) {
     pInpOutData->out.data.nxpConfigs.defaultAidPwrState = num;
   }
-  if (GetNxpNumValue(NAME_DEFAULT_ROUTE_PWR_STATE, &num, sizeof(num))) {
+  if (GetNxpNumValue(NAME_DEFAULT_ISODEP_PWR_STATE, &num, sizeof(num))) {
     pInpOutData->out.data.nxpConfigs.defaultRoutePwrState = num;
   }
   if (GetNxpNumValue(NAME_DEFAULT_OFFHOST_PWR_STATE, &num, sizeof(num))) {
@@ -3200,7 +3200,7 @@ void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
   if (GetNxpNumValue(NAME_NXP_AGC_DEBUG_ENABLE, &num, sizeof(num))) {
     pInpOutData->out.data.nxpConfigs.agcDebugEnable = num;
   }
-  if (GetNxpNumValue(NAME_DEFAULT_FELICA_CLT_PWR_STATE, &num, sizeof(num))) {
+  if (GetNxpNumValue(NAME_DEFAULT_NFCF_PWR_STATE, &num, sizeof(num))) {
     pInpOutData->out.data.nxpConfigs.felicaCltPowerState = num;
   } else {
     pInpOutData->out.data.nxpConfigs.felicaCltPowerState = 0x3F;
