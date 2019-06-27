@@ -2457,6 +2457,9 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
                                                nxpncihal_ctrl.p_rx_data);
     }
   }
+  if (isNxpRFConfigModified() || isNxpConfigModified()) {
+    updateNxpConfigTimestamp();
+  }
   if (config_success == false)
     return NFCSTATUS_FAILED;
   else
