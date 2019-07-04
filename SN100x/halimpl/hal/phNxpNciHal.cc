@@ -148,6 +148,7 @@ static void phNxpNciHal_gpio_restore(phNxpNciHal_GpioInfoState state);
 static void phNxpNciHal_initialize_debug_enabled_flag();
 static NFCSTATUS phNxpNciHalRFConfigCmdRecSequence();
 static NFCSTATUS phNxpNciHal_CheckRFCmdRespStatus();
+static void phNxpNciHal_UpdateFwStatus(NfcFwUpdateStatus fwStatus);
 
 /******************************************************************************
  * Function         phNxpNciHal_initialize_debug_enabled_flag
@@ -293,6 +294,16 @@ static void* phNxpNciHal_client_thread(void* arg) {
         REENTRANCE_UNLOCK();
         break;
       }
+      case HAL_NFC_FW_UPDATE_STATUS_EVT: {
+        REENTRANCE_LOCK();
+        if (nxpncihal_ctrl.p_nfc_stack_cback != NULL) {
+          /* Send the event */
+          (*nxpncihal_ctrl.p_nfc_stack_cback)(msg.eMsgType,
+                                              *((uint8_t *)msg.pMsgData));
+        }
+        REENTRANCE_UNLOCK();
+        break;
+      }
     }
   }
 
@@ -338,6 +349,7 @@ NFCSTATUS phNxpNciHal_fw_download(void) {
   /*NCI_RESET_CMD*/
   //static uint8_t cmd_reset_nci[] = {0x20,0x00,0x01,0x00};
   NFCSTATUS wConfigStatus = NFCSTATUS_FAILED;
+  phNxpNciHal_UpdateFwStatus(HAL_NFC_FW_UPDATE_START);
   /*phNxpNciHal_get_clk_freq();*/
   phNxpNciHal_nfccClockCfgRead();
   status = phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadMode);
@@ -384,7 +396,11 @@ NFCSTATUS phNxpNciHal_fw_download(void) {
     nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
     status = NFCSTATUS_FAILED;
   }
-
+  if (NFCSTATUS_SUCCESS == status) {
+    phNxpNciHal_UpdateFwStatus(HAL_NFC_FW_UPDATE_SCUCCESS);
+  } else {
+    phNxpNciHal_UpdateFwStatus(HAL_NFC_FW_UPDATE_FAILED);
+  }
   return status;
 }
 
@@ -551,7 +567,6 @@ int phNxpNciHal_MinOpen (){
   }
 
   CONCURRENCY_LOCK();
-  memset(&nxpncihal_ctrl, 0x00, sizeof(nxpncihal_ctrl));
   memset(&tOsalConfig, 0x00, sizeof(tOsalConfig));
   memset(&tTmlConfig, 0x00, sizeof(tTmlConfig));
   memset(&nxpprofile_ctrl, 0, sizeof(phNxpNciProfile_Control_t));
@@ -829,14 +844,15 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
     NXPLOG_NCIHAL_E("phNxpNciHal_open already open");
     return NFCSTATUS_SUCCESS;
   }else if(nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE){
+    memset(&nxpncihal_ctrl, 0x00, sizeof(nxpncihal_ctrl));
+    nxpncihal_ctrl.p_nfc_stack_cback = p_cback;
+    nxpncihal_ctrl.p_nfc_stack_data_cback = p_data_cback;
     status = phNxpNciHal_MinOpen();
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("phNxpNciHal_MinOpen failed");
       goto clean_and_return;
     }
   }/*else its already in MIN_OPEN state. continue with rest of functionality*/
-  nxpncihal_ctrl.p_nfc_stack_cback = p_cback;
-  nxpncihal_ctrl.p_nfc_stack_data_cback = p_data_cback;
 
   /* Call open complete */
   phNxpNciHal_open_complete(wConfigStatus);
@@ -3647,6 +3663,31 @@ void phNxpNciHal_configFeatureList(uint8_t* init_rsp, uint16_t rsp_len) {
     CONFIGURE_FEATURELIST(chipType);
     NXPLOG_NCIHAL_D("phNxpNciHal_configFeatureList ()chipType = %d", chipType);
         NXPLOG_NCIHAL_D("phNxpNciHal_configFeatureList ()FW = %d", nfcFL._FW_MOBILE_MAJOR_NUMBER);
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_UpdateFwStatus
+**
+** Description      It shall be called to update the FW download status to the
+**                  libnfc-nci.
+**
+** Parameters       fwStatus: FW update status
+**
+** Returns          void
+*******************************************************************************/
+static void phNxpNciHal_UpdateFwStatus(NfcFwUpdateStatus fwStatus) {
+  static phLibNfc_Message_t msg;
+  static uint8_t status;
+  NXPLOG_NCIHAL_D("phNxpNciHal_UpdateFwStatus Enter");
+
+  status = (uint8_t)fwStatus;
+  msg.eMsgType = HAL_NFC_FW_UPDATE_STATUS_EVT;
+  msg.pMsgData = &status;
+  msg.Size = sizeof(status);
+  phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId,
+                        (phLibNfc_Message_t *)&msg);
+  return;
 }
 
 #if(NXP_EXTNS == TRUE)
