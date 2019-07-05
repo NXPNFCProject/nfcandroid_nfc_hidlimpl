@@ -324,7 +324,6 @@ static void* phNxpNciHal_client_thread(void* arg) {
 
   NXPLOG_NCIHAL_D("NxpNciHal thread stopped");
 
-  pthread_exit(NULL);
   return NULL;
 }
 
@@ -2124,14 +2123,8 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
         if (num <= 60) {
           if (0 < num) {
             uint16_t timeout = num * 1000;
-            unsigned int timeoutHx = 0x0000;
-
-            uint8_t tmpbuffer[4];
-            snprintf((char *)tmpbuffer, 4, "%04x", timeout);
-            sscanf((const char*) tmpbuffer, "%x", (unsigned int*) &timeoutHx);
-
-            swp_switch_timeout_cmd[7] = (timeoutHx & 0xFF);
-            swp_switch_timeout_cmd[8] = ((timeoutHx & 0xFF00) >> 8);
+            swp_switch_timeout_cmd[7] = (timeout & 0xFF);
+            swp_switch_timeout_cmd[8] = ((timeout & 0xFF00) >> 8);
           }
 
           status = phNxpNciHal_send_ext_cmd(sizeof(swp_switch_timeout_cmd),
@@ -4055,7 +4048,8 @@ static void phNxpNciHal_txNfccClockSetCmd(void) {
 if(nfcFL.chipType == pn553) {
     static uint8_t set_clock_cmd[] = {0x20, 0x02, 0x05, 0x01, 0xA0, 0x03, 0x01, 0x08};
     uint8_t setClkCmdLen = sizeof(set_clock_cmd);
-    unsigned long  clockSource, frequency;
+    unsigned long  clockSource = 0;
+    unsigned long frequency = 0;
     uint32_t pllSetRetryCount = 3, dpllSetRetryCount = 3,setClockCmdWriteRetryCnt = 0;
     uint8_t *pCmd4PllSetting = NULL;
     uint8_t *pCmd4DpllSetting = NULL;

@@ -847,7 +847,6 @@ static void* phNxpNciHal_test_rx_thread(void* arg) {
 
   NXPLOG_NCIHAL_D("Self test thread stopped");
 
-  pthread_exit(NULL);
   return NULL;
 }
 

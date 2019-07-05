@@ -656,16 +656,10 @@ NFCSTATUS phTmlNfc_Shutdown(void) {
   if (NULL != gpphTmlNfc_Context) {
     /* Reset thread variable to terminate the thread */
     gpphTmlNfc_Context->bThreadDone = 0;
-    usleep(1000);
     /* Clear All the resources allocated during initialization */
     sem_post(&gpphTmlNfc_Context->rxSemaphore);
-    usleep(1000);
     sem_post(&gpphTmlNfc_Context->txSemaphore);
-    usleep(1000);
     sem_post(&gpphTmlNfc_Context->postMsgSemaphore);
-    usleep(1000);
-    sem_post(&gpphTmlNfc_Context->postMsgSemaphore);
-    usleep(1000);
     pthread_mutex_destroy(&gpphTmlNfc_Context->readInfoUpdateMutex);
     if (0 != pthread_join(gpphTmlNfc_Context->readerThread, (void**)NULL)) {
       NXPLOG_TML_E("Fail to kill reader thread!");
