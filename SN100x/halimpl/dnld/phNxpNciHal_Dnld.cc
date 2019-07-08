@@ -1819,11 +1819,10 @@ static NFCSTATUS phLibNfc_VerifySN100U_CrcStatus(uint8_t* bCrcStatus) {
 
     uint8_t CODEINFO_LEN = 4;
     uint8_t DATAINFO_LEN = 28;
-    uint8_t DATAINFO_START_POS  = 1;
-    uint8_t CODEINFO_START_POS = DATAINFO_LEN + 1;
-    uint8_t bStartPos = DATAINFO_START_POS;
-    uint32_t bShiftVal = (1 << 31);
     uint8_t* crc_info_buf;
+    /*acceptable CRC values defined in little indian format
+     * Actual CRC values are 0F803FFF         */
+    uint32_t acceptable_crc_values = 0xFF3F800F;
     NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
     phDnldChkIntegrityRsp_Buff_t chkIntgRspBuf;
 
@@ -1839,120 +1838,14 @@ static NFCSTATUS phLibNfc_VerifySN100U_CrcStatus(uint8_t* bCrcStatus) {
     crc_info_buf = bCrcStatus + 3;
     STREAM_TO_UINT32(chkIntgRspBuf.crc_status ,crc_info_buf);
 
-    NXPLOG_FWDNLD_E("crc status code area len %d",chkIntgRspBuf.code_len);
-    NXPLOG_FWDNLD_E("crc status code area len %d",chkIntgRspBuf.data_len);
-    NXPLOG_FWDNLD_E("crc status code area len %d",chkIntgRspBuf.crc_status);
-  while (bStartPos <= chkIntgRspBuf.data_len) {
-    if (!(chkIntgRspBuf.crc_status & bShiftVal)) {
-      switch (bStartPos) {
-        case 1: {
-          NXPLOG_FWDNLD_E("Anti-tearing protected area   NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
-          break;
-        }
-        case 2: {
-          NXPLOG_FWDNLD_E("Anti-tearing RSA-Key Area   NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
-          break;
-        }
-        case 3: {
-          NXPLOG_FWDNLD_E("Protected Area NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
-          break;
-        }
-        case 4: {
-          NXPLOG_FWDNLD_E("RSA Key Area NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
-          break;
-        }
-        case 5: {
-          NXPLOG_FWDNLD_E("ROM Area NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
-          break;
-        }
-        case 6: {
-          NXPLOG_FWDNLD_E("Mirrored User Area NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
-          break;
-        }
-        case 7: {
-          NXPLOG_FWDNLD_E("Trim Area NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
-          break;
-        }
-        case 8: {
-          NXPLOG_FWDNLD_E("Customer Area NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
-          break;
-        }
-        case 9: {
-          NXPLOG_FWDNLD_E("NDEF Area NOT OK!!");
-          break;
-        }
-        case 10: {
-          NXPLOG_FWDNLD_E("User Area NOT OK!!");
-          break;
-        }
-        case 11: {
-          NXPLOG_FWDNLD_E("RF User Area NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
-          break;
-        }
-        case 12: {
-          NXPLOG_FWDNLD_E("End Marker  NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
-          break;
-        }
-        default: {
-            NXPLOG_FWDNLD_E("Data Area CRC Check   NOT OK!!");
-            wStatus = NFCSTATUS_FAILED;
-            break;
-        }
-      }
+    NXPLOG_FWDNLD_E("crc status code area len 0x%x", chkIntgRspBuf.code_len);
+    NXPLOG_FWDNLD_E("crc status code data_len 0x%x", chkIntgRspBuf.data_len);
+    NXPLOG_FWDNLD_E("crc status code area  0x%2x", chkIntgRspBuf.crc_status);
+
+    if ((chkIntgRspBuf.crc_status & acceptable_crc_values) !=
+        acceptable_crc_values) {
+      return NFCSTATUS_FAILED;
     }
 
-    bShiftVal >>= 1;
-    ++bStartPos;
-  }
-
-  /*Code Section integrity*/
-  bStartPos = CODEINFO_START_POS;
-  bShiftVal = (1 << (CODEINFO_LEN - 1));
-
-  while (bStartPos < (CODEINFO_START_POS + chkIntgRspBuf.code_len)) {
-
-    if (!(chkIntgRspBuf.crc_status & bShiftVal)) {
-      switch (bStartPos) {
-        case 29: {
-          NXPLOG_FWDNLD_E("Patch Code Area NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
-          break;
-        }
-        case 30: {
-          NXPLOG_FWDNLD_E("Code Area NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
-          break;
-        }
-        case 31: {
-          NXPLOG_FWDNLD_E("Patch Table Area  NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
-          break;
-        }
-        case 32: {
-          NXPLOG_FWDNLD_E("Function Table NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
-          break;
-        }
-        default: {
-          NXPLOG_FWDNLD_E("Data Area CRC Check   NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
-          break;
-        }
-      }
-    }
-
-    bShiftVal >>= 1;
-    ++bStartPos;
-  }
   return wStatus;
 }
