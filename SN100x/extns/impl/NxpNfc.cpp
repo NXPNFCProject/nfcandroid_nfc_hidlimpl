@@ -46,7 +46,7 @@ Return<void> NxpNfc::ioctl(uint64_t ioctlType, const hidl_vec<uint8_t>& inOutDat
     if (ioctlType == HAL_NFC_IOCTL_SET_TRANSIT_CONFIG) {
       /*As transit configurations are appended at the end of
       nfc_nci_IoctlInOutData_t, Assign appropriate pointer to TransitConfig*/
-      if (inpOutData.inp.data.transitConfig.len == 0) {
+      if (inpOutData.inp.data.transitConfig.len <= 1) {
         inpOutData.inp.data.transitConfig.val = NULL;
       } else {
         inpOutData.inp.data.transitConfig.val =
