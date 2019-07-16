@@ -1821,8 +1821,8 @@ static NFCSTATUS phLibNfc_VerifySN100U_CrcStatus(uint8_t* bCrcStatus) {
     uint8_t DATAINFO_LEN = 28;
     uint8_t* crc_info_buf;
     /*acceptable CRC values defined in little indian format
-     * Actual CRC values are 0F803FFF         */
-    uint32_t acceptable_crc_values = 0xFF3F800F;
+     * Actual CRC values are 0FC03FFF         */
+    uint32_t acceptable_crc_values = 0xFF3FC00F;
     NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
     phDnldChkIntegrityRsp_Buff_t chkIntgRspBuf;
 
