@@ -520,7 +520,7 @@ static tNFC_chipType phNxpNciHal_getChipType() {
 static int phNxpNciHal_NciTransceive(nfc_nci_IoctlInOutData_t *pInpOutData) {
   int ret = -1;
 
-  if (pInpOutData == NULL && pInpOutData->inp.data.nciCmd.cmd_len == 0) {
+  if (pInpOutData == NULL || pInpOutData->inp.data.nciCmd.cmd_len == 0) {
     NXPLOG_NCIHAL_E("%s : received invalid arguments", __func__);
     return ret;
   }
