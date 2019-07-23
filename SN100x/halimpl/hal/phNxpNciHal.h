@@ -187,6 +187,9 @@ typedef int (*fpRegRfFwDndl_t)(uint8_t* fw_update_req,
                    uint8_t skipEEPROMRead);
 void phNxpNciHal_initializeRegRfFwDnld();
 void phNxpNciHal_deinitializeRegRfFwDnld();
+#if(NXP_EXTNS == true)
+void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData);
+#endif
 /*set config management*/
 
 #define TOTAL_DURATION 0x00
