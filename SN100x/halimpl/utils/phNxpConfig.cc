@@ -87,6 +87,8 @@ char Fw_Lib_Path[256] =
 const char transit_config_path[] = "/data/vendor/nfc/libnfc-nxpTransit.conf";
 void readOptionalConfig(const char* optional);
 
+namespace {
+
 size_t readConfigFile(const char* fileName, uint8_t** p_data) {
   FILE* fd = fopen(fileName, "rb");
   if (fd == nullptr) return 0;
@@ -116,6 +118,7 @@ size_t readConfigFile(const char* fileName, uint8_t** p_data) {
   return 0;
 }
 
+}  // namespace
 
 using namespace ::std;
 
