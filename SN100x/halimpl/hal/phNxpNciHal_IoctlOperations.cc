@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <map>
 #include <android-base/file.h>
 #include <cutils/properties.h>
 #include "phNxpNciHal_ext.h"
@@ -44,6 +45,18 @@ extern nfc_stack_callback_t *p_nfc_stack_cback_backup;
 #ifndef FW_DWNLD_FLAG
 extern uint8_t fw_dwnld_flag;
 #endif
+
+extern size_t readConfigFile(const char* fileName, uint8_t** p_data);
+
+typedef std::map<std::string, std::string> systemProperty;
+systemProperty gsystemProperty = {
+        {"nfc.fw.rfreg_ver",          "0"},
+        {"nfc.fw.rfreg_display_ver",  "0"},
+        {"nfc.fw.dfl_areacode",       "0"},
+        {"nfc.fw.downloadmode_force", "0"},
+        {"nfc.nxp.fwdnldstatus",      "0"},
+};
+
 
 /****************************************************************
  * Local Functions
@@ -181,16 +194,12 @@ int phNxpNciHal_ioctlIf(long arg, void *p_data) {
     break;
   }
   case HAL_NFC_IOCTL_SET_TRANSIT_CONFIG:
-    if (pInpOutData == NULL) {
-      NXPLOG_NCIHAL_E("%s : received invalid param", __func__);
-    } else {
+    if (pInpOutData != NULL) {
       phNxpNciHal_setNxpTransitConfig(pInpOutData->inp.data.transitConfig.val);
       ret = 0;
+    } else {
+      NXPLOG_NCIHAL_E("%s : received invalid param", __func__);
     }
-    break;
-  case HAL_NFC_IOCTL_GET_NXP_CONFIG:
-    phNxpNciHal_getNxpConfig(pInpOutData);
-    ret = 0;
     break;
   default:
     NXPLOG_NCIHAL_E("%s : Wrong arg = %ld", __func__, arg);
@@ -200,15 +209,96 @@ int phNxpNciHal_ioctlIf(long arg, void *p_data) {
   return ret;
 }
 
-void phNxpNciHal_loadPersistLog(uint8_t index) { (void)index; }
 
-void phNxpNciHal_savePersistLog(uint8_t index) { (void)index; }
+/*******************************************************************************
+ **
+ ** Function         phNxpNciHal_savePersistLog
+ **
+ ** Description      Save persist log with “reason” at available index.
+ **
+ ** Parameters       uint8_t reason
+ **
+ ** Returns          returns the  index of saved reason/Log.
+ *******************************************************************************/
+uint8_t phNxpNciHal_savePersistLog(uint8_t reason) {
+  /* This is dummy API */
+  (void) reason;
+  uint8_t index = 1;
+  NXPLOG_NCIHAL_D(" %s returning index %d", __func__, index);
+  return index;
 
-void phNxpNciHal_getSystemProperty(string key) { (void)key; }
+}
 
-void phNxpNciHal_setSystemProperty(string key, string value) {
-  (void)key;
-  (void)value;
+/*******************************************************************************
+ **
+ ** Function         phNxpNciHal_loadPersistLog
+ **
+ ** Description      If given index is valid, return a log at the given index.
+ **
+ ** Parameters       uint8_t index
+ **
+ ** Returns          If index found, return a log as string else
+ **                  return a "" string
+ *******************************************************************************/
+string phNxpNciHal_loadPersistLog(uint8_t index)
+{
+  /* This is dummy API */
+  string reason;
+  switch(index)
+  {
+  case 1:
+    NXPLOG_NCIHAL_D("index found");
+    reason = "Reason";
+    break;
+  default:
+    NXPLOG_NCIHAL_E("index not found");
+  }
+  return reason;
+}
+/*******************************************************************************
+ **
+ ** Function         phNxpNciHal_getSystemProperty
+ **
+ ** Description      It shall be used to get property value of the given Key
+ **
+ ** Parameters       string key
+ **
+ ** Returns          If Key is found, returns the respective property values
+ **                  else returns the null/empty string
+ *******************************************************************************/
+string phNxpNciHal_getSystemProperty(string key)
+{
+  string propValue;
+  std::map<std::string, std::string>::iterator prop;
+
+  prop = gsystemProperty.find(key);
+  if(prop != gsystemProperty.end()){
+    propValue = prop->second;
+  }else{
+    if(key == "libnfc-nxp.conf")
+      return phNxpNciHal_getNxpConfigIf();
+   /* else Pass a null string */
+  }
+
+  return propValue;
+}
+/*******************************************************************************
+ **
+ ** Function         phNxpNciHal_setSystemProperty
+ **
+ ** Description      It shall be used to save/change value to system property
+ **                  based on provided key.
+ **
+ ** Parameters       string key, string value
+ **
+ ** Returns          true if success, false if fail
+ *******************************************************************************/
+bool phNxpNciHal_setSystemProperty(string key, string value) {
+  NXPLOG_NCIHAL_D("%s : Enter Key = %s, value = %s", __func__,
+          key.c_str(), value.c_str());
+
+  gsystemProperty[key] = value;
+  return true;
 }
 
 /*******************************************************************************
@@ -222,127 +312,17 @@ void phNxpNciHal_setSystemProperty(string key, string value) {
 **
 ** Returns          void
 *******************************************************************************/
-void phNxpNciHal_getNxpConfigIf(nxp_nfc_config_t *configs) {
-  unsigned long num = 0;
-  char val[TERMINAL_LEN] = {0};
-  uint8_t *buffer = NULL;
-  long bufflen = 260;
-  long retlen = 0;
-
-  buffer = (uint8_t *)malloc(bufflen * sizeof(uint8_t));
-
-  NXPLOG_NCIHAL_D("phNxpNciHal_getNxpConfig: Enter");
-  if (GetNxpNumValue(NAME_NXP_SE_COLD_TEMP_ERROR_DELAY, &num, sizeof(num))) {
-    configs->eSeLowTempErrorDelay = num;
+string phNxpNciHal_getNxpConfigIf() {
+  std::string config;
+  uint8_t* p_config = nullptr;
+  NXPLOG_NCIHAL_D("phNxpNciHal_getNxpConfigIf: Enter");
+  size_t config_size = readConfigFile("/vendor/etc/libnfc-nxp.conf", &p_config);
+  if (config_size) {
+    config.assign((char *)p_config, config_size);
+    free(p_config);
   }
-  if (GetNxpNumValue(NAME_NXP_SWP_RD_TAG_OP_TIMEOUT, &num, sizeof(num))) {
-    configs->tagOpTimeout = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_DUAL_UICC_ENABLE, &num, sizeof(num))) {
-    configs->dualUiccEnable = num;
-  }
-  if (GetNxpNumValue(NAME_DEFAULT_AID_ROUTE, &num, sizeof(num))) {
-    configs->defaultAidRoute = num;
-  }
-  if (GetNxpNumValue(NAME_DEFAULT_MIFARE_CLT_ROUTE, &num, sizeof(num))) {
-    configs->defaultMifareCltRoute = num;
-  }
-  if (GetNxpNumValue(NAME_DEFAULT_FELICA_CLT_ROUTE, &num, sizeof(num))) {
-    configs->defautlFelicaCltRoute = num;
-  }
-  if (GetNxpNumValue(NAME_DEFAULT_AID_PWR_STATE, &num, sizeof(num))) {
-    configs->defaultAidPwrState = phNxpNciHal_updateAutonomousPwrState(num);
-  }
-  if (GetNxpNumValue(NAME_DEFAULT_DESFIRE_PWR_STATE, &num, sizeof(num))) {
-    configs->defaultDesfirePwrState = phNxpNciHal_updateAutonomousPwrState(num);
-  }
-  if (GetNxpNumValue(NAME_DEFAULT_MIFARE_CLT_PWR_STATE, &num, sizeof(num))) {
-    configs->defaultMifareCltPwrState =
-        phNxpNciHal_updateAutonomousPwrState(num);
-  }
-  if (GetNxpNumValue(NAME_HOST_LISTEN_TECH_MASK, &num, sizeof(num))) {
-    configs->hostListenTechMask = num;
-  }
-  if (GetNxpNumValue(NAME_FORWARD_FUNCTIONALITY_ENABLE, &num, sizeof(num))) {
-    configs->fwdFunctionalityEnable = num;
-  }
-  if (GetNxpNumValue(NAME_DEFUALT_GSMA_PWR_STATE, &num, sizeof(num))) {
-    configs->gsmaPwrState = phNxpNciHal_updateAutonomousPwrState(num);
-  }
-  if (GetNxpNumValue(NAME_NXP_DEFAULT_UICC2_SELECT, &num, sizeof(num))) {
-    configs->defaultUicc2Select = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_SMB_TRANSCEIVE_TIMEOUT, &num, sizeof(num))) {
-    configs->smbTransceiveTimeout = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_SMB_ERROR_RETRY, &num, sizeof(num))) {
-    configs->smbErrorRetry = num;
-  }
-  if (GetNxpNumValue(NAME_DEFAULT_FELICA_CLT_PWR_STATE, &num, sizeof(num))) {
-    configs->felicaCltPowerState = phNxpNciHal_updateAutonomousPwrState(num);
-  }
-  if (GetNxpNumValue(NAME_CHECK_DEFAULT_PROTO_SE_ID, &num, sizeof(num))) {
-    configs->checkDefaultProtoSeId = num;
-  }
-  if (GetNxpNumValue(NAME_NXPLOG_NCIHAL_LOGLEVEL, &num, sizeof(num))) {
-    configs->nxpLogHalLoglevel = num;
-  }
-  if (GetNxpNumValue(NAME_NXPLOG_EXTNS_LOGLEVEL, &num, sizeof(num))) {
-    configs->nxpLogExtnsLogLevel = num;
-  }
-  if (GetNxpNumValue(NAME_NXPLOG_TML_LOGLEVEL, &num, sizeof(num))) {
-    configs->nxpLogTmlLogLevel = num;
-  }
-  if (GetNxpNumValue(NAME_NXPLOG_FWDNLD_LOGLEVEL, &num, sizeof(num))) {
-    configs->nxpLogFwDnldLogLevel = num;
-  }
-  if (GetNxpNumValue(NAME_NXPLOG_NCIX_LOGLEVEL, &num, sizeof(num))) {
-    configs->nxpLogNcixLogLevel = num;
-  }
-  if (GetNxpNumValue(NAME_NXPLOG_NCIR_LOGLEVEL, &num, sizeof(num))) {
-    configs->nxpLogNcirLogLevel = num;
-  }
-  if (GetNxpStrValue(NAME_NXP_NFC_SE_TERMINAL_NUM, val, TERMINAL_LEN)) {
-    NXPLOG_NCIHAL_D("NfcSeTerminalId found val = %s ", val);
-    configs->seApduGateEnabled = 1;
-  } else {
-    configs->seApduGateEnabled = 0;
-  }
-  if (GetNxpNumValue(NAME_NXP_POLL_FOR_EFD_TIMEDELAY, &num, sizeof(num))) {
-    configs->pollEfdDelay = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_NFCC_MERGE_SAK_ENABLE, &num, sizeof(num))) {
-    configs->mergeSakEnable = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_STAG_TIMEOUT_CFG, &num, sizeof(num))) {
-    configs->stagTimeoutCfg = num;
-  }
-  if (buffer) {
-    if (GetNxpStrValue(NAME_RF_STORAGE, (char *)buffer, bufflen)) {
-      retlen = strlen((char *)buffer) + 1;
-      memcpy(configs->rfStorage.path, (char *)buffer, retlen);
-      configs->rfStorage.len = retlen;
-    }
-    if (GetNxpStrValue(NAME_FW_STORAGE, (char *)buffer, bufflen)) {
-      retlen = strlen((char *)buffer) + 1;
-      memcpy(configs->fwStorage.path, (char *)buffer, retlen);
-      configs->fwStorage.len = retlen;
-    }
-    if (GetNxpByteArrayValue(NAME_NXP_CORE_CONF, (char *)buffer, bufflen,
-                             &retlen)) {
-      memcpy(configs->coreConf.cmd, (char *)buffer, retlen);
-      configs->coreConf.len = retlen;
-    }
-    if (GetNxpByteArrayValue(NAME_NXP_RF_FILE_VERSION_INFO, (char *)buffer,
-                             bufflen, &retlen)) {
-      memcpy(configs->rfFileVersInfo.ver, (char *)buffer, retlen);
-      configs->rfFileVersInfo.len = retlen;
-    }
-    free(buffer);
-    buffer = NULL;
-  }
-  NXPLOG_NCIHAL_D("phNxpNciHal_getNxpConfig: Exit");
-  return;
+  NXPLOG_NCIHAL_D("phNxpNciHal_getNxpConfigIf: Exit");
+  return config;
 }
 
 /*******************************************************************************

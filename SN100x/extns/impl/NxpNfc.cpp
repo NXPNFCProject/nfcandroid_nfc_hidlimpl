@@ -20,6 +20,7 @@
 
 #include "NxpNfc.h"
 #include "phNxpNciHal_Adaptation.h"
+#include "phNxpNciHal_IoctlOperations.h"
 #include "hal_nxpnfc.h"
 #include "eSEClientIntf.h"
 #include "phNxpNciHal.h"
@@ -84,6 +85,18 @@ Return<void> NxpNfc::ioctl(uint64_t ioctlType, const hidl_vec<uint8_t>& inOutDat
     _hidl_cb(outputData);
     return Void();
 }
+
+  Return<void> NxpNfc::getSystemProperty(const ::android::hardware::hidl_string& key,
+          getSystemProperty_cb _hidl_cb){
+    string val = phNxpNciHal_getSystemProperty(key);
+    _hidl_cb(val);
+    return Void();
+  }
+
+  Return<bool> NxpNfc::setSystemProperty(const ::android::hardware::hidl_string& key,
+          const ::android::hardware::hidl_string& value){
+    return phNxpNciHal_setSystemProperty(key, value);
+  }
 
 }  // namespace implementation
 }  // namespace V1_0
