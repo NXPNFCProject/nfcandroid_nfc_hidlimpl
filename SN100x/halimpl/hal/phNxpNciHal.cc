@@ -3835,4 +3835,19 @@ void phNxpNciHal_deinitializeRegRfFwDnld() {
   }
 }
 
+/******************************************************************************
+ * Function         phNxpNciHal_getNxpConfig
+ *
+ * Description      This function can be used by HAL to inform
+ *                 to update vendor configuration parametres
+ *
+ * Returns          void.
+ *
+ ******************************************************************************/
+void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
+
+  memset(&pInpOutData->out.data.nxpConfigs, 0x00, sizeof(pInpOutData->out.data.nxpConfigs));
+  phNxpNciHal_getNxpConfigIf(&pInpOutData->out.data.nxpConfigs);
+  return;
+}
 #endif
