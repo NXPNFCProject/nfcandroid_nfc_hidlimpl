@@ -2032,7 +2032,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     }
 
   if ((true == fw_download_success) || (true == setConfigAlways)
-      || isNxpConfigModified()) {
+      || isNxpConfigModified() || isNxpRFConfigModified()) {
     if (nfcFL.eseFL._ESE_ETSI12_PROP_INIT) {
       uint8_t swp_info_buff[2];
       uint8_t swp_intf_status = 0x00;
