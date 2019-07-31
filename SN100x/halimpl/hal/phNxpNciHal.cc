@@ -1654,6 +1654,24 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       retry_core_init_cnt++;
       goto retry_core_init;
     }
+
+    config_access = true;
+    retlen = 0;
+    NXPLOG_NCIHAL_D("Performing ndef nfcee config settings");
+    uint8_t cmd_t4t_nfcee_cfg;
+
+    if (!GetNxpNumValue(NAME_NXP_T4T_NFCEE_ENABLE, (void*)&retlen,
+                        sizeof(retlen))) {
+      retlen = 0x81;
+      NXPLOG_NCIHAL_D(
+          "T4T_NFCEE_ENABLE not found. Taking default value : 0x%02lx", retlen);
+    }
+    cmd_t4t_nfcee_cfg = (uint8_t)retlen;
+    mEEPROM_info.buffer = &cmd_t4t_nfcee_cfg;
+    mEEPROM_info.bufflen = sizeof(cmd_t4t_nfcee_cfg);
+    mEEPROM_info.request_type = EEPROM_T4T_NFCEE_ENABLE;
+    mEEPROM_info.request_mode = SET_EEPROM_DATA;
+    request_EEPROM(&mEEPROM_info);
   }
   if ((true == fw_dwnld_flag) || (true == setConfigAlways) ||
       isNxpRFConfigModified() || (wRfUpdateReq == true)) {

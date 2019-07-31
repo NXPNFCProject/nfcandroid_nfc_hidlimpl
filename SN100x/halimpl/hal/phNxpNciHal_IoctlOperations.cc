@@ -317,6 +317,9 @@ void phNxpNciHal_getNxpConfigIf(nxp_nfc_config_t *configs) {
   if (GetNxpNumValue(NAME_NXP_STAG_TIMEOUT_CFG, &num, sizeof(num))) {
     configs->stagTimeoutCfg = num;
   }
+    if (GetNxpNumValue(NAME_DEFAULT_T4TNFCEE_AID_POWER_STATE, &num, sizeof(num))) {
+    configs->t4tNfceePwrState = num;
+  }
   if (buffer) {
     if (GetNxpStrValue(NAME_RF_STORAGE, (char *)buffer, bufflen)) {
       retlen = strlen((char *)buffer) + 1;
