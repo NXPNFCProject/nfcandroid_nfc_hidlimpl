@@ -320,6 +320,11 @@ void phNxpNciHal_getNxpConfigIf(nxp_nfc_config_t *configs) {
     if (GetNxpNumValue(NAME_DEFAULT_T4TNFCEE_AID_POWER_STATE, &num, sizeof(num))) {
     configs->t4tNfceePwrState = num;
   }
+  if (GetNxpNumValue(NAME_NFA_CONFIG_FORMAT, &num, sizeof(num))) {
+    configs->scrCfgFormat = num;
+  } else {
+    configs->scrCfgFormat = 0x00;
+  }
   if (buffer) {
     if (GetNxpStrValue(NAME_RF_STORAGE, (char *)buffer, bufflen)) {
       retlen = strlen((char *)buffer) + 1;
@@ -340,6 +345,13 @@ void phNxpNciHal_getNxpConfigIf(nxp_nfc_config_t *configs) {
                              bufflen, &retlen)) {
       memcpy(configs->rfFileVersInfo.ver, (char *)buffer, retlen);
       configs->rfFileVersInfo.len = retlen;
+    }
+    if (GetNxpByteArrayValue(NAME_NXP_PROP_RESET_EMVCO_CMD, (char *)buffer, bufflen,
+                             &retlen)) {
+      memcpy(configs->scrResetEmvco.cmd, (char *)buffer, retlen);
+      configs->scrResetEmvco.len = retlen;
+    } else {
+      configs->scrResetEmvco.len = 0x00;
     }
     free(buffer);
     buffer = NULL;
