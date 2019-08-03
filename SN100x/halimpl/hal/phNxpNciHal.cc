@@ -81,6 +81,7 @@ extern void phTmlNfc_set_fragmentation_enabled(
 
 extern NFCSTATUS phNxpNciHal_ext_send_sram_config_to_flash();
 extern NFCSTATUS phNxpNciHal_enableDefaultUICC2SWPline(uint8_t uicc2_sel);
+extern void phNxpNciHal_conf_nfc_forum_mode();
 
 nfc_stack_callback_t* p_nfc_stack_cback_backup;
 phNxpNci_getCfg_info_t* mGetCfg_info = NULL;
@@ -687,6 +688,7 @@ init_retry:
       }
     }
   }
+  phNxpNciHal_conf_nfc_forum_mode();
   if ((status != NFCSTATUS_SUCCESS) &&
       (nxpncihal_ctrl.retry_cnt >= MAX_RETRY_COUNT)) {
     NXPLOG_NCIHAL_E("Force FW Download, NFCC not coming out from Standby");
