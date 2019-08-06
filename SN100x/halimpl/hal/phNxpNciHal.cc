@@ -853,9 +853,11 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("phNxpNciHal_MinOpen failed");
       goto clean_and_return;
-    }
-  }/*else its already in MIN_OPEN state. continue with rest of functionality*/
-
+    }    /*else its already in MIN_OPEN state. continue with rest of functionality*/
+  } else {
+    nxpncihal_ctrl.p_nfc_stack_cback = p_cback;
+    nxpncihal_ctrl.p_nfc_stack_data_cback = p_data_cback;
+  }
   /* Call open complete */
   phNxpNciHal_open_complete(wConfigStatus);
 
