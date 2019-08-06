@@ -634,7 +634,7 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
   } else if (p_cmd_data[0] == 0x20 && p_cmd_data[1] == 0x02 &&
              p_cmd_data[2] == 0x05 && p_cmd_data[3] == 0x01 &&
              p_cmd_data[4] == 0xA0 && p_cmd_data[5] == 0x44 &&
-             p_cmd_data[6] == 0x01 && p_cmd_data[7] == 0x01) {
+             p_cmd_data[6] == 0x01 && p_cmd_data[7] & 0x01) {
     nxpprofile_ctrl.profile_type = EMV_CO_PROFILE;
     NXPLOG_NCIHAL_D("EMV_CO_PROFILE mode - Enabled");
     status = NFCSTATUS_SUCCESS;
