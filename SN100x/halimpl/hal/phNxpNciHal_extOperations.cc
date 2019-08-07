@@ -47,12 +47,17 @@ uint8_t phNxpNciHal_updateAutonomousPwrState(uint8_t num) {
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_setAutonomousMode() {
 
-  if (config_ext.autonomous_mode != true)
-    return NFCSTATUS_FEATURE_NOT_SUPPORTED;
+  phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
+  uint8_t autonomous_mode_value = 0x01;
+  if (config_ext.autonomous_mode == true)
+    autonomous_mode_value = 0x02;
 
-  uint8_t cmd_enable_autonomous_mode[] = {0x2F, 0x00, 0x01, 0x02};
-  return phNxpNciHal_send_ext_cmd(sizeof(cmd_enable_autonomous_mode),
-                                  cmd_enable_autonomous_mode);
+  mEEPROM_info.request_mode = SET_EEPROM_DATA;
+  mEEPROM_info.buffer = (uint8_t *)&autonomous_mode_value;
+  mEEPROM_info.bufflen = sizeof(autonomous_mode_value);
+  mEEPROM_info.request_type = EEPROM_AUTONOMOUS_MODE;
+
+  return request_EEPROM(&mEEPROM_info);
 }
 /******************************************************************************
  * Function         phNxpNciHal_setGuardTimer
