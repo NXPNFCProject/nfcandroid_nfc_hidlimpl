@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2018 NXP
+ *  Copyright 2018-2019 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -39,6 +39,11 @@ using ::android::hardware::Void;
 struct NxpNfc : public INxpNfc {
   Return<void> ioctl(uint64_t ioctlType, const hidl_vec<uint8_t>& inOutData,
                      ioctl_cb _hidl_cb) override;
+  Return<void> getSystemProperty(const ::android::hardware::hidl_string &key,
+                                 getSystemProperty_cb _hidl_cb) override;
+  Return<bool>
+  setSystemProperty(const ::android::hardware::hidl_string &key,
+                    const ::android::hardware::hidl_string &value) override;
 };
 
 }  // namespace implementation
