@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2018 NXP
+ *  Copyright 2018-2019 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -30,4 +30,20 @@ interface INxpNfc {
      * @return output data as stream of bytes
      */
     ioctl(uint64_t ioctlType,NfcData inputData) generates(NfcData outputData);
+
+     /*
+      * Gets system property's value whose Key has been provided.
+      *
+      * @param string
+      * @return output data as string
+      */
+     getSystemProperty(string key)  generates (string value);
+
+     /*
+      * Saves the system property provided as key-value pair
+      *
+      * @param string key string value
+      * @return status as a boolean, true if success, false if failed
+      */
+     setSystemProperty(string key, string value)  generates (bool status);
 };

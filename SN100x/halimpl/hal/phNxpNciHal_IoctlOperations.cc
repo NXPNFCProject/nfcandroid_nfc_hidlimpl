@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
+#include <map>
+#include <set>
 #include <android-base/file.h>
+#include <android-base/strings.h>
+#include <android-base/parseint.h>
 #include <cutils/properties.h>
 #include "phNxpNciHal_ext.h"
 #include "phNxpNciHal_utils.h"
@@ -23,9 +27,13 @@
 #include "phNfcCommon.h"
 #include "phNxpNciHal_IoctlOperations.h"
 #include "EseAdaptation.h"
+#include "phNfcCommon.h"
+#include "phNxpNciHal_Adaptation.h"
 #include "phNxpNciHal_extOperations.h"
 
 using android::base::WriteStringToFile;
+using namespace ::std;
+using namespace ::android::base;
 
 #define TERMINAL_LEN 5
 
@@ -44,6 +52,59 @@ extern nfc_stack_callback_t *p_nfc_stack_cback_backup;
 #ifndef FW_DWNLD_FLAG
 extern uint8_t fw_dwnld_flag;
 #endif
+
+extern size_t readConfigFile(const char *fileName, uint8_t **p_data);
+
+static string phNxpNciHal_parseBytesString(string in);
+static bool phNxpNciHal_parseValueFromString(string &in);
+static bool phNxpNciHal_CheckKeyNeeded(string key);
+static string phNxpNciHal_UpdatePwrStateConfigs(string &config);
+static bool phNxpNciHal_IsAutonmousModeSet(string config);
+static string phNxpNciHal_extractConfig(string &config);
+static void phNxpNciHal_getFilteredConfig(string &config);
+
+typedef std::map<std::string, std::string> systemProperty;
+systemProperty gsystemProperty = {
+    {"nfc.fw.rfreg_ver", "0"},     {"nfc.fw.rfreg_display_ver", "0"},
+    {"nfc.fw.dfl_areacode", "0"},  {"nfc.fw.downloadmode_force", "0"},
+    {"nfc.nxp.fwdnldstatus", "0"},
+};
+const char default_nxp_config_path[] = "/vendor/etc/libnfc-nxp.conf";
+std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
+                                "NXP_SWP_RD_TAG_OP_TIMEOUT",
+                                "NXP_DUAL_UICC_ENABLE",
+                                "DEFAULT_AID_ROUTE",
+                                "DEFAULT_MIFARE_CLT_ROUTE",
+                                "DEFAULT_FELICA_CLT_ROUTE",
+                                "DEFAULT_AID_PWR_STATE",
+                                "DEFAULT_DESFIRE_PWR_STATE",
+                                "DEFAULT_MIFARE_CLT_PWR_STATE",
+                                "DEFAULT_FELICA_CLT_PWR_STATE",
+                                "HOST_LISTEN_TECH_MASK",
+                                "FORWARD_FUNCTIONALITY_ENABLE",
+                                "DEFUALT_GSMA_PWR_STATE",
+                                "NXP_DEFAULT_UICC2_SELECT",
+                                "NXP_SMB_TRANSCEIVE_TIMEOUT",
+                                "NXP_SMB_ERROR_RETRY",
+                                "NXP_CHECK_DEFAULT_PROTO_SE_ID",
+                                "NXPLOG_NCIHAL_LOGLEVEL",
+                                "NXPLOG_EXTNS_LOGLEVEL",
+                                "NXPLOG_TML_LOGLEVEL",
+                                "NXPLOG_FWDNLD_LOGLEVEL",
+                                "NXPLOG_NCIX_LOGLEVEL",
+                                "NXPLOG_NCIR_LOGLEVEL",
+                                "NXP_NFC_SE_TERMINAL_NUM",
+                                "NXP_POLL_FOR_EFD_TIMEDELAY",
+                                "NXP_NFCC_MERGE_SAK_ENABLE",
+                                "NXP_STAG_TIMEOUT_CFG",
+                                "DEFAULT_T4TNFCEE_AID_POWER_STATE",
+                                "RF_STORAGE",
+                                "FW_STORAGE",
+                                "NXP_CORE_CONF",
+                                "NXP_RF_FILE_VERSION_INFO",
+                                "NXP_AUTONOMOUS_ENABLE",
+                                "NXP_PROP_RESET_EMVCO_CMD",
+                                "NFA_CONFIG_FORMAT"};
 
 /****************************************************************
  * Local Functions
@@ -181,16 +242,12 @@ int phNxpNciHal_ioctlIf(long arg, void *p_data) {
     break;
   }
   case HAL_NFC_IOCTL_SET_TRANSIT_CONFIG:
-    if (pInpOutData == NULL) {
-      NXPLOG_NCIHAL_E("%s : received invalid param", __func__);
-    } else {
+    if (pInpOutData != NULL) {
       phNxpNciHal_setNxpTransitConfig(pInpOutData->inp.data.transitConfig.val);
       ret = 0;
+    } else {
+      NXPLOG_NCIHAL_E("%s : received invalid param", __func__);
     }
-    break;
-  case HAL_NFC_IOCTL_GET_NXP_CONFIG:
-    phNxpNciHal_getNxpConfig(pInpOutData);
-    ret = 0;
     break;
   default:
     NXPLOG_NCIHAL_E("%s : Wrong arg = %ld", __func__, arg);
@@ -200,15 +257,92 @@ int phNxpNciHal_ioctlIf(long arg, void *p_data) {
   return ret;
 }
 
-void phNxpNciHal_loadPersistLog(uint8_t index) { (void)index; }
+/*******************************************************************************
+ **
+ ** Function         phNxpNciHal_savePersistLog
+ **
+ ** Description      Save persist log with “reason” at available index.
+ **
+ ** Parameters       uint8_t reason
+ **
+ ** Returns          returns the  index of saved reason/Log.
+ *******************************************************************************/
+uint8_t phNxpNciHal_savePersistLog(uint8_t reason) {
+  /* This is dummy API */
+  (void)reason;
+  uint8_t index = 1;
+  NXPLOG_NCIHAL_D(" %s returning index %d", __func__, index);
+  return index;
+}
 
-void phNxpNciHal_savePersistLog(uint8_t index) { (void)index; }
+/*******************************************************************************
+ **
+ ** Function         phNxpNciHal_loadPersistLog
+ **
+ ** Description      If given index is valid, return a log at the given index.
+ **
+ ** Parameters       uint8_t index
+ **
+ ** Returns          If index found, return a log as string else
+ **                  return a "" string
+ *******************************************************************************/
+string phNxpNciHal_loadPersistLog(uint8_t index) {
+  /* This is dummy API */
+  string reason;
+  switch (index) {
+  case 1:
+    NXPLOG_NCIHAL_D("index found");
+    reason = "Reason";
+    break;
+  default:
+    NXPLOG_NCIHAL_E("index not found");
+  }
+  return reason;
+}
+/*******************************************************************************
+ **
+ ** Function         phNxpNciHal_getSystemProperty
+ **
+ ** Description      It shall be used to get property value of the given Key
+ **
+ ** Parameters       string key
+ **
+ ** Returns          If Key is found, returns the respective property values
+ **                  else returns the null/empty string
+ *******************************************************************************/
+string phNxpNciHal_getSystemProperty(string key) {
+  string propValue;
+  std::map<std::string, std::string>::iterator prop;
 
-void phNxpNciHal_getSystemProperty(string key) { (void)key; }
+  if (key == "libnfc-nxp.conf") {
+    return phNxpNciHal_getNxpConfigIf();
+  } else {
+    prop = gsystemProperty.find(key);
+    if (prop != gsystemProperty.end()) {
+      propValue = prop->second;
+    } else {
+      /* else Pass a null string */
+    }
+  }
+  return propValue;
+}
+/*******************************************************************************
+ **
+ ** Function         phNxpNciHal_setSystemProperty
+ **
+ ** Description      It shall be used to save/change value to system property
+ **                  based on provided key.
+ **
+ ** Parameters       string key, string value
+ **
+ ** Returns          true if success, false if fail
+ *******************************************************************************/
+bool phNxpNciHal_setSystemProperty(string key, string value) {
+  NXPLOG_NCIHAL_D("%s : Enter Key = %s, value = %s", __func__, key.c_str(),
+                  value.c_str());
 
-void phNxpNciHal_setSystemProperty(string key, string value) {
-  (void)key;
-  (void)value;
+  gsystemProperty[key] = value;
+  return true;
 }
 
 /*******************************************************************************
@@ -222,142 +356,234 @@ void phNxpNciHal_setSystemProperty(string key, string value) {
 **
 ** Returns          void
 *******************************************************************************/
-void phNxpNciHal_getNxpConfigIf(nxp_nfc_config_t *configs) {
-  unsigned long num = 0;
-  char val[TERMINAL_LEN] = {0};
-  uint8_t *buffer = NULL;
-  long bufflen = 260;
-  long retlen = 0;
+string phNxpNciHal_getNxpConfigIf() {
+  std::string config;
+  uint8_t *p_config = nullptr;
+  size_t config_size = readConfigFile(default_nxp_config_path, &p_config);
+  if (config_size) {
+    config.assign((char *)p_config, config_size);
+    free(p_config);
+    phNxpNciHal_getFilteredConfig(config);
+  }
+  return config;
+}
 
-  buffer = (uint8_t *)malloc(bufflen * sizeof(uint8_t));
+/*******************************************************************************
+**
+** Function         phNxpNciHal_getFilteredConfig
+**
+** Description      It reads only configs needed for libnfc from
+*                   libnfc-nxp.conf
+**
+** Parameters       string config
+**
+** Returns          void
+*******************************************************************************/
+static void phNxpNciHal_getFilteredConfig(string &config) {
+  config = phNxpNciHal_extractConfig(config);
 
-  NXPLOG_NCIHAL_D("phNxpNciHal_getNxpConfig: Enter");
-  if (GetNxpNumValue(NAME_NXP_SE_COLD_TEMP_ERROR_DELAY, &num, sizeof(num))) {
-    configs->eSeLowTempErrorDelay = num;
+  if (phNxpNciHal_IsAutonmousModeSet(config)) {
+    config = phNxpNciHal_UpdatePwrStateConfigs(config);
   }
-  if (GetNxpNumValue(NAME_NXP_SWP_RD_TAG_OP_TIMEOUT, &num, sizeof(num))) {
-    configs->tagOpTimeout = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_DUAL_UICC_ENABLE, &num, sizeof(num))) {
-    configs->dualUiccEnable = num;
-  }
-  if (GetNxpNumValue(NAME_DEFAULT_AID_ROUTE, &num, sizeof(num))) {
-    configs->defaultAidRoute = num;
-  }
-  if (GetNxpNumValue(NAME_DEFAULT_MIFARE_CLT_ROUTE, &num, sizeof(num))) {
-    configs->defaultMifareCltRoute = num;
-  }
-  if (GetNxpNumValue(NAME_DEFAULT_FELICA_CLT_ROUTE, &num, sizeof(num))) {
-    configs->defautlFelicaCltRoute = num;
-  }
-  if (GetNxpNumValue(NAME_DEFAULT_AID_PWR_STATE, &num, sizeof(num))) {
-    configs->defaultAidPwrState = phNxpNciHal_updateAutonomousPwrState(num);
-  }
-  if (GetNxpNumValue(NAME_DEFAULT_DESFIRE_PWR_STATE, &num, sizeof(num))) {
-    configs->defaultDesfirePwrState = phNxpNciHal_updateAutonomousPwrState(num);
-  }
-  if (GetNxpNumValue(NAME_DEFAULT_MIFARE_CLT_PWR_STATE, &num, sizeof(num))) {
-    configs->defaultMifareCltPwrState =
-        phNxpNciHal_updateAutonomousPwrState(num);
-  }
-  if (GetNxpNumValue(NAME_HOST_LISTEN_TECH_MASK, &num, sizeof(num))) {
-    configs->hostListenTechMask = num;
-  }
-  if (GetNxpNumValue(NAME_FORWARD_FUNCTIONALITY_ENABLE, &num, sizeof(num))) {
-    configs->fwdFunctionalityEnable = num;
-  }
-  if (GetNxpNumValue(NAME_DEFUALT_GSMA_PWR_STATE, &num, sizeof(num))) {
-    configs->gsmaPwrState = phNxpNciHal_updateAutonomousPwrState(num);
-  }
-  if (GetNxpNumValue(NAME_NXP_DEFAULT_UICC2_SELECT, &num, sizeof(num))) {
-    configs->defaultUicc2Select = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_SMB_TRANSCEIVE_TIMEOUT, &num, sizeof(num))) {
-    configs->smbTransceiveTimeout = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_SMB_ERROR_RETRY, &num, sizeof(num))) {
-    configs->smbErrorRetry = num;
-  }
-  if (GetNxpNumValue(NAME_DEFAULT_FELICA_CLT_PWR_STATE, &num, sizeof(num))) {
-    configs->felicaCltPowerState = phNxpNciHal_updateAutonomousPwrState(num);
-  }
-  if (GetNxpNumValue(NAME_CHECK_DEFAULT_PROTO_SE_ID, &num, sizeof(num))) {
-    configs->checkDefaultProtoSeId = num;
-  }
-  if (GetNxpNumValue(NAME_NXPLOG_NCIHAL_LOGLEVEL, &num, sizeof(num))) {
-    configs->nxpLogHalLoglevel = num;
-  }
-  if (GetNxpNumValue(NAME_NXPLOG_EXTNS_LOGLEVEL, &num, sizeof(num))) {
-    configs->nxpLogExtnsLogLevel = num;
-  }
-  if (GetNxpNumValue(NAME_NXPLOG_TML_LOGLEVEL, &num, sizeof(num))) {
-    configs->nxpLogTmlLogLevel = num;
-  }
-  if (GetNxpNumValue(NAME_NXPLOG_FWDNLD_LOGLEVEL, &num, sizeof(num))) {
-    configs->nxpLogFwDnldLogLevel = num;
-  }
-  if (GetNxpNumValue(NAME_NXPLOG_NCIX_LOGLEVEL, &num, sizeof(num))) {
-    configs->nxpLogNcixLogLevel = num;
-  }
-  if (GetNxpNumValue(NAME_NXPLOG_NCIR_LOGLEVEL, &num, sizeof(num))) {
-    configs->nxpLogNcirLogLevel = num;
-  }
-  if (GetNxpStrValue(NAME_NXP_NFC_SE_TERMINAL_NUM, val, TERMINAL_LEN)) {
-    NXPLOG_NCIHAL_D("NfcSeTerminalId found val = %s ", val);
-    configs->seApduGateEnabled = 1;
-  } else {
-    configs->seApduGateEnabled = 0;
-  }
-  if (GetNxpNumValue(NAME_NXP_POLL_FOR_EFD_TIMEDELAY, &num, sizeof(num))) {
-    configs->pollEfdDelay = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_NFCC_MERGE_SAK_ENABLE, &num, sizeof(num))) {
-    configs->mergeSakEnable = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_STAG_TIMEOUT_CFG, &num, sizeof(num))) {
-    configs->stagTimeoutCfg = num;
-  }
-    if (GetNxpNumValue(NAME_DEFAULT_T4TNFCEE_AID_POWER_STATE, &num, sizeof(num))) {
-    configs->t4tNfceePwrState = num;
-  }
-  if (GetNxpNumValue(NAME_NFA_CONFIG_FORMAT, &num, sizeof(num))) {
-    configs->scrCfgFormat = num;
-  } else {
-    configs->scrCfgFormat = 0x00;
-  }
-  if (buffer) {
-    if (GetNxpStrValue(NAME_RF_STORAGE, (char *)buffer, bufflen)) {
-      retlen = strlen((char *)buffer) + 1;
-      memcpy(configs->rfStorage.path, (char *)buffer, retlen);
-      configs->rfStorage.len = retlen;
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_extractConfig
+**
+** Description      It parses complete config file and extracts only
+*                   enabled options ignores comments etc.
+**
+** Parameters       string config
+**
+** Returns          Resultant string
+*******************************************************************************/
+static string phNxpNciHal_extractConfig(string &config) {
+  stringstream ss(config);
+  string line;
+  string result;
+  while (getline(ss, line)) {
+    line = Trim(line);
+    if (line.empty())
+      continue;
+    if (line.at(0) == '#')
+      continue;
+    if (line.at(0) == 0)
+      continue;
+
+    auto search = line.find('=');
+    if (search == string::npos)
+      continue;
+
+    string key(Trim(line.substr(0, search)));
+    if (!phNxpNciHal_CheckKeyNeeded(key))
+      continue;
+    if (key == "NXP_NFC_SE_TERMINAL_NUM") {
+      line = "NXP_SE_APDU_GATE_SUPPORT=0x01\n";
+      result += line;
+      continue;
     }
-    if (GetNxpStrValue(NAME_FW_STORAGE, (char *)buffer, bufflen)) {
-      retlen = strlen((char *)buffer) + 1;
-      memcpy(configs->fwStorage.path, (char *)buffer, retlen);
-      configs->fwStorage.len = retlen;
-    }
-    if (GetNxpByteArrayValue(NAME_NXP_CORE_CONF, (char *)buffer, bufflen,
-                             &retlen)) {
-      memcpy(configs->coreConf.cmd, (char *)buffer, retlen);
-      configs->coreConf.len = retlen;
-    }
-    if (GetNxpByteArrayValue(NAME_NXP_RF_FILE_VERSION_INFO, (char *)buffer,
-                             bufflen, &retlen)) {
-      memcpy(configs->rfFileVersInfo.ver, (char *)buffer, retlen);
-      configs->rfFileVersInfo.len = retlen;
-    }
-    if (GetNxpByteArrayValue(NAME_NXP_PROP_RESET_EMVCO_CMD, (char *)buffer, bufflen,
-                             &retlen)) {
-      memcpy(configs->scrResetEmvco.cmd, (char *)buffer, retlen);
-      configs->scrResetEmvco.len = retlen;
+    string value_string(Trim(line.substr(search + 1, string::npos)));
+
+    if (!phNxpNciHal_parseValueFromString(value_string))
+      continue;
+
+    line = key + "=" + value_string + "\n";
+    result += line;
+  }
+
+  return result;
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_IsAutonmousModeSet
+**
+** Description      It check whether autonomous mode is enabled
+*                   in config file
+**
+** Parameters       string config
+**
+** Returns          boolean(TRUE/FALSE)
+*******************************************************************************/
+static bool phNxpNciHal_IsAutonmousModeSet(string config) {
+  stringstream ss(config);
+  string line;
+  unsigned tmp = 0;
+  while (getline(ss, line)) {
+    auto search = line.find('=');
+    if (search == string::npos)
+      continue;
+
+    string key(Trim(line.substr(0, search)));
+    if (key == "NXP_AUTONOMOUS_ENABLE") {
+      string value(Trim(line.substr(search + 1, string::npos)));
+      if (ParseUint(value.c_str(), &tmp)) {
+        if (tmp == 1) {
+          return true;
+        } else {
+          NXPLOG_NCIHAL_D("Autonomous flag disabled");
+          return false;
+        }
+      }
     } else {
-      configs->scrResetEmvco.len = 0x00;
+      continue;
     }
-    free(buffer);
-    buffer = NULL;
   }
-  NXPLOG_NCIHAL_D("phNxpNciHal_getNxpConfig: Exit");
-  return;
+  NXPLOG_NCIHAL_D("Autonomous flag disabled");
+  return false;
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_UpdatePwrStateConfigs
+**
+** Description      Updates default pwr state accordingly if autonomous mode
+*                   is enabled
+**
+** Parameters       string config
+**
+** Returns          Resultant string
+*******************************************************************************/
+static string phNxpNciHal_UpdatePwrStateConfigs(string &config) {
+  stringstream ss(config);
+  string line;
+  string result;
+  unsigned tmp = 0;
+  while (getline(ss, line)) {
+    auto search = line.find('=');
+    if (search == string::npos)
+      continue;
+
+    string key(Trim(line.substr(0, search)));
+    if ((key == "DEFAULT_AID_PWR_STATE" || key == "DEFAULT_DESFIRE_PWR_STATE" ||
+         key == "DEFAULT_MIFARE_CLT_PWR_STATE" ||
+         key == "DEFAULT_FELICA_CLT_PWR_STATE")) {
+      string value(Trim(line.substr(search + 1, string::npos)));
+      if (ParseUint(value.c_str(), &tmp)) {
+        tmp = phNxpNciHal_updateAutonomousPwrState(tmp);
+        value = to_string(tmp);
+        line = key + "=" + value + "\n";
+        result += line;
+      }
+    } else {
+      result += (line + "\n");
+      continue;
+    }
+  }
+  return result;
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_CheckKeyNeeded
+**
+** Description      Check if the config needed for libnfc as per gNciConfigs
+*                   list
+**
+** Parameters       string config
+**
+** Returns          bool(true/false)
+*******************************************************************************/
+static bool phNxpNciHal_CheckKeyNeeded(string key) {
+  return ((gNciConfigs.find(key) != gNciConfigs.end()) ? true : false);
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_parseValueFromString
+**
+** Description      Parse value determine data type of config option
+**
+** Parameters       string config
+**
+** Returns          bool(true/false)
+*******************************************************************************/
+static bool phNxpNciHal_parseValueFromString(string &in) {
+  unsigned tmp = 0;
+  bool stat = false;
+  if (in.length() >= 1) {
+    switch (in[0]) {
+    case '"':
+      if (in[in.length() - 1] == '"' && in.length() > 2)
+        stat = true;
+      break;
+    case '{':
+      if (in[in.length() - 1] == '}' && in.length() >= 3) {
+        in = phNxpNciHal_parseBytesString(in);
+        stat = true;
+      }
+      break;
+    default:
+      if (ParseUint(in.c_str(), &tmp))
+        stat = true;
+      break;
+    }
+  } else {
+    NXPLOG_NCIHAL_E("%s : Invalid config string ", __func__);
+  }
+  return stat;
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_parseBytesString
+**
+** Description      Parse bytes from string
+**
+** Parameters       string config
+**
+** Returns          Resultant string
+*******************************************************************************/
+static string phNxpNciHal_parseBytesString(string in) {
+  size_t pos;
+  in.erase(remove(in.begin(), in.end(), ' '), in.end());
+  pos = in.find(",");
+  while (pos != string::npos) {
+    in = in.replace(pos, 1, ":");
+    pos = in.find(",", pos);
+  }
+  return in;
 }
 
 /*******************************************************************************

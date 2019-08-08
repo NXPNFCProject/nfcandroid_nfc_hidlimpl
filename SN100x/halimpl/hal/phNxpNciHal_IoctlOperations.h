@@ -31,52 +31,54 @@
 int phNxpNciHal_ioctlIf(long arg, void *p_data);
 
 /*******************************************************************************
-**
-** Function         phNxpNciHal_loadPersistLog
-**
-** Description      It shall be used to get persist log.
-**
-** Parameters       unit8_t index
-**
-** Returns          It returns persist log from the [index]
-*******************************************************************************/
-void phNxpNciHal_loadPersistLog(uint8_t index);
+ **
+ ** Function         phNxpNciHal_savePersistLog
+ **
+ ** Description      Save persist log with “reason” at available index.
+ **
+ ** Parameters       uint8_t reason
+ **
+ ** Returns          returns the  index of saved reason/Log.
+ *******************************************************************************/
+uint8_t phNxpNciHal_savePersistLog(uint8_t reason);
 
 /*******************************************************************************
-**
-** Function         phNxpNciHal_savePersistLog
-**
-** Description      It shall be used to save persist log to the file[index].
-**
-** Parameters       unit8_t index
-**
-** Returns          void
-*******************************************************************************/
-void phNxpNciHal_savePersistLog(uint8_t index);
+ **
+ ** Function         phNxpNciHal_loadPersistLog
+ **
+ ** Description      If given index is valid, return a log at the given index.
+ **
+ ** Parameters       uint8_t index
+ **
+ ** Returns          If index found, return a log as string else
+ **                  return a "" string
+ *******************************************************************************/
+string phNxpNciHal_loadPersistLog(uint8_t index);
 
 /*******************************************************************************
 **
 ** Function         phNxpNciHal_getSystemProperty
 **
-** Description      It shall be used to get property vale of the Key
+** Description      It shall be used to get property value of the given Key
 **
 ** Parameters       string key
 **
 ** Returns          It returns the property value of the key
 *******************************************************************************/
-void phNxpNciHal_getSystemProperty(string key);
+string phNxpNciHal_getSystemProperty(string key);
 
 /*******************************************************************************
-**
-** Function         phNxpNciHal_setSystemProperty
-**
-** Description      It shall be used to save value to system property[key name]
-**
-** Parameters       string key, string value
-**
-** Returns          void
-*******************************************************************************/
-void phNxpNciHal_setSystemProperty(string key, string value);
+ **
+ ** Function         phNxpNciHal_setSystemProperty
+ **
+ ** Description      It shall be used to save/chage value to system property
+ **                  based on provided key.
+ **
+ ** Parameters       string key, string value
+ **
+ ** Returns          true if success, false if fail
+ *******************************************************************************/
+bool phNxpNciHal_setSystemProperty(string key, string value);
 
 /*******************************************************************************
 **
@@ -89,7 +91,7 @@ void phNxpNciHal_setSystemProperty(string key, string value);
 **
 ** Returns          void
 *******************************************************************************/
-void phNxpNciHal_getNxpConfigIf(nxp_nfc_config_t *configs);
+string phNxpNciHal_getNxpConfigIf();
 
 /*******************************************************************************
 **
