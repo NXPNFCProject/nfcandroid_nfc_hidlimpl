@@ -1428,3 +1428,46 @@ int phNxpNciHal_CheckFwRegFlashRequired(uint8_t* fw_update_req,
                   status);
   return status;
 }
+/******************************************************************************
+ * Function         phNxpNciHal_conf_nfc_forum_mode
+ *
+ * Description      If NFCC is not in Nfc Forum mode, then this function will
+ *                  configure it back to the Nfc Forum mode.
+ *
+ * Returns          none
+ *
+ ******************************************************************************/
+void phNxpNciHal_conf_nfc_forum_mode() {
+  uint8_t cmd_get_emvcocfg[] = {0x20, 0x03, 0x03, 0x01, 0xA0, 0x44};
+  uint8_t cmd_reset_emvcocfg[8];
+  long cmdlen = 8;
+  long retlen = 0;
+
+  if (GetNxpByteArrayValue(NAME_NXP_PROP_RESET_EMVCO_CMD,
+                           (char *)cmd_reset_emvcocfg, cmdlen, &retlen)) {
+  }
+  if (retlen != cmdlen) {
+    NXPLOG_NCIHAL_E("%s: command is not Valid", __func__);
+    return;
+  }
+  /* Update the flag address from the Nxp config file */
+  cmd_get_emvcocfg[4] = cmd_reset_emvcocfg[4];
+  cmd_get_emvcocfg[5] = cmd_reset_emvcocfg[5];
+
+  if (NFCSTATUS_SUCCESS ==
+      phNxpNciHal_send_ext_cmd(sizeof(cmd_get_emvcocfg), cmd_get_emvcocfg)) {
+    if (NFCSTATUS_SUCCESS == nxpncihal_ctrl.p_rx_data[3]) {
+      if (0x01 & nxpncihal_ctrl.p_rx_data[8]) {
+        if (NFCSTATUS_SUCCESS ==
+            phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_emvcocfg),
+                                     cmd_reset_emvcocfg)) {
+          return;
+        }
+      } else {
+        return;
+      }
+    }
+  }
+  NXPLOG_NCIHAL_E("%s: failed!!", __func__);
+  return;
+}

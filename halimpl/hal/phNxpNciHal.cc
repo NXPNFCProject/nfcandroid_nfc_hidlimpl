@@ -97,6 +97,7 @@ extern int phNxpNciHal_CheckFwRegFlashRequired(uint8_t* fw_update_req,
                                                uint8_t* rf_update_req);
 extern int phPalEse_spi_ioctl(phPalEse_ControlCode_t eControlCode,
                               void* pDevHandle, long level);
+extern void phNxpNciHal_conf_nfc_forum_mode();
 static void phNxpNciHal_MinCloseForOmapiClose(nfc_nci_IoctlInOutData_t *pInpOutData);
 static int phNxpNciHal_fw_mw_ver_check();
 phNxpNci_getCfg_info_t* mGetCfg_info = NULL;
@@ -1047,6 +1048,7 @@ init_retry:
       goto init_retry;
     }
   }
+  phNxpNciHal_conf_nfc_forum_mode();
 
   if (!nxpncihal_ctrl.bIsForceFwDwnld) {
     phNxpNciHal_CheckFwRegFlashRequired(&fwFlashReq, &rfUpdateReq);
@@ -3119,6 +3121,11 @@ int phNxpNciHal_configDiscShutdown(void) {
  ******************************************************************************/
 void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
   unsigned long num = 0;
+  long retlen = 0;
+  uint8_t *buffer = NULL;
+  long bufflen = 260;
+
+  buffer = (uint8_t *)malloc(bufflen * sizeof(uint8_t));
   memset(&pInpOutData->out.data.nxpConfigs, 0x00, sizeof(pInpOutData->out.data.nxpConfigs));
   if (GetNxpNumValue(NAME_NXP_ESE_LISTEN_TECH_MASK, &num, sizeof(num))) {
     pInpOutData->out.data.nxpConfigs.ese_listen_tech_mask = num;
@@ -3245,6 +3252,19 @@ void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
   }
   if (GetNxpNumValue(NAME_NXPLOG_NCIR_LOGLEVEL, &num, sizeof(num))) {
     pInpOutData->out.data.nxpConfigs.nxpLogNcirLogLevel = num;
+  }
+  if (GetNxpNumValue(NAME_NFA_CONFIG_FORMAT, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.scrCfgFormat = num;
+  }
+  if (buffer) {
+    if (GetNxpByteArrayValue(NAME_NXP_PROP_RESET_EMVCO_CMD, (char *)buffer,
+                             bufflen, &retlen)) {
+      memcpy(pInpOutData->out.data.nxpConfigs.scrResetEmvco.cmd, (char *)buffer,
+             retlen);
+      pInpOutData->out.data.nxpConfigs.scrResetEmvco.len = retlen;
+    }
+    free(buffer);
+    buffer = NULL;
   }
 }
 
