@@ -3268,6 +3268,9 @@ void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
   if (GetNxpNumValue(NAME_NFA_CONFIG_FORMAT, &num, sizeof(num))) {
     pInpOutData->out.data.nxpConfigs.scrCfgFormat = num;
   }
+  if (GetNxpNumValue(NAME_ETSI_READER_ENABLE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.etsiReaderEnable = num;
+  }
   if (buffer) {
     if (GetNxpByteArrayValue(NAME_NXP_PROP_RESET_EMVCO_CMD, (char *)buffer,
                              bufflen, &retlen)) {
