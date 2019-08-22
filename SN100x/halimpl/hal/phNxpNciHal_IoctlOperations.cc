@@ -104,7 +104,8 @@ std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
                                 "NXP_RF_FILE_VERSION_INFO",
                                 "NXP_AUTONOMOUS_ENABLE",
                                 "NXP_PROP_RESET_EMVCO_CMD",
-                                "NFA_CONFIG_FORMAT"};
+                                "NFA_CONFIG_FORMAT",
+                                "NXP_T4T_NFCEE_ENABLE"};
 
 /****************************************************************
  * Local Functions
