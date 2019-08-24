@@ -2224,24 +2224,23 @@ int phNxpNciHal_close(bool bShutdown) {
 #endif
   close_and_return:
   nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
-  if (!bShutdown) {
-    do { /*This is NXP_EXTNS code for retry*/
-      status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
+  do { /*This is NXP_EXTNS code for retry*/
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
 
-      if (status == NFCSTATUS_SUCCESS) {
-        break;
-      } else {
-        NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed, perform retry after delay");
-        usleep(1000 * 1000);
-        retry++;
-        if (retry > 3) {
-          NXPLOG_NCIHAL_E(
-              "Maximum retries performed, shall restart HAL to recover");
-          abort();
-        }
+    if (status == NFCSTATUS_SUCCESS) {
+      break;
+    } else {
+      NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed, perform retry after delay");
+      usleep(1000 * 1000);
+      retry++;
+      if (retry > 3) {
+        NXPLOG_NCIHAL_E(
+            "Maximum retries performed, shall restart HAL to recover");
+        abort();
       }
-    } while (retry < 3);
-  }
+    }
+  } while (retry < 3);
+
   sem_destroy(&nxpncihal_ctrl.syncSpiNfc);
 
 #if(NXP_EXTNS == TRUE)
