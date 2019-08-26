@@ -750,6 +750,7 @@ init_retry:
         status = phNxpNciHal_fw_download();
         property_set("nfc.fw.downloadmode_force", "0");
         if (status != NFCSTATUS_SUCCESS) {
+
           if (NFCSTATUS_SUCCESS != phNxpNciHal_fw_mw_ver_check()) {
             NXPLOG_NCIHAL_D("Chip Version Middleware Version mismatch!!!!");
             phOsalNfc_Timer_Cleanup();
@@ -758,6 +759,10 @@ init_retry:
             goto clean_and_return;
           }
           NXPLOG_NCIHAL_E("FW download failed, Continue NFC init");
+          status =
+              phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
+          if (status != NFCSTATUS_SUCCESS)
+            NXPLOG_NCIHAL_E("Core reset failed");
         } else {
           wConfigStatus = NFCSTATUS_SUCCESS;
           fw_download_success = 1;
