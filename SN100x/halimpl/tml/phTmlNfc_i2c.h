@@ -41,6 +41,7 @@ int phTmlNfc_i2c_read(void* pDevHandle, uint8_t* pBuffer, int nNbBytesToRead);
 int phTmlNfc_i2c_write(void* pDevHandle, uint8_t* pBuffer, int nNbBytesToWrite);
 int phTmlNfc_i2c_reset(void* pDevHandle, long level);
 bool_t getDownloadFlag(void);
+void phTmlNfc_EnableFwDnldMode(bool mode);
 extern bool_t notifyFwrequest;
 extern phTmlNfc_i2cfragmentation_t fragmentation_enabled;
 

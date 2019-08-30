@@ -356,18 +356,18 @@ NFCSTATUS phNxpNciHal_fw_download(void) {
   /*phNxpNciHal_get_clk_freq();*/
   phNxpNciHal_nfccClockCfgRead();
   status = phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadMode);
-  if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD)
-  /*NCI_RESET_CMD*/
-  {
-      static uint8_t cmd_reset_nci_dwnld[] = {0x20,0x00,0x01,0x80};
-      nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
-      status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci_dwnld), cmd_reset_nci_dwnld);
-      if (status != NFCSTATUS_SUCCESS) {
-        NXPLOG_NCIHAL_E("Core reset FW download command failed \n");
-      }
-
-   }
+  if (nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD) {
+    /*NCI_RESET_CMD*/
+    static uint8_t cmd_reset_nci_dwnld[] = { 0x20, 0x00, 0x01, 0x80 };
+    nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci_dwnld),
+        cmd_reset_nci_dwnld);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("Core reset FW download command failed \n");
+    }
+  }
   if (NFCSTATUS_SUCCESS == status) {
+    phTmlNfc_EnableFwDnldMode(true);
     /* Set the obtained device handle to download module */
     phDnldNfc_SetHwDevHandle();
     NXPLOG_NCIHAL_D("Calling Seq handler for FW Download \n");
@@ -382,6 +382,7 @@ NFCSTATUS phNxpNciHal_fw_download(void) {
     phDnldNfc_ReSetHwDevHandle();
 
     nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
+    phTmlNfc_EnableFwDnldMode(false);
     /* call read pending */
     wConfigStatus = phTmlNfc_Read(
         nxpncihal_ctrl.p_cmd_data, NCI_MAX_DATA_LEN,
