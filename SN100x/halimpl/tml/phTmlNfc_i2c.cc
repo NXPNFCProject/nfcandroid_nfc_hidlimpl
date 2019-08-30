@@ -337,14 +337,27 @@ int phTmlNfc_i2c_reset(void* pDevHandle, long level) {
          notifyFwrequest = false;
     }
   }
-  if ((level == MODE_FW_DWNLD_WITH_VEN || level == MODE_FW_DWND_HIGH) && ret == 0) {
-        bFwDnldFlag = true;
-     } else {
-        bFwDnldFlag = false;
-     }
+  if ((level != MODE_FW_DWNLD_WITH_VEN && level != MODE_FW_DWND_HIGH)
+      && ret == 0) {
+    bFwDnldFlag = false;
+  }
+
   return ret;
 }
 
+/*******************************************************************************
+**
+** Function         phTmlNfc_EnableFwDnldMode
+**
+** Description      updates the state to Download mode
+**
+** Parameters       True/False
+**
+** Returns          None
+*******************************************************************************/
+void phTmlNfc_EnableFwDnldMode(bool mode) {
+  bFwDnldFlag = mode;
+}
 /*******************************************************************************
 **
 ** Function         getDownloadFlag
