@@ -1676,7 +1676,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
 
     if (!GetNxpNumValue(NAME_NXP_T4T_NFCEE_ENABLE, (void*)&retlen,
                         sizeof(retlen))) {
-      retlen = 0x81;
+      retlen = 0x00;
       NXPLOG_NCIHAL_D(
           "T4T_NFCEE_ENABLE not found. Taking default value : 0x%02lx", retlen);
     }
