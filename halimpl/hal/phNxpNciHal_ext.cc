@@ -377,6 +377,11 @@ if(nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT == true) {
              p_ntf[3] == 0x02 && nxpncihal_ctrl.is_wait_for_ce_ntf) {
     NXPLOG_NCIHAL_D("CORE_RESET_NTF 2 reason Command received !");
     int len = p_ntf[2] + 2; /*include 2 byte header*/
+    if(len != *p_len - 1) {
+      NXPLOG_NCIHAL_E("phNxpNciHal_ext_process_nfc_init_rsp invalid NTF length");
+      android_errorWriteLog(0x534e4554, "121263487");
+      return NFCSTATUS_FAILED;
+    }
     wFwVerRsp = (((uint32_t)p_ntf[len - 2]) << 16U) |
                 (((uint32_t)p_ntf[len - 1]) << 8U) | p_ntf[len];
     iCoreRstNtfLen = *p_len;
@@ -418,6 +423,11 @@ if (((nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT) &&
             phNxpNciHal_configFeatureList(p_ntf,*p_len);
         }
         int len = p_ntf[2] + 2; /*include 2 byte header*/
+        if(len != *p_len - 1) {
+          NXPLOG_NCIHAL_E("phNxpNciHal_ext_process_nfc_init_rsp invalid NTF length");
+          android_errorWriteLog(0x534e4554, "121263487");
+          return NFCSTATUS_FAILED;
+        }
         wFwVerRsp = (((uint32_t)p_ntf[len - 2]) << 16U) |
                 (((uint32_t)p_ntf[len - 1]) << 8U) | p_ntf[len];
         if (wFwVerRsp == 0) status = NFCSTATUS_FAILED;
