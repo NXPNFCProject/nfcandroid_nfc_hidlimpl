@@ -58,7 +58,7 @@ extern uint8_t icode_send_eof;
 extern uint8_t icode_detected;
 static uint8_t cmd_icode_eof[] = {0x00, 0x00, 0x00};
 static const char *rf_block_num[] = {"1","2","3","4","5","6","7","8","9","10",
-"11","12","13","14","15","16","17","18","19","20"};
+"11","12","13","14","15","16","17","18","19","20",NULL};
 const char *rf_block_name = "NXP_RF_CONF_BLK_";
 static uint8_t read_failed_disable_nfc = false;
 /* FW download success flag */
@@ -1728,41 +1728,39 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     config_access = false;
     if ((true == fw_dwnld_flag) || (true == setConfigAlways) ||
         isNxpRFConfigModified()) {
-        unsigned long maxBlocks = 0;
         unsigned long loopcnt = 0;
 
-        if (!(GetNxpNumValue(NAME_NXP_RF_CONF_BLK_MAX, &maxBlocks,
-                             sizeof(maxBlocks)))) {
-          maxBlocks = 0x06;
-          NXPLOG_NCIHAL_D("Max rf blocks = 0x%0lX", maxBlocks);
-        }
-        for(loopcnt = 0; loopcnt < maxBlocks; loopcnt++)
-        {
-            char rf_conf_block[22] = {'\0'};
-            strcpy(rf_conf_block, rf_block_name);
-            isfound = GetNxpByteArrayValue(strcat(rf_conf_block, rf_block_num[loopcnt]), (char*)buffer,
-                    bufflen, &retlen);
-            if (retlen > 0) {
-              NXPLOG_NCIHAL_D("Performing RF Settings BLK %ld", loopcnt+1);
-              status = phNxpNciHal_send_ext_cmd(retlen, buffer);
+        do {
+          char rf_conf_block[22] = {'\0'};
+          strcpy(rf_conf_block, rf_block_name);
+          isfound = GetNxpByteArrayValue(
+              strcat(rf_conf_block, rf_block_num[loopcnt++]), (char *)buffer,
+              bufflen, &retlen);
+          if (retlen > 0) {
+            NXPLOG_NCIHAL_D(" Performing RF Settings BLK %ld", loopcnt);
+            status = phNxpNciHal_send_ext_cmd(retlen, buffer);
 
-              if (status == NFCSTATUS_SUCCESS) {
-                status = phNxpNciHal_CheckRFCmdRespStatus();
-                /*STATUS INVALID PARAM 0x09*/
-                if (status == 0x09) {
-                  phNxpNciHalRFConfigCmdRecSequence();
-                  retry_core_init_cnt++;
-                  goto retry_core_init;
-                }
-              } else
-                  if (status != NFCSTATUS_SUCCESS) {
-                NXPLOG_NCIHAL_E("RF Settings BLK %ld failed", loopcnt);
+            if (status == NFCSTATUS_SUCCESS) {
+              status = phNxpNciHal_CheckRFCmdRespStatus();
+              /*STATUS INVALID PARAM 0x09*/
+              if (status == 0x09) {
+                phNxpNciHalRFConfigCmdRecSequence();
                 retry_core_init_cnt++;
                 goto retry_core_init;
               }
+            } else if (status != NFCSTATUS_SUCCESS) {
+              NXPLOG_NCIHAL_E("RF Settings BLK %ld failed", loopcnt);
+              retry_core_init_cnt++;
+              goto retry_core_init;
             }
-            retlen = 0;
-        }
+          }
+          retlen = 0;
+          if (rf_block_num[loopcnt] == NULL) {
+             NXPLOG_NCIHAL_E("Reached Max RF block count");
+             break;
+          }
+        } while (isfound);
+        loopcnt = 0;
     }
     flash_update_done = TRUE;
     mEEPROM_info.buffer = &flash_update_done;
