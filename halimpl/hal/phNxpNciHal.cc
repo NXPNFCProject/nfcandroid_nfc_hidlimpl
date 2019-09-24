@@ -3271,6 +3271,12 @@ void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
   if (GetNxpNumValue(NAME_ETSI_READER_ENABLE, &num, sizeof(num))) {
     pInpOutData->out.data.nxpConfigs.etsiReaderEnable = num;
   }
+  if (GetNxpNumValue(NAME_DEFAULT_TECH_ABF_ROUTE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.techAbfRoute = num;
+  }
+  if (GetNxpNumValue(NAME_DEFAULT_TECH_ABF_PWR_STATE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.techAbfPwrState = num;
+  }
   if (buffer) {
     if (GetNxpByteArrayValue(NAME_NXP_PROP_RESET_EMVCO_CMD, (char *)buffer,
                              bufflen, &retlen)) {
