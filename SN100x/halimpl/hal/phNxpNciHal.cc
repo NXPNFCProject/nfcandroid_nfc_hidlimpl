@@ -446,10 +446,12 @@ NFCSTATUS phNxpNciHal_CheckValidFwVersion(void) {
           status = NFCSTATUS_NOT_ALLOWED;
     }
   }
+#ifdef NXP_DUMMY_FW_DNLD
   else if (gRecFWDwnld == TRUE) {
         NXPLOG_NCIHAL_E("FW Version 4");
     status = NFCSTATUS_SUCCESS;
   }
+#endif
   else if (wFwVerRsp == 0) {
     NXPLOG_NCIHAL_E(
         "FW Version not received by NCI command >>> Force Firmware download");
