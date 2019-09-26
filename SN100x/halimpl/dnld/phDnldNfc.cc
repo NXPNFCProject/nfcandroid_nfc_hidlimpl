@@ -751,11 +751,15 @@ NFCSTATUS phDnldNfc_InitImgInfo(void) {
     wStatus = phDnldNfc_LoadBinFW(&pImageInfo, &ImageInfoLen);
   } else if(fwType == FW_FORMAT_SO) {
     gpphDnldContext->FwFormat = FW_FORMAT_SO;
+#ifdef NXP_DUMMY_FW_DNLD
     if (gRecFWDwnld == true) {
       wStatus = phDnldNfc_LoadRecoveryFW(Fw_Lib_Path, &pImageInfo, &ImageInfoLen);
     } else {
       wStatus = phDnldNfc_LoadFW(Fw_Lib_Path, &pImageInfo, &ImageInfoLen);
     }
+#else
+    wStatus = phDnldNfc_LoadFW(Fw_Lib_Path, &pImageInfo, &ImageInfoLen);
+#endif
   } else {
     NXPLOG_FWDNLD_E("firmware file format mismatch!!!\n");
     return NFCSTATUS_FAILED;
@@ -827,9 +831,11 @@ NFCSTATUS phDnldNfc_LoadRecInfo(void) {
   /* if memory is not allocated then allocate memory for donwload context
    * structure */
   phDnldNfc_SetHwDevHandle();
+#ifdef NXP_DUMMY_FW_DNLD
   if (gRecFWDwnld == true)
       wStatus = phDnldNfc_LoadRecoveryFW(PLATFORM_LIB_PATH, &pImageInfo, &ImageInfoLen);
   else
+#endif
       wStatus = phDnldNfc_LoadFW(PLATFORM_LIB_PATH, &pImageInfo, &ImageInfoLen);
   if ((pImageInfo == NULL) || (ImageInfoLen == 0)) {
     NXPLOG_FWDNLD_E(
@@ -883,9 +889,11 @@ NFCSTATUS phDnldNfc_LoadPKInfo(void) {
   phDnldNfc_SetHwDevHandle();
 
 /* load the PKU image library */
+#ifdef NXP_DUMMY_FW_DNLD
   if (gRecFWDwnld == true)
       wStatus =phDnldNfc_LoadRecoveryFW(PKU_LIB_PATH, &pImageInfo, &ImageInfoLen);
   else
+#endif
       wStatus = phDnldNfc_LoadFW(
             PKU_LIB_PATH, &pImageInfo, &ImageInfoLen);
   if ((pImageInfo == NULL) || (ImageInfoLen == 0)) {
