@@ -1334,8 +1334,10 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   uint8_t swp_full_pwr_mode_on_cmd[] = {0x20, 0x02, 0x05, 0x01,
                                         0xA0, 0xF1, 0x01, 0x01};
 
-  static uint8_t cmd_ven_enable[] = {0x20, 0x02, 0x05, 0x01,
-                                         0xA0, 0x07, 0x01, 0x01};
+  uint8_t cmd_ven_enable[] = {0x20, 0x02, 0x05, 0x01,
+          0xA0, 0x07, 0x01, 0x01};
+
+  uint8_t enable_ce_in_phone_off = 0x01;
 
   static uint8_t android_l_aid_matching_mode_on_cmd[] = {
       0x20, 0x02, 0x05, 0x01, 0xA0, 0x91, 0x01, 0x01};
@@ -1437,15 +1439,22 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       goto retry_core_init;
     }
   }
-  status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ven_enable), cmd_ven_enable);
+
+  mEEPROM_info.buffer = &enable_ce_in_phone_off;
+  mEEPROM_info.bufflen = sizeof(enable_ce_in_phone_off);
+  mEEPROM_info.request_type = EEPROM_CE_PHONE_OFF_CFG;
+  mEEPROM_info.request_mode = SET_EEPROM_DATA;
+  request_EEPROM(&mEEPROM_info);
+
+  config_access = false;
+
+  if (fw_download_success == 1) {
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ven_enable), cmd_ven_enable);
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("CMD_VEN_ENABLE: Failed");
       retry_core_init_cnt++;
       goto retry_core_init;
     }
-  config_access = false;
-
-  if (fw_download_success == 1) {
     phNxpNciHal_hci_network_reset();
   }
   if(nfcFL.chipType == sn100u) {
@@ -2073,8 +2082,8 @@ int phNxpNciHal_close(bool bShutdown) {
       0x21, 0x03,
   };
   static uint8_t cmd_reset_nci[] = {0x20, 0x00, 0x01, 0x00};
-  static uint8_t cmd_ven_disable_nci[] = {0x20, 0x02, 0x05, 0x01,
-                                         0xA0, 0x07, 0x01, 0x00};
+  uint8_t cmd_ce_in_phone_off[] = {0x20, 0x02, 0x05, 0x01,
+          0xA0, 0x8E, 0x01, 0x00};
   uint8_t length = 0;
   uint8_t numPrms = 0;
   uint8_t ptr = 4;
@@ -2114,9 +2123,9 @@ int phNxpNciHal_close(bool bShutdown) {
 #endif
   CONCURRENCY_LOCK();
   if(!bShutdown){
-    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ven_disable_nci), cmd_ven_disable_nci);
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_in_phone_off), cmd_ce_in_phone_off);
     if(status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("CMD_VEN_DISABLE_NCI: Failed");
+      NXPLOG_NCIHAL_E("CMD_CE_IN_PHONE_OFF: Failed");
     }
   }
   if (nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT &&
