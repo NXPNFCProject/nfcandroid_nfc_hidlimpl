@@ -36,6 +36,7 @@
 #include <sys/stat.h>
 #include <EseAdaptation.h>
 #include "hal_nxpnfc.h"
+#include "phNxpNciHal_extOperations.h"
 #include "hal_nxpese.h"
 #include "spi_spm.h"
 #include "eSEClient.h"
@@ -1318,9 +1319,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   uint8_t fw_dwnld_flag = false;
 #endif
   uint8_t setConfigAlways = false;
-#if(NXP_EXTNS == TRUE)
-  uint8_t enableAutonomusMode = false;
-#endif
   static uint8_t p2p_listen_mode_routing_cmd[] = {0x21, 0x01, 0x07, 0x00, 0x01,
                                                   0x01, 0x03, 0x00, 0x01, 0x05};
 
@@ -1335,9 +1333,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   static uint8_t swp_switch_timeout_cmd[] = {0x20, 0x02, 0x06, 0x01, 0xA0,
                                              0xF3, 0x02, 0x00, 0x00};
   static uint8_t cmd_get_cfg_dbg_info[] = {0x20, 0x03, 0x4, 0xA0, 0x1B, 0xA0, 0x27};
-#if(NXP_EXTNS == TRUE)
-  static uint8_t cmd_enable_autonomous_mode[] = { 0x2F, 0x00, 0x01, 0x02 };
-#endif
   config_success = true;
   const long bufflen = 260;
   long retlen = 0;
@@ -1636,6 +1631,12 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
         retry_core_init_cnt++;
         goto retry_core_init;
     }
+    status = phNxpNciHal_setGuardTimer();
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("phNxpNciHal_setGuardTimer failed");
+      retry_core_init_cnt++;
+      goto retry_core_init;
+    }
   }
   if ((true == fw_dwnld_flag) || (true == setConfigAlways) ||
       isNxpRFConfigModified() || (wRfUpdateReq == true)) {
@@ -1871,19 +1872,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     NXPLOG_NCIHAL_D("NCI Parser is disabled");
   }
 
-  enableAutonomusMode = false;
-  isfound = GetNxpNumValue(NAME_NXP_CORE_SCRN_OFF_AUTONOMOUS_ENABLE, &num, sizeof(num));
-  if (isfound > 0) {
-      enableAutonomusMode = num;
-  }
-  NXPLOG_NCIHAL_D("EEPROM_fw_dwnld_flag : 0x%02x SetConfigAlways flag : 0x%02x enableAutonomusMode flag : 0x%02x",
-                  fw_dwnld_flag, setConfigAlways, enableAutonomusMode);
-  if (true == enableAutonomusMode)
-  {
-    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_enable_autonomous_mode), cmd_enable_autonomous_mode);
-    if (status != NFCSTATUS_SUCCESS)
-      NXPLOG_NCIHAL_E("Setting NXP_CORE_SCRN_OFF_AUTONOMOUS_ENABLE status failed");
-  }
 #endif
 
     config_access = false;
@@ -2183,21 +2171,23 @@ int phNxpNciHal_close(bool bShutdown) {
 
   nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
 
-  do { /*This is NXP_EXTNS code for retry*/
-    status =
-        phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
-
-    if (status == NFCSTATUS_SUCCESS) {
-      break;
-    }
-    else {
-      NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed, perform retry after delay")
-      usleep(1000*1000);
-      retry++;
-    }
+  if (!(bShutdown && (config_ext.autonomous_mode == true))) {
+      do { /*This is NXP_EXTNS code for retry*/
+          status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
+          if (status == NFCSTATUS_SUCCESS) {
+              break;
+          } else {
+              NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed, perform retry after delay");
+              usleep(1000 * 1000);
+              retry++;
+              if (retry > 3) {
+                  NXPLOG_NCIHAL_E(
+                          "Maximum retries performed, shall restart HAL to recover");
+                  abort();
+              }
+          }
+      } while(retry < 3);
   }
-  while(retry < 3);
-
   sem_destroy(&nxpncihal_ctrl.syncSpiNfc);
 close_and_return:
 #if(NXP_EXTNS == TRUE)
@@ -2319,6 +2309,14 @@ int phNxpNciHal_configDiscShutdown(void) {
 #if(NXP_EXTNS == TRUE)
   }
 #endif
+  status = phNxpNciHal_setAutonomousMode();
+  if(status == NFCSTATUS_FEATURE_NOT_SUPPORTED)
+  {
+      NXPLOG_NCIHAL_E("AutonomousMode : Feature not enabled");
+  }
+  else if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("Set Autonomous enable: Failed");
+  }
 
   CONCURRENCY_UNLOCK();
 
@@ -2368,6 +2366,13 @@ void phNxpNciHal_getVendorConfig(NfcConfig& config) {
   buffer.fill(0);
   long retlen = 0;
   memset(&config, 0x00, sizeof(NfcConfig));
+  memset(&config_ext, 0x00, sizeof(nxp_nfc_config_ext_t));
+  if ((GetNxpNumValue(NAME_NXP_AUTONOMOUS_ENABLE, &num, sizeof(num)))) {
+      config_ext.autonomous_mode = num;
+  }
+  if ((GetNxpNumValue(NAME_NXP_GUARD_TIMER_VALUE, &num, sizeof(num)))) {
+      config_ext.guard_timer_value = num;
+  }
 
   config.nfaPollBailOutMode = true;
   if (GetNxpNumValue(NAME_ISO_DEP_MAX_TRANSCEIVE, &num, sizeof(num))) {
@@ -2383,7 +2388,7 @@ void phNxpNciHal_getVendorConfig(NfcConfig& config) {
     config.defaultSystemCodeRoute = num;
   }
   if (GetNxpNumValue(NAME_DEFAULT_SYS_CODE_PWR_STATE, &num, sizeof(num))) {
-    config.defaultSystemCodePowerState = num;
+    config.defaultSystemCodePowerState = phNxpNciHal_updateAutonomousPwrState(num);
   }
   if (GetNxpNumValue(NAME_DEFAULT_ROUTE, &num, sizeof(num))) {
     config.defaultRoute = num;
@@ -2411,7 +2416,7 @@ void phNxpNciHal_getVendorConfig(NfcConfig& config) {
     config.nfaProprietaryCfg.discoveryPollBPrime = (uint8_t) buffer[7];
     config.nfaProprietaryCfg.discoveryListenBPrime = (uint8_t) buffer[8];
   } else {
-    memset(&config.nfaProprietaryCfg, 0xFF, sizeof(ProtocolDiscoveryConfig));
+      memset(&config.nfaProprietaryCfg, 0xFF, sizeof(ProtocolDiscoveryConfig));
   }
   if ((GetNxpNumValue(NAME_PRESENCE_CHECK_ALGORITHM, &num, sizeof(num))) && (num <= 2) ) {
       config.presenceCheckAlgorithm = (PresenceCheckAlgorithm)num;

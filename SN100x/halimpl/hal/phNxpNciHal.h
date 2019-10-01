@@ -216,7 +216,8 @@ typedef enum {
   EEPROM_SWP1A_INTF,
   EEPROM_SWP2_INTF,
   EEPROM_FLASH_UPDATE,
-  EEPROM_AUTH_CMD_TIMEOUT
+  EEPROM_AUTH_CMD_TIMEOUT,
+  EEPROM_GUARD_TIMER
 } phNxpNci_EEPROM_request_type_t;
 
 typedef struct phNxpNci_EEPROM_info {
