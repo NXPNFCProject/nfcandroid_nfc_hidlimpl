@@ -680,12 +680,13 @@ init_retry:
     NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed");
     if (init_retry_cnt < 3) {
       init_retry_cnt++;
-      (void)phNxpNciHal_power_cycle();
       goto init_retry;
     } else if(init_retry_cnt < MAX_RETRY_COUNT) {
           NXPLOG_NCIHAL_E("invlaid core reset rsp received. Trying Force FW download");
+          (void)phNxpNciHal_power_cycle();
           goto force_download;
-      } else init_retry_cnt = 0;
+    } else
+      init_retry_cnt = 0;
     wConfigStatus = phTmlNfc_Shutdown_CleanUp();
     wConfigStatus = NFCSTATUS_FAILED;
     goto clean_and_return;
@@ -706,12 +707,21 @@ init_retry:
       }
     }
   }
-  if (status != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("NCI_CORE_INIT : Failed");
+  if ((status != NFCSTATUS_SUCCESS) &&
+      (nxpncihal_ctrl.retry_cnt >= MAX_RETRY_COUNT)) {
+    NXPLOG_NCIHAL_E("Force FW Download, NFCC not coming out from Standby");
+    wConfigStatus = NFCSTATUS_FAILED;
+    goto force_download;
+  } else if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("NCI_CORE_INIT: Failed");
     if (init_retry_cnt < 3) {
       init_retry_cnt++;
-      (void)phNxpNciHal_power_cycle();
       goto init_retry;
+    } else if (init_retry_cnt < MAX_RETRY_COUNT) {
+      NXPLOG_NCIHAL_E(
+          "invlaid core init rsp received. Trying Force FW download");
+      (void)phNxpNciHal_power_cycle();
+      goto force_download;
     } else
       init_retry_cnt = 0;
     wConfigStatus = phTmlNfc_Shutdown_CleanUp();
@@ -1012,7 +1022,7 @@ int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data) {
 
   CONCURRENCY_LOCK();
   data_len = phNxpNciHal_write_unlocked(nxpncihal_ctrl.cmd_len,
-                                        nxpncihal_ctrl.p_cmd_data);
+                                        nxpncihal_ctrl.p_cmd_data, ORIG_LIBNFC);
   CONCURRENCY_UNLOCK();
 
   if (nfcFL.chipType != sn100u && icode_send_eof == 1) {
@@ -1037,7 +1047,8 @@ clean_and_return:
  * Returns          It returns number of bytes successfully written to NFCC.
  *
  ******************************************************************************/
-int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t* p_data) {
+int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t *p_data,
+                               int origin) {
   NFCSTATUS status = NFCSTATUS_INVALID_PARAMETER;
   phNxpNciHal_Sem_t cb_data;
   nxpncihal_ctrl.retry_cnt = 0;
@@ -1062,6 +1073,9 @@ int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t* p_data) {
     data_len = 0;
     goto clean_and_return;
   }
+
+  if (origin == ORIG_NXPHAL)
+    HAL_ENABLE_EXT();
 
 retry:
 
