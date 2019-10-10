@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2018 NXP Semiconductors
+ * Copyright (C) 2010-2019 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -220,7 +220,8 @@ typedef enum {
   EEPROM_FLASH_UPDATE,
   EEPROM_AUTH_CMD_TIMEOUT,
   EEPROM_GUARD_TIMER,
-  EEPROM_AUTONOMOUS_MODE
+  EEPROM_AUTONOMOUS_MODE,
+  EEPROM_CE_PHONE_OFF_CFG
 } phNxpNci_EEPROM_request_type_t;
 
 typedef struct phNxpNci_EEPROM_info {
