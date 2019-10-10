@@ -1650,6 +1650,11 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       NXPLOG_NCIHAL_E("phNxpNciHal_setGuardTimer failed");
       retry_core_init_cnt++;
       goto retry_core_init;
+    } else {
+      status = phNxpNciHal_setAutonomousMode();
+      if (status != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("Set Autonomous enable: Failed");
+      }
     }
   }
   if ((true == fw_dwnld_flag) || (true == setConfigAlways) ||
@@ -2185,7 +2190,7 @@ int phNxpNciHal_close(bool bShutdown) {
 
   nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
 
-  if (!(bShutdown && (config_ext.autonomous_mode == true))) {
+  if (!(bShutdown)) {
       do { /*This is NXP_EXTNS code for retry*/
           status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
           if (status == NFCSTATUS_SUCCESS) {
@@ -2323,15 +2328,6 @@ int phNxpNciHal_configDiscShutdown(void) {
 #if(NXP_EXTNS == TRUE)
   }
 #endif
-  status = phNxpNciHal_setAutonomousMode();
-  if(status == NFCSTATUS_FEATURE_NOT_SUPPORTED)
-  {
-      NXPLOG_NCIHAL_E("AutonomousMode : Feature not enabled");
-  }
-  else if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("Set Autonomous enable: Failed");
-  }
-
   CONCURRENCY_UNLOCK();
 
   status = phNxpNciHal_close(true);
