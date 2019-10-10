@@ -2197,6 +2197,7 @@ int phNxpNciHal_close(bool bShutdown) {
   }
 #endif
 
+  close_and_return:
   nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
 
   if (!(bShutdown)) {
@@ -2217,7 +2218,6 @@ int phNxpNciHal_close(bool bShutdown) {
       } while(retry < 3);
   }
   sem_destroy(&nxpncihal_ctrl.syncSpiNfc);
-close_and_return:
 #if(NXP_EXTNS == TRUE)
   if(gParserCreated)
   {
