@@ -2684,8 +2684,8 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
         ret = 0;
         break;
     case HAL_NFC_IOCTL_GET_ESE_UPDATE_STATE :
-	ret = 0;
-	break;
+    	ret = 0;
+    	break;
     case HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE :
         ese_update = ESE_UPDATE_COMPLETED;
         NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE \n");

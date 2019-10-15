@@ -218,7 +218,7 @@ NFCSTATUS phNxpNfc_InitLib() {
   if (phNxpNciHal_init_cb_data(&cb_powerlink, NULL) != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_D("phNxpNfc_InitLib failed");
     return stat;
-  }
+  }  
 
       ALOGE("phNxpNfc_InitLib exit");
   return stat;
@@ -344,7 +344,7 @@ void HalWrite(uint16_t data_len, uint8_t* p_data) {
 void HalControlGranted() {
   const char* func = "NfcAdaptation::HalControlGranted";
   //DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("%s", func);
-
+ 
 }
 #endif
 /*******************************************************************************
@@ -376,7 +376,7 @@ static void setHalFunctionEntries(tHAL_NFC_ENTRY* halFuncEntries)
   halFuncEntries->core_initialized = HalCoreInitialized;
   halFuncEntries->write = HalWrite;
   halFuncEntries->get_max_ee = NULL;
-  return;
+  return;  
 }
 
 void nfaHciCallback(tNFA_HCI_EVT event,
@@ -408,7 +408,7 @@ void nfaHciCallback(tNFA_HCI_EVT event,
             SEM_POST(&cb_data_trans);
     }
     break;
-  }
+  }    
 }
 
 bool phNxpNfc_EseTransceive(uint8_t* xmitBuffer, int32_t xmitBufferSize, uint8_t* recvBuffer,
@@ -451,3 +451,4 @@ bool phNxpNfc_EseTransceive(uint8_t* xmitBuffer, int32_t xmitBufferSize, uint8_t
     return (isSuccess);
 }
 #endif
+

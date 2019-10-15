@@ -308,11 +308,11 @@ void* eSEClientUpdate_ThreadHandler(void* data) {
     ALOGD_IF(nfc_debug_enabled, "Ioctl Completed for Type result = %d", pInpOutData->out.data.status);
     if(!se_intf.isJcopUpdateRequired && (pInpOutData->out.data.status & 0xFF))
     {
-	  se_intf.isJcopUpdateRequired = true;
+  	  se_intf.isJcopUpdateRequired = true;
     }
     if(!se_intf.isLSUpdateRequired && ((pInpOutData->out.data.status >> 8) & 0xFF))
     {
-	  se_intf.isLSUpdateRequired = true;
+  	  se_intf.isLSUpdateRequired = true;
     }
 
   }
