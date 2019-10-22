@@ -58,7 +58,8 @@ extern uint8_t icode_send_eof;
 extern uint8_t icode_detected;
 static uint8_t cmd_icode_eof[] = {0x00, 0x00, 0x00};
 static const char *rf_block_num[] = {"1","2","3","4","5","6","7","8","9","10",
-"11","12","13","14","15","16","17","18","19","20",NULL};
+"11","12","13","14","15","16","17","18","19","20",
+"21","22","23","24","25","26","27","28","29","30",NULL};
 const char *rf_block_name = "NXP_RF_CONF_BLK_";
 static uint8_t read_failed_disable_nfc = false;
 /* FW download success flag */
