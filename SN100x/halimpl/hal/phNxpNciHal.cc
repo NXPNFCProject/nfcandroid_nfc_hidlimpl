@@ -1745,6 +1745,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
         do {
           char rf_conf_block[22] = {'\0'};
           strcpy(rf_conf_block, rf_block_name);
+          retlen = 0;
           isfound = GetNxpByteArrayValue(
               strcat(rf_conf_block, rf_block_num[loopcnt++]), (char *)buffer,
               bufflen, &retlen);
@@ -1766,12 +1767,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
               goto retry_core_init;
             }
           }
-          retlen = 0;
-          if (rf_block_num[loopcnt] == NULL) {
-             NXPLOG_NCIHAL_E("Reached Max RF block count");
-             break;
-          }
-        } while (isfound);
+        } while (rf_block_num[loopcnt] != NULL);
         loopcnt = 0;
     }
     flash_update_done = TRUE;
