@@ -1716,6 +1716,9 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       }
     }
 
+    NXPLOG_NCIHAL_D("Performing SE Settings");
+    phNxpNciHal_read_and_update_se_state();
+
     NXPLOG_NCIHAL_D("Performing NAME_NXP_CORE_CONF Settings");
     retlen = 0;
     isfound = GetNxpByteArrayValue(NAME_NXP_CORE_CONF, (char*)buffer, bufflen,
