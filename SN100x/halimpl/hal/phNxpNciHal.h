@@ -179,6 +179,13 @@ typedef struct phNxpNciMwEepromArea {
   uint8_t p_rx_data[32];
 } phNxpNciMwEepromArea_t;
 
+enum {
+  SE_TYPE_ESE,
+  SE_TYPE_UICC,
+  SE_TYPE_UICC2,
+  NUM_SE_TYPES
+};
+
 typedef void (*fpVerInfoStoreInEeprom_t)();
 typedef int (*fpVerifyCscEfsTest_t)(char* nfcc_csc, char* rffilepath,
                               char* fwfilepath);
@@ -300,4 +307,15 @@ NFCSTATUS phNxpNciHal_send_nfcee_pwr_cntl_cmd(uint8_t type);
 ** Returns          none
 *******************************************************************************/
 void phNxpNciHal_configFeatureList(uint8_t* init_rsp, uint16_t rsp_len);
+
+/******************************************************************************
+ * Function         phNxpNciHal_read_and_update_se_state
+ *
+ * Description      This will read NFCEE status from system properties
+ *                  and update to NFCC to enable/disable.
+ *
+ * Returns          none
+ *
+ ******************************************************************************/
+void phNxpNciHal_read_and_update_se_state();
 #endif /* _PHNXPNCIHAL_H_ */

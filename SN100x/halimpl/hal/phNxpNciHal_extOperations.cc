@@ -18,6 +18,10 @@
 #include "phNfcCommon.h"
 #include <phNxpLog.h>
 #include <phNxpNciHal_ext.h>
+#include <cutils/properties.h>
+
+#define NCI_HEADER_SIZE 3
+#define NCI_SE_CMD_LEN  4
 
 nxp_nfc_config_ext_t config_ext;
 /******************************************************************************
@@ -80,4 +84,127 @@ NFCSTATUS phNxpNciHal_setGuardTimer() {
   mEEPROM_info.request_type = EEPROM_GUARD_TIMER;
 
   return request_EEPROM(&mEEPROM_info);
+}
+
+/******************************************************************************
+ * Function         get_system_property_se_type
+ *
+ * Description      This will read NFCEE status from system properties
+ *                  and returns status.
+ *
+ * Returns          NFCEE enabled(0x01)/disabled(0x00)
+ *
+ ******************************************************************************/
+static int8_t get_system_property_se_type(uint8_t se_type)
+{
+  int8_t retVal = -1;
+  char valueStr[PROPERTY_VALUE_MAX] = {0};
+  if (se_type >= NUM_SE_TYPES)
+    return retVal;
+
+  switch(se_type) {
+    case SE_TYPE_ESE:
+      property_get("nfc.product.support.ese", valueStr, "");
+      break;
+    case SE_TYPE_UICC:
+      property_get("nfc.product.support.UICC", valueStr, "");
+      break;
+    case SE_TYPE_UICC2:
+      property_get("nfc.product.support.UICC2", valueStr, "");
+      break;
+  }
+  if(strlen(valueStr) == 0) {
+    return retVal;
+  }
+  retVal = atoi(valueStr);
+  return retVal;
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_read_and_update_se_state
+ *
+ * Description      This will read NFCEE status from system properties
+ *                  and update to NFCC to enable/disable.
+ *
+ * Returns          none
+ *
+ ******************************************************************************/
+void phNxpNciHal_read_and_update_se_state()
+{
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  int16_t i = 0;
+  int8_t  val = -1;
+  int16_t num_se = 0;
+  uint8_t retry_cnt = 0;
+  uint8_t values[NUM_SE_TYPES];
+
+  for (i = 0; i < NUM_SE_TYPES; i++) {
+    val = get_system_property_se_type(i);
+    switch(i) {
+      case SE_TYPE_ESE:
+        NXPLOG_NCIHAL_D("Get property : SUPPORT_ESE %d", val);
+        values[SE_TYPE_ESE] = val;
+        if(val != -1) {
+          num_se++;
+        }
+        break;
+      case SE_TYPE_UICC:
+        NXPLOG_NCIHAL_D("Get property : SUPPORT_UICC %d", val);
+        values[SE_TYPE_UICC] = val;
+        if(val != -1) {
+          num_se++;
+        }
+        break;
+      case SE_TYPE_UICC2:
+        values[SE_TYPE_UICC2] = val;
+        if(val != -1) {
+          num_se++;
+        }
+        NXPLOG_NCIHAL_D("Get property : SUPPORT_UICC2 %d", val);
+        break;
+    }
+  }
+  if(num_se < 1) {
+    return;
+  }
+  uint8_t set_cfg_cmd[NCI_HEADER_SIZE + 1 + (num_se * NCI_SE_CMD_LEN)]; // 1 for Number of Argument
+  uint8_t *index = &set_cfg_cmd[0];
+  *index++ = NCI_MT_CMD;
+  *index++ = NXP_CORE_SET_CONFIG_CMD;
+  *index++ = (num_se * NCI_SE_CMD_LEN) + 1;
+  *index++ = num_se;
+  for (i = 0; i < NUM_SE_TYPES; i++) {
+    switch(i) {
+      case SE_TYPE_ESE:
+        if(values[SE_TYPE_ESE] != -1) {
+          *index++ = 0xA0;
+          *index++ = 0xEC;
+          *index++ = 0x01;
+          *index++ = values[SE_TYPE_ESE];
+        }
+        break;
+      case SE_TYPE_UICC:
+        if(values[SE_TYPE_UICC] != -1) {
+          *index++ = 0xA0;
+          *index++ = 0xED;
+          *index++ = 0x01;
+          *index++ = values[SE_TYPE_UICC];
+        }
+        break;
+      case SE_TYPE_UICC2:
+        if(values[SE_TYPE_UICC2] != -1) {
+          *index++ = 0xA0;
+          *index++ = 0xD4;
+          *index++ = 0x01;
+          *index++ = values[SE_TYPE_UICC2];
+        }
+        break;
+    }
+  }
+
+  while(status != NFCSTATUS_SUCCESS && retry_cnt < 3) {
+    status = phNxpNciHal_send_ext_cmd(sizeof(set_cfg_cmd), set_cfg_cmd);
+    retry_cnt++;
+    NXPLOG_NCIHAL_E("Get Cfg Retry cnt=%x", retry_cnt);
+  }
 }
