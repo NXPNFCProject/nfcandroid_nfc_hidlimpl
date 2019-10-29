@@ -1605,7 +1605,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       if (num == 1) {
         isfound = GetNxpByteArrayValue(NAME_NXP_EXT_TVDD_CFG_1, (char*)buffer,
                                        bufflen, &retlen);
-        if (retlen > 0) {
+        if (isfound && retlen > 0) {
           status = phNxpNciHal_send_ext_cmd(retlen, buffer);
           if (status != NFCSTATUS_SUCCESS) {
             NXPLOG_NCIHAL_E("EXT TVDD CFG 1 Settings failed");
@@ -1616,7 +1616,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       } else if (num == 2) {
         isfound = GetNxpByteArrayValue(NAME_NXP_EXT_TVDD_CFG_2, (char*)buffer,
                                        bufflen, &retlen);
-        if (retlen > 0) {
+        if (isfound && retlen > 0) {
           status = phNxpNciHal_send_ext_cmd(retlen, buffer);
           if (status != NFCSTATUS_SUCCESS) {
             NXPLOG_NCIHAL_E("EXT TVDD CFG 2 Settings failed");
@@ -1627,7 +1627,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       } else if (num == 3) {
         isfound = GetNxpByteArrayValue(NAME_NXP_EXT_TVDD_CFG_3, (char*)buffer,
                                        bufflen, &retlen);
-        if (retlen > 0) {
+        if (isfound && retlen > 0) {
           status = phNxpNciHal_send_ext_cmd(retlen, buffer);
           if (status != NFCSTATUS_SUCCESS) {
             NXPLOG_NCIHAL_E("EXT TVDD CFG 3 Settings failed");
