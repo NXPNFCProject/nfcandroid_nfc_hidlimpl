@@ -1507,7 +1507,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   }
 
 #ifdef PN547C2_CLOCK_SETTING
-  if (isNxpConfigModified() || (fw_download_success == 1) ||
+  if (isNxpRFConfigModified() || (fw_download_success == 1) ||
       (phNxpNciClock.issetConfig)
 #if (NFC_NXP_HFO_SETTINGS == TRUE)
       || temp_fix == 1
@@ -1665,11 +1665,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
         phNxpNciHal_enableDefaultUICC2SWPline((uint8_t)retlen);
     }
 
-    if (phNxpNciHal_nfccClockCfgApply() != NFCSTATUS_SUCCESS) {
-        NXPLOG_NCIHAL_E("phNxpNciHal_nfccClockCfgApply failed");
-        retry_core_init_cnt++;
-        goto retry_core_init;
-    }
     status = phNxpNciHal_setGuardTimer();
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("phNxpNciHal_setGuardTimer failed");
@@ -1701,7 +1696,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     request_EEPROM(&mEEPROM_info);
   }
   if ((true == fw_dwnld_flag) || (true == setConfigAlways) ||
-      isNxpRFConfigModified() || (wRfUpdateReq == true)) {
+     isNxpConfigModified() || (wRfUpdateReq == true)) {
     retlen = 0;
     NXPLOG_NCIHAL_D("Performing NAME_NXP_CORE_CONF_EXTN Settings");
     isfound = GetNxpByteArrayValue(NAME_NXP_CORE_CONF_EXTN, (char*)buffer,
@@ -1744,6 +1739,12 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     if ((true == fw_dwnld_flag) || (true == setConfigAlways) ||
         isNxpRFConfigModified()) {
         unsigned long loopcnt = 0;
+
+        if (phNxpNciHal_nfccClockCfgApply() != NFCSTATUS_SUCCESS) {
+            NXPLOG_NCIHAL_E("phNxpNciHal_nfccClockCfgApply failed");
+            retry_core_init_cnt++;
+            goto retry_core_init;
+        }
 
         do {
           char rf_conf_block[22] = {'\0'};
