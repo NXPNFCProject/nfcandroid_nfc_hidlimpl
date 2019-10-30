@@ -178,7 +178,7 @@ void phNxpNciHal_read_and_update_se_state()
       case SE_TYPE_ESE:
         if(values[SE_TYPE_ESE] != -1) {
           *index++ = 0xA0;
-          *index++ = 0xEC;
+          *index++ = 0xED;
           *index++ = 0x01;
           *index++ = values[SE_TYPE_ESE];
         }
@@ -186,7 +186,7 @@ void phNxpNciHal_read_and_update_se_state()
       case SE_TYPE_UICC:
         if(values[SE_TYPE_UICC] != -1) {
           *index++ = 0xA0;
-          *index++ = 0xED;
+          *index++ = 0xEC;
           *index++ = 0x01;
           *index++ = values[SE_TYPE_UICC];
         }
