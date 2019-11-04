@@ -2491,13 +2491,13 @@ void phNxpNciHal_getVendorConfig_1_2(android::hardware::nfc::V1_2::NfcConfig& co
 
   if (GetNxpByteArrayValue(NAME_OFFHOST_ROUTE_UICC, (char*)buffer.data(), buffer.size(), &retlen)) {
     config.offHostRouteUicc.resize(retlen);
-    for(int i=0; i<retlen; i++)
+    for(long i=0; i<retlen; i++)
       config.offHostRouteUicc[i] = buffer[i];
   }
 
   if (GetNxpByteArrayValue(NAME_OFFHOST_ROUTE_ESE, (char*)buffer.data(), buffer.size(), &retlen)) {
     config.offHostRouteEse.resize(retlen);
-    for(int i=0; i<retlen; i++)
+    for(long i=0; i<retlen; i++)
       config.offHostRouteEse[i] = buffer[i];
   }
 
