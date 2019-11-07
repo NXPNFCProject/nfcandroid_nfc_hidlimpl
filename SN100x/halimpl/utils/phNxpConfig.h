@@ -174,6 +174,7 @@ extern char Fw_Lib_Path[256];
 #define NAME_NXP_GUARD_TIMER_VALUE "NXP_GUARD_TIMER_VALUE"
 #define NAME_NXP_PROP_RESET_EMVCO_CMD "NXP_PROP_RESET_EMVCO_CMD"
 #define NAME_NFA_CONFIG_FORMAT "NFA_CONFIG_FORMAT"
+#define NAME_NXP_DISCONNECT_TAG_IN_SCRN_OFF "NXP_DISCONNECT_TAG_IN_SCRN_OFF"
 #endif
 /* default configuration */
 #define default_storage_location "/data/vendor/nfc"
