@@ -98,22 +98,22 @@ NFCSTATUS phNxpNciHal_setGuardTimer() {
 static int8_t get_system_property_se_type(uint8_t se_type)
 {
   int8_t retVal = -1;
-  int8_t valueStr[PROPERTY_VALUE_MAX] = {0};
+  char valueStr[PROPERTY_VALUE_MAX] = {0};
   if (se_type >= NUM_SE_TYPES)
     return retVal;
-  int len = 0;
+
   switch(se_type) {
     case SE_TYPE_ESE:
-      len = property_get("nfc.product.support.ese", valueStr, "");
+      property_get("nfc.product.support.ese", valueStr, "");
       break;
     case SE_TYPE_UICC:
-      len = property_get("nfc.product.support.UICC", valueStr, "");
+      property_get("nfc.product.support.UICC", valueStr, "");
       break;
     case SE_TYPE_UICC2:
-      len = property_get("nfc.product.support.UICC2", valueStr, "");
+      property_get("nfc.product.support.UICC2", valueStr, "");
       break;
   }
-  if(strlen(valueStr) == 0 || len <= 0) {
+  if(strlen(valueStr) == 0) {
     return retVal;
   }
   retVal = atoi(valueStr);
