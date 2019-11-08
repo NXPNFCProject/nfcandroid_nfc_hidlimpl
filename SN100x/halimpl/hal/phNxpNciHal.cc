@@ -4072,5 +4072,8 @@ void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
   } else {
     pInpOutData->out.data.nxpConfigs.seApduGateEnabled = 0;
   }
+  if (GetNxpNumValue(NAME_OFF_HOST_SIM2_PIPE_ID, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.offHostSIM2PipeId = num;
+  }
 }
 #endif

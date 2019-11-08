@@ -56,6 +56,7 @@ typedef struct {
   uint8_t fwdFunctionality;
   uint8_t hostListenTechMask;
   uint8_t seApduGateEnabled;
+  uint8_t offHostSIM2PipeId;
 } nxp_nfc_config_t;
 #endif
 /*

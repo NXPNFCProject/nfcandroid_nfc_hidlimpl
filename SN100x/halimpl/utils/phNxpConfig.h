@@ -147,6 +147,7 @@ extern char Fw_Lib_Path[256];
 #define NAME_POLLING_TECH_MASK "POLLING_TECH_MASK"
 #define NAME_FORWARD_FUNCTIONALITY_ENABLE "FORWARD_FUNCTIONALITY_ENABLE"
 #define NAME_NXP_NFC_SE_TERMINAL_NUM "NXP_NFC_SE_TERMINAL_NUM"
+#define NAME_OFF_HOST_SIM2_PIPE_ID "OFF_HOST_SIM2_PIPE_ID"
 #endif
 /* default configuration */
 #define default_storage_location "/data/vendor/nfc"
