@@ -65,10 +65,14 @@ int main() {
         ALOGE("Can not create an instance of NXP NFC Extn Iface, exiting.");
         return -1;
     }
-
-    status = nxp_nfc_service->registerAsService();
-    if (status != OK) {
-        ALOGE("Could not register service for NXP NFC Extn Iface (%d).", status);
+    try {
+      status = nxp_nfc_service->registerAsService();
+      if (status != OK) {
+          ALOGE("Could not register service for NXP NFC Extn Iface (%d).", status);
+      }
+    } catch(const std::__1::system_error& e) {
+      ALOGE("Could not register nxp_nfc_service service due to exception reason %s ",
+      e.what());
     }
     ALOGE("Before calling JCOP JCOS_doDownload");
     perform_eSEClientUpdate();
