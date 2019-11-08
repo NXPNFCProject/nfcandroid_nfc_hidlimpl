@@ -26,6 +26,7 @@ cc_binary {
          "-Wall",
          "-Werror",
          "-Wextra",
+         "-fexceptions",
          "-DNXP_EXTNS=TRUE"
      ],
 
