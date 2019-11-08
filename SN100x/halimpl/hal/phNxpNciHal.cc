@@ -1339,7 +1339,7 @@ uint8_t phNxpNciHal_lastResetNtfReason(void) {
 int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   uint8_t* buffer = NULL;
-  uint8_t isfound = false;
+  uint8_t isfound = 0;
 #ifdef FW_DWNLD_FLAG
   uint8_t fw_dwnld_flag = false;
 #endif
@@ -1445,7 +1445,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   retlen = 0;
   isfound = GetNxpByteArrayValue(NAME_NXP_ACT_PROP_EXTN, (char*)buffer, bufflen,
                                  &retlen);
-  if (retlen > 0) {
+  if (isfound > 0 && retlen > 0) {
     /* NXP ACT Proprietary Ext */
     status = phNxpNciHal_send_ext_cmd(retlen, buffer);
     if (status != NFCSTATUS_SUCCESS) {
@@ -1556,7 +1556,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   config_access = true;
   isfound = GetNxpByteArrayValue(NAME_NXP_NFC_PROFILE_EXTN, (char*)buffer,
                                  bufflen, &retlen);
-  if (retlen > 0) {
+  if (isfound > 0 && retlen > 0) {
     /* NXP ACT Proprietary Ext */
     status = phNxpNciHal_send_ext_cmd(retlen, buffer);
     if (status != NFCSTATUS_SUCCESS) {
@@ -1701,7 +1701,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     NXPLOG_NCIHAL_D("Performing NAME_NXP_CORE_CONF_EXTN Settings");
     isfound = GetNxpByteArrayValue(NAME_NXP_CORE_CONF_EXTN, (char*)buffer,
                                    bufflen, &retlen);
-    if (retlen > 0) {
+    if (isfound > 0 && retlen > 0) {
       /* NXP ACT Proprietary Ext */
       status = phNxpNciHal_send_ext_cmd(retlen, buffer);
       if (status != NFCSTATUS_SUCCESS) {
@@ -1718,7 +1718,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     retlen = 0;
     isfound = GetNxpByteArrayValue(NAME_NXP_CORE_CONF, (char*)buffer, bufflen,
                                    &retlen);
-    if (retlen > 0) {
+    if (isfound > 0 && retlen > 0) {
       /* NXP ACT Proprietary Ext */
       status = phNxpNciHal_send_ext_cmd(retlen, buffer);
       if (status != NFCSTATUS_SUCCESS) {
@@ -1753,7 +1753,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
           isfound = GetNxpByteArrayValue(
               strcat(rf_conf_block, rf_block_num[loopcnt++]), (char *)buffer,
               bufflen, &retlen);
-          if (retlen > 0) {
+          if (isfound > 0 && retlen > 0) {
             NXPLOG_NCIHAL_D(" Performing RF Settings BLK %ld", loopcnt);
             status = phNxpNciHal_send_ext_cmd(retlen, buffer);
 
@@ -1789,7 +1789,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     }
     isfound = GetNxpByteArrayValue(NAME_NXP_CORE_RF_FIELD, (char*)buffer,
                                    bufflen, &retlen);
-    if (retlen > 0) {
+    if (isfound > 0 && retlen > 0) {
       /* NXP ACT Proprietary Ext */
       status = phNxpNciHal_send_ext_cmd(retlen, buffer);
       if (status == NFCSTATUS_SUCCESS) {
