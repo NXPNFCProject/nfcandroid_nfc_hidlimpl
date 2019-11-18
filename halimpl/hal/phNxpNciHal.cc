@@ -2911,6 +2911,7 @@ int phNxpNciHal_close(bool bShutdown) {
   char valueStr[PROPERTY_VALUE_MAX] = {0};
   bool factoryOTA_terminate = false;
   int len;
+  unsigned long num = 0;
 
   if (!(GetNxpNumValue(NAME_NXP_UICC_LISTEN_TECH_MASK, &uiccListenMask,
                        sizeof(uiccListenMask)))) {
@@ -2972,14 +2973,25 @@ int phNxpNciHal_close(bool bShutdown) {
     phNxpNciHal_isFactoryOTAModeActive();
   }
 
+  GetNxpNumValue(NAME_NXP_CORE_PWR_OFF_AUTONOMOUS_ENABLE, &num, sizeof(num));
   nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
 
-  status =
-      phNxpNciHal_send_ext_cmd(sizeof(cmd_core_reset_nci), cmd_core_reset_nci);
+  if (bShutdown && (num == 0x01) ) {
+    NXPLOG_NCIHAL_D("Power shutdown with autonomous mode enable");
+    static uint8_t coreStandBy[] = {0x2F, 0x00, 0x01, 0x02};
+    status = phNxpNciHal_send_ext_cmd(sizeof(coreStandBy), coreStandBy);
 
-  if (status != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed");
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("NXP Standby Proprietary Ext failed");
+    }
+  } else {
+    status =
+        phNxpNciHal_send_ext_cmd(sizeof(cmd_core_reset_nci), cmd_core_reset_nci);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed");
+    }
   }
+
   sem_destroy(&nxpncihal_ctrl.syncSpiNfc);
 
   if (gParserCreated) {
