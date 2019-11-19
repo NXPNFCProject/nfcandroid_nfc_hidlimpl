@@ -16,9 +16,9 @@
 
 #include "phNxpNciHal_extOperations.h"
 #include "phNfcCommon.h"
+#include "phNxpNciHal_IoctlOperations.h"
 #include <phNxpLog.h>
 #include <phNxpNciHal_ext.h>
-#include <cutils/properties.h>
 
 #define NCI_HEADER_SIZE 3
 #define NCI_SE_CMD_LEN  4
@@ -107,10 +107,10 @@ static int8_t get_system_property_se_type(uint8_t se_type)
       len = property_get("nfc.product.support.ese", valueStr, "");
       break;
     case SE_TYPE_UICC:
-      len = property_get("nfc.product.support.UICC", valueStr, "");
+      len = property_get("nfc.product.support.uicc", valueStr, "");
       break;
     case SE_TYPE_UICC2:
-      len = property_get("nfc.product.support.UICC2", valueStr, "");
+      len = property_get("nfc.product.support.uicc2", valueStr, "");
       break;
   }
   if(strlen(valueStr) == 0 || len <= 0) {

@@ -128,3 +128,39 @@ void phNxpNciHal_setNxpTransitConfig(char *transitConfValue);
 int phNxpNciHal_CheckFwRegFlashRequired(uint8_t *fw_update_req,
                                         uint8_t *rf_update_req,
                                         uint8_t skipEEPROMRead);
+
+/*******************************************************************************
+ **
+ ** Function:        property_get_intf()
+ **
+ ** Description:     Gets property value for the input property name
+ **
+ ** Parameters       propName:   Name of the property whichs value need to get
+ **                  valueStr:   output value of the property.
+ **                  defaultStr: default value of the property if value is not
+ **                              there this will be set to output value.
+ **
+ ** Returns:         actual length of the property value
+ **
+ ********************************************************************************/
+int property_get_intf(const char *propName, char *valueStr,
+                      const char *defaultStr);
+
+/*******************************************************************************
+ **
+ ** Function:        property_set_intf()
+ **
+ ** Description:     Sets property value for the input property name
+ **
+ ** Parameters       propName:   Name of the property whichs value need to set
+ **                  valueStr:   value of the property.
+ **
+ ** Returns:        returns 0 on success, < 0 on failure
+ **
+ ********************************************************************************/
+int property_set_intf(const char *propName, const char *valueStr);
+
+#undef PROPERTY_VALUE_MAX
+#define PROPERTY_VALUE_MAX 92
+#define property_get(a, b, c) property_get_intf(a, b, c)
+#define property_set(a, b) property_set_intf(a, b)

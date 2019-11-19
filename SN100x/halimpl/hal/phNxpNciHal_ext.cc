@@ -25,9 +25,9 @@
 #include <phTmlNfc.h>
 #include <phDnldNfc.h>
 #if(NXP_EXTNS == TRUE)
-#include <cutils/properties.h>
-#include "phNxpNciHal_nciParser.h"
 #include "phNxpNciHal.h"
+#include "phNxpNciHal_IoctlOperations.h"
+#include "phNxpNciHal_nciParser.h"
 #endif
 /* Timeout value to wait for response from PN548AD */
 #define HAL_EXTNS_WRITE_RSP_TIMEOUT (1000)
