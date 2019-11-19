@@ -101,19 +101,19 @@ static int8_t get_system_property_se_type(uint8_t se_type)
   char valueStr[PROPERTY_VALUE_MAX] = {0};
   if (se_type >= NUM_SE_TYPES)
     return retVal;
-
+  int len = 0;
   switch(se_type) {
     case SE_TYPE_ESE:
-      property_get("nfc.product.support.ese", valueStr, "");
+      len = property_get("nfc.product.support.ese", valueStr, "");
       break;
     case SE_TYPE_UICC:
-      property_get("nfc.product.support.UICC", valueStr, "");
+      len = property_get("nfc.product.support.UICC", valueStr, "");
       break;
     case SE_TYPE_UICC2:
-      property_get("nfc.product.support.UICC2", valueStr, "");
+      len = property_get("nfc.product.support.UICC2", valueStr, "");
       break;
   }
-  if(strlen(valueStr) == 0) {
+  if(strlen(valueStr) == 0 || len <= 0) {
     return retVal;
   }
   retVal = atoi(valueStr);
