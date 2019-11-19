@@ -21,7 +21,6 @@
 #include <phDnldNfc.h>
 #include <phNxpConfig.h>
 #include <phNxpLog.h>
-#include <cutils/properties.h>
 #include <phNxpNciHal.h>
 #include <phNxpNciHal_Adaptation.h>
 #include <phNxpNciHal_Dnld.h>

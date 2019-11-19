@@ -19,7 +19,6 @@
 #include <android-base/file.h>
 #include <android-base/strings.h>
 #include <android-base/parseint.h>
-#include <cutils/properties.h>
 #include "phNxpNciHal_ext.h"
 #include "phNxpNciHal_utils.h"
 #include "phDnldNfc_Internal.h"
@@ -53,6 +52,65 @@ extern nfc_stack_callback_t *p_nfc_stack_cback_backup;
 extern uint8_t fw_dwnld_flag;
 #endif
 
+/*******************************************************************************
+ **
+ ** Function:        property_get_intf()
+ **
+ ** Description:     Gets property value for the input property name
+ **
+ ** Parameters       propName:   Name of the property whichs value need to get
+ **                  valueStr:   output value of the property.
+ **                  defaultStr: default value of the property if value is not
+ **                              there this will be set to output value.
+ **
+ ** Returns:         actual length of the property value
+ **
+ ********************************************************************************/
+int property_get_intf(const char *propName, char *valueStr,
+                      const char *defaultStr) {
+  string paramPropName = propName;
+  string propValue;
+  string propValueDefault = defaultStr;
+  int len = 0;
+
+  propValue = phNxpNciHal_getSystemProperty(paramPropName);
+  if (propValue.length() > 0) {
+    NXPLOG_NCIHAL_D("property_get_intf , key[%s], propValue[%s], length[%zu]",
+                    propName, propValue.c_str(), propValue.length());
+    len = propValue.length();
+    strncpy(valueStr, propValue.c_str(), len);
+  } else {
+    if (propValueDefault.length() > 0) {
+      len = propValueDefault.length();
+      strncpy(valueStr, propValueDefault.c_str(), len);
+    }
+  }
+
+  return len;
+}
+
+/*******************************************************************************
+ **
+ ** Function:        property_set_intf()
+ **
+ ** Description:     Sets property value for the input property name
+ **
+ ** Parameters       propName:   Name of the property whichs value need to set
+ **                  valueStr:   value of the property.
+ **
+ ** Returns:        returns 0 on success, < 0 on failure
+ **
+ ********************************************************************************/
+int property_set_intf(const char *propName, const char *valueStr) {
+  string paramPropName = propName;
+  string propValue = valueStr;
+  NXPLOG_NCIHAL_D("property_set_intf, key[%s], value[%s]", propName, valueStr);
+  if (phNxpNciHal_setSystemProperty(paramPropName, propValue))
+    return NFCSTATUS_SUCCESS;
+  else
+    return NFCSTATUS_FAILED;
+}
+
 extern size_t readConfigFile(const char *fileName, uint8_t **p_data);
 
 static string phNxpNciHal_parseBytesString(string in);
@@ -65,9 +123,21 @@ static void phNxpNciHal_getFilteredConfig(string &config);
 
 typedef std::map<std::string, std::string> systemProperty;
 systemProperty gsystemProperty = {
-    {"nfc.fw.rfreg_ver", "0"},     {"nfc.fw.rfreg_display_ver", "0"},
-    {"nfc.fw.dfl_areacode", "0"},  {"nfc.fw.downloadmode_force", "0"},
-    {"nfc.nxp.fwdnldstatus", "0"},
+    {"nfc.nxp_log_level_global", ""},
+    {"nfc.nxp_log_level_extns", ""},
+    {"nfc.nxp_log_level_hal", ""},
+    {"nfc.nxp_log_level_nci", ""},
+    {"nfc.nxp_log_level_dnld", ""},
+    {"nfc.nxp_log_level_tml", ""},
+    {"nfc.fw.dfl", ""},
+    {"nfc.fw.downloadmode_force", ""},
+    {"nfc.debug_enabled", ""},
+    {"nfc.product.support.ese", ""},
+    {"nfc.product.support.uicc", ""},
+    {"nfc.product.support.uicc2", ""},
+    {"nfc.fw.rfreg_ver", ""},
+    {"nfc.fw.rfreg_display_ver", ""},
+    {"nfc.fw.dfl_areacode", ""},
 };
 const char default_nxp_config_path[] = "/vendor/etc/libnfc-nxp.conf";
 std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
