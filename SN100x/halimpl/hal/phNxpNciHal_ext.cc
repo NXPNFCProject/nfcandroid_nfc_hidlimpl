@@ -62,8 +62,6 @@ static uint32_t iCoreInitRspLen;
 
 extern uint32_t timeoutTimerId;
 
-extern NFCSTATUS read_retry();
-
 /************** HAL extension functions ***************************************/
 static void hal_extns_write_rsp_timeout_cb(uint32_t TimerId, void* pContext);
 
@@ -464,7 +462,7 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf, uint16_t* 
           for (i = 0; i < *p_len; i++) {
             snprintf(&print_buffer[i * 2], 3, "%02X", p_ntf[i]);
           }
-          NXPLOG_NCIHAL_E("CORE_RESET_NTF received !");
+          NXPLOG_NCIHAL_D("CORE_RESET_NTF received !");
           NXPLOG_NCIR_E("len = %3d > %s", *p_len, print_buffer);
           phNxpNciHal_emergency_recovery(p_ntf[3]);
           status = NFCSTATUS_FAILED;
@@ -943,7 +941,7 @@ NFCSTATUS phNxpNciHal_send_ese_hal_cmd(uint16_t cmd_len, uint8_t* p_cmd) {
 static void hal_extns_write_rsp_timeout_cb(uint32_t timerId, void* pContext) {
   UNUSED_PROP(timerId);
   UNUSED_PROP(pContext);
-  NXPLOG_NCIHAL_E("hal_extns_write_rsp_timeout_cb - write timeout!!!");
+  NXPLOG_NCIHAL_D("hal_extns_write_rsp_timeout_cb - write timeout!!!");
   nxpncihal_ctrl.ext_cb_data.status = NFCSTATUS_FAILED;
   usleep(1);
   sem_post(&(nxpncihal_ctrl.syncSpiNfc));

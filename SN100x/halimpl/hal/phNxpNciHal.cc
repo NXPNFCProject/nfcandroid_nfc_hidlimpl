@@ -550,7 +550,7 @@ int phNxpNciHal_MinOpen (){
 
   AutoThreadMutex a(sHalFnLock);
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_MIN_OPEN) {
-    NXPLOG_NCIHAL_E("phNxpNciHal_MinOpen(): already open");
+    NXPLOG_NCIHAL_D("phNxpNciHal_MinOpen(): already open");
     return NFCSTATUS_SUCCESS;
   }
   setNxpRfConfigPath("/system/vendor/libnfc-nxp_RF.conf");
@@ -591,11 +591,11 @@ int phNxpNciHal_MinOpen (){
   /* Read the nfc device node name */
   nfc_dev_node = (char*)malloc(max_len * sizeof(char));
   if (nfc_dev_node == NULL) {
-    NXPLOG_NCIHAL_E("malloc of nfc_dev_node failed ");
+    NXPLOG_NCIHAL_D("malloc of nfc_dev_node failed ");
     goto clean_and_return;
   } else if (!GetNxpStrValue(NAME_NXP_NFC_DEV_NODE, nfc_dev_node,
                              max_len)) {
-    NXPLOG_NCIHAL_E(
+    NXPLOG_NCIHAL_D(
         "Invalid nfc device node name keeping the default device node "
         "/dev/pn54x");
     strcpy(nfc_dev_node, "/dev/pn54x");
@@ -681,7 +681,7 @@ init_retry:
   } else {
     status = phNxpNciHal_send_ext_cmd(sizeof(cmd_init_nci), cmd_init_nci);
     if(status == NFCSTATUS_SUCCESS && (nfcFL.chipType == pn557)) {
-      NXPLOG_NCIHAL_E("Chip is in NCI1.0 mode reset the chip to 2.0 mode");
+      NXPLOG_NCIHAL_D("Chip is in NCI1.0 mode reset the chip to 2.0 mode");
       status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
       if(status == NFCSTATUS_SUCCESS) {
         status = phNxpNciHal_send_ext_cmd(sizeof(cmd_init_nci2_0), cmd_init_nci2_0);
@@ -731,8 +731,8 @@ init_retry:
     phDnldNfc_ReSetHwDevHandle();
   } else {
   force_download:
-  NXPLOG_NCIHAL_E("FW version for FW file = 0x%x", wFwVer);
-  NXPLOG_NCIHAL_E("FW version from device = 0x%x", wFwVerRsp);
+  NXPLOG_NCIHAL_D("FW version for FW file = 0x%x", wFwVer);
+  NXPLOG_NCIHAL_D("FW version from device = 0x%x", wFwVerRsp);
     if (wFwVerRsp == 0) {
       nfcFL.chipType = sn100u;
       tNFC_chipType chipType = sn100u;
@@ -853,7 +853,7 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
     return NFCSTATUS_FAILED;
   }
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_OPEN) {
-    NXPLOG_NCIHAL_E("phNxpNciHal_open already open");
+    NXPLOG_NCIHAL_D("phNxpNciHal_open already open");
     return NFCSTATUS_SUCCESS;
   }else if(nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE){
     memset(&nxpncihal_ctrl, 0x00, sizeof(nxpncihal_ctrl));
@@ -1095,7 +1095,7 @@ retry:
   if (cb_data.status != NFCSTATUS_SUCCESS) {
     data_len = 0;
     if (nxpncihal_ctrl.retry_cnt++ < MAX_RETRY_COUNT) {
-      NXPLOG_NCIHAL_E(
+      NXPLOG_NCIHAL_D(
           "write_unlocked failed - PN54X Maybe in Standby Mode - Retry");
       /* 10ms delay to give NFCC wake up delay */
       usleep(1000 * 10);
@@ -1165,7 +1165,7 @@ static void phNxpNciHal_write_complete(void* pContext,
   if (pInfo->wStatus == NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_D("write successful status = 0x%x", pInfo->wStatus);
   } else {
-    NXPLOG_NCIHAL_E("write error status = 0x%x", pInfo->wStatus);
+    NXPLOG_NCIHAL_D("write error status = 0x%x", pInfo->wStatus);
   }
 
   p_cb_data->status = pInfo->wStatus;
@@ -1281,7 +1281,7 @@ static void phNxpNciHal_read_complete(void* pContext,
 		  (nxpncihal_ctrl.p_rx_data[0x01] & NCI_OID_MASK) &&
 #endif
   nxpncihal_ctrl.nci_info.wait_for_ntf == FALSE) {
-    NXPLOG_NCIHAL_E(" Ignoring read , HAL close triggered");
+    NXPLOG_NCIHAL_D(" Ignoring read , HAL close triggered");
     return;
   }
   /* Read again because read must be pending always except FWDNLD.*/
@@ -1297,16 +1297,6 @@ static void phNxpNciHal_read_complete(void* pContext,
   return;
 }
 
-void read_retry() {
-  /* Read again because read must be pending always.*/
-  NFCSTATUS status = phTmlNfc_Read(
-      Rx_data, NCI_MAX_DATA_LEN,
-      (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete, NULL);
-  if (status != NFCSTATUS_PENDING) {
-    NXPLOG_NCIHAL_E("read status error status = %x", status);
-    /* TODO: Not sure how to handle this ? */
-  }
-}
 /*******************************************************************************
  **
  ** Function:        phNxpNciHal_lastResetNtfReason()
@@ -2152,7 +2142,7 @@ int phNxpNciHal_close(bool bShutdown) {
 
   AutoThreadMutex a(sHalFnLock);
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
-    NXPLOG_NCIHAL_E("phNxpNciHal_close is already closed, ignoring close");
+    NXPLOG_NCIHAL_D("phNxpNciHal_close is already closed, ignoring close");
     return NFCSTATUS_FAILED;
   }
 #if(NXP_EXTNS == TRUE)
@@ -2971,7 +2961,7 @@ retry_send_ext:
   status =
       phNxpNciHal_send_ext_cmd(sizeof(get_mw_eeprom_cmd), get_mw_eeprom_cmd);
   if (status != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("unable to get the mw eeprom data");
+    NXPLOG_NCIHAL_D("unable to get the mw eeprom data");
     phNxpNciMwEepromArea.isGetEepromArea = false;
     retry_cnt++;
     goto retry_send_ext;
@@ -3011,7 +3001,7 @@ retry_send_ext:
   status =
       phNxpNciHal_send_ext_cmd(sizeof(set_mw_eeprom_cmd), set_mw_eeprom_cmd);
   if (status != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("unable to update the mw eeprom data");
+    NXPLOG_NCIHAL_D("unable to update the mw eeprom data");
     retry_cnt++;
     goto retry_send_ext;
   }
@@ -3084,10 +3074,10 @@ retrySetclock:
   phNxpNciClock.isClockSet = false;
   if (phNxpNciClock.p_rx_data[3] != NFCSTATUS_SUCCESS) {
     if (retryCount++ < 3) {
-      NXPLOG_NCIHAL_E("Set-clk failed retry again ");
+      NXPLOG_NCIHAL_D("Set-clk failed retry again ");
       goto retrySetclock;
     } else {
-      NXPLOG_NCIHAL_D("Set clk  failed -  max count = 0x%x exceeded ",
+      NXPLOG_NCIHAL_E("Set clk  failed -  max count = 0x%x exceeded ",
                       retryCount);
       //            NXPLOG_NCIHAL_E("Set Config is failed for Clock Due to
       //            elctrical disturbances, aborting the NFC process");
@@ -3335,7 +3325,7 @@ NFCSTATUS phNxpNciHal_nfcc_core_reset_init() {
 retry_core_reset:
   status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
   if ((status != NFCSTATUS_SUCCESS) && (retry_cnt < 3)) {
-    NXPLOG_NCIHAL_E("Retry: NCI_CORE_RESET");
+    NXPLOG_NCIHAL_D("Retry: NCI_CORE_RESET");
     retry_cnt++;
     goto retry_core_reset;
   } else if (status != NFCSTATUS_SUCCESS) {
@@ -3354,7 +3344,7 @@ retry_core_init:
   }
 
   if ((status != NFCSTATUS_SUCCESS) && (retry_cnt < 3)) {
-    NXPLOG_NCIHAL_E("Retry: NCI_CORE_INIT\n");
+    NXPLOG_NCIHAL_D("Retry: NCI_CORE_INIT\n");
     retry_cnt++;
     goto retry_core_init;
   } else if (status != NFCSTATUS_SUCCESS) {
