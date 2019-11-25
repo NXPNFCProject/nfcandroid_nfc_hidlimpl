@@ -17,6 +17,7 @@
 #if !defined(NXPLOG__H_INCLUDED)
 #define NXPLOG__H_INCLUDED
 #include <log/log.h>
+#include <phNfcStatus.h>
 
 typedef struct nci_log_level {
   uint8_t global_log_level;

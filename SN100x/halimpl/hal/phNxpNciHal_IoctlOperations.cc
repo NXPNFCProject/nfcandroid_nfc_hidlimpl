@@ -52,6 +52,10 @@ extern nfc_stack_callback_t *p_nfc_stack_cback_backup;
 extern uint8_t fw_dwnld_flag;
 #endif
 
+extern bool nfc_debug_enabled;
+extern NFCSTATUS phNxpLog_EnableDisableLogLevel(uint8_t enable);
+
+
 /*******************************************************************************
  **
  ** Function:        property_get_intf()
@@ -177,7 +181,8 @@ std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
                                 "NFA_CONFIG_FORMAT",
                                 "NXP_T4T_NFCEE_ENABLE",
                                 "NXP_DISCONNECT_TAG_IN_SCRN_OFF",
-                                "OFF_HOST_SIM2_PIPE_ID"};
+                                "OFF_HOST_SIM2_PIPE_ID",
+                                "NXP_ENABLE_DISABLE_LOGS"};
 
 /****************************************************************
  * Local Functions
@@ -411,11 +416,21 @@ string phNxpNciHal_getSystemProperty(string key) {
  ** Returns          true if success, false if fail
  *******************************************************************************/
 bool phNxpNciHal_setSystemProperty(string key, string value) {
-  NXPLOG_NCIHAL_D("%s : Enter Key = %s, value = %s", __func__, key.c_str(),
-                  value.c_str());
+  bool stat = true;
+  if (strcmp(key.c_str(), "nfc.debug_enabled") != 0)
+    NXPLOG_NCIHAL_D("%s : Enter Key = %s, value = %s", __func__, key.c_str(),
+                    value.c_str());
+
+  unsigned tmp = 0;
+  if (strcmp(key.c_str(), "nfc.debug_enabled") == 0) {
+    ParseUint(value.c_str(), &tmp);
+    if (phNxpLog_EnableDisableLogLevel((uint8_t)tmp) != NFCSTATUS_SUCCESS) {
+      stat = false;
+    }
+  }
 
   gsystemProperty[key] = value;
-  return true;
+  return stat;
 }
 
 /*******************************************************************************
