@@ -644,7 +644,7 @@ void phDnldNfc_SetHwDevHandle(void) {
 *******************************************************************************/
 void phDnldNfc_ReSetHwDevHandle(void) {
   if (gpphDnldContext != NULL) {
-    NXPLOG_FWDNLD_E("Freeing Mem for Dnld Context..");
+    NXPLOG_FWDNLD_D("Freeing Mem for Dnld Context..");
     free(gpphDnldContext);
     gpphDnldContext = NULL;
   }
@@ -765,8 +765,8 @@ NFCSTATUS phDnldNfc_InitImgInfo(void) {
     return NFCSTATUS_FAILED;
   }
 
-  NXPLOG_FWDNLD_E("FW Image Length - ImageInfoLen %d", ImageInfoLen);
-  NXPLOG_FWDNLD_E("FW Image Info Pointer - pImageInfo %p", pImageInfo);
+  NXPLOG_FWDNLD_D("FW Image Length - ImageInfoLen %d", ImageInfoLen);
+  NXPLOG_FWDNLD_D("FW Image Info Pointer - pImageInfo %p", pImageInfo);
 
   if ((pImageInfo == NULL) || (ImageInfoLen == 0)) {
     NXPLOG_FWDNLD_E(
