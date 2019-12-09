@@ -640,16 +640,18 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
     p_rsp_data[3] = 0x00;
     status = NFCSTATUS_FAILED;
   } else if (p_cmd_data[0] == 0x20 && p_cmd_data[1] == 0x02 &&
-             p_cmd_data[2] == 0x05 && p_cmd_data[3] == 0x01 &&
-             p_cmd_data[4] == 0xA0 && p_cmd_data[5] == 0x44 &&
-             p_cmd_data[6] == 0x01 && p_cmd_data[7] & 0x01) {
+          (p_cmd_data[2] == 0x05 || p_cmd_data[2] == 0x32) &&
+          (p_cmd_data[3] == 0x01 || p_cmd_data[3] == 0x02) &&
+          p_cmd_data[4] == 0xA0 && p_cmd_data[5] == 0x44 &&
+          p_cmd_data[6] == 0x01 && p_cmd_data[7] == 0x01) {
     nxpprofile_ctrl.profile_type = EMV_CO_PROFILE;
     NXPLOG_NCIHAL_D("EMV_CO_PROFILE mode - Enabled");
     status = NFCSTATUS_SUCCESS;
   } else if (p_cmd_data[0] == 0x20 && p_cmd_data[1] == 0x02 &&
-             p_cmd_data[2] == 0x05 && p_cmd_data[3] == 0x01 &&
-             p_cmd_data[4] == 0xA0 && p_cmd_data[5] == 0x44 &&
-             p_cmd_data[6] == 0x01 && p_cmd_data[7] == 0x00) {
+          (p_cmd_data[2] == 0x05 || p_cmd_data[2] == 0x32) &&
+          (p_cmd_data[3] == 0x01 || p_cmd_data[3] == 0x02) &&
+          p_cmd_data[4] == 0xA0 && p_cmd_data[5] == 0x44 &&
+          p_cmd_data[6] == 0x01 && p_cmd_data[7] == 0x00) {
     NXPLOG_NCIHAL_D("NFC_FORUM_PROFILE mode - Enabled");
     nxpprofile_ctrl.profile_type = NFC_FORUM_PROFILE;
     status = NFCSTATUS_SUCCESS;
@@ -1238,6 +1240,38 @@ NFCSTATUS phNxpNciHal_enableDefaultUICC2SWPline(uint8_t uicc2_sel) {
     if(p_data[PARAM_INDEX] > 0x00)
       status = phNxpNciHal_send_ext_cmd(p-p_data, p_data);
   return status;
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_prop_conf_lpcd
+ *
+ * Description      If NFCC is not in Nfc Forum mode, then this function will
+ *                  configure it back to the Nfc Forum mode.
+ *
+ * Returns          none
+ *
+ ******************************************************************************/
+void phNxpNciHal_prop_conf_lpcd() {
+  uint8_t cmd_get_lpcdval[] = { 0x20, 0x03, 0x03, 0x01, 0xA0, 0x68};
+  vector<uint8_t> cmd_set_lpcdval{ 0x20, 0x02, 0x2E};
+
+  if(NFCSTATUS_SUCCESS == phNxpNciHal_send_ext_cmd(sizeof(cmd_get_lpcdval), cmd_get_lpcdval)) {
+    if(NFCSTATUS_SUCCESS == nxpncihal_ctrl.p_rx_data[3]) {
+      if(!(nxpncihal_ctrl.p_rx_data[17] & (1 << 7))) {
+        nxpncihal_ctrl.p_rx_data[17] |= (1 << 7);
+        cmd_set_lpcdval.insert(cmd_set_lpcdval.end(), &nxpncihal_ctrl.p_rx_data[4],
+                (&nxpncihal_ctrl.p_rx_data[4] + cmd_set_lpcdval[2]));
+        if(NFCSTATUS_SUCCESS == phNxpNciHal_send_ext_cmd(cmd_set_lpcdval.size(),
+                &cmd_set_lpcdval[0])) {
+          return;
+        }
+      } else {
+        return;
+      }
+    }
+  }
+  NXPLOG_NCIHAL_E("%s: failed!!", __func__);
+  return;
 }
 
 /******************************************************************************
