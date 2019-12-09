@@ -1895,10 +1895,10 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     mEEPROM_info.request_mode = SET_EEPROM_DATA;
     if(GetNxpNumValue(NAME_WTAG_SUPPORT, (void*)&retlen, sizeof(retlen))) {
       if(retlen == 0x01) {
-        value = (uint8_t)retlen;
+        value = 0x03; //Set T4T from NFCC for W_TAG
         mEEPROM_info.buffer = &value;
       }
-    }else {
+    } else {
       mEEPROM_info.buffer = &value;
     }
     status = request_EEPROM(&mEEPROM_info);
