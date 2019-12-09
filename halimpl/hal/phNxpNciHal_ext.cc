@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2018 NXP Semiconductors
+ * Copyright (C) 2015-2019 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1287,6 +1287,12 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
       memIndex = 0x00;
       addr[0] = 0xA0;
       addr[1] = 0xED;
+      break;
+    case EEPROM_NDEF_INTF_CFG:
+      b_position = 0x00;
+      memIndex = 0x00;
+      addr[0] = 0xA0;
+      addr[1] = 0x95;
       break;
     default:
       ALOGE("No valid request information found");

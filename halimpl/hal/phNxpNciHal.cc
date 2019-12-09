@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2018 NXP Semiconductors
+ * Copyright (C) 2015-2019 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1888,6 +1888,20 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
         }
       }
     }
+    retlen = 0;
+    value = (uint8_t)retlen;
+    mEEPROM_info.bufflen = sizeof(value);
+    mEEPROM_info.request_type = EEPROM_NDEF_INTF_CFG;
+    mEEPROM_info.request_mode = SET_EEPROM_DATA;
+    if(GetNxpNumValue(NAME_WTAG_SUPPORT, (void*)&retlen, sizeof(retlen))) {
+      if(retlen == 0x01) {
+        value = (uint8_t)retlen;
+        mEEPROM_info.buffer = &value;
+      }
+    }else {
+      mEEPROM_info.buffer = &value;
+    }
+    status = request_EEPROM(&mEEPROM_info);
   }
 #endif
   if(persist_core_reset_debug_info_req){
@@ -3288,6 +3302,15 @@ void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
   }
   if (GetNxpNumValue(NAME_DEFAULT_TECH_ABF_PWR_STATE, &num, sizeof(num))) {
     pInpOutData->out.data.nxpConfigs.techAbfPwrState = num;
+  }
+  if (GetNxpNumValue(NAME_WTAG_SUPPORT, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.wTagSupport = num;
+  }
+  if (GetNxpNumValue(NAME_DEFAULT_T4TNFCEE_AID_POWER_STATE, &num, sizeof(num))) {
+    pInpOutData->out.data.nxpConfigs.t4tNfceePwrState = num;
+  } else {
+    //sete Default power state as Phone off (Low power mode)
+    pInpOutData->out.data.nxpConfigs.t4tNfceePwrState = 0x02;
   }
   if (buffer) {
     if (GetNxpByteArrayValue(NAME_NXP_PROP_RESET_EMVCO_CMD, (char *)buffer,
