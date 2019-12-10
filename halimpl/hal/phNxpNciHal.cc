@@ -2987,7 +2987,9 @@ int phNxpNciHal_close(bool bShutdown) {
     phNxpNciHal_isFactoryOTAModeActive();
   }
 
-  GetNxpNumValue(NAME_NXP_CORE_PWR_OFF_AUTONOMOUS_ENABLE, &num, sizeof(num));
+  if (GetNxpNumValue(NAME_NXP_CORE_PWR_OFF_AUTONOMOUS_ENABLE, &num, sizeof(num))) {
+    NXPLOG_NCIHAL_D("Power shutdown with autonomous mode status: %lu", num);
+  }
   nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
 
   if (bShutdown && (num == 0x01) ) {
