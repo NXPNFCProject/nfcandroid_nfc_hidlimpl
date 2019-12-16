@@ -99,22 +99,28 @@ NCI_LxDebug_Decoder::getInstance() {
  ** Returns:         void
  **
  ******************************************************************************/
-void
-NCI_LxDebug_Decoder::setLxDebugModes(uint8_t *pNciPkt,
-                                     uint16_t pktLen) {
-    mL2DebugMode       = (pNciPkt[7] & 0x01) ? true : false;    //bit:0 Byte0
-    mFelicaRFDebugMode = (pNciPkt[7] & 0x02) ? true : false;    //bit:1 Byte0
-    mFelicaSCDebugMode = (pNciPkt[7] & 0x04) ? true : false;    //bit:2 Byte0
-    mL1DebugMode       = (pNciPkt[7] & 0x10) ? true : false;    //bit:4 Byte0
-    m7816DebugMode     = (pNciPkt[7] & 0x40) ? true : false;    //bit:6 Byte0
-    mRssiDebugMode     = (pNciPkt[8] & 0x01) ? true : false;    //bit:0 Byte1
+void NCI_LxDebug_Decoder::setLxDebugModes(uint8_t *pNciPkt,
+                                          __attribute__((unused))
+                                          uint16_t pktLen) {
+  mL2DebugMode = (pNciPkt[7] & 0x01) ? true : false;       // bit:0 Byte0
+  mFelicaRFDebugMode = (pNciPkt[7] & 0x02) ? true : false; // bit:1 Byte0
+  mFelicaSCDebugMode = (pNciPkt[7] & 0x04) ? true : false; // bit:2 Byte0
+  mL1DebugMode = (pNciPkt[7] & 0x10) ? true : false;       // bit:4 Byte0
+  m7816DebugMode = (pNciPkt[7] & 0x40) ? true : false;     // bit:6 Byte0
+  mRssiDebugMode = (pNciPkt[8] & 0x01) ? true : false;     // bit:0 Byte1
 
-    phOsal_LogInfoU32d((const uint8_t*)"LxDecoder> L1 Debug Enable",mL1DebugMode);
-    phOsal_LogInfoU32d((const uint8_t*)"LxDecoder> L2 Debug Enable",mL2DebugMode);
-    phOsal_LogInfoU32d((const uint8_t*)"LxDecoder> FelicaRF Enable",mFelicaRFDebugMode);
-    phOsal_LogInfoU32d((const uint8_t*)"LxDecoder> FelicaSC Enable",mFelicaSCDebugMode);
-    phOsal_LogInfoU32d((const uint8_t*)"LxDecoder> 7816-4RC Enable",m7816DebugMode);
-    phOsal_LogInfoU32d((const uint8_t*)"LxDecoder> RSSI Dbg Enable",mRssiDebugMode);
+  phOsal_LogInfoU32d((const uint8_t *)"LxDecoder> L1 Debug Enable",
+                     mL1DebugMode);
+  phOsal_LogInfoU32d((const uint8_t *)"LxDecoder> L2 Debug Enable",
+                     mL2DebugMode);
+  phOsal_LogInfoU32d((const uint8_t *)"LxDecoder> FelicaRF Enable",
+                     mFelicaRFDebugMode);
+  phOsal_LogInfoU32d((const uint8_t *)"LxDecoder> FelicaSC Enable",
+                     mFelicaSCDebugMode);
+  phOsal_LogInfoU32d((const uint8_t *)"LxDecoder> 7816-4RC Enable",
+                     m7816DebugMode);
+  phOsal_LogInfoU32d((const uint8_t *)"LxDecoder> RSSI Dbg Enable",
+                     mRssiDebugMode);
 }
 
 /*******************************************************************************

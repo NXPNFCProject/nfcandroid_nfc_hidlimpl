@@ -149,36 +149,35 @@ OSALSTATUS phOsal_ThreadSetPriority(void *hThread,int32_t sdwPriority)
     return lpParameter;
 }*/
 
-OSALSTATUS phOsal_SemaphoreCreate(void        **hSemaphore,
-                                 uint8_t     bInitialValue,
-                                 uint8_t     bMaxValue)
-{
-    int32_t status=0;
-    LOG_FUNCTION_ENTRY;
-    //phOsal_LogInfoU32d((const uint8_t*)"Osal>Sem Max Value:",(uint32_t)bMaxValue);
+OSALSTATUS phOsal_SemaphoreCreate(void **hSemaphore, uint8_t bInitialValue,
+                                  __attribute__((unused)) uint8_t bMaxValue) {
+  int32_t status = 0;
+  LOG_FUNCTION_ENTRY;
+  // phOsal_LogInfoU32d((const uint8_t*)"Osal>Sem Max
+  // Value:",(uint32_t)bMaxValue);
 
-    if(hSemaphore == NULL)
-    {
-        phOsal_LogError((const uint8_t*)"Osal>Invalid Semaphore Handle");
-        return OSALSTATUS_INVALID_PARAMS;
-    }
+  if (hSemaphore == NULL) {
+    phOsal_LogError((const uint8_t *)"Osal>Invalid Semaphore Handle");
+    return OSALSTATUS_INVALID_PARAMS;
+  }
 
-    *hSemaphore = (sem_t*)malloc(sizeof(sem_t));
-    if(*hSemaphore == NULL)
-    {
-        phOsal_LogError((const uint8_t*)"Osal>Unable to allocate memory for semaphore");
-        return OSALSTATUS_FAILED;
-    }
+  *hSemaphore = (sem_t *)malloc(sizeof(sem_t));
+  if (*hSemaphore == NULL) {
+    phOsal_LogError(
+        (const uint8_t *)"Osal>Unable to allocate memory for semaphore");
+    return OSALSTATUS_FAILED;
+  }
 
-    status = sem_init((sem_t*)*hSemaphore, 0, bInitialValue);
-    if(status == -1)
-    {
-        phOsal_LogErrorU32d((const uint8_t*)"Osal>Unable to allocate memory for semaphore.Status=",(uint32_t)status);
-        return OSALSTATUS_FAILED;
-    }
-    //phOsal_LogInfo((const uint8_t*)"Osal> Semaphore Created");
-    LOG_FUNCTION_EXIT;
-    return OSALSTATUS_SUCCESS;
+  status = sem_init((sem_t *)*hSemaphore, 0, bInitialValue);
+  if (status == -1) {
+    phOsal_LogErrorU32d(
+        (const uint8_t *)"Osal>Unable to allocate memory for semaphore.Status=",
+        (uint32_t)status);
+    return OSALSTATUS_FAILED;
+  }
+  // phOsal_LogInfo((const uint8_t*)"Osal> Semaphore Created");
+  LOG_FUNCTION_EXIT;
+  return OSALSTATUS_SUCCESS;
 }
 
 

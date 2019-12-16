@@ -56,19 +56,18 @@ NCI_Parser::resetInstance() {
         delete mpNciParser;
 }
 
-void*
-parsingTask(void *pvParams)
-{
-    while(1)
-    {
-        if(!NCI_Parser::getInstance()->mTaskRunning) {
-            phOsal_LogDebug((const unsigned char*)"<<<<<<<<<<Stopping Parser Task>>>>>>>>>>");
-            break;
-        }
-        phOsal_LogDebug((const unsigned char*)"<<<<<<<<<<Running Parser Task>>>>>>>>>>");
-        NCI_Parser::getInstance()->decodeNciPacket(phOsalAdapt_GetData());
+void *parsingTask(__attribute__((unused)) void *pvParams) {
+  while (1) {
+    if (!NCI_Parser::getInstance()->mTaskRunning) {
+      phOsal_LogDebug(
+          (const unsigned char *)"<<<<<<<<<<Stopping Parser Task>>>>>>>>>>");
+      break;
     }
-    return nullptr;
+    phOsal_LogDebug(
+        (const unsigned char *)"<<<<<<<<<<Running Parser Task>>>>>>>>>>");
+    NCI_Parser::getInstance()->decodeNciPacket(phOsalAdapt_GetData());
+  }
+  return nullptr;
 }
 
 void
