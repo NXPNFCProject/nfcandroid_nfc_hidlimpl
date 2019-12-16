@@ -21,8 +21,7 @@
 #ifndef _PHNXPNCIHAL_NCIPARSER_H_
 #define _PHNXPNCIHAL_NCIPARSER_H_
 
-#define NXP_NCI_PARSER_PATH "/vendor/lib64/libnxp_nciparser.so"
-
+#define NXP_NCI_PARSER_PATH "/vendor/lib64/nxp_nci_parser.so"
 
 /*******************Lx_DEBUG_CFG*******************/
 #define LX_DEBUG_CFG_DISABLE 0x00

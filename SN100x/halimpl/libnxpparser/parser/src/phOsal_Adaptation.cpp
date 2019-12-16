@@ -129,16 +129,16 @@ phOsalAdapt_StartTask(void *threadFunc, void *pParams) {
 }
 
 ADAPTSTATUS
-phOsalAdapt_StopTask(void *pvTaskHandle) {
-    LOG_FUNCTION_ENTRY;
-    sQueueData_t *psQueueData = nullptr;
-    psQueueData = (sQueueData_t*)malloc(sizeof(sQueueData_t));
-    memset(psQueueData,0,sizeof(sQueueData_t));
-    //send dummy packet
-    //psQueueData->buffer = 0;
-    psQueueData->len = 0;
-    return phOsalAdapt_SendData(psQueueData);
-    LOG_FUNCTION_EXIT;
+phOsalAdapt_StopTask(__attribute__((unused)) void *pvTaskHandle) {
+  LOG_FUNCTION_ENTRY;
+  sQueueData_t *psQueueData = nullptr;
+  psQueueData = (sQueueData_t *)malloc(sizeof(sQueueData_t));
+  memset(psQueueData, 0, sizeof(sQueueData_t));
+  // send dummy packet
+  // psQueueData->buffer = 0;
+  psQueueData->len = 0;
+  return phOsalAdapt_SendData(psQueueData);
+  LOG_FUNCTION_EXIT;
 }
 
 ADAPTSTATUS
@@ -189,23 +189,25 @@ phOsalAdapt_GetData() {
     return psGetData;
 }
 
-void*
-phOsapAdapt_QueMemAllocCB(void* memHdl, uint32_t size) {
-    LOG_FUNCTION_ENTRY;
-    void* addr = malloc(size);
-    //phOsal_LogDebugU32h((const uint8_t*)"Adapt>Allocating mem Size", size);
-    //phOsal_LogDebugU32h((const uint8_t*)"Adapt>Memory Allocation  Handle=", (size_t)memHdl);
-    //phOsal_LogDebugU32h((const uint8_t*)"Adapt>Addr=0x", (size_t)addr);
-    LOG_FUNCTION_EXIT;
-    return addr;
+void *phOsapAdapt_QueMemAllocCB(__attribute__((unused)) void *memHdl,
+                                uint32_t size) {
+  LOG_FUNCTION_ENTRY;
+  void *addr = malloc(size);
+  // phOsal_LogDebugU32h((const uint8_t*)"Adapt>Allocating mem Size", size);
+  // phOsal_LogDebugU32h((const uint8_t*)"Adapt>Memory Allocation  Handle=",
+  // (size_t)memHdl); phOsal_LogDebugU32h((const uint8_t*)"Adapt>Addr=0x",
+  // (size_t)addr);
+  LOG_FUNCTION_EXIT;
+  return addr;
 }
 
-signed int
-phOsalAdapt_QueMemFreeCB(void* memHdl, void* ptrToMem) {
-    LOG_FUNCTION_ENTRY;
-    //phOsal_LogDebugU32h((const uint8_t*)"Adapt>Freeing mem Handle=", (size_t)memHdl);
-    //phOsal_LogDebugU32h((const uint8_t*)"Adapt>Freeing mem Addr=", (size_t)ptrToMem);
-    free(ptrToMem);
-    LOG_FUNCTION_EXIT;
-    return 0;
+signed int phOsalAdapt_QueMemFreeCB(__attribute__((unused)) void *memHdl,
+                                    void *ptrToMem) {
+  LOG_FUNCTION_ENTRY;
+  // phOsal_LogDebugU32h((const uint8_t*)"Adapt>Freeing mem Handle=",
+  // (size_t)memHdl); phOsal_LogDebugU32h((const uint8_t*)"Adapt>Freeing mem
+  // Addr=", (size_t)ptrToMem);
+  free(ptrToMem);
+  LOG_FUNCTION_EXIT;
+  return 0;
 }
