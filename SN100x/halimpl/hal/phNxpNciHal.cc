@@ -599,7 +599,7 @@ int phNxpNciHal_MinOpen (){
     NXPLOG_NCIHAL_D(
         "Invalid nfc device node name keeping the default device node "
         "/dev/pn54x");
-    strcpy(nfc_dev_node, "/dev/pn54x");
+    strlcpy(nfc_dev_node, "/dev/pn54x", sizeof(nfc_dev_node));
   }
   /* Configure hardware link */
   nxpncihal_ctrl.gDrvCfg.nClientId = phDal4Nfc_msgget(0, 0600);
@@ -1739,11 +1739,12 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
 
         do {
           char rf_conf_block[22] = {'\0'};
-          strcpy(rf_conf_block, rf_block_name);
+          strlcpy(rf_conf_block, rf_block_name, sizeof(rf_conf_block));
           retlen = 0;
-          isfound = GetNxpByteArrayValue(
-              strcat(rf_conf_block, rf_block_num[loopcnt++]), (char *)buffer,
-              bufflen, &retlen);
+          strlcat(rf_conf_block, rf_block_num[loopcnt++],
+                  sizeof(rf_conf_block));
+          isfound = GetNxpByteArrayValue(rf_conf_block, (char *)buffer, bufflen,
+                                         &retlen);
           if (isfound > 0 && retlen > 0) {
             NXPLOG_NCIHAL_D(" Performing RF Settings BLK %ld", loopcnt);
             status = phNxpNciHal_send_ext_cmd(retlen, buffer);
