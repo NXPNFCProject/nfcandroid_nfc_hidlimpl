@@ -1866,6 +1866,9 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
         mEEPROM_info.request_mode = SET_EEPROM_DATA;
         phTmlNfc_IoCtl(phTmlNfc_e_SetLegacyPowerScheme);
         status = request_EEPROM(&mEEPROM_info);
+        if (status != NFCSTATUS_SUCCESS) {
+          NXPLOG_NCIHAL_E("request EEPROM settings for ESE_POWER_EXT_PMU Failed");
+        }
       } else if (retlen == 0x02) {
         retlen = 0;
         value = 0;
@@ -1884,6 +1887,9 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
             mEEPROM_info.request_type = EEPROM_ESE_POWER_EXT_PMU;
             mEEPROM_info.request_mode = SET_EEPROM_DATA;
             status = request_EEPROM(&mEEPROM_info);
+            if (status != NFCSTATUS_SUCCESS) {
+              NXPLOG_NCIHAL_E("request EEPROM settings for ESE_POWER_EXT_PMU Failed");
+            }
           }
         }
       }
@@ -1902,6 +1908,9 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       mEEPROM_info.buffer = &value;
     }
     status = request_EEPROM(&mEEPROM_info);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("request EEPROM settings for NDEF_INTF_CFG Failed");
+    }
   }
 #endif
   if(persist_core_reset_debug_info_req){
