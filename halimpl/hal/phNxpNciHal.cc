@@ -1812,6 +1812,10 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
                   mEEPROM_info.request_type = EEPROM_PROP_ROUTING;
                   mEEPROM_info.request_mode = SET_EEPROM_DATA;
                   status = request_EEPROM(&mEEPROM_info);
+                  if (status != NFCSTATUS_SUCCESS) {
+                    NXPLOG_NCIHAL_E(
+                      "request EEPROM settings for EEPROM_PROP_ROUTING Failed");
+                  }
               }
           }
       }
@@ -1856,6 +1860,10 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
         mEEPROM_info.request_type = EEPROM_ESE_SVDD_POWER;
         mEEPROM_info.request_mode = SET_EEPROM_DATA;
         status = request_EEPROM(&mEEPROM_info);
+        if (status != NFCSTATUS_SUCCESS) {
+          NXPLOG_NCIHAL_E(
+              "request EEPROM settings for EEPROM_ESE_SVDD_POWER Failed");
+        }
       }
       if (retlen == 0x01) {
         retlen = 0;
