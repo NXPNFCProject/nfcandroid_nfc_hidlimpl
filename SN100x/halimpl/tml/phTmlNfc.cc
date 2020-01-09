@@ -110,6 +110,8 @@ NFCSTATUS phTmlNfc_Init(pphTmlNfc_Config_t pConfig) {
         wInitStatus = PHNFCSTVAL(CID_NFC_TML, NFCSTATUS_INVALID_DEVICE);
         gpphTmlNfc_Context->pDevHandle = NULL;
       } else {
+        gpphTmlNfc_Context->platform_type =
+            phTmlNfc_get_platform(gpphTmlNfc_Context->pDevHandle);
         gpphTmlNfc_Context->tReadInfo.bEnable = 0;
         gpphTmlNfc_Context->tWriteInfo.bEnable = 0;
         gpphTmlNfc_Context->tReadInfo.bThreadBusy = false;
@@ -938,6 +940,10 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
         usleep(100 * 1000);
         gpphTmlNfc_Context->tReadInfo.bEnable = 1;
         sem_post(&gpphTmlNfc_Context->rxSemaphore);
+        break;
+      }
+      case phTmlNfc_e_SetFwDownloadHdrSize: {
+        wStatus = phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, MODE_FW_DWND_HDR);
         break;
       }
       default: {
