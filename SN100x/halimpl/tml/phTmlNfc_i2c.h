@@ -30,7 +30,8 @@ typedef enum {
   MODE_ISO_RST,
   MODE_FW_DWND_HIGH,
   MODE_POWER_RESET,
-  MODE_FW_GPIO_LOW
+  MODE_FW_GPIO_LOW,
+  MODE_FW_DWND_HDR
 } MODE_I2C_SET_PWR;
 
 /* Function declarations */
@@ -111,4 +112,9 @@ NFCSTATUS phTmlNfc_rel_dwpOnOff_wait(void* pDevHandle);
  * NFC will call the ioctlto release the dwp on/off protection
  */
 #define P544_REL_DWPONOFF_WAIT _IOW(PN544_MAGIC, 0x0A, long)
+/*
+ * get platform interface type(i2c or i3c) for common MW
+ * return 0 - i2c, 1 - i3c
+ */
+#define P544_GET_PLATFORM_INTERFACE _IO(PN544_MAGIC, 0x0B)
 //#endif
