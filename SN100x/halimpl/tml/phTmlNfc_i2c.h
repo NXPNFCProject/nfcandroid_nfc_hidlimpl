@@ -63,6 +63,7 @@ NFCSTATUS phTmlNfc_i2c_set_spm_state(void* pa_data, void* pDevHandle);
 NFCSTATUS phTmlNfc_i2c_reset_spm_state(void* pa_data, void* pDevHandle);
 NFCSTATUS phTmlNfc_rel_svdd_wait(void* pDevHandle);
 NFCSTATUS phTmlNfc_rel_dwpOnOff_wait(void* pDevHandle);
+int phTmlNfc_get_platform(void* pDevHandle);
 /*
  * SPI Request NFCC to enable p61 power, only in param
  * Only for SPI
