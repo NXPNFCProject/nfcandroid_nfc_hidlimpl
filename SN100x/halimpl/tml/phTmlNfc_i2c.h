@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2019 NXP Semiconductors
+ * Copyright (C) 2010-2020 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,13 @@ typedef enum {
   MODE_FW_DWND_HDR
 } MODE_I2C_SET_PWR;
 
+typedef enum {
+  MODE_ESE_POWER_ON = 0, /* eSE POWER ON */
+  MODE_ESE_POWER_OFF,    /* eSE POWER OFF */
+  MODE_ESE_POWER_STATE,  /* eSE POWER STATE */
+  MODE_ESE_COLD_RESET    /* eSE COLD RESET */
+}MODE_ESE_SET_PWR;
+
 /* Function declarations */
 void phTmlNfc_i2c_close(void* pDevHandle);
 NFCSTATUS phTmlNfc_i2c_open_and_configure(pphTmlNfc_Config_t pConfig,
@@ -41,6 +48,7 @@ NFCSTATUS phTmlNfc_i2c_open_and_configure(pphTmlNfc_Config_t pConfig,
 int phTmlNfc_i2c_read(void* pDevHandle, uint8_t* pBuffer, int nNbBytesToRead);
 int phTmlNfc_i2c_write(void* pDevHandle, uint8_t* pBuffer, int nNbBytesToWrite);
 int phTmlNfc_i2c_reset(void* pDevHandle, long level);
+int phTmlNfc_ese_reset(void* pDevHandle, long level);
 bool_t getDownloadFlag(void);
 void phTmlNfc_EnableFwDnldMode(bool mode);
 extern bool_t notifyFwrequest;
@@ -65,18 +73,19 @@ NFCSTATUS phTmlNfc_rel_svdd_wait(void* pDevHandle);
 NFCSTATUS phTmlNfc_rel_dwpOnOff_wait(void* pDevHandle);
 int phTmlNfc_get_platform(void* pDevHandle);
 /*
- * SPI Request NFCC to enable p61 power, only in param
- * Only for SPI
- * level 1 = Enable power
- * level 0 = Disable power
+ * 1. SPI Request NFCC to enable p61 power, only in param
+ *   Only for SPI
+ *   level 1 = Enable power
+ *   level 0 = Disable power
+ * 2. NFC Request the eSE cold reset, only with MODE_ESE_COLD_RESET
  */
-#define P61_SET_SPI_PWR _IOW(PN544_MAGIC, 0x02, long)
+#define ESE_SET_PWR _IOW(PN544_MAGIC, 0x02, long)
 
 /* SPI or DWP can call this ioctl to get the current
  * power state of P61
  *
 */
-#define P61_GET_PWR_STATUS _IOR(PN544_MAGIC, 0x03, long)
+#define ESE_GET_PWR _IOR(PN544_MAGIC, 0x03, long)
 
 /* DWP side this ioctl will be called
  * level 1 = Wired access is enabled/ongoing
