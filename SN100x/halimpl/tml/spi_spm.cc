@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 NXP Semiconductors
+ * Copyright (C) 2012-2020 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,13 +50,13 @@ int phPalEse_spi_ioctl(phPalEse_ControlCode_t eControlCode,void *pDevHandle, lon
   switch (eControlCode) {
     case phPalEse_e_ChipRst:
         if(level == 1 || level == 0)
-        ret = ioctl((intptr_t)pDevHandle, P61_SET_SPI_PWR, level);
+        ret = ioctl((intptr_t)pDevHandle, ESE_SET_PWR, level);
         else
         ret=0;
         break;
 
     case phPalEse_e_GetSPMStatus:
-        ret = ioctl((intptr_t)pDevHandle, P61_GET_PWR_STATUS, level);
+        ret = ioctl((intptr_t)pDevHandle, ESE_GET_PWR, level);
         break;
 
     case phPalEse_e_SetPowerScheme:
@@ -71,7 +71,7 @@ int phPalEse_spi_ioctl(phPalEse_ControlCode_t eControlCode,void *pDevHandle, lon
         break;
 #endif
     case phPalEse_e_DisablePwrCntrl:
-        ret = ioctl((intptr_t)pDevHandle, P61_SET_SPI_PWR, 1);
+        ret = ioctl((intptr_t)pDevHandle, ESE_SET_PWR, 1);
         break;
     default:
         ret=-1;
