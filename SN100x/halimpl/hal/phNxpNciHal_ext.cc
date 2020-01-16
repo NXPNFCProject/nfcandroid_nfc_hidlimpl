@@ -1006,6 +1006,7 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
       len = fieldLen + 4;
       addr[0] = 0xA0;
       addr[1] = 0x0F;
+      mEEPROM_info->update_mode = BYTEWISE;
       break;
 
     case EEPROM_WIREDMODE_RESUME_TIMEOUT:
