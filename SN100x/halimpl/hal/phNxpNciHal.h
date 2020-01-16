@@ -318,4 +318,32 @@ void phNxpNciHal_configFeatureList(uint8_t* init_rsp, uint16_t rsp_len);
  *
  ******************************************************************************/
 void phNxpNciHal_read_and_update_se_state();
+
+/******************************************************************************
+ * Function         phNxpNciHal_read_fw_dw_status
+ *
+ * Description      This will read the value of fw download status flag
+ *                  from eeprom
+ *
+ * Parameters       value - this parameter will be updated with the flag
+ *                  value from eeprom.
+ *
+ * Returns          status of the read
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_read_fw_dw_status(uint8_t &value);
+
+/******************************************************************************
+ * Function         phNxpNciHal_write_fw_dw_status
+ *
+ * Description      This will update value of fw download status flag
+ *                  to eeprom
+ *
+ * Parameters       value - this value will be updated to eeprom flag.
+ *
+ * Returns          status of the write
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_write_fw_dw_status(uint8_t value);
+
 #endif /* _PHNXPNCIHAL_H_ */
