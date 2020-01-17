@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 NXP Semiconductors
+ * Copyright (C) 2019-2020 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 #include <android-base/file.h>
 #include <android-base/strings.h>
 #include <android-base/parseint.h>
+#include "phTmlNfc_i2c.h"
 #include "phNxpNciHal_ext.h"
 #include "phNxpNciHal_utils.h"
 #include "phDnldNfc_Internal.h"
@@ -52,9 +53,10 @@ extern nfc_stack_callback_t *p_nfc_stack_cback_backup;
 extern uint8_t fw_dwnld_flag;
 #endif
 
+/* TML Context */
+extern phTmlNfc_Context_t* gpphTmlNfc_Context;
 extern bool nfc_debug_enabled;
 extern NFCSTATUS phNxpLog_EnableDisableLogLevel(uint8_t enable);
-
 
 /*******************************************************************************
  **
@@ -687,7 +689,6 @@ static string phNxpNciHal_parseBytesString(string in) {
 *******************************************************************************/
 NFCSTATUS phNxpNciHal_resetEse() {
   NFCSTATUS status = NFCSTATUS_FAILED;
-  uint8_t cmd_ese_pwrcycle[] = {0x2F, 0x1E, 0x00};
 
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
     if (NFCSTATUS_SUCCESS != phNxpNciHal_MinOpen()) {
@@ -696,8 +697,7 @@ NFCSTATUS phNxpNciHal_resetEse() {
   }
 
   CONCURRENCY_LOCK();
-  status = phNxpNciHal_send_ext_cmd(
-      sizeof(cmd_ese_pwrcycle) / sizeof(cmd_ese_pwrcycle[0]), cmd_ese_pwrcycle);
+  status = phTmlNfc_ese_reset(gpphTmlNfc_Context->pDevHandle, MODE_ESE_COLD_RESET);
   CONCURRENCY_UNLOCK();
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("EsePowerCycle failed");
