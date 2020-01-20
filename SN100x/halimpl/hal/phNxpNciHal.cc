@@ -1736,7 +1736,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     if (fpVerInfoStoreInEeprom != NULL) {
       fpVerInfoStoreInEeprom();
     }
-    phNxpNciHal_deinitializeRegRfFwDnld();
   }
     config_access = false;
     if ((true == fw_dwnld_flag) || (true == setConfigAlways) ||
@@ -2154,6 +2153,7 @@ int phNxpNciHal_close(bool bShutdown) {
   uint8_t retry = 0;
 
 
+  phNxpNciHal_deinitializeRegRfFwDnld();
   AutoThreadMutex a(sHalFnLock);
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
     NXPLOG_NCIHAL_D("phNxpNciHal_close is already closed, ignoring close");
