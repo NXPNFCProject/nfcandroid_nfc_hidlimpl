@@ -121,6 +121,7 @@ phNxpNciMwEepromArea_t phNxpNciMwEepromArea = {false, {0}};
 void *RfFwRegionDnld_handle = NULL;
 fpVerInfoStoreInEeprom_t fpVerInfoStoreInEeprom = NULL;
 fpRegRfFwDndl_t fpRegRfFwDndl = NULL;
+fpPropConfCover_t fpPropConfCover =  NULL;
 
 /**************** local methods used in this file only ************************/
 static void phNxpNciHal_open_complete(NFCSTATUS status);
@@ -3849,6 +3850,10 @@ void phNxpNciHal_initializeRegRfFwDnld() {
     NXPLOG_NCIHAL_D("Error while linking (RegRfFwDndl) !!");
     return;
   }
+  if ((fpPropConfCover = (fpPropConfCover_t) dlsym(RfFwRegionDnld_handle, "prop_conf_cover")) == NULL) {
+    NXPLOG_NCIHAL_D("Error while linking (prop_conf_cover) !!");
+    return;
+  }
 }
 
 /*******************************************************************************
@@ -3867,6 +3872,7 @@ void phNxpNciHal_deinitializeRegRfFwDnld() {
     NXPLOG_NCIHAL_D("closing libonebinary.so");
     fpVerInfoStoreInEeprom = NULL;
     fpRegRfFwDndl = NULL;
+    fpPropConfCover = NULL;
     dlclose(RfFwRegionDnld_handle);
     RfFwRegionDnld_handle = NULL;
   }

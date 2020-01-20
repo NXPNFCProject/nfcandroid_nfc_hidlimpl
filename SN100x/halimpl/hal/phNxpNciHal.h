@@ -192,6 +192,8 @@ typedef int (*fpVerifyCscEfsTest_t)(char* nfcc_csc, char* rffilepath,
 typedef int (*fpRegRfFwDndl_t)(uint8_t* fw_update_req,
                    uint8_t* rf_update_req,
                    uint8_t skipEEPROMRead);
+typedef int (*fpPropConfCover_t)(bool attached, int type);
+void phNxpNciHal_initializeRegRfFwDnld();
 void phNxpNciHal_initializeRegRfFwDnld();
 void phNxpNciHal_deinitializeRegRfFwDnld();
 /*set config management*/

@@ -144,6 +144,8 @@ systemProperty gsystemProperty = {
     {"nfc.fw.rfreg_ver", ""},
     {"nfc.fw.rfreg_display_ver", ""},
     {"nfc.fw.dfl_areacode", ""},
+    {"nfc.cover.cover_id", ""},
+    {"nfc.cover.state", ""},
 };
 const char default_nxp_config_path[] = "/vendor/etc/libnfc-nxp.conf";
 std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
@@ -429,6 +431,15 @@ bool phNxpNciHal_setSystemProperty(string key, string value) {
     ParseUint(value.c_str(), &tmp);
     if (phNxpLog_EnableDisableLogLevel((uint8_t)tmp) != NFCSTATUS_SUCCESS) {
       stat = false;
+    }
+  } else if(strcmp(key.c_str(), "nfc.cover.state") == 0){
+    unsigned cid,cstate;
+    string strtmp;
+    ParseUint(value.c_str(), &cstate);
+    strtmp = phNxpNciHal_getSystemProperty("nfc.cover.cover_id");
+    ParseUint(strtmp.c_str(), &cid);
+    if (fpPropConfCover != NULL) {
+      stat = (fpPropConfCover(cstate, cid) == NFCSTATUS_SUCCESS ) ? true : false;
     }
   }
 
