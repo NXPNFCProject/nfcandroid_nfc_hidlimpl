@@ -40,6 +40,7 @@ extern bool_t wFwUpdateReq;
 extern bool_t wRfUpdateReq;
 extern bool_t force_fw_download_req;
 extern fpRegRfFwDndl_t fpRegRfFwDndl;
+extern fpPropConfCover_t fpPropConfCover;
 #define UINT8_TO_STREAM(p, u8) \
   { *(p)++ = (uint8_t)(u8); }
 
