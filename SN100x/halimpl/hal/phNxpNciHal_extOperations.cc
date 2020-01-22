@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 NXP Semiconductors
+ * Copyright (C) 2019-2020 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,7 +136,7 @@ void phNxpNciHal_read_and_update_se_state()
   int8_t  val = -1;
   int16_t num_se = 0;
   uint8_t retry_cnt = 0;
-  uint8_t values[NUM_SE_TYPES];
+  int8_t values[NUM_SE_TYPES];
 
   for (i = 0; i < NUM_SE_TYPES; i++) {
     val = get_system_property_se_type(i);
