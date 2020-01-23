@@ -1745,12 +1745,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
         isNxpRFConfigModified()) {
         unsigned long loopcnt = 0;
 
-        if (phNxpNciHal_nfccClockCfgApply() != NFCSTATUS_SUCCESS) {
-            NXPLOG_NCIHAL_E("phNxpNciHal_nfccClockCfgApply failed");
-            retry_core_init_cnt++;
-            goto retry_core_init;
-        }
-
         do {
           char rf_conf_block[22] = {'\0'};
           strlcpy(rf_conf_block, rf_block_name, sizeof(rf_conf_block));
@@ -1779,6 +1773,11 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
           }
         } while (rf_block_num[loopcnt] != NULL);
         loopcnt = 0;
+        if (phNxpNciHal_nfccClockCfgApply() != NFCSTATUS_SUCCESS) {
+          NXPLOG_NCIHAL_E("phNxpNciHal_nfccClockCfgApply failed");
+          retry_core_init_cnt++;
+          goto retry_core_init;
+        }
     }
     flash_update_done = TRUE;
     mEEPROM_info.buffer = &flash_update_done;
