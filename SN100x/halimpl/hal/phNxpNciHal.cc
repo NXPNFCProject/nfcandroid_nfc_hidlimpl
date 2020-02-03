@@ -154,6 +154,7 @@ static void phNxpNciHal_initialize_debug_enabled_flag();
 static NFCSTATUS phNxpNciHalRFConfigCmdRecSequence();
 static NFCSTATUS phNxpNciHal_CheckRFCmdRespStatus();
 static void phNxpNciHal_UpdateFwStatus(NfcFwUpdateStatus fwStatus);
+static NFCSTATUS phNxpNciHal_resetDefaultSettings();
 
 /******************************************************************************
  * Function         phNxpNciHal_initialize_debug_enabled_flag
@@ -705,8 +706,6 @@ init_retry:
       }
     }
   }
-  phNxpNciHal_conf_nfc_forum_mode();
-  phNxpNciHal_prop_conf_lpcd();
   if ((status != NFCSTATUS_SUCCESS) &&
       (nxpncihal_ctrl.retry_cnt >= MAX_RETRY_COUNT)) {
     NXPLOG_NCIHAL_E("Force FW Download, NFCC not coming out from Standby");
@@ -735,20 +734,19 @@ init_retry:
   status = phNxpNciHal_CheckFwRegFlashRequired(&fw_update_req, &rf_update_req, false);
   wFwUpdateReq = fw_update_req;
 
-  /*Get FW version from device*/
-  status = phDnldNfc_InitImgInfo();
-  if (status != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("Image information extraction Failed!!");
-  }
-  NXPLOG_NCIHAL_D("FW version from device = 0x%x", wFwVerRsp);
   if (!wFwUpdateReq) {
     NXPLOG_NCIHAL_D("FW update not required");
     property_set("nfc.fw.downloadmode_force", "0");
     phDnldNfc_ReSetHwDevHandle();
   } else {
   force_download:
-  NXPLOG_NCIHAL_D("FW version for FW file = 0x%x", wFwVer);
-  NXPLOG_NCIHAL_D("FW version from device = 0x%x", wFwVerRsp);
+    /*Get FW version from device*/
+    status = phDnldNfc_InitImgInfo();
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("Image information extraction Failed!!");
+    }
+    NXPLOG_NCIHAL_D("FW version for FW file = 0x%x", wFwVer);
+    NXPLOG_NCIHAL_D("FW version from device = 0x%x", wFwVerRsp);
     if (wFwVerRsp == 0) {
       nfcFL.chipType = sn100u;
       tNFC_chipType chipType = sn100u;
@@ -815,7 +813,11 @@ init_retry:
       }
     }
   }
-
+  status = phNxpNciHal_resetDefaultSettings();
+  if(status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("Applying default settings failed, Perform Force FW Download");
+    goto force_download;
+  }
   /* Call open complete */
   phNxpNciHal_MinOpen_complete(wConfigStatus);
   NXPLOG_NCIHAL_D("phNxpNciHal_MinOpen(): exit");
@@ -3368,6 +3370,31 @@ retry_core_init:
     return status;
   }
 
+  return status;
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_resetDefaultSettings
+ *
+ * Description      Helper function to do nfcc core reset, core init
+ *                  (if previously firmware update was triggered) and
+ *                  apply default NFC settings
+ *
+ * Returns          Status
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_resetDefaultSettings() {
+  NFCSTATUS status = NFCSTATUS_FAILED;
+
+  if(fw_download_success)
+    status = phNxpNciHal_nfcc_core_reset_init();
+  else
+    status = NFCSTATUS_SUCCESS;
+
+  if(status == NFCSTATUS_SUCCESS) {
+    phNxpNciHal_conf_nfc_forum_mode();
+    phNxpNciHal_prop_conf_lpcd();
+  }
   return status;
 }
 
