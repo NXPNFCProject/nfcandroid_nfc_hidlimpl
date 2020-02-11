@@ -65,6 +65,7 @@ cc_binary {
         "SN100x/halimpl/self-test",
         "SN100x/halimpl/tml",
         "SN100x/halimpl/utils",
+        "SN100x/halimpl/mifare",
         "SN100x/halimpl/eseclients_extns/inc/",
     ],
 

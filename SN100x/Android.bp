@@ -50,6 +50,7 @@ cc_library_shared {
         "halimpl/eseclients_extns/src/*.cc",
         "halimpl/hal/phNxpNciHal_IoctlOperations.cc",
         "halimpl/hal/phNxpNciHal_extOperations.cc",
+        "halimpl/mifare/NxpMfcReader.cc",
     ],
 
     local_include_dirs: [
@@ -62,7 +63,8 @@ cc_library_shared {
         "halimpl/tml",
         "halimpl/utils",
         "halimpl/eseclients_extns/inc",
-        "halimpl/src/include"
+        "halimpl/src/include",
+        "halimpl/mifare",
     ],
 
     include_dirs: [
