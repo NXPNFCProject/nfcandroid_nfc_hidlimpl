@@ -30,6 +30,7 @@
  */
 #define PHTMLNFC_MAXTIME_RETRANSMIT (200U)
 #define MAX_WRITE_RETRY_COUNT 0x03
+#define MAX_READ_RETRY_DELAY_IN_MILLISEC (150U)
 /* Retry Count = Standby Recovery time of NFCC / Retransmission time + 1 */
 static uint8_t bCurrentRetryCount = (2000 / PHTMLNFC_MAXTIME_RETRANSMIT) + 1;
 
@@ -304,6 +305,7 @@ static void * phTmlNfc_TmlThread(void* pParam) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   int32_t dwNoBytesWrRd = PH_TMLNFC_RESET_VALUE;
   uint8_t temp[260];
+  uint8_t readRetryDelay = 0;
   /* Transaction info buffer to be passed to Callback Thread */
   static phTmlNfc_TransactInfo_t tTransactionInfo;
   /* Structure containing Tml callback function and parameters to be invoked
@@ -340,12 +342,19 @@ static void * phTmlNfc_TmlThread(void* pParam) {
 
         if (-1 == dwNoBytesWrRd) {
           NXPLOG_TML_E("PN54X - Error in I2C Read.....\n");
+          if (readRetryDelay < MAX_READ_RETRY_DELAY_IN_MILLISEC) {
+            /*sleep for 30/60/90/120/150 msec between each read trial incase of read error*/
+            readRetryDelay += 30 ;
+          }
+          usleep(readRetryDelay * 1000);
           sem_post(&gpphTmlNfc_Context->rxSemaphore);
         } else if (dwNoBytesWrRd > 260) {
           NXPLOG_TML_E("Numer of bytes read exceeds the limit 260.....\n");
+          readRetryDelay = 0;
           sem_post(&gpphTmlNfc_Context->rxSemaphore);
         } else {
           memcpy(gpphTmlNfc_Context->tReadInfo.pBuffer, temp, dwNoBytesWrRd);
+          readRetryDelay =0;
 
           NXPLOG_TML_D("PN54X - I2C Read successful.....\n");
           /* This has to be reset only after a successful read */
