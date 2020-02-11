@@ -16,9 +16,10 @@
 #ifndef _PHNXPNCIHAL_H_
 #define _PHNXPNCIHAL_H_
 
+#include "NxpMfcReader.h"
+#include "NxpNfcCapability.h"
 #include <hardware/nfc.h>
 #include <phNxpNciHal_utils.h>
-#include "NxpNfcCapability.h"
 #include "hal_nxpnfc.h"
 #include "eSEClientIntf.h"
 
@@ -76,6 +77,7 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 #define NXP_CORE_GET_CONFIG_CMD      0x03
 #define NXP_CORE_SET_CONFIG_CMD      0x02
 #define NXP_MAX_CONFIG_STRING_LEN 260
+#define NCI_HEADER_SIZE 3
 
 typedef struct nci_data {
   uint16_t len;

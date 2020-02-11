@@ -52,6 +52,10 @@ using android::base::WriteStringToFile;
 #define CORE_RES_STATUS_BYTE 3
 #define MAX_NXP_HAL_EXTN_BYTES 10
 
+bool bEnableMfcExtns = false;
+bool bEnableMfcReader = false;
+bool bDisableLegacyMfcExtns = false;
+
 /* Processing of ISO 15693 EOF */
 extern uint8_t icode_send_eof;
 extern uint8_t icode_detected;
@@ -110,6 +114,10 @@ uint8_t fw_dwnld_flag = false;
 #endif
 bool nfc_debug_enabled = true;
 
+/*  Used to send Callback Transceive data during Mifare Write.
+ *  If this flag is enabled, no need to send response to Upper layer */
+bool sendRspToUpperLayer = true;
+
 phNxpNciHal_Sem_t config_data;
 
 phNxpNciClock_t phNxpNciClock = {0, {0}, false};
@@ -151,6 +159,7 @@ static void phNxpNciHal_configNciParser(bool enable);
 #endif
 static void phNxpNciHal_gpio_restore(phNxpNciHal_GpioInfoState state);
 static void phNxpNciHal_initialize_debug_enabled_flag();
+static void phNxpNciHal_initialize_mifare_flag();
 static NFCSTATUS phNxpNciHalRFConfigCmdRecSequence();
 static NFCSTATUS phNxpNciHal_CheckRFCmdRespStatus();
 static void phNxpNciHal_UpdateFwStatus(NfcFwUpdateStatus fwStatus);
@@ -576,6 +585,9 @@ int phNxpNciHal_MinOpen (){
   /* initialize trace level */
   phNxpLog_InitializeLogLevel();
 
+  /* initialize Mifare flags*/
+  phNxpNciHal_initialize_mifare_flag();
+
   /*Create the timer for extns write response*/
   timeoutTimerId = phOsalNfc_Timer_Create();
 
@@ -989,6 +1001,25 @@ static void phNxpNciHal_open_complete(NFCSTATUS status) {
  *
  ******************************************************************************/
 int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data) {
+  if (bDisableLegacyMfcExtns && bEnableMfcExtns && p_data[0] == 0x00) {
+    return NxpMfcReaderInstance.Write(data_len, p_data);
+  }
+  return phNxpNciHal_write_internal(data_len, p_data);
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_write_internal
+ *
+ * Description      This function write the data to NFCC through physical
+ *                  interface (e.g. I2C) using the PN54X driver interface.
+ *                  Before sending the data to NFCC, phNxpNciHal_write_ext
+ *                  is called to check if there is any extension processing
+ *                  is required for the NCI packet being sent out.
+ *
+ * Returns          It returns number of bytes successfully written to NFCC.
+ *
+ ******************************************************************************/
+int phNxpNciHal_write_internal(uint16_t data_len, const uint8_t* p_data) {
   NFCSTATUS status = NFCSTATUS_FAILED;
   static phLibNfc_Message_t msg;
   if (nxpncihal_ctrl.halStatus != HAL_STATUS_OPEN) {
@@ -1254,6 +1285,13 @@ static void phNxpNciHal_read_complete(void* pContext,
              (nxpncihal_ctrl.nci_info.wait_for_ntf == TRUE)) {
       /* Unlock semaphore waiting for only  ntf*/
       nxpncihal_ctrl.nci_info.wait_for_ntf = FALSE;
+      SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
+    } else if (bDisableLegacyMfcExtns && !sendRspToUpperLayer &&
+               (nxpncihal_ctrl.p_rx_data[0x00] == 0x00)) {
+      sendRspToUpperLayer = true;
+      NFCSTATUS mfcRspStatus = NxpMfcReaderInstance.CheckMfcResponse(
+          nxpncihal_ctrl.p_rx_data, nxpncihal_ctrl.rx_data_len);
+      NXPLOG_NCIHAL_D("Mfc Response Status = 0x%x", mfcRspStatus);
       SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
     }
     /* Read successful send the event to higher layer */
@@ -3614,6 +3652,30 @@ static void phNxpNciHal_print_res_status(uint8_t* p_rx_data, uint16_t* p_len) {
     }
   }
 }
+/******************************************************************************
+ * Function         phNxpNciHal_initialize_mifare_flag
+ *
+ * Description      This function gets the value for Mfc flags.
+ *
+ * Returns          void
+ *
+ ******************************************************************************/
+static void phNxpNciHal_initialize_mifare_flag() {
+  unsigned long num = 0;
+  bEnableMfcReader = false;
+  bDisableLegacyMfcExtns = false;
+  //1: Enable Mifare Classic protocol in RF Discovery.
+  //0: Remove Mifare Classic protocol in RF Discovery.
+  if(GetNxpNumValue(NAME_MIFARE_READER_ENABLE, &num, sizeof(num))) {
+    bEnableMfcReader = (num == 0) ? false : true;
+  }
+  //1: Use legacy JNI MFC extns.
+  //0: Disable legacy JNI MFC extns, use hal MFC Extns instead.
+  if(GetNxpNumValue(NAME_LEGACY_MIFARE_READER, &num, sizeof(num))) {
+    bDisableLegacyMfcExtns = (num == 0) ? true : false;
+  }
+}
+
 /*****************************************************************************
  * Function         phNxpNciHal_send_get_cfgs
  *
