@@ -49,8 +49,6 @@ cc_binary {
         "android.hardware.nfc@1.1",
         "android.hardware.nfc@1.2",
         "libhidlbase",
-        "libhidltransport",
-        "libhwbinder",
         "vendor.nxp.nxpese@1.0",
         "vendor.nxp.nxpnfc@1.0",
         "ls_client",
