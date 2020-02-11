@@ -83,7 +83,6 @@ cc_library_shared {
         "libhardware",
         "libhardware_legacy",
         "libhidlbase",
-        "libhidltransport",
         "liblog",
         "libutils",
         "vendor.nxp.nxpese@1.0",
