@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  *
- *  Copyright (C) 2015-2019 NXP Semiconductors
+ *  Copyright (C) 2015-2020 NXP Semiconductors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -222,7 +222,7 @@ void IoctlCallback(hidl_vec<uint8_t> outputData) {
       (ese_nxp_ExtnOutputData_t*)&outputData[0];
   ALOGD_IF(nfc_debug_enabled, "%s Ioctl Type=%lu", func,
            (unsigned long)pOutData->ioctlType);
-  EseAdaptation* pAdaptation = (EseAdaptation*)pOutData->context;
+  EseAdaptation* pAdaptation =  &EseAdaptation::GetInstance();
   /*Output Data from stub->Proxy is copied back to output data
    * This data will be sent back to libese*/
   memcpy(&pAdaptation->mCurrentIoctlData->out, &outputData[0],
@@ -250,7 +250,7 @@ int EseAdaptation::HalIoctl(long arg, void* p_data) {
   AutoThreadMutex a(sIoctlLock);
   ese_nxp_IoctlInOutData_t* pInpOutData = (ese_nxp_IoctlInOutData_t*)p_data;
   ALOGD_IF(nfc_debug_enabled, "%s arg=%ld", func, arg);
-  pInpOutData->inp.context = &EseAdaptation::GetInstance();
+
   EseAdaptation::GetInstance().mCurrentIoctlData = pInpOutData;
   data.setToExternal((uint8_t*)pInpOutData, sizeof(ese_nxp_IoctlInOutData_t));
   if (mHalNxpEse != nullptr) mHalNxpEse->ioctl(arg, data, IoctlCallback);
