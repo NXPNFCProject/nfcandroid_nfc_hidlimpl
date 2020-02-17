@@ -32,7 +32,6 @@
 #include "phNxpNciHal_nciParser.h"
 #endif
 
-#include "hal_nxpnfc.h"
 #include "phNxpNciHal_IoctlOperations.h"
 #include "phNxpNciHal_extOperations.h"
 #include "spi_spm.h"
@@ -95,7 +94,6 @@ bool_t gParserCreated = FALSE;
 /* global variable to get FW version from NCI response*/
 uint32_t wFwVerRsp;
 EseAdaptation *gpEseAdapt = NULL;
-nfcIoctlData_t  nfcioctldata;
 ese_update_state_t ese_update = ESE_UPDATE_COMPLETED;
 /* External global variable to get FW version */
 extern uint16_t wFwVer;
@@ -162,7 +160,7 @@ static void phNxpNciHal_initialize_debug_enabled_flag();
 static void phNxpNciHal_initialize_mifare_flag();
 static NFCSTATUS phNxpNciHalRFConfigCmdRecSequence();
 static NFCSTATUS phNxpNciHal_CheckRFCmdRespStatus();
-static void phNxpNciHal_UpdateFwStatus(NfcFwUpdateStatus fwStatus);
+static void phNxpNciHal_UpdateFwStatus(HalNfcFwUpdateStatus fwStatus);
 
 /******************************************************************************
  * Function         phNxpNciHal_initialize_debug_enabled_flag
@@ -361,7 +359,7 @@ static void phNxpNciHal_kill_client_thread(
 NFCSTATUS phNxpNciHal_fw_download(void) {
   NFCSTATUS status = NFCSTATUS_FAILED;
   NFCSTATUS wConfigStatus = NFCSTATUS_FAILED;
-  phNxpNciHal_UpdateFwStatus(HAL_NFC_FW_UPDATE_START);
+  phNxpNciHal_UpdateFwStatus(HalNfcFwUpdateStatus::HAL_NFC_FW_UPDATE_START);
   /*phNxpNciHal_get_clk_freq();*/
   phNxpNciHal_nfccClockCfgRead();
   status = phNxpNciHal_write_fw_dw_status(TRUE);
@@ -371,7 +369,7 @@ NFCSTATUS phNxpNciHal_fw_download(void) {
   status = phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadMode);
   if (NFCSTATUS_SUCCESS != status) {
     nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
-    phNxpNciHal_UpdateFwStatus(HAL_NFC_FW_UPDATE_FAILED);
+    phNxpNciHal_UpdateFwStatus(HalNfcFwUpdateStatus::HAL_NFC_FW_UPDATE_FAILED);
     return NFCSTATUS_FAILED;
   }
   if (nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD) {
@@ -422,9 +420,9 @@ NFCSTATUS phNxpNciHal_fw_download(void) {
     status = NFCSTATUS_FAILED;
   }
   if (NFCSTATUS_SUCCESS == status) {
-    phNxpNciHal_UpdateFwStatus(HAL_NFC_FW_UPDATE_SCUCCESS);
+    phNxpNciHal_UpdateFwStatus(HalNfcFwUpdateStatus::HAL_NFC_FW_UPDATE_SCUCCESS);
   } else {
-    phNxpNciHal_UpdateFwStatus(HAL_NFC_FW_UPDATE_FAILED);
+    phNxpNciHal_UpdateFwStatus(HalNfcFwUpdateStatus::HAL_NFC_FW_UPDATE_FAILED);
   }
   return status;
 }
@@ -3778,7 +3776,7 @@ void phNxpNciHal_configFeatureList(uint8_t* init_rsp, uint16_t rsp_len) {
 **
 ** Returns          void
 *******************************************************************************/
-static void phNxpNciHal_UpdateFwStatus(NfcFwUpdateStatus fwStatus) {
+static void phNxpNciHal_UpdateFwStatus(HalNfcFwUpdateStatus fwStatus) {
   static phLibNfc_Message_t msg;
   static uint8_t status;
   NXPLOG_NCIHAL_D("phNxpNciHal_UpdateFwStatus Enter");

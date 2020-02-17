@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2019 NXP Semiconductors
+ * Copyright (C) 2010-2020 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,9 @@
 #include "NxpNfcCapability.h"
 #include <hardware/nfc.h>
 #include <phNxpNciHal_utils.h>
-#include "hal_nxpnfc.h"
 #include "eSEClientIntf.h"
+
+#include <vendor/nxp/nxpnfc/2.0/types.h>
 
 /********************* Definitions and structures *****************************/
 #define MAX_RETRY_COUNT 5
@@ -34,6 +35,8 @@
 #define NCI_VERSION_1_0 0x10
 #define NCI_VERSION_UNKNOWN 0x00
 #define NXP_AUTH_TIMEOUT_BUF_LEN 0x04
+
+#define HAL_NFC_FW_UPDATE_STATUS_EVT 0xA
 
 /*Mem alloc with 8 byte alignment*/
 #define size_align(sz) ((((sz)-1) | 7) + 1)
@@ -89,6 +92,13 @@ typedef enum {
   HAL_STATUS_OPEN,
   HAL_STATUS_MIN_OPEN
 } phNxpNci_HalStatus;
+
+typedef enum {
+    HAL_NFC_FW_UPDATE_INVALID = 0x00,
+    HAL_NFC_FW_UPDATE_START,
+    HAL_NFC_FW_UPDATE_SCUCCESS,
+    HAL_NFC_FW_UPDATE_FAILED,
+}HalNfcFwUpdateStatus;
 
 typedef enum {
   GPIO_UNKNOWN = 0x00,
@@ -323,6 +333,16 @@ void phNxpNciHal_configFeatureList(uint8_t* init_rsp, uint16_t rsp_len);
  ******************************************************************************/
 void phNxpNciHal_read_and_update_se_state();
 
+/******************************************************************************
+ * Function         phNxpNciHal_nfcTriggerSavedCb
+ *
+ * Description      This will post the message to the upper layer
+ *                  using the callback p_nfc_stack_cback_backup.
+ *
+ * Returns          none
+ *
+ ******************************************************************************/
+extern int phNxpNciHal_nfcTriggerSavedCb(int evt);
 /******************************************************************************
  * Function         phNxpNciHal_read_fw_dw_status
  *
