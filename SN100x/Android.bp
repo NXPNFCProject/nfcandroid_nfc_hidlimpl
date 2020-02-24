@@ -68,9 +68,8 @@ cc_library_shared {
     ],
 
     include_dirs: [
-        "hardware/nxp/nfc/SN100x/extns/impl",
+        "hardware/nxp/nfc/SN100x/extns/impl/nxpnfc/2.0",
         "hardware/nxp/secure_element/extns/impl",
-        "hardware/nxp/nfc/SN100x/extns/impl",
         "hardware/nxp/secure_element_extns/inc",
     ],
 
@@ -88,6 +87,7 @@ cc_library_shared {
         "liblog",
         "libutils",
         "vendor.nxp.nxpese@1.0",
+        "vendor.nxp.nxpnfc@2.0",
     ],
     static_libs: [
         //"libnfcutils",
