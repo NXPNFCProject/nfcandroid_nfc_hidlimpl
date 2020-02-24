@@ -486,7 +486,7 @@ CNfcConfig& CNfcConfig::GetInstance() {
       }
     }
     // update config file based on system property
-    int len = property_get("persist.nfc.config_file_name", valueStr, "");
+    int len = property_get("persist.vendor.nfc.config_file_name", valueStr, "");
 
     if (len > 0) {
       config_file_name = config_file_name + "_" + valueStr + ".conf";

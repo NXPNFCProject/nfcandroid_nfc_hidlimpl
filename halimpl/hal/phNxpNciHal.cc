@@ -529,7 +529,7 @@ static NFCSTATUS phNxpNciHal_fw_download(void) {
   } else {
     status = NFCSTATUS_SUCCESS;
     fw_download_success = 1;
-    property_set("persist.nfc.hci_network_reset_req", "true");
+    property_set("persist.vendor.nfc.hci_network_reset_req", "true");
   }
 
   /*Keep Read Pending on I2C*/
@@ -1634,11 +1634,11 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   static uint8_t android_l_aid_matching_mode_on_cmd[] = {
       0x20, 0x02, 0x05, 0x01, 0xA0, 0x91, 0x01, 0x01};
 
-  int len = property_get("persist.nfc.hci_network_reset_req", valueStr, "false");
+  int len = property_get("persist.vendor.nfc.hci_network_reset_req", valueStr, "false");
   if (len > 0) {
     persist_hci_network_reset_req = (len == 4 && (memcmp(valueStr, "true", len) == 0)) ? true : false;
   }
-  len = property_get("persist.nfc.core_reset_debug_info", valueStr, "false");
+  len = property_get("persist.vendor.nfc.core_reset_debug_info", valueStr, "false");
     if (len > 0) {
     persist_core_reset_debug_info_req = (len == 4 && (memcmp(valueStr, "true", len) == 0)) ? true : false;
   }
@@ -1919,7 +1919,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       NXPLOG_NCIHAL_E("NFCC texted reset ntf failed");
     }
     NXPLOG_NCIHAL_D("NFCC txed reset ntf with reason code 0xA3");
-    property_set("persist.nfc.core_reset_debug_info", "false");
+    property_set("persist.vendor.nfc.core_reset_debug_info", "false");
   }
   setConfigAlways = false;
   isfound = GetNxpNumValue(NAME_NXP_SET_CONFIG_ALWAYS, &num, sizeof(num));

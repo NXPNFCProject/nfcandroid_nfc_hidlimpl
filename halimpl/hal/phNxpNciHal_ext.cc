@@ -404,7 +404,7 @@ if(nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT == true) {
   /*Retreive reset ntf reason code irrespective of NCI 1.0 or 2.0*/
   if (p_ntf[0] == 0x60 && p_ntf[1] == 0x00 ){
     if ( p_ntf[3] == FW_DBG_REASON_AVAILABLE)
-      property_set("persist.nfc.core_reset_debug_info", "true");
+      property_set("persist.vendor.nfc.core_reset_debug_info", "true");
   }
 }
 
@@ -545,7 +545,7 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf, uint16_t* 
 
             /*Retreive reset ntf reason code irrespective of NCI 1.0 or 2.0*/
             if (p_ntf[3] == FW_DBG_REASON_AVAILABLE)
-              property_set("persist.nfc.core_reset_debug_info", "true");
+              property_set("persist.vendor.nfc.core_reset_debug_info", "true");
         phNxpNciHal_emergency_recovery();
         status = NFCSTATUS_FAILED;
       } /* Parsing CORE_INIT_RSP*/
