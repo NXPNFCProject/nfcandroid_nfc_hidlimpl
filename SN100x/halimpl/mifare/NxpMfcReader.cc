@@ -186,7 +186,7 @@ void NxpMfcReader::BuildReadCmd() { BuildRawCmd(); }
 void NxpMfcReader::BuildWrite16Cmd() {
   mMfcTagCmdIntfData.sendBuf[0] = eMfRawDataXchgHdr;
   mMfcTagCmdIntfData.sendBufLen = mMfcTagCmdIntfData.sendBufLen - 1;
-  memmove(mMfcTagCmdIntfData.sendBuf + 1, mMfcTagCmdIntfData.sendBuf + 2,
+  memcpy(mMfcTagCmdIntfData.sendBuf + 1, mMfcTagCmdIntfData.sendBuf + 2,
           mMfcTagCmdIntfData.sendBufLen);
 }
 
@@ -201,7 +201,7 @@ void NxpMfcReader::BuildWrite16Cmd() {
 *******************************************************************************/
 void NxpMfcReader::BuildRawCmd() {
   mMfcTagCmdIntfData.sendBufLen = mMfcTagCmdIntfData.sendBufLen + 1;
-  memmove(mMfcTagCmdIntfData.sendBuf + 1, mMfcTagCmdIntfData.sendBuf,
+  memcpy(mMfcTagCmdIntfData.sendBuf + 1, mMfcTagCmdIntfData.sendBuf,
           mMfcTagCmdIntfData.sendBufLen);
   mMfcTagCmdIntfData.sendBuf[0] = eMfRawDataXchgHdr;
 }
@@ -218,7 +218,7 @@ void NxpMfcReader::BuildRawCmd() {
 void NxpMfcReader::BuildIncDecCmd() {
   mMfcTagCmdIntfData.sendBufLen = 0x03; // eMfRawDataXchgHdr + cmd +
                                         // blockaddress
-  memmove(mMfcTagCmdIntfData.sendBuf + 1, mMfcTagCmdIntfData.sendBuf,
+  memcpy(mMfcTagCmdIntfData.sendBuf + 1, mMfcTagCmdIntfData.sendBuf,
           mMfcTagCmdIntfData.sendBufLen);
   mMfcTagCmdIntfData.sendBuf[0] = eMfRawDataXchgHdr;
 }
@@ -327,7 +327,7 @@ NFCSTATUS NxpMfcReader::AnalyzeMfcResp(uint8_t *pBuff, uint16_t *pBufflen) {
         if ((wPldDataSize) <= wRecvDataSz) {
           /* Extract the data part from pBuff[2] & fill it to be sent to
            * upper layer */
-          memmove(&(pBuff[0]), &(pBuff[1]), wPldDataSize);
+          memcpy(&(pBuff[0]), &(pBuff[1]), wPldDataSize);
           /* update the number of bytes received from lower layer,excluding
            * the status byte */
           *pBufflen = wPldDataSize;
