@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 NXP Semiconductors
+ * Copyright (C) 2019-2020 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,7 @@
 #include "phNxpConfig.h"
 #include "phNxpLog.h"
 #include <hardware/nfc.h>
-#include <vendor/nxp/nxpnfc/2.0/types.h>
-namespace vendor {
-namespace nxp {
-namespace nxpnfc {
-namespace V2_0 {
-struct INxpNfc;
-} } } }
-
-using vendor::nxp::nxpnfc::V2_0::Constants;
-using vendor::nxp::nxpnfc::V2_0::NxpNfcHalStatus;
+#include "NxpNfc.h"
 
 /******************************************************************************
  ** Function         phNxpNciHal_ioctlIf

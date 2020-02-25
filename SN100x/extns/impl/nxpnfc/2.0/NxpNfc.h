@@ -23,6 +23,15 @@
 #include <hidl/MQDescriptor.h>
 #include <hidl/Status.h>
 
+enum Constants : uint16_t {
+    HAL_NFC_ESE_HARD_RESET = 5,
+};
+
+enum NxpNfcEvents : uint8_t {
+    HAL_NFC_RESTART = 0x30,
+    HAL_NFC_HCI_RESET = 0x40,
+};
+
 namespace vendor {
 namespace nxp {
 namespace nxpnfc {
