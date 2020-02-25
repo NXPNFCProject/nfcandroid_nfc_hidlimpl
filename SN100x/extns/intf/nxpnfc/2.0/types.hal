@@ -17,15 +17,6 @@
  ******************************************************************************/
 package vendor.nxp.nxpnfc@2.0;
 
-enum Constants : uint16_t {
-    HAL_NFC_ESE_HARD_RESET = 5,
-};
-
-enum NxpNfcHalStatus : uint8_t {
-    HAL_NFC_STATUS_RESTART = 0x30,
-    HAL_NFC_HCI_NV_RESET = 0x40,
-};
-
 enum NxpNfcHalEseState : uint64_t {
     HAL_NFC_ESE_UPDATE_COMPLETED = 0,
     HAL_NFC_ESE_UPDATE_STARTED,

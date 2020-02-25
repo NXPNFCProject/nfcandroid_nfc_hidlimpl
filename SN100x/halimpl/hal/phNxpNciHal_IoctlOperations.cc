@@ -242,7 +242,7 @@ int phNxpNciHal_ioctlIf(long arg, void *p_data) {
        NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_ESE_JCOP_DWNLD Enter value is %d: \n",
               pInpOutData->inp.data.nxpCmd.p_cmd[0]);
     }
-    phNxpNciHal_nfcStackCb(p_nfc_stack_cback_backup, (uint8_t)NxpNfcHalStatus::HAL_NFC_HCI_NV_RESET);
+    phNxpNciHal_nfcStackCb(p_nfc_stack_cback_backup, (uint8_t)NxpNfcEvents::HAL_NFC_HCI_RESET);
     ret = 0;
     break;
   default:

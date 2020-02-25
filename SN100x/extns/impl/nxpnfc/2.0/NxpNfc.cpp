@@ -74,7 +74,7 @@ NxpNfc::setEseUpdateState(NxpNfcHalEseState eSEState) {
   bool status = false;
 
   ALOGD("NxpNfc::setEseUpdateState Entry");
-  ret = phNxpNciHal_nfcTriggerSavedCb((uint8_t)NxpNfcHalStatus::HAL_NFC_HCI_NV_RESET);
+  ret = phNxpNciHal_nfcTriggerSavedCb((uint8_t)NxpNfcEvents::HAL_NFC_HCI_RESET);
   if(ret == 0){
     status = true;
   }
@@ -87,7 +87,7 @@ NxpNfc::setEseUpdateState(NxpNfcHalEseState eSEState) {
     eSEClientUpdate_NFC_Thread();
   }
   if (eSEState == NxpNfcHalEseState::HAL_NFC_ESE_UPDATE_COMPLETED) {
-        phNxpNciHal_nfcTriggerSavedCb((uint8_t)NxpNfcHalStatus::HAL_NFC_STATUS_RESTART);
+        phNxpNciHal_nfcTriggerSavedCb((uint8_t)NxpNfcEvents::HAL_NFC_RESTART);
   }
   ALOGD("NxpNfc::setEseUpdateState Exit");
   return status;
