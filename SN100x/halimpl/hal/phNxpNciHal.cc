@@ -732,6 +732,9 @@ init_retry:
     phNxpNciHal_enable_i2c_fragmentation();
 
   status = phNxpNciHal_CheckFwRegFlashRequired(&fw_update_req, &rf_update_req, false);
+  if (status != NFCSTATUS_OK) {
+    NXPLOG_NCIHAL_D("phNxpNciHal_CheckFwRegFlashRequired() failed : exit - status = %x ", status);
+  }
   wFwUpdateReq = fw_update_req;
 
   if (!wFwUpdateReq) {
