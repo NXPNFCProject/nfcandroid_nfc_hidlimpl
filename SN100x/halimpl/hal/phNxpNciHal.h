@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2019 NXP Semiconductors
+ * Copyright (C) 2010-2020 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,10 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 #define CORE_RESET_TRIGGER_TYPE_CORE_RESET_CMD_RECEIVED 0x02
 #define CORE_RESET_TRIGGER_TYPE_POWERED_ON              0x01
 #define NCI2_0_CORE_RESET_TRIGGER_TYPE_OVER_TEMPERATURE ((uint8_t)0xA1)
+#define CORE_RESET_TRIGGER_TYPE_UNRECOVERABLE_ERROR 0x00
+#define CORE_RESET_TRIGGER_TYPE_FW_ASSERT ((uint8_t)0xA0)
+#define CORE_RESET_TRIGGER_TYPE_WATCHDOG_RESET ((uint8_t)0xA3)
+#define CORE_RESET_TRIGGER_TYPE_INPUT_CLOCK_LOST ((uint8_t)0xA4)
 //#define NCI_MSG_CORE_RESET           0x00
 //#define NCI_MSG_CORE_INIT            0x01
 #define NCI_MT_MASK                  0xE0

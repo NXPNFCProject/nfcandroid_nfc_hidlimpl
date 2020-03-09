@@ -249,3 +249,34 @@ NFCSTATUS phNxpNciHal_write_fw_dw_status(uint8_t value) {
   mEEPROM_info.request_mode = SET_EEPROM_DATA;
   return request_EEPROM(&mEEPROM_info);
 }
+
+/*****************************************************************************
+ * Function         phNxpNciHal_send_get_cfg
+ *
+ * Description      This function is called to get the configurations from
+ * EEPROM
+ *
+ * Params           cmd_get_cfg, Buffer to get the get command
+ *                  cmd_len,     Length of the command
+ * Returns          SUCCESS/FAILURE
+ *
+ *
+ *****************************************************************************/
+NFCSTATUS phNxpNciHal_send_get_cfg(const uint8_t *cmd_get_cfg, long cmd_len) {
+  NXPLOG_NCIHAL_D("%s Enter", __func__);
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  uint8_t retry_cnt = 0;
+
+  if (cmd_get_cfg == NULL || cmd_len <= NCI_GET_CONFI_MIN_LEN) {
+    NXPLOG_NCIHAL_E("%s invalid command..! returning... ", __func__);
+    return status;
+  }
+
+  do {
+    status = phNxpNciHal_send_ext_cmd(cmd_len, (uint8_t *)cmd_get_cfg);
+  } while ((status != NFCSTATUS_SUCCESS) &&
+           (retry_cnt++ < NXP_MAX_RETRY_COUNT));
+
+  NXPLOG_NCIHAL_D("%s status : 0x%02X", __func__, status);
+  return status;
+}
