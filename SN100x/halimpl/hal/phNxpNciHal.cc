@@ -3396,8 +3396,10 @@ NFCSTATUS phNxpNciHal_resetDefaultSettings() {
 
   if(status == NFCSTATUS_SUCCESS) {
     unsigned long num = 0;
+    int ret = 0;
     phNxpNciHal_conf_nfc_forum_mode();
-    if ((GetNxpNumValue(NAME_NXP_RDR_DISABLE_ENABLE_LPCD, &num, sizeof(num))) && (num == 1)) {
+    ret = GetNxpNumValue(NAME_NXP_RDR_DISABLE_ENABLE_LPCD, &num, sizeof(num));
+    if (!ret || (num == 1)) {
       phNxpNciHal_prop_conf_lpcd();
     }
   }
