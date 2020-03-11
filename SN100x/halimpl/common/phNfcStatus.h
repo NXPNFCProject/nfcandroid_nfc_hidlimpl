@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2018 NXP Semiconductors
+ * Copyright (C) 2010-2020 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,7 +94,11 @@
 #define NFC_STATUS_NOT_INITIALIZED_PROP (0x0004)
 
 /*
+ * The function indicates given module not initialized
+ */
+#define NFCSTATUS_FW_CHECK_INTEGRITY_FAILED (0x0005)
 
+/*
  * Device specifier/handle value is invalid for the operation
  */
 #define NFCSTATUS_INVALID_DEVICE (0x0006)

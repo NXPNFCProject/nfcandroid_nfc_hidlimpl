@@ -198,7 +198,6 @@ typedef int (*fpRegRfFwDndl_t)(uint8_t* fw_update_req,
                    uint8_t skipEEPROMRead);
 typedef int (*fpPropConfCover_t)(bool attached, int type);
 void phNxpNciHal_initializeRegRfFwDnld();
-void phNxpNciHal_initializeRegRfFwDnld();
 void phNxpNciHal_deinitializeRegRfFwDnld();
 void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData);
 /*set config management*/
@@ -292,7 +291,7 @@ int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t *p_data,
                                int origin);
 NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info);
 int phNxpNciHal_check_config_parameter();
-NFCSTATUS phNxpNciHal_fw_download(void);
+NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset = 0);
 NFCSTATUS phNxpNciHal_nfcc_core_reset_init();
 int phNxpNciHal_fw_mw_ver_check();
 NFCSTATUS phNxpNciHal_check_clock_config(void);

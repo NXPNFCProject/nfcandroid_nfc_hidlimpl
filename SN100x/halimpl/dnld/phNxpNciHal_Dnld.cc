@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019 NXP Semiconductors
+ * Copyright (C) 2012-2020 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1170,10 +1170,9 @@ static NFCSTATUS phNxpNciHal_fw_dnld_chk_integrity(void* pContext,
     wStatus = NFCSTATUS_FAILED;
     goto clean_and_return;
   }
-
   if (cb_data.status != NFCSTATUS_SUCCESS) {
     NXPLOG_FWDNLD_E("phNxpNciHal_fw_dnld_chk_integrity cb failed");
-    wStatus = NFCSTATUS_FAILED;
+    wStatus = NFCSTATUS_FW_CHECK_INTEGRITY_FAILED;
     goto clean_and_return;
   }
 
@@ -1544,6 +1543,36 @@ static NFCSTATUS phNxpNciHal_fw_seq_handler(
 
 /*******************************************************************************
 **
+** Function         phNxpNciHal_fw_dnld_switch_normal_mode
+**
+** Description      This function shall be called to switch NFCC to normal mode
+**
+** Returns          NFCSTATUS_SUCCESS if success
+**
+*******************************************************************************/
+NFCSTATUS phNxpNciHal_fw_dnld_switch_normal_mode(void* pContext, NFCSTATUS fStatus,
+        void* pInfo) {
+  NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
+  /* Call Tml Ioctl to enable/restore normal mode */
+  wStatus = phTmlNfc_IoCtl(phTmlNfc_e_EnableNormalMode);
+
+  if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD ||
+          (gphNxpNciHal_fw_IoctlCtx.bChipVer & PHDNLDNFC_HWVER_VENUS_MRA1_0)){
+
+    phDnldNfc_SetDlRspTimeout((uint16_t)PHDNLDNFC_RESET_RSP_TIMEOUT);
+    wStatus = phNxpNciHal_fw_dnld_reset(pContext, wStatus, &pInfo);
+    phDnldNfc_SetDlRspTimeout((uint16_t)PHDNLDNFC_RSP_TIMEOUT);
+  }
+  if (NFCSTATUS_SUCCESS != wStatus) {
+    NXPLOG_FWDNLD_E("Switching to NormalMode Failed!!");
+  } else {
+    wStatus = fStatus;
+  }
+  return wStatus;
+}
+
+/*******************************************************************************
+**
 ** Function         phNxpNciHal_fw_dnld_complete
 **
 ** Description      Download Sequence Complete
@@ -1673,8 +1702,10 @@ static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
     }
 
     if (gphNxpNciHal_fw_IoctlCtx.bSendNciCmd == false) {
-      /* Call Tml Ioctl to enable/restore normal mode */
-      wStatus = phTmlNfc_IoCtl(phTmlNfc_e_EnableNormalMode);
+      if (status != NFCSTATUS_FW_CHECK_INTEGRITY_FAILED) {
+        /* Call Tml Ioctl to enable/restore normal mode */
+        wStatus = phTmlNfc_IoCtl(phTmlNfc_e_EnableNormalMode);
+      }
       if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD || (gphNxpNciHal_fw_IoctlCtx.bChipVer & PHDNLDNFC_HWVER_VENUS_MRA1_0)){
         phDnldNfc_SetDlRspTimeout((uint16_t)PHDNLDNFC_RESET_RSP_TIMEOUT);
         wStatus = phNxpNciHal_fw_dnld_reset(pContext, wStatus, &pInfo);
@@ -1685,6 +1716,9 @@ static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
       } else {
         wStatus = fStatus;
       }
+    }
+    if (status == NFCSTATUS_FW_CHECK_INTEGRITY_FAILED) {
+      wStatus = NFCSTATUS_FW_CHECK_INTEGRITY_FAILED;
     }
 
     (gphNxpNciHal_fw_IoctlCtx.bPrevSessnOpen) = false;
@@ -1721,7 +1755,8 @@ static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
 ** Returns          NFCSTATUS_SUCCESS if success
 **
 *******************************************************************************/
-NFCSTATUS phNxpNciHal_fw_download_seq(uint8_t bClkSrcVal, uint8_t bClkFreqVal) {
+NFCSTATUS phNxpNciHal_fw_download_seq(uint8_t bClkSrcVal, uint8_t bClkFreqVal,
+                                      uint8_t seq_handler_offset) {
   NFCSTATUS status = NFCSTATUS_FAILED;
   phDnldNfc_Buff_t pInfo;
   const char* pContext = "FW-Download";
@@ -1752,7 +1787,7 @@ NFCSTATUS phNxpNciHal_fw_download_seq(uint8_t bClkSrcVal, uint8_t bClkFreqVal) {
       status = phNxpNciHal_fw_seq_handler(phNxpNciHal_dwnld_seqhandler);
     }
 #else
-    status = phNxpNciHal_fw_seq_handler(phNxpNciHal_dwnld_seqhandler);
+    status = phNxpNciHal_fw_seq_handler(phNxpNciHal_dwnld_seqhandler + seq_handler_offset);
 #endif
   } else {
     NXPLOG_FWDNLD_E("phDnldNfc_InitImgInfo: FAILED");
