@@ -27,10 +27,6 @@ enum Constants : uint16_t {
     HAL_NFC_ESE_HARD_RESET = 5,
 };
 
-enum NxpNfcEvents : uint8_t {
-    HAL_NFC_RESTART = 0x30,
-    HAL_NFC_HCI_RESET = 0x40,
-};
 
 namespace vendor {
 namespace nxp {
@@ -44,7 +40,7 @@ using ::android::hardware::hidl_vec;
 using ::android::hardware::Return;
 using ::android::hardware::Void;
 
-struct NxpNfc : public INxpNfc {
+struct NxpNfc : public INxpNfc{
   Return<void> getVendorParam(const ::android::hardware::hidl_string &key,
                                  getVendorParam_cb _hidl_cb) override;
   Return<bool>
