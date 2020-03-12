@@ -334,7 +334,7 @@ void phNxpNciHal_configFeatureList(uint8_t* init_rsp, uint16_t rsp_len);
 void phNxpNciHal_read_and_update_se_state();
 
 /******************************************************************************
- * Function         phNxpNciHal_nfcTriggerSavedCb
+ * Function         phNxpNciHal_Abort
  *
  * Description      This will post the message to the upper layer
  *                  using the callback p_nfc_stack_cback_backup.
@@ -342,7 +342,7 @@ void phNxpNciHal_read_and_update_se_state();
  * Returns          none
  *
  ******************************************************************************/
-extern int phNxpNciHal_nfcTriggerSavedCb(int evt);
+extern bool phNxpNciHal_Abort();
 /******************************************************************************
  * Function         phNxpNciHal_read_fw_dw_status
  *

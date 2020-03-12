@@ -162,16 +162,16 @@ int property_set_intf(const char *propName, const char *valueStr);
 
 /*******************************************************************************
  **
- ** Function:        phNxpNciHal_nfcTriggerSavedCb()
+ ** Function:        phNxpNciHal_Abort()
  **
- ** Description:     triggers the saved callback of p_nfc_stack_cback_backup
+ ** Description:     This function shall be used to trigger the abort
  **
- ** Parameters       evt : Name of the event
+ ** Parameters       None
  **
  ** Returns:        returns 0 on success, < 0 on failure
  **
  ********************************************************************************/
-int phNxpNciHal_nfcTriggerSavedCb(int evt);
+bool phNxpNciHal_Abort();
 
 #undef PROPERTY_VALUE_MAX
 #define PROPERTY_VALUE_MAX 92

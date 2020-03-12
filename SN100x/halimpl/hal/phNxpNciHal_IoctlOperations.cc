@@ -194,20 +194,6 @@ std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
  ***************************************************************/
 
 /******************************************************************************
- ** Function         phNxpNciHal_nfcStackCb
- **
- ** Description      This function shall be used to post events to the nfc
- *stack.
- **
- ** Parameters       pCb: Callback handle for NFC stack callback
- **                  evt: event to be posted to the given callback.
- **
- ** Returns          Always Zero.
- **
- *******************************************************************************/
-static int phNxpNciHal_nfcStackCb(nfc_stack_callback_t *pCb, int evt);
-
-/******************************************************************************
  ** Function         phNxpNciHal_ioctlIf
  **
  ** Description      This function shall be called from HAL when libnfc-nci
@@ -242,7 +228,6 @@ int phNxpNciHal_ioctlIf(long arg, void *p_data) {
        NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_ESE_JCOP_DWNLD Enter value is %d: \n",
               pInpOutData->inp.data.nxpCmd.p_cmd[0]);
     }
-    phNxpNciHal_nfcStackCb(p_nfc_stack_cback_backup, (uint8_t)NxpNfcEvents::HAL_NFC_HCI_RESET);
     ret = 0;
     break;
   default:
@@ -668,46 +653,28 @@ bool phNxpNciHal_setNxpTransitConfig(char *transitConfValue) {
 }
 
 /******************************************************************************
-** Function         phNxpNciHal_nfcStackCb
+** Function         phNxpNciHal_Abort
 **
-** Description      This function shall be used to post events to the nfc stack.
+** Description      This function shall be used to trigger the abort
 **
-** Parameters       pCb: Callback handle for NFC stack callback
-**                  evt: event to be posted to the given callback.
+** Parameters       None
 **
-** Returns          void.
+** Returns          bool.
 **
 *******************************************************************************/
-int phNxpNciHal_nfcTriggerSavedCb(int evt) {
-  int ret = 0;
+bool phNxpNciHal_Abort() {
+  bool ret = true;
 
-  if (p_nfc_stack_cback_backup != NULL) {
-    ret = phNxpNciHal_nfcStackCb(p_nfc_stack_cback_backup, evt);
-  } else {
-    NXPLOG_NCIHAL_D("p_nfc_stack_cback_backup cback NULL \n");
-    ret = -1;
+  NXPLOG_NCIHAL_D("phNxpNciHal_Abort aborting. \n");
+  /* When JCOP download is triggered phNxpNciHal_open is blocked, in this case only
+     we need to abort the libnfc , this can be done only by check the p_nfc_stack_cback_backup
+     pointer which is assigned before the JCOP download.*/
+  if (p_nfc_stack_cback_backup != NULL){
+      abort();
   }
-  return ret;
-}
-
-/******************************************************************************
-** Function         phNxpNciHal_nfcStackCb
-**
-** Description      This function shall be used to post events to the nfc stack.
-**
-** Parameters       pCb: Callback handle for NFC stack callback
-**                  evt: event to be posted to the given callback.
-**
-** Returns          void.
-**
-*******************************************************************************/
-static int phNxpNciHal_nfcStackCb(nfc_stack_callback_t *pCb, int evt) {
-  int ret = 0;
-  if (pCb != NULL) {
-    (*pCb)(HAL_NFC_OPEN_CPLT_EVT, evt);
-  } else {
-    NXPLOG_NCIHAL_D("p_nfc_stack_cback_backup cback NULL \n");
-    ret = -1;
+  else {
+    ret = false;
+    NXPLOG_NCIHAL_D("phNxpNciHal_Abort not triggered\n");
   }
   return ret;
 }
