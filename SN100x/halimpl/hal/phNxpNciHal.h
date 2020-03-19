@@ -200,6 +200,7 @@ typedef int (*fpPropConfCover_t)(bool attached, int type);
 void phNxpNciHal_initializeRegRfFwDnld();
 void phNxpNciHal_initializeRegRfFwDnld();
 void phNxpNciHal_deinitializeRegRfFwDnld();
+void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData);
 /*set config management*/
 
 #define TOTAL_DURATION 0x00

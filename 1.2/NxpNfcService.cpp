@@ -18,7 +18,7 @@
 
 #define LOG_TAG "nxpnfc@2.0-service"
 #include <android/hardware/nfc/1.1/INfc.h>
-#include <vendor/nxp/nxpnfc/1.0/INxpNfc.h>
+#include <vendor/nxp/nxpnfc/1.1/INxpNfc.h>
 #include <unistd.h>
 
 #include <hidl/LegacySupport.h>
@@ -34,8 +34,8 @@ using android::hardware::joinRpcThreadpool;
 using android::sp;
 using android::status_t;
 using android::OK;
-using vendor::nxp::nxpnfc::V1_0::INxpNfc;
-using vendor::nxp::nxpnfc::V1_0::implementation::NxpNfc;
+using vendor::nxp::nxpnfc::V1_1::INxpNfc;
+using vendor::nxp::nxpnfc::V1_1::implementation::NxpNfc;
 
 int main() {
     status_t status;

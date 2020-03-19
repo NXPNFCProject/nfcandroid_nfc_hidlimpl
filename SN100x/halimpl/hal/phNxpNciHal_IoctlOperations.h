@@ -93,6 +93,20 @@ bool phNxpNciHal_setSystemProperty(string key, string value);
 *******************************************************************************/
 string phNxpNciHal_getNxpConfigIf();
 
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_getNxpConfig
+**
+** Description      It shall be used to read config values from the
+*libnfc-nxp.conf
+**
+** Parameters       nxpConfigs config
+**
+** Returns          void
+*******************************************************************************/
+void phNxpNciHal_getNxpConfigIf(nxp_nfc_config_t *configs);
+
 /*******************************************************************************
 **
 ** Function         phNxpNciHal_resetEse

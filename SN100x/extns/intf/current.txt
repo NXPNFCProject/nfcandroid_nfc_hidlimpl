@@ -1,0 +1,4 @@
+d2024b1ac380c4beb387466cc7646c09dcfae5e2900c5bebbff111912a5352de vendor.nxp.nxpnfc@1.0::types
+ee94d45f490daf851d9a5ef6a5098bff4656694fa51cf9817fbddabc74702a46 vendor.nxp.nxpnfc@1.0::INxpNfc
+6370ebfbf198333b7c63fbd41e71e4ca953ab0397726ffd3f1da8c5ae9220532 vendor.nxp.nxpnfc@1.1::types
+7e52a5aadda0d91bf4e2f08c5fbed5372b240b82b0f6f34166d5003828ab7f65 vendor.nxp.nxpnfc@1.1::INxpNfc

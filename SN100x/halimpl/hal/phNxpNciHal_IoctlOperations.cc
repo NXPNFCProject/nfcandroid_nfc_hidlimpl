@@ -333,6 +333,10 @@ int phNxpNciHal_ioctlIf(long arg, void *p_data) {
       NXPLOG_NCIHAL_E("%s : received invalid param", __func__);
     }
     break;
+  case HAL_NFC_IOCTL_GET_NXP_CONFIG:
+    phNxpNciHal_getNxpConfig(pInpOutData);
+    ret = 0;
+    break;
   default:
     NXPLOG_NCIHAL_E("%s : Wrong arg = %ld", __func__, arg);
     break;
@@ -687,6 +691,180 @@ static string phNxpNciHal_parseBytesString(string in) {
     pos = in.find(",", pos);
   }
   return in;
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_getNxpConfig
+**
+** Description      It shall be used to read config values from the
+*libnfc-nxp.conf
+**
+** Parameters       nxpConfigs config
+**
+** Returns          void
+*******************************************************************************/
+void phNxpNciHal_getNxpConfigIf(nxp_nfc_config_t *configs) {
+  unsigned long num = 0;
+  char val[TERMINAL_LEN] = {0};
+  uint8_t *buffer = NULL;
+  long bufflen = 260;
+  long retlen = 0;
+
+  buffer = (uint8_t *)malloc(bufflen * sizeof(uint8_t));
+
+  NXPLOG_NCIHAL_D("phNxpNciHal_getNxpConfig: Enter");
+  if (GetNxpNumValue(NAME_NXP_SE_COLD_TEMP_ERROR_DELAY, &num, sizeof(num))) {
+    configs->eSeLowTempErrorDelay = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_SWP_RD_TAG_OP_TIMEOUT, &num, sizeof(num))) {
+    configs->tagOpTimeout = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_DUAL_UICC_ENABLE, &num, sizeof(num))) {
+    configs->dualUiccEnable = num;
+  }
+  if (GetNxpNumValue(NAME_DEFAULT_AID_ROUTE, &num, sizeof(num))) {
+    configs->defaultAidRoute = num;
+  }
+  if (GetNxpNumValue(NAME_DEFAULT_MIFARE_CLT_ROUTE, &num, sizeof(num))) {
+    configs->defaultMifareCltRoute = num;
+  }
+  if (GetNxpNumValue(NAME_DEFAULT_FELICA_CLT_ROUTE, &num, sizeof(num))) {
+    configs->defautlFelicaCltRoute = num;
+  }
+  if (GetNxpNumValue(NAME_DEFAULT_AID_PWR_STATE, &num, sizeof(num))) {
+    configs->defaultAidPwrState = phNxpNciHal_updateAutonomousPwrState(num);
+  }
+  if (GetNxpNumValue(NAME_DEFAULT_DESFIRE_PWR_STATE, &num, sizeof(num))) {
+    configs->defaultDesfirePwrState = phNxpNciHal_updateAutonomousPwrState(num);
+  }
+  if (GetNxpNumValue(NAME_DEFAULT_MIFARE_CLT_PWR_STATE, &num, sizeof(num))) {
+    configs->defaultMifareCltPwrState =
+        phNxpNciHal_updateAutonomousPwrState(num);
+  }
+  if (GetNxpNumValue(NAME_HOST_LISTEN_TECH_MASK, &num, sizeof(num))) {
+    configs->hostListenTechMask = num;
+  }
+  if (GetNxpNumValue(NAME_FORWARD_FUNCTIONALITY_ENABLE, &num, sizeof(num))) {
+    configs->fwdFunctionalityEnable = num;
+  }
+  if (GetNxpNumValue(NAME_DEFUALT_GSMA_PWR_STATE, &num, sizeof(num))) {
+    configs->gsmaPwrState = phNxpNciHal_updateAutonomousPwrState(num);
+  }
+  if (GetNxpNumValue(NAME_NXP_DEFAULT_UICC2_SELECT, &num, sizeof(num))) {
+    configs->defaultUicc2Select = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_SMB_TRANSCEIVE_TIMEOUT, &num, sizeof(num))) {
+    configs->smbTransceiveTimeout = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_SMB_ERROR_RETRY, &num, sizeof(num))) {
+    configs->smbErrorRetry = num;
+  }
+  if (GetNxpNumValue(NAME_DEFAULT_FELICA_CLT_PWR_STATE, &num, sizeof(num))) {
+    configs->felicaCltPowerState = phNxpNciHal_updateAutonomousPwrState(num);
+  }
+  if (GetNxpNumValue(NAME_CHECK_DEFAULT_PROTO_SE_ID, &num, sizeof(num))) {
+    configs->checkDefaultProtoSeId = num;
+  }
+  if (GetNxpNumValue(NAME_NXPLOG_NCIHAL_LOGLEVEL, &num, sizeof(num))) {
+    configs->nxpLogHalLoglevel = num;
+  }
+  if (GetNxpNumValue(NAME_NXPLOG_EXTNS_LOGLEVEL, &num, sizeof(num))) {
+    configs->nxpLogExtnsLogLevel = num;
+  }
+  if (GetNxpNumValue(NAME_NXPLOG_TML_LOGLEVEL, &num, sizeof(num))) {
+    configs->nxpLogTmlLogLevel = num;
+  }
+  if (GetNxpNumValue(NAME_NXPLOG_FWDNLD_LOGLEVEL, &num, sizeof(num))) {
+    configs->nxpLogFwDnldLogLevel = num;
+  }
+  if (GetNxpNumValue(NAME_NXPLOG_NCIX_LOGLEVEL, &num, sizeof(num))) {
+    configs->nxpLogNcixLogLevel = num;
+  }
+  if (GetNxpNumValue(NAME_NXPLOG_NCIR_LOGLEVEL, &num, sizeof(num))) {
+    configs->nxpLogNcirLogLevel = num;
+  }
+  if (GetNxpStrValue(NAME_NXP_NFC_SE_TERMINAL_NUM, val, TERMINAL_LEN)) {
+    NXPLOG_NCIHAL_D("NfcSeTerminalId found val = %s ", val);
+    configs->seApduGateEnabled = 1;
+  } else {
+    configs->seApduGateEnabled = 0;
+  }
+  if (GetNxpNumValue(NAME_NXP_POLL_FOR_EFD_TIMEDELAY, &num, sizeof(num))) {
+    configs->pollEfdDelay = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_NFCC_MERGE_SAK_ENABLE, &num, sizeof(num))) {
+    configs->mergeSakEnable = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_STAG_TIMEOUT_CFG, &num, sizeof(num))) {
+    configs->stagTimeoutCfg = num;
+  }
+    if (GetNxpNumValue(NAME_DEFAULT_T4TNFCEE_AID_POWER_STATE, &num, sizeof(num))) {
+    configs->t4tNfceePwrState = num;
+  }
+  if (GetNxpNumValue(NAME_NFA_CONFIG_FORMAT, &num, sizeof(num))) {
+    configs->scrCfgFormat = num;
+  } else {
+    configs->scrCfgFormat = 0x00;
+  }
+  if (buffer) {
+    if (GetNxpStrValue(NAME_RF_STORAGE, (char *)buffer, bufflen)) {
+      retlen = strlen((char *)buffer) + 1;
+      memcpy(configs->rfStorage.path, (char *)buffer, retlen);
+      configs->rfStorage.len = retlen;
+    }
+    if (GetNxpStrValue(NAME_FW_STORAGE, (char *)buffer, bufflen)) {
+      retlen = strlen((char *)buffer) + 1;
+      memcpy(configs->fwStorage.path, (char *)buffer, retlen);
+      configs->fwStorage.len = retlen;
+    }
+    if (GetNxpByteArrayValue(NAME_NXP_CORE_CONF, (char *)buffer, bufflen,
+                             &retlen)) {
+      memcpy(configs->coreConf.cmd, (char *)buffer, retlen);
+      configs->coreConf.len = retlen;
+    }
+    if (GetNxpByteArrayValue(NAME_NXP_RF_FILE_VERSION_INFO, (char *)buffer,
+                             bufflen, &retlen)) {
+      memcpy(configs->rfFileVersInfo.ver, (char *)buffer, retlen);
+      configs->rfFileVersInfo.len = retlen;
+    }
+    if (GetNxpByteArrayValue(NAME_NXP_PROP_RESET_EMVCO_CMD, (char *)buffer, bufflen,
+                             &retlen)) {
+      memcpy(configs->scrResetEmvco.cmd, (char *)buffer, retlen);
+      configs->scrResetEmvco.len = retlen;
+    } else {
+      configs->scrResetEmvco.len = 0x00;
+    }
+    free(buffer);
+    buffer = NULL;
+  }
+  if (GetNxpNumValue(NAME_NXP_T4T_NFCEE_ENABLE, &num, sizeof(num))) {
+    configs->t4tnfcee = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_ENABLE_DISABLE_LOGS, &num, sizeof(num))) {
+    configs->enableLogs = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_DISCONNECT_TAG_IN_SCRN_OFF, &num, sizeof(num))) {
+    configs->disconnectTagInScrOff = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_RDR_REQ_GUARD_TIME, &num, sizeof(num))) {
+    configs->rdrGuardtime = num;
+  }
+  if (GetNxpNumValue(NAME_OFF_HOST_SIM2_PIPE_ID, &num, sizeof(num))) {
+    configs->hostSim2PipeID = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_RDR_DISABLE_ENABLE_LPCD, &num, sizeof(num))) {
+    configs->rdrEnableLpcd = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_AUTONOMOUS_ENABLE, &num, sizeof(num))) {
+    configs->autonomousEnable = num;
+  }
+  if (GetNxpNumValue(NAME_CHECK_DEFAULT_PROTO_SE_ID, &num, sizeof(num))) {
+    configs->defaultProtoSeId = num;
+  }
+
+  NXPLOG_NCIHAL_D("phNxpNciHal_getNxpConfig: Exit");
+  return;
 }
 
 /*******************************************************************************
