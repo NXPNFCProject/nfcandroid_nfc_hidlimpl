@@ -42,6 +42,7 @@
 #include <string>
 #include <vector>
 #include <log/log.h>
+#include <android-base/properties.h>
 
 #include <phNxpConfig.h>
 #include <phNxpLog.h>
@@ -234,18 +235,19 @@ inline int getDigitValue(char c, int base) {
 ** Returns:     none
 **
 *******************************************************************************/
-void findConfigFilePathFromTransportConfigPaths(const string& configName,
+bool findConfigFilePathFromTransportConfigPaths(const string& configName,
                                                 string& filePath) {
   for (int i = 0; i < transport_config_path_size - 1; i++) {
+    if (configName.empty()) break;
     filePath.assign(transport_config_paths[i]);
     filePath += configName;
     struct stat file_stat;
     if (stat(filePath.c_str(), &file_stat) == 0 && S_ISREG(file_stat.st_mode)) {
-      return;
+      return true;
     }
   }
-  filePath.assign(transport_config_paths[transport_config_path_size - 1]);
-  filePath += configName;
+  filePath = "";
+  return false;
 }
 
 /*******************************************************************************
@@ -488,7 +490,20 @@ CNfcConfig& CNfcConfig::GetInstance() {
         return theInstance;
       }
     }
-    findConfigFilePathFromTransportConfigPaths(config_name, strPath);
+
+    if (findConfigFilePathFromTransportConfigPaths(
+        android::base::GetProperty("persist.vendor.nfc.config_file_name", ""),
+        strPath)) {
+      NXPLOG_EXTNS_D("%s load %s\n", __func__,  strPath.c_str());
+    } else if (findConfigFilePathFromTransportConfigPaths(
+        extra_config_base +
+        android::base::GetProperty("ro.boot.product.hardware.sku", "") +
+        + extra_config_ext, strPath)) {
+      NXPLOG_EXTNS_D("%s load %s\n", __func__,  strPath.c_str());
+    } else {
+      findConfigFilePathFromTransportConfigPaths(config_name, strPath);
+    }
+
     theInstance.readConfig(strPath.c_str(), true);
 #if (NXP_EXTNS == TRUE)
     theInstance.readNxpRFConfig(nxp_rf_config_path);
