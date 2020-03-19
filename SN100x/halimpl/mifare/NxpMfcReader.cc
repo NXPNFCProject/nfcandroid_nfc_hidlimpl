@@ -130,7 +130,7 @@ void NxpMfcReader::BuildAuthCmd() {
   mMfcTagCmdIntfData.sendBufLen = 0x03;
   if (!isPreloadedKey) {
     byKey |= MFC_EMBEDDED_KEY;
-    memcpy(&mMfcTagCmdIntfData.sendBuf[3], &mMfcTagCmdIntfData.sendBuf[6],
+    memmove(&mMfcTagCmdIntfData.sendBuf[3], &mMfcTagCmdIntfData.sendBuf[6],
            MFC_AUTHKEYLEN);
     mMfcTagCmdIntfData.sendBufLen += MFC_AUTHKEYLEN;
   }
