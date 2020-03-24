@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2018, 2020 NXP
+ * Copyright (C) 2017-2018 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -341,7 +341,7 @@ NCI_LxDebug_Decoder::parseL2DbgNtf(psLxNtfCoded_t   psLxNtfCoded,
 
     do
     {
-        psLxNtfDecoded->psL2NtfDecoded->tlvCount = tlvCount++;
+        psLxNtfDecoded->psL2NtfDecoded->tlvCount = ++tlvCount;
         psLxNtfDecodingInfo->baseIndex           = tlvIndex;
 
         if(psLxNtfCoded->pLxNtf[tlvIndex] == (L2_EVT_TAG_ID | L2_EVT_TAG_ID_LEN))
@@ -506,7 +506,7 @@ NCI_LxDebug_Decoder::printLxDebugInfo(psLxNtfDecoded_t psLxNtfDecoded) {
         {
             uint8_t tlvCount = psLxNtfDecoded->psL2NtfDecoded->tlvCount;
 
-            for(int tlv=0; tlv < tlvCount; tlv++)
+            for(int tlv=1; tlv <= tlvCount; tlv++)
             {
                 phOsal_LogInfo((const uint8_t*)"---------------------L2 Debug Information--------------------");
                 phOsal_LogInfoU32d((const uint8_t*)"TLV Number", tlv);
