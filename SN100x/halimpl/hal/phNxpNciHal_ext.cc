@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019 NXP Semiconductors
+ * Copyright (C) 2012-2020 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,11 +33,9 @@
 #define HAL_EXTNS_WRITE_RSP_TIMEOUT (1000)
 
 #undef P2P_PRIO_LOGIC_HAL_IMP
-
 /******************* Global variables *****************************************/
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 extern phNxpNciProfile_Control_t nxpprofile_ctrl;
-extern phNxpNci_getCfg_info_t* mGetCfg_info;
 
 extern uint32_t cleanup_timer;
 extern bool nfc_debug_enabled;

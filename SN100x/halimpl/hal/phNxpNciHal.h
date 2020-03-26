@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2020 NXP Semiconductors
+ * Copyright (C) 2010-2020 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,8 @@
 #define NCI_VERSION_1_0 0x10
 #define NCI_VERSION_UNKNOWN 0x00
 #define NXP_AUTH_TIMEOUT_BUF_LEN 0x04
+#define SN1XX_ROM_VERSION      0x01
+#define SN1XX_FW_MAJOR_VERSION 0x10
 
 /*Mem alloc with 8 byte alignment*/
 #define size_align(sz) ((((sz)-1) | 7) + 1)
