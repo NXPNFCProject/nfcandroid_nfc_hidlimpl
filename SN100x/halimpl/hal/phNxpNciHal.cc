@@ -357,7 +357,6 @@ static void phNxpNciHal_kill_client_thread(
 static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset) {
   NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
   NFCSTATUS status = NFCSTATUS_SUCCESS;
-  uint8_t cmd_reset_nci[] = {0x20, 0x00, 0x01, 0x00};
   /*Get FW version from device*/
   for (int retry = 1; retry >= 0; retry--) {
     if (phDnldNfc_InitImgInfo() == NFCSTATUS_SUCCESS) { break;
@@ -402,12 +401,6 @@ static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset) {
     if (status != NFCSTATUS_PENDING) {
       NXPLOG_NCIHAL_E("TML Read status error status B= %x", status);
       wConfigStatus = NFCSTATUS_FAILED;
-    }
-    if (!fw_download_success) {
-      NXPLOG_NCIHAL_E("FW download failed, Continue NFC init");
-      status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
-      if (status != NFCSTATUS_SUCCESS)
-        NXPLOG_NCIHAL_E("Core reset failed");
     }
 
     if(nfcFL.chipType != sn100u) {
@@ -806,16 +799,18 @@ int phNxpNciHal_MinOpen (){
 
   do {
     if (fw_update_req) {
-      wConfigStatus = phNxpNciHal_force_fw_download(seq_handler_offset);
-      if (wConfigStatus == NFCSTATUS_CMD_ABORTED ) {
+      status = phNxpNciHal_force_fw_download(seq_handler_offset);
+      if (status == NFCSTATUS_CMD_ABORTED ) {
         return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
+      } else if (fw_download_success) {
+        wConfigStatus = NFCSTATUS_SUCCESS;
       }
     }
     status = phNxpNciHal_resetDefaultSettings();
-    if(status != NFCSTATUS_SUCCESS) {
+    if(status != NFCSTATUS_SUCCESS && fw_download_success) {
       NXPLOG_NCIHAL_E("Applying default settings failed, Perform Force FW Download");
       fw_update_req = 1;
-    }
+    } else { break; }
   } while (status != NFCSTATUS_SUCCESS);
   /* Call open complete */
   phNxpNciHal_MinOpen_complete(wConfigStatus);
@@ -3374,11 +3369,7 @@ retry_core_init:
 NFCSTATUS phNxpNciHal_resetDefaultSettings() {
   NFCSTATUS status = NFCSTATUS_FAILED;
 
-  if(fw_download_success)
-    status = phNxpNciHal_nfcc_core_reset_init();
-  else
-    status = NFCSTATUS_SUCCESS;
-
+  status = phNxpNciHal_nfcc_core_reset_init();
   if(status == NFCSTATUS_SUCCESS) {
     unsigned long num = 0;
     int ret = 0;
