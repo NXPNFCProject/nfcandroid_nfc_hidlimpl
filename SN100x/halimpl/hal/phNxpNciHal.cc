@@ -769,7 +769,7 @@ int phNxpNciHal_MinOpen (){
   uint8_t rf_update_req;
   phNxpNciHal_ext_init();
 
-  if (NFCSTATUS_SUCCESS == phNxpNciHal_nfcc_core_reset_init()) {
+  if (NFCSTATUS_SUCCESS == phNxpNciHal_nfcc_core_reset_init(true)) {
     if(nfcFL.chipType != sn100u)
       phNxpNciHal_enable_i2c_fragmentation();
 
@@ -3318,11 +3318,14 @@ static void phNxpNciHal_gpio_restore(phNxpNciHal_GpioInfoState state) {
  * Returns          Status
  *
  ******************************************************************************/
-NFCSTATUS phNxpNciHal_nfcc_core_reset_init() {
+NFCSTATUS phNxpNciHal_nfcc_core_reset_init(bool keep_config) {
   NFCSTATUS status = NFCSTATUS_FAILED;
   uint8_t retry_cnt = 0;
   uint8_t cmd_reset_nci[] = {0x20, 0x00, 0x01, 0x01};
 
+  if (keep_config) {
+    cmd_reset_nci[3] = 0x00;
+  }
 retry_core_reset:
   status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
   if ((status != NFCSTATUS_SUCCESS) && (retry_cnt < 3)) {
