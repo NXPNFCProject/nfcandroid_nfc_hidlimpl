@@ -154,7 +154,7 @@ static void phNxpNciHal_initialize_debug_enabled_flag();
 static NFCSTATUS phNxpNciHalRFConfigCmdRecSequence();
 static NFCSTATUS phNxpNciHal_CheckRFCmdRespStatus();
 static void phNxpNciHal_UpdateFwStatus(NfcFwUpdateStatus fwStatus);
-static NFCSTATUS phNxpNciHal_resetDefaultSettings();
+static NFCSTATUS phNxpNciHal_resetDefaultSettings(uint8_t fw_update_req, bool keep_config);
 static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset = 0);
 static int phNxpNciHal_MinOpen_Clean (char *nfc_dev_node);
 /******************************************************************************
@@ -806,7 +806,8 @@ int phNxpNciHal_MinOpen (){
         wConfigStatus = NFCSTATUS_SUCCESS;
       }
     }
-    status = phNxpNciHal_resetDefaultSettings();
+    status = phNxpNciHal_resetDefaultSettings(fw_update_req,
+            fw_download_success?false:true);
     if(status != NFCSTATUS_SUCCESS && fw_download_success) {
       NXPLOG_NCIHAL_E("Applying default settings failed, Perform Force FW Download");
       fw_update_req = 1;
@@ -3369,10 +3370,11 @@ retry_core_init:
  * Returns          Status
  *
  ******************************************************************************/
-NFCSTATUS phNxpNciHal_resetDefaultSettings() {
+NFCSTATUS phNxpNciHal_resetDefaultSettings(uint8_t fw_update_req, bool keep_config) {
   NFCSTATUS status = NFCSTATUS_FAILED;
-
-  status = phNxpNciHal_nfcc_core_reset_init();
+  if (fw_update_req) {
+    status = phNxpNciHal_nfcc_core_reset_init(keep_config);
+  }
   if(status == NFCSTATUS_SUCCESS) {
     unsigned long num = 0;
     int ret = 0;
