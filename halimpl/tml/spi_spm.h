@@ -30,7 +30,6 @@ typedef enum {
   phPalEse_e_ResetDevice = PH_PALESE_RESETDEVICE, /*!< Reset the device */
   phPalEse_e_EnableLog,      /*!< Enable the spi driver logs */
   phPalEse_e_EnablePollMode, /*!< Enable the polling for SPI */
-  phPalEse_e_GetEseAccess,   /*!< get the bus access in specified timeout */
   phPalEse_e_ChipRst,        /*!< eSE Chip reset using ISO RST pin*/
   phPalEse_e_EnableThroughputMeasurement, /*!< Enable throughput measurement */
   phPalEse_e_SetPowerScheme,              /*!< Set power scheme */

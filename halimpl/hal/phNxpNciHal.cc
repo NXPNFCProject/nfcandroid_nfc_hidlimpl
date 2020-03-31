@@ -152,7 +152,6 @@ static void phNxpNciHal_print_res_status(uint8_t* p_rx_data, uint16_t* p_len);
 static NFCSTATUS phNxpNciHal_CheckValidFwVersion(void);
 static void phNxpNciHal_enable_i2c_fragmentation();
 static void phNxpNciHal_core_MinInitialized_complete(NFCSTATUS status);
-static NFCSTATUS phNxpNciHal_set_Boot_Mode(uint8_t mode);
 NFCSTATUS phNxpNciHal_set_china_region_configs(void);
 static void phNxpNciHal_configNciParser(void);
 static void phNxpNciHal_initialize_debug_enabled_flag();
@@ -3672,7 +3671,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
   int ret = -1;
   NFCSTATUS status = NFCSTATUS_FAILED;
   phNxpNciHal_FwRfupdateInfo_t* FwRfInfo;
-  NFCSTATUS fm_mw_ver_check = NFCSTATUS_FAILED;
   long level;
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE &&
     (arg != HAL_NFC_IOCTL_ESE_JCOP_DWNLD && arg
@@ -3717,63 +3715,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
             }
         }
       break;
-    case HAL_NFC_IOCTL_P61_ENABLE_MODE:
-        if(nfcFL.nfcNxpEse) {
-            status = phTmlNfc_IoCtl(phTmlNfc_e_SetP61EnableMode);
-            if (NFCSTATUS_FAILED != status) {
-                if (NULL != p_data) pInpOutData->out.data.status = (uint16_t)status;
-                ret = 0;
-            }
-        }
-      break;
-    case HAL_NFC_IOCTL_P61_DISABLE_MODE:
-        if(nfcFL.nfcNxpEse) {
-            status = phTmlNfc_IoCtl(phTmlNfc_e_SetP61DisableMode);
-            if (NFCSTATUS_FAILED != status) {
-                if (NULL != p_data) pInpOutData->out.data.status = (uint16_t)status;
-                ret = 0;
-            }
-        }
-      break;
-    case HAL_NFC_IOCTL_P61_REL_ESE_PWR:
-      if(nfcFL.nfcNxpEse) {
-          status = phTmlNfc_IoCtl(phTmlNfc_e_ReleaseEsePower);
-          if (NFCSTATUS_FAILED != status) {
-              if (NULL != p_data) pInpOutData->out.data.status = (uint16_t)status;
-              ret = 0;
-          }
-      }
-      break;
-    case HAL_NFC_IOCTL_P61_SET_ESE_PWR:
-      if(nfcFL.nfcNxpEse) {
-          status = phTmlNfc_IoCtl(phTmlNfc_e_RaiseEsePower);
-          if (NFCSTATUS_FAILED != status) {
-              if (NULL != p_data) pInpOutData->out.data.status = (uint16_t)status;
-              ret = 0;
-          }
-      }
-      break;
-    case HAL_NFC_IOCTL_P61_GET_ACCESS:
-        if(nfcFL.nfcNxpEse) {
-            NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_P61_GET_ACCESS timeoutInMillisec = %d",
-                    pInpOutData->inp.data.timeoutMilliSec);
-            status = phTmlNfc_get_ese_access(gpphTmlNfc_Context->pDevHandle,
-                    pInpOutData->inp.data.timeoutMilliSec);
-            if (NFCSTATUS_SUCCESS == status) {
-                ret = 0;
-            }
-        }
-      break;
-    case HAL_NFC_IOCTL_P61_REL_ACCESS:
-        if(nfcFL.nfcNxpEse) {
-            status = phTmlNfc_IoCtl(phTmlNfc_e_RelP61Access);
-            NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_P61_REL_ACCESS retval = %d\n", status);
-            pInpOutData->out.data.status = status;
-            if (NFCSTATUS_SUCCESS == status) {
-                ret = 0;
-            }
-        }
-      break;
     case HAL_NFC_IOCTL_ESE_CHIP_RST:
         if(nfcFL.nfcNxpEse) {
             status = phTmlNfc_IoCtl(phTmlNfc_e_eSEChipRstMode);
@@ -3805,16 +3746,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
             ret = 0;
             }
         }
-      break;
-
-    case HAL_NFC_IOCTL_SET_BOOT_MODE:
-      if (NULL != p_data) {
-        status = phNxpNciHal_set_Boot_Mode(pInpOutData->inp.data.bootMode);
-        if (NFCSTATUS_FAILED != status) {
-          pInpOutData->out.data.status = (uint16_t)status;
-          ret = 0;
-        }
-      }
       break;
     case HAL_NFC_IOCTL_SET_JCP_DWNLD_ENABLE:
         if(nfcFL.eseFL._ESE_JCOP_DWNLD_PROTECTION) {
@@ -3865,11 +3796,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
           force_fw_download_req = false;
       }
       break;
-    case HAL_NFC_IOCTL_FW_MW_VER_CHECK:
-      fm_mw_ver_check = phNxpNciHal_fw_mw_ver_check();
-      pInpOutData->out.data.fwMwVerStatus = fm_mw_ver_check;
-      ret = 0;
-      break;
     case HAL_NFC_IOCTL_NCI_TRANSCEIVE:
       if (p_data == NULL) {
         ret = -1;
@@ -3890,9 +3816,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
         memcpy(pInpOutData->out.data.nciRsp.p_rsp, nxpncihal_ctrl.p_rx_data,
                nxpncihal_ctrl.rx_data_len);
       }
-      break;
-    case HAL_NFC_IOCTL_DISABLE_HAL_LOG:
-      status = phNxpLog_EnableDisableLogLevel(pInpOutData->inp.data.halType);
       break;
     case HAL_NFC_IOCTL_SET_NFC_SERVICE_PID:
       gpphTmlNfc_Context->nfc_service_pid = pInpOutData->inp.data.nfcServicePid;
@@ -4011,15 +3934,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
       level = pInpOutData->inp.level;
       ret = phPalEse_spi_ioctl(phPalEse_e_GetSPMStatus,
                                gpphTmlNfc_Context->pDevHandle, level);
-      break;
-    case HAL_NFC_GET_ESE_ACCESS:
-      level = pInpOutData->inp.level;
-      ret = phPalEse_spi_ioctl(phPalEse_e_GetEseAccess,
-                               gpphTmlNfc_Context->pDevHandle, level);
-      break;
-    case HAL_NFC_SET_DWNLD_STATUS:
-      level = pInpOutData->inp.level;
-      ret = 0;
       break;
     case HAL_NFC_IOCTL_RF_STATUS_UPDATE:
       NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_RF_STATUS_UPDATE Enter value is %d: \n",
@@ -4773,23 +4687,6 @@ static void phNxpNciHal_print_res_status(uint8_t* p_rx_data, uint16_t* p_len) {
         config_success = false;
     }
   }
-}
-/******************************************************************************
- * Function         phNxpNciHal_set_Boot_Mode
- *
- * Description      This function is called to  set hal
- *                  boot mode. This can be normal nfc boot
- *                  or fast boot.The param mode can take the
- *                  following values.
- *                  NORAML_NFC_MODE = 0 FAST_BOOT_MODE = 1
- *
- *
- * Returns          void.
- *
- ******************************************************************************/
-NFCSTATUS phNxpNciHal_set_Boot_Mode(uint8_t mode) {
-  nxpncihal_ctrl.hal_boot_mode = mode;
-  return NFCSTATUS_SUCCESS;
 }
 
 /*****************************************************************************

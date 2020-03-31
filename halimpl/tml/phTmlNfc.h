@@ -112,12 +112,7 @@ typedef enum {
   phTmlNfc_e_SetP61WiredMode,  /* Set the current P61 mode of operation to
                                   Wired*/
   phTmlNfc_e_SetP61IdleMode, /* Set the current P61 mode of operation to Idle*/
-  phTmlNfc_e_SetP61DisableMode, /* Set the ese vdd gpio to low*/
-  phTmlNfc_e_SetP61EnableMode,  /* Set the ese vdd gpio to high*/
-  phTmlNfc_e_RaiseEsePower,     /* Set the ese pwr gpio to high*/
-  phTmlNfc_e_ReleaseEsePower,   /* Set the ese pwr gpio to high*/
   phTmlNfc_e_eSEChipRstMode,    /* ISO RST of P73*/
-  phTmlNfc_e_RelP61Access,      /*Release the P61 lock*/
   phTmlNfc_e_SetLegacyPowerScheme,
   phTmlNfc_e_SetExtPMUPowerScheme,
   phTmlNfc_e_SetPN67TPowerScheme,

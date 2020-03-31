@@ -66,9 +66,6 @@ int phPalEse_spi_ioctl(phPalEse_ControlCode_t eControlCode, void *pDevHandle,
     case phPalEse_e_SetPowerScheme:
       ret = 0;
       break;
-    case phPalEse_e_GetEseAccess:
-      ret = 0;
-      break;
     case phPalEse_e_DisablePwrCntrl:
       ret = ioctl((intptr_t)pDevHandle, P61_SET_SPI_PWR, 1);
       break;
