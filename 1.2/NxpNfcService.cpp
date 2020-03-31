@@ -53,10 +53,15 @@ int main() {
     configureRpcThreadpool(1, true /*callerWillJoin*/);
     initializeEseClient();
     checkEseClientUpdate();
-    status = nfc_service->registerAsService();
-    if (status != OK) {
-        LOG_ALWAYS_FATAL("Could not register service for NFC HAL Iface (%d).", status);
-        return -1;
+    try {
+        status = nfc_service->registerAsService();
+        if (status != OK) {
+            LOG_ALWAYS_FATAL("Could not register service for NFC HAL Iface (%d).", status);
+            return -1;
+        }
+    } catch(const std::length_error& le) {
+      ALOGE("Could not register ese_wired_service service due to exception reason %s ",
+      le.what());
     }
 
     ALOGI("NXP NFC Extn Service 1.0 is starting.");
@@ -73,7 +78,11 @@ int main() {
     } catch(const std::__1::system_error& e) {
       ALOGE("Could not register nxp_nfc_service service due to exception reason %s ",
       e.what());
+    } catch(const std::length_error& le) {
+      ALOGE("Could not register ese_wired_service service due to exception reason %s ",
+      le.what());
     }
+
     ALOGE("Before calling JCOP JCOS_doDownload");
     perform_eSEClientUpdate();
     ALOGE("After calling JCOS_doDownload");
