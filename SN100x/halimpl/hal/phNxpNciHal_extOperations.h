@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 NXP Semiconductors
+ * Copyright (C) 2019-2020 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@
 
 #define AUTONOMOUS_SCREEN_OFF_LOCK_MASK 0x20
 #define SWITCH_OFF_MASK 0x02
+#define NCI_GET_CONFI_MIN_LEN 0x04
+#define NXP_MAX_RETRY_COUNT 0x03
 typedef struct {
   uint8_t autonomous_mode;
   uint8_t guard_timer_value;
@@ -55,3 +57,17 @@ NFCSTATUS phNxpNciHal_setAutonomousMode();
  *
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_setGuardTimer();
+
+/*****************************************************************************
+ * Function         phNxpNciHal_send_get_cfg
+ *
+ * Description      This function is called to get the configurations from
+ * EEPROM
+ *
+ * Params           cmd_get_cfg, Buffer to GET command
+ *                  cmd_len,     Length of the command
+ * Returns          SUCCESS/FAILURE
+ *
+ *
+ *****************************************************************************/
+NFCSTATUS phNxpNciHal_send_get_cfg(const uint8_t *cmd_get_cfg, long cmd_len);
