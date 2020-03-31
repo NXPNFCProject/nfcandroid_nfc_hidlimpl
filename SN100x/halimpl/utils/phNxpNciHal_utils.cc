@@ -470,12 +470,8 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
 
 void phNxpNciHal_emergency_recovery(uint8_t status) {
   NXPLOG_NCIHAL_D("%s: %d", __func__, status);
-  switch(status){
-  case CORE_RESET_TRIGGER_TYPE_POWERED_ON:
-  case NCI2_0_CORE_RESET_TRIGGER_TYPE_OVER_TEMPERATURE:
-      NXPLOG_NCIHAL_E("abort()");
-      abort();
-  default:
-      ;
+  if(status != CORE_RESET_TRIGGER_TYPE_CORE_RESET_CMD_RECEIVED) {
+    NXPLOG_NCIHAL_E("abort()");
+    abort();
   }
 }
