@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2018 NXP Semiconductors
+ * Copyright (C) 2017-2020 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -376,9 +376,9 @@ OSALSTATUS phOsal_QueueFlush(void* pvQueueHandle)
         if(dwOsalStatus != OSALSTATUS_Q_UNDERFLOW)
         {
             phOsal_LogError((const uint8_t*)"Osal> Flushed an object from Q");
-            free(pvQueueData);
         }
     }while(dwOsalStatus != OSALSTATUS_Q_UNDERFLOW);
+    free(pvQueueData);
 
     LOG_FUNCTION_EXIT;
     return OSALSTATUS_SUCCESS;
