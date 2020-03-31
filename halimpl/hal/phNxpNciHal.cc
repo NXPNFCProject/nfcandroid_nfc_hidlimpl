@@ -3670,7 +3670,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
   nfc_nci_IoctlInOutData_t* pInpOutData = (nfc_nci_IoctlInOutData_t*)p_data;
   int ret = -1;
   NFCSTATUS status = NFCSTATUS_FAILED;
-  phNxpNciHal_FwRfupdateInfo_t* FwRfInfo;
   long level;
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE &&
     (arg != HAL_NFC_IOCTL_ESE_JCOP_DWNLD && arg
@@ -3776,25 +3775,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
         NXPLOG_NCIHAL_E("%s : Error! mgetCfg_info is Empty ", __func__);
       }
       ret = 0;
-      break;
-    case HAL_NFC_IOCTL_CHECK_FLASH_REQ:
-      FwRfInfo =
-          (phNxpNciHal_FwRfupdateInfo_t*)&pInpOutData->out.data.fwUpdateInf;
-      status = phNxpNciHal_CheckFwRegFlashRequired(&FwRfInfo->fw_update_reqd,
-                                                   &FwRfInfo->rf_update_reqd);
-      if (NFCSTATUS_SUCCESS == status) {
-        ret = 0;
-      }
-      break;
-    case HAL_NFC_IOCTL_FW_DWNLD:
-      status = phNxpNciHal_FwDwnld(*(uint16_t*)p_data);
-      pInpOutData->out.data.fwDwnldStatus = (uint16_t)status;
-      if (NFCSTATUS_SUCCESS == status) {
-        ret = 0;
-      }
-      if(nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD) {
-          force_fw_download_req = false;
-      }
       break;
     case HAL_NFC_IOCTL_NCI_TRANSCEIVE:
       if (p_data == NULL) {
