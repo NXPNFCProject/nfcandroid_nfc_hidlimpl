@@ -997,13 +997,6 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
           }
           break;
       }
-      case phTmlNfc_e_eSEChipRstMode: {
-          if(nfcFL.nfcNxpEse) {
-              wStatus = phTmlNfc_i2c_reset(
-                      gpphTmlNfc_Context->pDevHandle, 3);
-          }
-          break;
-      }
       case phTmlNfc_e_SetLegacyPowerScheme: {
           if(nfcFL.nfcNxpEse) {
               wStatus = phTmlNfc_set_power_scheme(

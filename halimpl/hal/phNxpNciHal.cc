@@ -3714,15 +3714,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
             }
         }
       break;
-    case HAL_NFC_IOCTL_ESE_CHIP_RST:
-        if(nfcFL.nfcNxpEse) {
-            status = phTmlNfc_IoCtl(phTmlNfc_e_eSEChipRstMode);
-            if (NFCSTATUS_FAILED != status) {
-                if (NULL != p_data) pInpOutData->out.data.status = (uint16_t)status;
-                ret = 0;
-            }
-        }
-      break;
     case HAL_NFC_IOCTL_REL_SVDD_WAIT:
         if(nfcFL.nfcNxpEse && nfcFL.eseFL._ESE_SVDD_SYNC) {
           status = phTmlNfc_rel_svdd_wait(gpphTmlNfc_Context->pDevHandle,
