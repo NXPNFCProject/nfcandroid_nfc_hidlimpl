@@ -955,13 +955,6 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
         sem_post(&gpphTmlNfc_Context->rxSemaphore);
         break;
       }
-      case phTmlNfc_e_SetJcopDwnldEnable: {
-          if(nfcFL.nfcNxpEse) {
-              wStatus = phTmlNfc_i2c_set_Jcop_dwnld_state(
-                      gpphTmlNfc_Context->pDevHandle, JCP_DWNLD_START);
-          }
-          break;
-      }
       case phTmlNfc_e_SetJcopDwnldDisable: {
           if(nfcFL.nfcNxpEse) {
               wStatus = phTmlNfc_i2c_set_Jcop_dwnld_state(

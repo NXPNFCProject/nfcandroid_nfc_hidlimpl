@@ -1621,33 +1621,6 @@ void  check_nfcee_session_and_reset()
   NFC_SetConfig(resetEseSessionCmd[2], resetEseSessionCmd);
 }
 
-/*******************************************************************************
-**
-** Function         NFC_SetP61Status
-**
-** Description      This function set the JCOP download
-**                  state to pn544 driver.
-**
-** Returns          0 if api call success, else -1
-**
-*******************************************************************************/
-int32_t NFC_SetP61Status(void *pdata, libnfc_jcop_dwnld_state_t isJcopState) {
-  if (!nfcFL.eseFL._ESE_JCOP_DWNLD_PROTECTION) {
-    DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf(
-        "NFC_SetP61Status :"
-        "ESE_JCOP_DWNLD_PROTECTION is not available.. Returning");
-    return -1;
-  }
-  nfc_nci_IoctlInOutData_t inpOutData;
-  if (isJcopState == LIBNFC_JCP_DWNLD_START)
-    isJcopState = (libnfc_jcop_dwnld_state_t)nfc_cb.p_hal->ioctl(
-        HAL_NFC_IOCTL_SET_JCP_DWNLD_ENABLE, &inpOutData);
-  else if (isJcopState == LIBNFC_JCP_DWP_DWNLD_COMPLETE)
-    isJcopState = (libnfc_jcop_dwnld_state_t)(
-        nfc_cb.p_hal->ioctl(HAL_NFC_IOCTL_SET_JCP_DWNLD_DISABLE, &inpOutData));
-  *(tNFC_STATUS *)pdata = inpOutData.out.data.status;
-  return isJcopState;
-}
 #endif
 
 /*******************************************************************************

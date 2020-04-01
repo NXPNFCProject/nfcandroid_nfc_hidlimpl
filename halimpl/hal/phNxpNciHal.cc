@@ -3737,27 +3737,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
             }
         }
       break;
-    case HAL_NFC_IOCTL_SET_JCP_DWNLD_ENABLE:
-        if(nfcFL.eseFL._ESE_JCOP_DWNLD_PROTECTION) {
-            NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_SET_JCP_DWNLD_ENABLE: \n");
-            status = phTmlNfc_IoCtl(phTmlNfc_e_SetJcopDwnldEnable);
-            if (NFCSTATUS_FAILED != status) {
-                if (NULL != p_data) pInpOutData->out.data.status = (uint16_t)status;
-                ret = 0;
-            }
-        }
-      break;
-    case HAL_NFC_IOCTL_SET_JCP_DWNLD_DISABLE:
-        if(nfcFL.eseFL._ESE_JCOP_DWNLD_PROTECTION) {
-            NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_SET_JCP_DWNLD_DISABLE: \n");
-            status = phTmlNfc_IoCtl(phTmlNfc_e_SetJcopDwnldDisable);
-            if (NFCSTATUS_FAILED != status) {
-                if (NULL != p_data) pInpOutData->out.data.status = (uint16_t)status;
-                ret = 0;
-            }
-        }
-      break;
-
     case HAL_NFC_IOCTL_GET_CONFIG_INFO:
       if (mGetCfg_info) {
         memcpy(pInpOutData->out.data.nxpNciAtrInfo, mGetCfg_info,
@@ -3926,10 +3905,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
     case HAL_NFC_IOCTL_SET_TRANSIT_CONFIG:
       phNxpNciHal_setNxpTransitConfig(
           pInpOutData->inp.data.transitConfig.val);
-      ret = 0;
-      break;
-    case HAL_NFC_IOCTL_NFCEE_SESSION_RESET:
-      phNxpNciHal_reset_nfcee_session(true);
       ret = 0;
       break;
       case HAL_NFC_IOCTL_HCI_INIT_STATUS_UPDATE:

@@ -116,7 +116,6 @@ typedef enum {
   phTmlNfc_e_SetExtPMUPowerScheme,
   phTmlNfc_e_SetPN67TPowerScheme,
   phTmlNfc_e_RelP61SvddWait,
-  phTmlNfc_e_SetJcopDwnldEnable,
   phTmlNfc_e_SetJcopDwnldDisable
 } phTmlNfc_ControlCode_t; /* Control code for IOCTL call */
 
