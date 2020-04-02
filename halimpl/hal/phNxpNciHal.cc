@@ -3885,19 +3885,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
       ret = phPalEse_spi_ioctl(phPalEse_e_GetSPMStatus,
                                gpphTmlNfc_Context->pDevHandle, level);
       break;
-    case HAL_NFC_IOCTL_RF_STATUS_UPDATE:
-      NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_RF_STATUS_UPDATE Enter value is %d: \n",
-                      pInpOutData->inp.data.nciCmd.p_cmd[0]);
-      if (gpEseAdapt != NULL)
-        gpEseAdapt->HalNfccNtf(HAL_NFC_IOCTL_RF_STATUS_UPDATE, pInpOutData);
-      ret = 0;
-      break;
-    case HAL_NFC_IOCTL_RF_ACTION_NTF:
-      NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_RF_ACTION_NTF");
-      if (gpEseAdapt != NULL)
-        gpEseAdapt->HalNfccNtf(HAL_NFC_IOCTL_RF_ACTION_NTF, pInpOutData);
-      ret = 0;
-      break;
     case HAL_NFC_GET_NXP_CONFIG:
       phNxpNciHal_getNxpConfig(pInpOutData);
       ret = 0;

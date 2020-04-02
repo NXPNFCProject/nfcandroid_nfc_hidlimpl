@@ -26,6 +26,7 @@
 #include <phNxpNciHal_NfcDepSWPrio.h>
 #include <phNxpNciHal_ext.h>
 #include <phTmlNfc.h>
+#include <EseAdaptation.h>
 
 /* Timeout value to wait for response from PN548AD */
 #define HAL_EXTNS_WRITE_RSP_TIMEOUT (2500)
@@ -36,7 +37,7 @@
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 extern phNxpNciProfile_Control_t nxpprofile_ctrl;
 extern phNxpNci_getCfg_info_t* mGetCfg_info;
-
+extern EseAdaptation *gpEseAdapt;
 extern uint32_t cleanup_timer;
 uint8_t icode_detected = 0x00;
 uint8_t icode_send_eof = 0x00;
@@ -106,6 +107,8 @@ void phNxpNciHal_ext_init(void) {
 *******************************************************************************/
 void phNxpNciHal_sendRfEvtToEseHal(uint8_t rfEvtType) {
   nfc_nci_IoctlInOutData_t inpOutData;
+  gpEseAdapt = &EseAdaptation::GetInstance();
+  gpEseAdapt->Initialize();
   uint8_t rf_state_update[] = {0x00};
   memset(&inpOutData, 0x00, sizeof(nfc_nci_IoctlInOutData_t));
   inpOutData.inp.data.nciCmd.cmd_len = sizeof(rf_state_update);
@@ -113,7 +116,8 @@ void phNxpNciHal_sendRfEvtToEseHal(uint8_t rfEvtType) {
   memcpy(inpOutData.inp.data.nciCmd.p_cmd, rf_state_update,
          sizeof(rf_state_update));
   inpOutData.inp.data_source = 2;
-  phNxpNciHal_ioctl(HAL_NFC_IOCTL_RF_STATUS_UPDATE, &inpOutData);
+  if (gpEseAdapt != NULL)
+        gpEseAdapt->HalNfccNtf(HAL_ESE_IOCTL_RF_STATUS_UPDATE, &inpOutData);
 }
 
 /*******************************************************************************
@@ -128,7 +132,8 @@ void phNxpNciHal_sendRfEvtToEseHal(uint8_t rfEvtType) {
 NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   uint16_t rf_technology_length_param = 0;
-
+  gpEseAdapt = &EseAdaptation::GetInstance();
+  gpEseAdapt->Initialize();
   /*parse and decode LxDebug Notifications*/
     if(p_ntf[0] == 0x6F && (p_ntf[1] == 0x35 || p_ntf[1] == 0x36))
     {
@@ -348,7 +353,8 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
       inpOutData.inp.data.nciCmd.cmd_len = p_ntf[2];
       memcpy(inpOutData.inp.data.nciCmd.p_cmd, p_ntf + 3, p_ntf[2]);
       inpOutData.inp.data_source = 2;
-      phNxpNciHal_ioctl(HAL_NFC_IOCTL_RF_ACTION_NTF, &inpOutData);
+      if (gpEseAdapt != NULL)
+          gpEseAdapt->HalNfccNtf(HAL_ESE_IOCTL_RF_ACTION_NTF, &inpOutData);
     }
   }
 
