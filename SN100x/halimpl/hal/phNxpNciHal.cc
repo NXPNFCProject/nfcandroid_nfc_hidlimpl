@@ -3380,7 +3380,7 @@ NFCSTATUS phNxpNciHal_resetDefaultSettings(uint8_t fw_update_req, bool keep_conf
     int ret = 0;
     phNxpNciHal_conf_nfc_forum_mode();
     ret = GetNxpNumValue(NAME_NXP_RDR_DISABLE_ENABLE_LPCD, &num, sizeof(num));
-    if (!ret || (num == 1)) {
+    if (!ret || num == 1 || num == 2) {
       phNxpNciHal_prop_conf_lpcd();
     }
   }
