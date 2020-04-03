@@ -3371,7 +3371,7 @@ retry_core_init:
  *
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_resetDefaultSettings(uint8_t fw_update_req, bool keep_config) {
-  NFCSTATUS status = NFCSTATUS_FAILED;
+  NFCSTATUS status = NFCSTATUS_SUCCESS;
   if (fw_update_req) {
     status = phNxpNciHal_nfcc_core_reset_init(keep_config);
   }
