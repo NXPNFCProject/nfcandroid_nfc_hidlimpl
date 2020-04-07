@@ -40,6 +40,8 @@ typedef uint8_t (*st_validator_t)(nci_data_t* exp,
 
 phAntenna_St_Resp_t phAntenna_resp;
 
+static pthread_t test_rx_thread;
+
 typedef struct nci_test_data {
   nci_data_t cmd;
   nci_data_t exp_rsp;
@@ -1032,8 +1034,6 @@ clean_and_return:
  **
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_TestMode_open(void) {
-  /* Thread */
-  pthread_t test_rx_thread;
 
   phOsalNfc_Config_t tOsalConfig;
   phTmlNfc_Config_t tTmlConfig;
@@ -1094,6 +1094,7 @@ NFCSTATUS phNxpNciHal_TestMode_open(void) {
   pthread_attr_t attr;
   pthread_attr_init(&attr);
   pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
   ret_val =
       pthread_create(&test_rx_thread, &attr, phNxpNciHal_test_rx_thread, NULL);
   pthread_attr_destroy(&attr);
@@ -1251,6 +1252,10 @@ void phNxpNciHal_TestMode_close() {
     NXPLOG_NCIHAL_D("phNxpNciHal_close return status = %d", status);
 
     thread_running = 0;
+
+    phLibNfc_Message_t msg = { 0, nullptr, 0};
+    phDal4Nfc_msgsnd(gDrvCfg.nClientId, &msg, 0);
+    pthread_join(test_rx_thread, nullptr);
 
     phDal4Nfc_msgrelease(gDrvCfg.nClientId);
 
