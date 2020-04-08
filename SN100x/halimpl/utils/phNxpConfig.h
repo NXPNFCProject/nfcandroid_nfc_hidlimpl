@@ -18,9 +18,9 @@
 
 /******************************************************************************
  *
- *  The original Work has been changed by NXP Semiconductors.
+ *  The original Work has been changed by NXP.
  *
- *  Copyright (C) 2013-2019 NXP Semiconductors
+ *  Copyright (C) 2013-2020 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -177,6 +177,7 @@ extern char Fw_Lib_Path[256];
 #define NAME_NFA_CONFIG_FORMAT "NFA_CONFIG_FORMAT"
 #define NAME_NXP_DISCONNECT_TAG_IN_SCRN_OFF "NXP_DISCONNECT_TAG_IN_SCRN_OFF"
 #define NAME_NXP_ENABLE_DISABLE_LOGS "NXP_ENABLE_DISABLE_LOGS"
+#define NAME_NXP_RDR_DISABLE_ENABLE_LPCD "NXP_RDR_DISABLE_ENABLE_LPCD"
 #endif
 /* default configuration */
 #define default_storage_location "/data/vendor/nfc"

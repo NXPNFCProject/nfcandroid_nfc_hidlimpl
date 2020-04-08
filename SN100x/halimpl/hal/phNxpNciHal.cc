@@ -3431,8 +3431,11 @@ NFCSTATUS phNxpNciHal_resetDefaultSettings() {
     status = NFCSTATUS_SUCCESS;
 
   if(status == NFCSTATUS_SUCCESS) {
+    unsigned long num = 0;
     phNxpNciHal_conf_nfc_forum_mode();
-    phNxpNciHal_prop_conf_lpcd();
+    if ((GetNxpNumValue(NAME_NXP_RDR_DISABLE_ENABLE_LPCD, &num, sizeof(num))) && (num == 1)) {
+      phNxpNciHal_prop_conf_lpcd();
+    }
   }
   return status;
 }
