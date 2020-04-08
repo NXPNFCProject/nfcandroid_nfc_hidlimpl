@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2013-2019 NXP Semiconductors
+ *  Copyright (C) 2013-2020 NXP Semiconductors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 #include <pthread.h>
 #include <log/log.h>
 
+#include "phNxpNciHal_extOperations.h"
 #include <phNxpLog.h>
 #include <phNxpNciHal.h>
 #include <phNxpNciHal_utils.h>
@@ -461,7 +462,8 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
 **
 ** Function         phNxpNciHal_emergency_recovery
 **
-** Description      Abort the process in case of ESE_OVER_TEMP_ERROR.
+** Description      Abort the process in case of ESE_OVER_TEMP_ERROR, FW Assert, Watchdog Reset,
+**                  Input Clock lost and unrecoverable error.
 **                  Ignore the other status.
 **
 ** Returns          None
@@ -470,8 +472,29 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
 
 void phNxpNciHal_emergency_recovery(uint8_t status) {
   NXPLOG_NCIHAL_D("%s: %d", __func__, status);
-  if(status != CORE_RESET_TRIGGER_TYPE_CORE_RESET_CMD_RECEIVED) {
+
+  switch (status) {
+  case NCI2_0_CORE_RESET_TRIGGER_TYPE_OVER_TEMPERATURE:
+  case CORE_RESET_TRIGGER_TYPE_FW_ASSERT:
+  case CORE_RESET_TRIGGER_TYPE_WATCHDOG_RESET:
+  case CORE_RESET_TRIGGER_TYPE_INPUT_CLOCK_LOST:
+  case CORE_RESET_TRIGGER_TYPE_UNRECOVERABLE_ERROR: {
+    const uint8_t cmd[] = {0x20, 0x03, 0x0B, 0x05, 0xA0, 0x39, 0xA0,
+                     0x1A, 0xA0, 0x1B, 0xA0, 0x1C, 0xA0, 0x27};
+    if (!phNxpNciHal_nfcc_core_reset_init()) {
+      if (phNxpNciHal_send_get_cfg(cmd, sizeof(cmd))) {
+        NXPLOG_NCIHAL_E("%s Get config failed.", __func__);
+      }
+    } else {
+      NXPLOG_NCIHAL_E(
+          "Core reset and init failed..! aborting without Getconfig");
+    }
     NXPLOG_NCIHAL_E("abort()");
     abort();
+  }
+  default:
+    NXPLOG_NCIHAL_E("%s: Core reset with Invalid status : %d ", __func__,
+                    status);
+    break;
   }
 }
