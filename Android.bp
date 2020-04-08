@@ -36,6 +36,7 @@ cc_library_shared {
         "vendor.nxp.nxpese@1.0",
         "vendor.nxp.eventprocessor@1.0",
         "vendor.nxp.nxpnfc@1.0",
+        "vendor.nxp.nxpnfclegacy@1.0",
         "ese_client",
         "hal_libnfc"
     ],
@@ -86,6 +87,7 @@ cc_binary {
         "1.2/NxpNfcService.cpp",
         "1.2/Nfc.cpp",
         "extns/impl/NxpNfc.cpp",
+        "extns/impl/nxpnfclegacy/1.0/NxpNfcLegacy.cpp"
     ],
 
     shared_libs: [
@@ -102,6 +104,7 @@ cc_binary {
         "libhidlbase",
         "vendor.nxp.nxpnfc@1.0",
         "vendor.nxp.nxpese@1.0",
+        "vendor.nxp.nxpnfclegacy@1.0",
         "android.hardware.secure_element@1.0",
         "ese_client",
         "hal_libnfc",

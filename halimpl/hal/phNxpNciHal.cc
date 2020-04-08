@@ -3686,24 +3686,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
     }
   }
   switch (arg) {
-    case HAL_NFC_IOCTL_P61_IDLE_MODE:
-        if(nfcFL.nfcNxpEse) {
-            status = phTmlNfc_IoCtl(phTmlNfc_e_SetP61IdleMode);
-            if (NFCSTATUS_FAILED != status) {
-                if (NULL != p_data) pInpOutData->out.data.status = (uint16_t)status;
-                ret = 0;
-            }
-        }
-      break;
-    case HAL_NFC_IOCTL_P61_WIRED_MODE:
-        if(nfcFL.nfcNxpEse) {
-            status = phTmlNfc_IoCtl(phTmlNfc_e_SetP61WiredMode);
-            if (NFCSTATUS_FAILED != status) {
-                if (NULL != p_data) pInpOutData->out.data.status = (uint16_t)status;
-                ret = 0;
-            }
-        }
-      break;
     case HAL_NFC_IOCTL_P61_PWR_MODE:
         if(nfcFL.nfcNxpEse) {
             status = phTmlNfc_IoCtl(phTmlNfc_e_GetP61PwrMode);
@@ -4839,4 +4821,25 @@ static void phNxpNciHal_notifyHciEvtProcessComplete() {
     (*nxpncihal_ctrl.p_nfc_stack_cback)(
         (uint32_t)HAL_NFC_CONFIG_ESE_LINK_COMPLETE, HAL_NFC_STATUS_OK);
   }
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_setEseState
+ *
+ * Description      This function is called for to update ese state
+ *
+ * Returns          void.
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_setEseState(phNxpNfcHalEseState eSEstate){
+    NXPLOG_NCIHAL_D("%s Enter ", __func__);
+    NFCSTATUS status = NFCSTATUS_FAILED;
+
+    if(eSEstate == phNxpNciHalNfc_e_SetIdleMode)
+      status = phTmlNfc_IoCtl(phTmlNfc_e_SetP61IdleMode);
+
+    if(eSEstate == phNxpNciHalNfc_e_SetWiredMode)
+      status = phTmlNfc_IoCtl(phTmlNfc_e_SetP61WiredMode);
+
+    return status;
 }

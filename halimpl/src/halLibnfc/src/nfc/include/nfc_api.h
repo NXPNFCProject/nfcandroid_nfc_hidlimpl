@@ -1539,17 +1539,6 @@ extern tNFC_STATUS NFC_Nfcee_PwrLinkCtrl(uint8_t nfcee_id, uint8_t cfg_value);
 int32_t NFC_ReqWiredAccess(void *pdata);
 /*******************************************************************************
 **
-** Function         NFC_RelWiredAccess
-**
-** Description      This function release access
-**                  of P61. Status would be updated to pdata
-**
-** Returns          0 if api call success, else -1
-**
-*******************************************************************************/
-int32_t NFC_RelWiredAccess(void *pdata);
-/*******************************************************************************
-**
 ** Function         NFC_GetWiredAccess
 **
 ** Description      This function gets the current access state

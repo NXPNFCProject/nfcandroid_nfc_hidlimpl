@@ -1528,31 +1528,6 @@ int get_i2c_fragmentation_enabled() { return i2c_fragmentation_enabled; }
 #if (NXP_EXTNS == TRUE)
 /*******************************************************************************
 **
-** Function         NFC_ReqWiredAccess
-**
-** Description      This function request to pn54x driver to get access
-**                  of P61. Status would be updated to pdata
-**
-** Returns          0 if api call success, else -1
-**
-*******************************************************************************/
-int32_t NFC_ReqWiredAccess(void *pdata) {
-  DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("NFC_ReqWiredAccess");
-
-  if (!nfcFL.nfcNxpEse) {
-    DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("nfcNxpEse is not available.. Returning");
-    return -1;
-  }
-  nfc_nci_IoctlInOutData_t inpOutData;
-  int32_t status;
-  status = nfc_cb.p_hal->ioctl(HAL_NFC_IOCTL_P61_WIRED_MODE, &inpOutData);
-  *(tNFC_STATUS *)pdata = inpOutData.out.data.status;
-  return status;
-}
-
-/*******************************************************************************
-**
 ** Function         NFC_GetNCIVersion
 **
 ** Description      Called by higher layer to get the current nci
@@ -1563,23 +1538,6 @@ int32_t NFC_ReqWiredAccess(void *pdata) {
 *******************************************************************************/
 uint8_t NFC_GetNCIVersion() { return nfc_cb.nci_version; }
 
-/*******************************************************************************
-**
-** Function         NFC_RelWiredAccess
-**
-** Description      This function release access
-**                  of P61. Status would be updated to pdata
-**
-** Returns          0 if api call success, else -1
-**
-*******************************************************************************/
-int32_t NFC_RelWiredAccess(void *pdata) {
-  nfc_nci_IoctlInOutData_t inpOutData;
-  int32_t status;
-  status = nfc_cb.p_hal->ioctl(HAL_NFC_IOCTL_P61_IDLE_MODE, &inpOutData);
-  *(tNFC_STATUS *)pdata = inpOutData.out.data.status;
-  return status;
-}
 /*******************************************************************************
 **
 ** Function         NFC_GetP61Status

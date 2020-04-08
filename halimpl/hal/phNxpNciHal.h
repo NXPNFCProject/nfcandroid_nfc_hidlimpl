@@ -195,6 +195,12 @@ typedef enum {
   EEPROM_NDEF_INTF_CFG
 } phNxpNci_EEPROM_request_type_t;
 
+typedef enum {
+  phNxpNciHalNfc_e_SetIdleMode, /* Set the current mode of operation to Idle*/
+  phNxpNciHalNfc_e_SetWiredMode,  /* Set the current mode of operation to Wired*/
+} phNxpNfcHalEseState;
+
+
 typedef struct phNxpNci_EEPROM_info {
   uint8_t request_mode;
   phNxpNci_EEPROM_request_type_t request_type;
@@ -306,3 +312,13 @@ void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData);
  ******************************************************************************/
 void phNxpNciHal_setNxpTransitConfig(char *transitConfValue);
 #endif /* _PHNXPNCIHAL_H_ */
+
+/******************************************************************************
+ * Function         phNxpNciHal_setEseState
+ *
+ * Description      This function is called for to update ese state
+ *
+ * Returns          void.
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_setEseState(phNxpNfcHalEseState eSEstate);
