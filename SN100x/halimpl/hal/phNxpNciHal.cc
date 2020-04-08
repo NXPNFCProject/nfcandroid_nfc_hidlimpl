@@ -771,6 +771,7 @@ init_retry:
       nxpncihal_ctrl.phNxpNciGpioInfo.state = GPIO_UNKNOWN;
       if(nfcFL.chipType != sn100u)
         phNxpNciHal_gpio_restore(GPIO_STORE);
+      fw_download_success = 0;
       int ese_gpio_value = 0;
 
       NXPLOG_NCIHAL_D("eSE Power GPIO value = %d", ese_gpio_value);
@@ -793,6 +794,7 @@ init_retry:
             NXPLOG_NCIHAL_E("Core reset failed");
         } else {
           wConfigStatus = NFCSTATUS_SUCCESS;
+          fw_download_success = 1;
         }
 #if(NXP_EXTNS != TRUE)
           /* call read pending */
@@ -1503,6 +1505,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("%s: NXP get FW DW Flag failed", __FUNCTION__);
   }
+  fw_dwnld_flag |= (bool)fw_download_success;
   if (fw_dwnld_flag == true) {
     status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ven_enable), cmd_ven_enable);
     if (status != NFCSTATUS_SUCCESS) {
@@ -1614,6 +1617,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
 
   if (isNxpConfigModified() || (fw_dwnld_flag == true)) {
     retlen = 0;
+    fw_download_success = 0;
 
     /* EEPROM access variables */
     uint8_t auth_timeout_buffer[NXP_AUTH_TIMEOUT_BUF_LEN];
