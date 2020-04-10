@@ -65,6 +65,7 @@ cc_library_shared {
         "-DBUILDCFG=1",
         "-Wall",
         "-Werror",
+        "-Wno-implicit-fallthrough",
         "-DNFC_HAL_TARGET=TRUE",
         "-DNFC_RW_ONLY=TRUE",
         "-DNXP_EXTNS=TRUE",
