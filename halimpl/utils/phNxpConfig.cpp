@@ -44,6 +44,7 @@
 #include <sys/stat.h>
 
 #include <phNxpLog.h>
+#include <android-base/properties.h>
 #include "sparse_crc32.h"
 #include <cutils/properties.h>
 
@@ -232,18 +233,20 @@ inline int getDigitValue(char c, int base) {
 ** Returns:     none
 **
 *******************************************************************************/
-void findConfigFilePathFromTransportConfigPaths(const string& configName,
+bool findConfigFilePathFromTransportConfigPaths(const string& configName,
                                                 string& filePath) {
   for (int i = 0; i < transport_config_path_size; i++) {
+    if (configName.empty()) break;
     filePath.assign(transport_config_paths[i]);
     filePath += configName;
     struct stat file_stat;
     if (stat(filePath.c_str(), &file_stat) == 0 && S_ISREG(file_stat.st_mode)) {
-      return;
+      return true;
     }
   }
   // Config file didnt exist in any of the transport config_paths.
-  filePath.assign("");
+  filePath = "";
+  return false;
 }
 
 /*******************************************************************************
@@ -495,10 +498,16 @@ CNfcConfig& CNfcConfig::GetInstance() {
     }
     ALOGD("nxp config referred : %s", config_file_name.c_str());
 
-    findConfigFilePathFromTransportConfigPaths(config_file_name, strPath);
-    if (strPath.length() == 0) {
-      ALOGD("Unable to find nxp Config file - %s. Using Default Config file.",
-            config_file_name.c_str());
+    if (findConfigFilePathFromTransportConfigPaths(
+        android::base::GetProperty("persist.vendor.nfc.config_file_name", ""),
+        strPath)) {
+      NXPLOG_EXTNS_D("%s load %s\n", __func__,  strPath.c_str());
+    } else if (findConfigFilePathFromTransportConfigPaths(
+        extra_config_base +
+        android::base::GetProperty("ro.boot.product.hardware.sku", "") +
+        + extra_config_ext, strPath)) {
+      NXPLOG_EXTNS_D("%s load %s\n", __func__,  strPath.c_str());
+    } else {
       findConfigFilePathFromTransportConfigPaths(config_name, strPath);
     }
 
