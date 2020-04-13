@@ -163,8 +163,10 @@ NFCSTATUS phNxpNciHal_nfcc_core_reset_init();
 NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(void);
 static void phNxpNciHal_notifyHciEvtProcessComplete();
 void phNxpNciHal_phase_tirm_offset_sign_update();
+#ifdef FactoryOTA
 void phNxpNciHal_isFactoryOTAModeActive();
 static NFCSTATUS phNxpNciHal_disableFactoryOTAMode(void);
+#endif
 
 /******************************************************************************
  * Function         phNxpNciHal_initialize_debug_enabled_flag
@@ -2769,7 +2771,7 @@ static NFCSTATUS phNxpNciHal_uicc_baud_rate() {
   return status;
 }
 
-
+#ifdef FactoryOTA
 void phNxpNciHal_isFactoryOTAModeActive() {
   uint8_t check_factoryOTA[] = {0x20, 0x03, 0x05, 0x02, 0xA0, 0x08, 0xA0, 0x88};
   NFCSTATUS status = NFCSTATUS_FAILED;
@@ -2807,6 +2809,7 @@ NFCSTATUS phNxpNciHal_disableFactoryOTAMode() {
   }
   return status;
 }
+#endif
 
 void phNxpNciHal_phase_tirm_offset_sign_update() {
   uint8_t phase_tirm_offset_read[] = {0x20, 0x03, 0x03, 0x01, 0xA0, 0x17};
@@ -2938,9 +2941,6 @@ int phNxpNciHal_close(bool bShutdown) {
   unsigned long uiccListenMask = 0x00;
   unsigned long eseListenMask = 0x00;
 
-  char valueStr[PROPERTY_VALUE_MAX] = {0};
-  bool factoryOTA_terminate = false;
-  int len;
   unsigned long num = 0;
 
   if (!(GetNxpNumValue(NAME_NXP_UICC_LISTEN_TECH_MASK, &uiccListenMask,
@@ -2993,7 +2993,10 @@ int phNxpNciHal_close(bool bShutdown) {
     }
   }
 
-  len = property_get("persist.factoryota.reboot", valueStr, "normal");
+#ifdef FactoryOTA
+  char valueStr[PROPERTY_VALUE_MAX] = {0};
+  bool factoryOTA_terminate = false;
+  int len = property_get("persist.factoryota.reboot", valueStr, "normal");
   if (len > 0) {
     factoryOTA_terminate = (len == 9 && (memcmp(valueStr, "terminate", len) == 0)) ? true : false;
   }
@@ -3002,6 +3005,7 @@ int phNxpNciHal_close(bool bShutdown) {
     phNxpNciHal_disableFactoryOTAMode();
     phNxpNciHal_isFactoryOTAModeActive();
   }
+#endif
 
   if (GetNxpNumValue(NAME_NXP_CORE_PWR_OFF_AUTONOMOUS_ENABLE, &num, sizeof(num))) {
     NXPLOG_NCIHAL_D("Power shutdown with autonomous mode status: %lu", num);
