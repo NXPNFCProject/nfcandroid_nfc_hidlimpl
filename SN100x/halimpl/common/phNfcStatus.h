@@ -56,7 +56,7 @@
 #define PHNFCSTATUS(phNfcStatus) ((phNfcStatus)&0x00FFU)
 #define PHNFCCID(phNfcStatus) (((phNfcStatus)&0xFF00U) >> 8)
 
-#define PHNFC_I2C_FRAGMENT_SIZE 512
+#define PHNFC_I2C_FRAGMENT_SIZE 554
 /*
  *  Status Codes
  *
