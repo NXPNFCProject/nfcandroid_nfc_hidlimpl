@@ -100,7 +100,6 @@ extern uint16_t rom_version;
 extern uint8_t gRecFWDwnld;
 static uint8_t gRecFwRetryCount;  // variable to hold dummy FW recovery count
 static uint8_t write_unlocked_status = NFCSTATUS_SUCCESS;
-static uint8_t Rx_data[NCI_MAX_DATA_LEN];
 extern int phPalEse_spi_ioctl(phPalEse_ControlCode_t eControlCode,void *pDevHandle, long level);
 uint8_t wFwUpdateReq = false;
 uint8_t wRfUpdateReq = false;
@@ -396,7 +395,7 @@ static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset) {
     }
     /* call read pending */
     status = phTmlNfc_Read(
-        nxpncihal_ctrl.p_cmd_data, NCI_MAX_DATA_LEN,
+        nxpncihal_ctrl.p_rsp_data, NCI_MAX_DATA_LEN,
         (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete, NULL);
     if (status != NFCSTATUS_PENDING) {
       NXPLOG_NCIHAL_E("TML Read status error status B= %x", status);
@@ -752,11 +751,11 @@ int phNxpNciHal_MinOpen (){
   }
 
   CONCURRENCY_UNLOCK();
-
+  const char context[] = "MinOpen";
   /* call read pending */
   status = phTmlNfc_Read(
-      nxpncihal_ctrl.p_cmd_data, NCI_MAX_DATA_LEN,
-      (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete, NULL);
+      nxpncihal_ctrl.p_rsp_data, NCI_MAX_DATA_LEN,
+      (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete, (void *)context);
   if (status != NFCSTATUS_PENDING) {
     NXPLOG_NCIHAL_E("TML Read status error status = %x", status);
     wConfigStatus = phTmlNfc_Shutdown_CleanUp();
@@ -1289,7 +1288,7 @@ static void phNxpNciHal_read_complete(void* pContext,
   /* Read again because read must be pending always except FWDNLD.*/
   if(TRUE != nxpncihal_ctrl.fwdnld_mode_reqd){
     status = phTmlNfc_Read(
-        Rx_data, NCI_MAX_DATA_LEN,
+        nxpncihal_ctrl.p_rsp_data, NCI_MAX_DATA_LEN,
         (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete, NULL);
     if (status != NFCSTATUS_PENDING) {
       NXPLOG_NCIHAL_E("read status error status = %x", status);
@@ -2039,7 +2038,7 @@ NFCSTATUS phNxpNciHalRFConfigCmdRecSequence() {
       status = phNxpNciHal_fw_download();
 #if(NXP_EXTNS != TRUE)
       status = phTmlNfc_Read(
-          nxpncihal_ctrl.p_cmd_data, NCI_MAX_DATA_LEN,
+          nxpncihal_ctrl.p_rsp_data, NCI_MAX_DATA_LEN,
           (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete, NULL);
       if (status != NFCSTATUS_PENDING) {
         NXPLOG_NCIHAL_E("TML Read status error status = %x", status);
