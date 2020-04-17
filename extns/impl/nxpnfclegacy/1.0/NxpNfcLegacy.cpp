@@ -67,6 +67,16 @@ NxpNfcLegacy::setNfcServicePid(uint64_t pid) {
   return status;
 }
 
+Return<uint16_t>
+NxpNfcLegacy::getEseState() {
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  ALOGD("NxpNfcLegacy::getEseState Entry");
+  status = phNxpNciHal_getEseState();
+  ALOGD("NxpNfcLegacy::getEseState Exit");
+  return status;
+}
+
+
 }  // namespace implementation
 }  // namespace V1_0
 }  // namespace nxpnfclegacy

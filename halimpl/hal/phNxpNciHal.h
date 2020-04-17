@@ -345,3 +345,13 @@ uint8_t phNxpHal_getchipType();
 **
 *******************************************************************************/
 uint16_t phNxpNciHal_setNfcServicePid(uint64_t pid);
+
+/******************************************************************************
+ * Function         phNxpNciHal_getEseState
+ *
+ * Description      This function is called for to get  ese state
+ *
+ * Returns          void.
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_getEseState();

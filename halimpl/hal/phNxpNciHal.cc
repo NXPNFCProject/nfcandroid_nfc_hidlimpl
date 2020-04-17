@@ -4770,3 +4770,18 @@ uint16_t phNxpNciHal_setNfcServicePid(uint64_t phNxpNfcHalpid)
 
   return status;
 }
+
+/******************************************************************************
+ * Function         phNxpNciHal_getEseState
+ *
+ * Description      This function is called for to get ese  state
+ *
+ * Returns          void.
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_getEseState(){
+    NXPLOG_NCIHAL_D("%s Enter ", __func__);
+    NFCSTATUS status = NFCSTATUS_FAILED;
+    status = phTmlNfc_IoCtl(phTmlNfc_e_GetP61PwrMode);
+    return status;
+}

@@ -37,4 +37,10 @@ interface INxpNfcLegacy {
      * @return status as uint16_t
      */
      setNfcServicePid(uint64_t pid) generates (uint16_t status);
+
+     /*
+     * Getting state of eSE for Wired Mode/SPI mode (For DWP/SPI sync)
+     * @Return  status as uint16_t
+     */
+     getEseState()  generates (uint16_t status);
 };
