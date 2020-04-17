@@ -322,3 +322,14 @@ void phNxpNciHal_setNxpTransitConfig(char *transitConfValue);
  *
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_setEseState(phNxpNfcHalEseState eSEstate);
+
+/*******************************************************************************
+ **
+ ** Function         phNxpNciHal_getchipType
+ **
+ ** Description      Gets the chipType from hal which is already configured
+ **                  during init time.
+ **
+ ** Returns          chipType
+ *******************************************************************************/
+uint8_t phNxpHal_getchipType();

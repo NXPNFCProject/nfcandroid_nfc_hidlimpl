@@ -39,6 +39,7 @@ using ::android::hardware::Void;
 
 struct NxpNfcLegacy : public INxpNfcLegacy{
   Return<uint8_t> setEseState(NxpNfcHalEseState EseState) override;
+  Return<uint8_t> getchipType() override;
 };
 
 }  // namespace implementation

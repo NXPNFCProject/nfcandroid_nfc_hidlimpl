@@ -49,6 +49,14 @@ NxpNfcLegacy::setEseState(NxpNfcHalEseState EseState) {
   return status;
 }
 
+Return<uint8_t>
+NxpNfcLegacy::getchipType() {
+  uint8_t chiptype;
+  ALOGD("NxpNfcLegacy::getchipType Entry");
+  chiptype = phNxpHal_getchipType();
+  ALOGD("NxpNfcLegacy::getchipType Exit");
+  return chiptype;
+}
 
 }  // namespace implementation
 }  // namespace V1_0

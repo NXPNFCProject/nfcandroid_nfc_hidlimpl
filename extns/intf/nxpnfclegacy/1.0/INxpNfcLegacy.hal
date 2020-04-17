@@ -24,4 +24,10 @@ interface INxpNfcLegacy {
      * @return status as uint8_t
      */
     setEseState(NxpNfcHalEseState EseState)  generates (uint8_t status);
+
+     /*
+     * Gets the chipType which is configured during bootup
+     * @return chipType as uint8_t
+     */
+     getchipType()  generates (uint8_t  chipType);
 };

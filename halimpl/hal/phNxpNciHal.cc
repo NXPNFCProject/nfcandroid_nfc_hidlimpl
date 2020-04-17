@@ -3714,10 +3714,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
         ret = 0;
       }
       break;
-    case HAL_NFC_IOCTL_GET_FEATURE_LIST:
-      pInpOutData->out.data.chipType = (uint8_t)phNxpNciHal_getChipType();
-      ret = 0;
-      break;
     case HAL_ESE_IOCTL_NFC_JCOP_DWNLD :
         NXPLOG_NCIHAL_D("HAL_ESE_IOCTL_NFC_JCOP_DWNLD Enter value is %d: \n",pInpOutData->inp.data.nciCmd.p_cmd[0]);
         if(gpEseAdapt !=  NULL)
@@ -4742,4 +4738,23 @@ NFCSTATUS phNxpNciHal_setEseState(phNxpNfcHalEseState eSEstate){
       status = phTmlNfc_IoCtl(phTmlNfc_e_SetP61WiredMode);
 
     return status;
+}
+
+
+/*******************************************************************************
+ **
+ ** Function         phNxpHal_getchipType
+ **
+ ** Description      Gets the chipType from hal which is already configured
+ **                  during init time.
+ **
+ ** Returns          chipType
+ *******************************************************************************/
+uint8_t phNxpHal_getchipType()
+{
+    uint8_t phNxpNciHal_chiptype;
+    NXPLOG_NCIHAL_D("%s Enter ", __func__);
+    phNxpNciHal_chiptype = (uint8_t)phNxpNciHal_getChipType();
+
+    return phNxpNciHal_chiptype;
 }
