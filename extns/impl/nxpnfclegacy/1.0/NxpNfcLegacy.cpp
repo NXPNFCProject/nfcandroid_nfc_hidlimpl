@@ -58,6 +58,15 @@ NxpNfcLegacy::getchipType() {
   return chiptype;
 }
 
+Return<uint16_t>
+NxpNfcLegacy::setNfcServicePid(uint64_t pid) {
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  ALOGD("NxpNfcLegacy::setNfcServicePid Entry");
+  status = phNxpNciHal_setNfcServicePid(pid);
+  ALOGD("NxpNfcLegacy::setNfcServicePid Exit");
+  return status;
+}
+
 }  // namespace implementation
 }  // namespace V1_0
 }  // namespace nxpnfclegacy

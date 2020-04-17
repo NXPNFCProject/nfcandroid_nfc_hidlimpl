@@ -333,3 +333,15 @@ NFCSTATUS phNxpNciHal_setEseState(phNxpNfcHalEseState eSEstate);
  ** Returns          chipType
  *******************************************************************************/
 uint8_t phNxpHal_getchipType();
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_setNfcServicePid
+**
+** Description      This function request to pn54x driver to
+**                  update NFC service process ID for signalling.
+**
+** Returns          0 if api call success, else -1
+**
+*******************************************************************************/
+uint16_t phNxpNciHal_setNfcServicePid(uint64_t pid);

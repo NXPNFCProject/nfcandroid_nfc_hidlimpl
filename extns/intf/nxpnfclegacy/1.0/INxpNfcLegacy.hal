@@ -30,4 +30,11 @@ interface INxpNfcLegacy {
      * @return chipType as uint8_t
      */
      getchipType()  generates (uint8_t  chipType);
+
+     /*
+     * Set/Reset PID in driver for signalling during SPI / DWP open/close
+     * @param process Id as uint64_t
+     * @return status as uint16_t
+     */
+     setNfcServicePid(uint64_t pid) generates (uint16_t status);
 };

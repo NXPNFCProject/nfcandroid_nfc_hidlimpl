@@ -3706,14 +3706,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
                nxpncihal_ctrl.rx_data_len);
       }
       break;
-    case HAL_NFC_IOCTL_SET_NFC_SERVICE_PID:
-      gpphTmlNfc_Context->nfc_service_pid = pInpOutData->inp.data.nfcServicePid;
-      status = phTmlNfc_IoCtl(phTmlNfc_e_SetNfcServicePid);
-      if (NFCSTATUS_FAILED != status) {
-        if (NULL != p_data) pInpOutData->out.data.status = (uint16_t)status;
-        ret = 0;
-      }
-      break;
     case HAL_ESE_IOCTL_NFC_JCOP_DWNLD :
         NXPLOG_NCIHAL_D("HAL_ESE_IOCTL_NFC_JCOP_DWNLD Enter value is %d: \n",pInpOutData->inp.data.nciCmd.p_cmd[0]);
         if(gpEseAdapt !=  NULL)
@@ -4757,4 +4749,24 @@ uint8_t phNxpHal_getchipType()
     phNxpNciHal_chiptype = (uint8_t)phNxpNciHal_getChipType();
 
     return phNxpNciHal_chiptype;
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_setNfcServicePid
+**
+** Description      This function request to pn54x driver to
+**                  update NFC service process ID for signalling.
+**
+** Returns          0 if api call success, else -1
+**
+*******************************************************************************/
+uint16_t phNxpNciHal_setNfcServicePid(uint64_t phNxpNfcHalpid)
+{
+  NXPLOG_NCIHAL_D("%s Enter ", __func__);
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  gpphTmlNfc_Context->nfc_service_pid = phNxpNfcHalpid;
+  status = phTmlNfc_IoCtl(phTmlNfc_e_SetNfcServicePid);
+
+  return status;
 }
