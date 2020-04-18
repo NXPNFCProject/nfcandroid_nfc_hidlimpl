@@ -14,6 +14,7 @@ cc_library_shared {
         "halimpl/utils/*.cc",
         "halimpl/utils/*.cpp",
         "halimpl/configs/*.cpp",
+        "halimpl/mifare/*.cc",
         "halimpl/ese-clients/src/DwpEseUpdater.cc",
         "halimpl/ese-clients/src/DwpSeChannelCallback.cc",
         "halimpl/ese-clients/src/DwpSeEvtCallback.cc",
@@ -58,6 +59,7 @@ cc_library_shared {
         "halimpl/inc",
         "halimpl/common",
         "halimpl/utils",
+        "halimpl/mifare",
         "halimpl/ese-clients/inc",
     ],
     cflags: [
