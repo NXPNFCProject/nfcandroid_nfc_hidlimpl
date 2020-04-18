@@ -42,6 +42,11 @@ struct NxpNfcLegacy : public INxpNfcLegacy{
   Return<uint8_t> getchipType() override;
   Return<uint16_t> setNfcServicePid(uint64_t pid) override;
   Return<uint16_t> getEseState() override;
+  Return<uint16_t> spiDwpSync(uint32_t level) override;
+  Return<uint16_t> RelForceDwpOnOffWait(uint32_t level) override;
+  Return<int8_t> getSPMStatus(uint32_t level) override;
+  Return<int32_t> hciInitUpdateState(NfcHciInitStatus HciStatus) override;
+  Return<int32_t> hciInitUpdateStateComplete() override;
 };
 
 }  // namespace implementation

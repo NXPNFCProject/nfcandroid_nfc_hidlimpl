@@ -76,6 +76,70 @@ NxpNfcLegacy::getEseState() {
   return status;
 }
 
+Return<uint16_t>
+NxpNfcLegacy::spiDwpSync(uint32_t level) {
+  uint16_t status = 0;
+
+  ALOGD("NxpNfcLegacy::spiDwpSync Entry");
+  status = phNxpNciHal_ReleaseSVDDWait(level);
+
+  ALOGD("NxpNfcLegacy::spiDwpSync Exit");
+  return status;
+}
+
+Return<uint16_t>
+NxpNfcLegacy::RelForceDwpOnOffWait(uint32_t level) {
+  uint16_t status = 0;
+
+  ALOGD("NxpNfcLegacy::RelForceDwpOnOffWait Entry");
+  status = phNxpNciHal_ReleaseDWPOnOffWait(level);
+
+  ALOGD("NxpNfcLegacy::RelForceDwpOnOffWait Exit");
+  return status;
+}
+
+Return<int8_t>
+NxpNfcLegacy::getSPMStatus(uint32_t level) {
+  int8_t status = -1;
+
+  ALOGD("NxpNfcLegacy::getSPMStatus Entry");
+  status = phNxpNciHal_getSPMStatus(level);
+
+  ALOGD("NxpNfcLegacy::getSPMStatus Exit");
+  return status;
+}
+
+Return<int32_t>
+NxpNfcLegacy::hciInitUpdateState(NfcHciInitStatus HciStatus) {
+  int32_t status = 0;
+
+  ALOGD("NxpNfcLegacy::hciInitUpdateState Entry");
+  if (HciStatus == NfcHciInitStatus::NFC_HCI_INIT_START)
+  {
+    ALOGD("NxpNfcLegacy::hciInitUpdateState state == NFC_HCI_INIT_START");
+    phNxpNciHal_hciInitUpdateState(phNxpNfcHciInitStatus_e_Start);
+  }
+  else if (HciStatus == NfcHciInitStatus::NFC_HCI_INIT_COMPLETE)
+  {
+    ALOGD("NxpNfcLegacy::hciInitUpdateState state == NFC_HCI_INIT_COMPLETE");
+    phNxpNciHal_hciInitUpdateState(phNxpNfcHciInitStatus_e_Complete);
+  }
+  ALOGD("NxpNfcLegacy::hciInitUpdateState Exit");
+  return status;
+}
+
+Return<int32_t>
+NxpNfcLegacy::hciInitUpdateStateComplete() {
+  int32_t status = 0;
+
+  ALOGD("NxpNfcLegacy::hciInitUpdateStateComplete Entry");
+
+  status = phNxpNciHal_hciInitUpdateStateComplete();
+
+  ALOGD("NxpNfcLegacy::hciInitUpdateStateComplete Exit");
+
+  return status;
+}
 
 }  // namespace implementation
 }  // namespace V1_0

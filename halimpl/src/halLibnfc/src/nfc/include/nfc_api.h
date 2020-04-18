@@ -1584,18 +1584,6 @@ bool NFC_IsLowRamDevice();
 
 /*******************************************************************************
 **
-** Function         NFC_RelSvddWait
-**
-** Description      This function release wait for svdd change
-**                  of P61. Status would be updated to pdata
-**
-** Returns          0 if api call success, else -1
-**
-*******************************************************************************/
-int32_t NFC_RelSvddWait(void *pdata);
-
-/*******************************************************************************
-**
 ** Function         NFC_GetChipType
 **
 ** Description      Returns currently selected chip type
@@ -1604,18 +1592,6 @@ int32_t NFC_RelSvddWait(void *pdata);
 **
 *******************************************************************************/
 tNFC_chipType NFC_GetChipType();
-
-/*******************************************************************************
-**
-** Function         NFC_RelForceDwpOnOffWait
-**
-** Description      This function release wait for DWP On/Off
-**                  of P73. Status would be updated to pdata
-**
-** Returns          0 if api call success, else -1
-**
-*******************************************************************************/
-int32_t NFC_RelForceDwpOnOffWait(void *pdata);
 
 /*******************************************************************************
 **

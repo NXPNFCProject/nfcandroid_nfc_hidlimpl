@@ -202,6 +202,10 @@ typedef enum {
   phNxpNciHalNfc_e_SetWiredMode,  /* Set the current mode of operation to Wired*/
 } phNxpNfcHalEseState;
 
+typedef enum {
+  phNxpNfcHciInitStatus_e_Complete = 0x00,
+  phNxpNfcHciInitStatus_e_Start = 0x01
+} phNxpNfcHciInitStatus;
 
 typedef struct phNxpNci_EEPROM_info {
   uint8_t request_mode;
@@ -357,3 +361,54 @@ uint16_t phNxpNciHal_setNfcServicePid(uint64_t pid);
  *
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_getEseState();
+
+/******************************************************************************
+ * Function         phNxpNciHal_ReleaseSVDDWait
+ *
+ * Description      This function release wait for svdd change
+ *                  of P61.
+ *
+ * Returns          NFCSTATUS.
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_ReleaseSVDDWait(uint32_t level);
+
+/******************************************************************************
+ * Function         phNxpNciHal_ReleaseDWPOnOffWait
+ *
+ * Description      This function release wait for DWP On/Off
+ *                  of P73. output returned as Status
+ * Returns          NFCSTATUS.
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_ReleaseDWPOnOffWait(uint32_t level);
+
+/******************************************************************************
+ * Function         phNxpNciHal_getSPMStatus
+ *
+ * Description      This function gets the SPM state before FW download
+ *
+ * Returns          0 as success -1 as failed.
+ *
+ *******************************************************************************/
+int phNxpNciHal_getSPMStatus(uint32_t level);
+
+/******************************************************************************
+ * Function         phNxpNciHal_hciInitUpdateState
+ *
+ * Description      This function Sends HCI Events to nfc HAL
+ *
+ * Returns          0 as success -1 as failed.
+ *
+ *******************************************************************************/
+int32_t phNxpNciHal_hciInitUpdateState(phNxpNfcHciInitStatus HciStatus);
+
+/******************************************************************************
+ * Function         phNxpNciHal_hciInitUpdateStateComplete
+ *
+ * Description       This function posts event HAL_NFC_CONFIG_ESE_LINK_COMPLETE
+ *
+ * Returns          0 as success -1 as failed..
+ *
+ *******************************************************************************/
+int32_t phNxpNciHal_hciInitUpdateStateComplete();

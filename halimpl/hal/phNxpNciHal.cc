@@ -473,10 +473,8 @@ static NFCSTATUS phNxpNciHal_fw_download(void) {
   }
 
   if (nfcFL.nfcNxpEse == true) {
-    nfc_nci_IoctlInOutData_t data;
-    memset(&data, 0x00, sizeof(nfc_nci_IoctlInOutData_t));
-    data.inp.level = 0x03; // ioctl call arg value to get eSE power GPIO value = 0x03
-    int spi_current_state = phNxpNciHal_ioctl(HAL_NFC_GET_SPM_STATUS, &data);
+    uint32_t level = 0x03;
+    int spi_current_state = phNxpNciHal_getSPMStatus(level);
     NXPLOG_NCIHAL_D("spi_current_state  = %4x ", spi_current_state);
     if (spi_current_state != P61_STATE_IDLE) {
       NXPLOG_NCIHAL_E("FW download denied while SPI in use, Continue NFC init");
@@ -3691,29 +3689,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
             }
         }
       break;
-    case HAL_NFC_IOCTL_REL_SVDD_WAIT:
-        if(nfcFL.nfcNxpEse && nfcFL.eseFL._ESE_SVDD_SYNC) {
-          status = phTmlNfc_rel_svdd_wait(gpphTmlNfc_Context->pDevHandle,
-                                          pInpOutData->inp.level);
-          NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_P61_REL_SVDD_WAIT retval = %d\n",
-                          status);
-          pInpOutData->out.data.status = status;
-          if (NFCSTATUS_SUCCESS == status) {
-            ret = 0;
-            }
-        }
-      break;
-    case HAL_NFC_IOCTL_REL_DWP_WAIT:
-        if(nfcFL.nfcNxpEse) {
-          status = phTmlNfc_rel_dwpOnOff_wait(gpphTmlNfc_Context->pDevHandle,
-                                              pInpOutData->inp.level);
-          NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_REL_DWP_ON_OFF_WAIT retval = %d\n",
-                          status);
-          if (NFCSTATUS_SUCCESS == status) {
-            ret = 0;
-            }
-        }
-      break;
     case HAL_NFC_IOCTL_GET_CONFIG_INFO:
       if (mGetCfg_info) {
         memcpy(pInpOutData->out.data.nxpNciAtrInfo, mGetCfg_info,
@@ -3788,11 +3763,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
       ret = phPalEse_spi_ioctl(phPalEse_e_SetPowerScheme,
                                gpphTmlNfc_Context->pDevHandle, level);
       break;
-    case HAL_NFC_GET_SPM_STATUS:
-      level = pInpOutData->inp.level;
-      ret = phPalEse_spi_ioctl(phPalEse_e_GetSPMStatus,
-                               gpphTmlNfc_Context->pDevHandle, level);
-      break;
     case HAL_NFC_GET_NXP_CONFIG:
       phNxpNciHal_getNxpConfig(pInpOutData);
       ret = 0;
@@ -3802,17 +3772,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
           pInpOutData->inp.data.transitConfig.val);
       ret = 0;
       break;
-      case HAL_NFC_IOCTL_HCI_INIT_STATUS_UPDATE:
-      nxpncihal_ctrl.isHciCfgEvtRequested = true;
-      NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_HCI_INIT_STATUS_UPDATE value is %d: \n",
-                      pInpOutData->inp.data.nciCmd.p_cmd[0]);
-      if (gpEseAdapt != NULL)
-        gpEseAdapt->HalNfccNtf(HAL_NFC_IOCTL_HCI_INIT_STATUS_UPDATE, pInpOutData);
-      ret = 0;
-      break;
-      case HAL_NFC_IOCTL_HCI_INIT_STATUS_UPDATE_COMPLETE:
-        phNxpNciHal_notifyHciEvtProcessComplete();
-        break;
       default:
         NXPLOG_NCIHAL_E("%s : Wrong arg = %ld", __func__, arg);
         break;
@@ -4846,4 +4805,112 @@ static void phNxpNciHal_initialize_mifare_flag() {
   if(GetNxpNumValue(NAME_LEGACY_MIFARE_READER, &num, sizeof(num))) {
     bDisableLegacyMfcExtns = (num == 0) ? true : false;
   }
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_ReleaseSVDDWait
+ *
+ * Description      This function release wait for svdd change
+ *                  of P61.
+ *
+ * Returns          NFCSTATUS.
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_ReleaseSVDDWait(uint32_t level){
+    NFCSTATUS status = NFCSTATUS_FAILED;
+    NXPLOG_NCIHAL_D("%s Enter ", __func__);
+
+    if(nfcFL.nfcNxpEse && nfcFL.eseFL._ESE_SVDD_SYNC) {
+        status = phTmlNfc_rel_svdd_wait(gpphTmlNfc_Context->pDevHandle,
+                                        level);
+        NXPLOG_NCIHAL_D("phTmlNfc_rel_svdd_wait retval = %d\n",
+                        status);
+    }
+    NXPLOG_NCIHAL_D("%s Exit ", __func__);
+
+    return status;
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_ReleaseDWPOnOffWait
+ *
+ * Description      This function release wait for DWP On/Off
+ *                  of P73. output returned as Status
+ * Returns          NFCSTATUS.
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_ReleaseDWPOnOffWait(uint32_t level){
+    NFCSTATUS status = NFCSTATUS_FAILED;
+    NXPLOG_NCIHAL_D("%s Enter ", __func__);
+
+    if(nfcFL.nfcNxpEse) {
+      status = phTmlNfc_rel_dwpOnOff_wait(gpphTmlNfc_Context->pDevHandle,
+                                          level);
+      NXPLOG_NCIHAL_D("phNxpNciHal_ReleaseDWPWait retval = %d\n",
+                      status);
+    }
+
+    NXPLOG_NCIHAL_D("%s Exit ", __func__);
+    return status;
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_getSPMStatus
+ *
+ * Description      This function gets the SPM state before FW download
+ *
+ * Returns          0 as success -1 as failed.
+ *
+ *******************************************************************************/
+int phNxpNciHal_getSPMStatus(uint32_t level){
+    int ret = -1;
+    NXPLOG_NCIHAL_D("%s Enter ", __func__);
+
+    ret = phPalEse_spi_ioctl(phPalEse_e_GetSPMStatus,
+                             gpphTmlNfc_Context->pDevHandle, level);
+
+    NXPLOG_NCIHAL_D("%s Exit ", __func__);
+    return ret;
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_hciInitUpdateState
+ *
+ * Description      This function Sends HCI Events to nfc HAL
+ *
+ * Returns          0 as success -1 as failed.
+ *
+ *******************************************************************************/
+int32_t phNxpNciHal_hciInitUpdateState(phNxpNfcHciInitStatus HciStatus){
+    int ret = -1;
+    ese_nxp_IoctlInOutData_t *pInpOutData = nullptr;
+    NXPLOG_NCIHAL_D("%s Enter ", __func__);
+
+    nxpncihal_ctrl.isHciCfgEvtRequested = true;
+    pInpOutData->inp.data.nxpCmd.p_cmd[0] = HciStatus;
+    NXPLOG_NCIHAL_D("phNxpNciHal_hciInitUpdateState value is %d: \n",
+                      pInpOutData->inp.data.nxpCmd.p_cmd[0]);
+    if (gpEseAdapt != NULL)
+      gpEseAdapt->HalNfccNtf(HAL_ESE_IOCTL_HCI_INIT_STATUS_UPDATE, pInpOutData);
+
+    NXPLOG_NCIHAL_D("%s Exit ", __func__);
+    return ret;
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_hciInitUpdateStateComplete
+ *
+ * Description      This function posts event HAL_NFC_CONFIG_ESE_LINK_COMPLETE
+ *
+ * Returns          void.
+ *
+ *******************************************************************************/
+int32_t phNxpNciHal_hciInitUpdateStateComplete(){
+    int32_t ret = 0;
+    NXPLOG_NCIHAL_D("%s Enter ", __func__);
+
+    phNxpNciHal_notifyHciEvtProcessComplete();
+
+    NXPLOG_NCIHAL_D("%s Exit ", __func__);
+    return ret;
 }

@@ -1580,43 +1580,6 @@ void  check_nfcee_session_and_reset()
 }
 
 #endif
-
-/*******************************************************************************
-**
-** Function         NFC_RelSvddWait
-**
-** Description      This function release wait for svdd change
-**                  of P61. Status would be updated to pdata
-**
-** Returns          0 if api call success, else -1
-**
-*******************************************************************************/
-int32_t NFC_RelSvddWait(void *pdata) {
-  if (!nfcFL.eseFL._ESE_SVDD_SYNC) {
-    DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("NFC_RelSvddWait :"
-                        "ESE_SVDD_SYNC is not available.. Returning");
-    return NFC_STATUS_EPERM;
-  }
-  nfc_nci_IoctlInOutData_t inpOutData;
-  int32_t status;
-  status = nfc_cb.p_hal->ioctl(HAL_NFC_IOCTL_REL_SVDD_WAIT, &inpOutData);
-  *(tNFC_STATUS *)pdata = inpOutData.out.data.status;
-  return status;
-}
-/*******************************************************************************
-**
-** Function         NFC_RelForceDwpOnOffWait
-**
-** Description      This function release wait for DWP On/Off
-**                  of P73. Status would be updated to pdata
-**
-** Returns          0 if api call success, else -1
-**
-*******************************************************************************/
-int32_t NFC_RelForceDwpOnOffWait(void *pdata) {
-  return (nfc_cb.p_hal->ioctl(HAL_NFC_IOCTL_REL_DWP_WAIT, pdata));
-}
 #endif
 
 #if (NXP_EXTNS == TRUE)

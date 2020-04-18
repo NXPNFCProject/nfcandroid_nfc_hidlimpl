@@ -43,4 +43,42 @@ interface INxpNfcLegacy {
      * @Return  status as uint16_t
      */
      getEseState()  generates (uint16_t status);
+
+     /*
+     * This function release wait for svdd change
+     * of P61. output returned as Status
+     * @param svdd level as inputdata
+     * @return status as uint8_t
+     */
+     spiDwpSync(uint32_t level) generates (uint16_t status);
+
+     /*
+     * This function release wait for DWP On/Off
+     * of P73. output returned as Status
+     * @param eSE vsc as inputdata
+     * @return status as uint8_t
+     */
+     RelForceDwpOnOffWait(uint32_t level) generates (uint16_t status);
+
+     /*
+     * This function gets the SPM state before FW download
+     * @param eSE power GPIO value as input level
+     * @return status as uint8_t
+     */
+     getSPMStatus(uint32_t level) generates (int8_t status);
+
+     /*
+     * This function Sends HCI Events to nfc HAL
+     * @param HCI events as input
+     * @return status as uint8_t
+     */
+     hciInitUpdateState(NfcHciInitStatus HciStatus) generates(int32_t status);
+
+     /*
+     * This function posts event HAL_NFC_CONFIG_ESE_LINK_COMPLETE
+     * @param none
+     * @return status as uint8_t
+     */
+     hciInitUpdateStateComplete() generates(int32_t status);
+
 };

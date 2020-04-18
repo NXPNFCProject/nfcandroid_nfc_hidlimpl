@@ -21,3 +21,8 @@ enum NxpNfcHalEseState  : uint64_t {
     HAL_NFC_ESE_IDLE_MODE = 0,
     HAL_NFC_ESE_WIRED_MODE
 };
+
+enum NfcHciInitStatus : uint8_t {
+  NFC_HCI_INIT_COMPLETE = 0x00,
+  NFC_HCI_INIT_START = 0x01
+};
