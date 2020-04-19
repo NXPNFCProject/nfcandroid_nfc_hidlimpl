@@ -4883,15 +4883,15 @@ int phNxpNciHal_getSPMStatus(uint32_t level){
  *******************************************************************************/
 int32_t phNxpNciHal_hciInitUpdateState(phNxpNfcHciInitStatus HciStatus){
     int ret = -1;
-    ese_nxp_IoctlInOutData_t *pInpOutData = nullptr;
+    ese_nxp_IoctlInOutData_t InpOutData;
     NXPLOG_NCIHAL_D("%s Enter ", __func__);
 
     nxpncihal_ctrl.isHciCfgEvtRequested = true;
-    pInpOutData->inp.data.nxpCmd.p_cmd[0] = HciStatus;
+    InpOutData.inp.data.nxpCmd.p_cmd[0] = HciStatus;
     NXPLOG_NCIHAL_D("phNxpNciHal_hciInitUpdateState value is %d: \n",
-                      pInpOutData->inp.data.nxpCmd.p_cmd[0]);
+                      InpOutData.inp.data.nxpCmd.p_cmd[0]);
     if (gpEseAdapt != NULL)
-      gpEseAdapt->HalNfccNtf(HAL_ESE_IOCTL_HCI_INIT_STATUS_UPDATE, pInpOutData);
+      gpEseAdapt->HalNfccNtf(HAL_ESE_IOCTL_HCI_INIT_STATUS_UPDATE, &InpOutData);
 
     NXPLOG_NCIHAL_D("%s Exit ", __func__);
     return ret;
