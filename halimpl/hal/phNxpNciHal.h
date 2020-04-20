@@ -247,6 +247,60 @@ typedef struct phNxpNciProfile_Control {
   uint8_t bTimeout; /* Holds the Timeout Value */
 } phNxpNciProfile_Control_t;
 
+struct phNxpNfcScrResetEmvcoCmd{
+  uint64_t len;
+  uint8_t cmd[10];
+};
+
+struct phNxpNfcHalConfig {
+  uint8_t ese_listen_tech_mask;
+  uint8_t default_nfcee_disc_timeout;
+  uint8_t default_nfcee_timeout;
+  uint8_t ese_wired_prt_mask;
+  uint8_t uicc_wired_prt_mask;
+  uint8_t wired_mode_rf_field_enable;
+  uint8_t aid_block_route;
+  uint8_t esePowerDhControl;
+  uint8_t tagOpTimeout;
+  uint8_t loaderServiceVersion;
+  uint8_t defaultNfceeDiscTimeout;
+  uint8_t dualUiccEnable;
+  uint8_t ceRouteStrictDisable;
+  uint32_t osDownloadTimeoutValue;
+  uint8_t defaultAidRoute;
+  uint8_t defaultAidPwrState;
+  uint8_t defaultRoutePwrState;
+  uint8_t defaultOffHostPwrState;
+  uint8_t jcopDlAtBootEnable;
+  uint8_t defaultNfceeTimeout;
+  uint8_t nxpNfcChip;
+  uint8_t coreScrnOffAutonomousEnable;
+  uint8_t p61LsDefaultInterface;
+  uint8_t p61JcopDefaultInterface;
+  uint8_t agcDebugEnable;
+  uint8_t felicaCltPowerState;
+  uint32_t cmdRspTimeoutValue;
+  uint8_t checkDefaultProtoSeId;
+  uint8_t nfccPassiveListenTimeout;
+  uint32_t nfccStandbyTimeout;
+  uint32_t wmMaxWtxCount;
+  uint32_t nfccRfFieldEventTimeout;
+  uint8_t allowWiredInMifareDesfireClt;
+  uint8_t dwpIntfResetEnable;
+  uint8_t nxpLogHalLoglevel;
+  uint8_t nxpLogExtnsLogLevel;
+  uint8_t nxpLogTmlLogLevel;
+  uint8_t nxpLogFwDnldLogLevel;
+  uint8_t nxpLogNcixLogLevel;
+  uint8_t nxpLogNcirLogLevel;
+  uint8_t scrCfgFormat;
+  uint8_t etsiReaderEnable;
+  uint8_t techAbfRoute;
+  uint8_t techAbfPwrState;
+  uint8_t wTagSupport;
+  uint8_t t4tNfceePwrState;
+  phNxpNfcScrResetEmvcoCmd scrResetEmvco;
+};
 /* Internal messages to handle callbacks */
 #define NCI_HAL_OPEN_CPLT_MSG 0x411
 #define NCI_HAL_CLOSE_CPLT_MSG 0x412
@@ -306,7 +360,7 @@ tNFC_chipType phNxpNciHal_getChipType();
 **
 ** Returns          none
 *******************************************************************************/
-void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData);
+void phNxpNciHal_getNxpConfig(phNxpNfcHalConfig *pNxpNfcHalConfig);
 /******************************************************************************
  * Function         phNxpNciHal_getNxpTransitConfig
  *

@@ -155,6 +155,18 @@ Return<void> NxpNfcLegacy::getCachedNfccConfig(getCachedNfccConfig_cb _hidl_cb){
   return Void();
 }
 
+Return<void> NxpNfcLegacy::getNxpConfig(getNxpConfig_cb _hidl_cb)
+{
+  phNxpNfcHalConfig localConfigData;
+  NxpNfcHalConfig config;
+  ALOGD("NxpNfcLegacy::getNxpConfig Entry" );
+  phNxpNciHal_getNxpConfig(&localConfigData);
+  memcpy(&config, &localConfigData, sizeof(NxpNfcHalConfig));
+  _hidl_cb(config);
+  ALOGD("NxpNfcLegacy::getNxpConfig Exit");
+  return Void();
+}
+
 }  // namespace implementation
 }  // namespace V1_0
 }  // namespace nxpnfclegacy

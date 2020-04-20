@@ -3181,167 +3181,167 @@ int phNxpNciHal_configDiscShutdown(void) {
  * Returns          void.
  *
  ******************************************************************************/
-void phNxpNciHal_getNxpConfig(nfc_nci_IoctlInOutData_t *pInpOutData) {
-  unsigned long num = 0;
-  long retlen = 0;
-  uint8_t *buffer = NULL;
-  long bufflen = 260;
+ void phNxpNciHal_getNxpConfig(phNxpNfcHalConfig *pNxpNfcHalConfig) {
+   unsigned long num = 0;
+   long retlen = 0;
+   uint8_t *buffer = NULL;
+   long bufflen = 260;
 
-  buffer = (uint8_t *)malloc(bufflen * sizeof(uint8_t));
-  memset(&pInpOutData->out.data.nxpConfigs, 0x00, sizeof(pInpOutData->out.data.nxpConfigs));
-  if (GetNxpNumValue(NAME_NXP_ESE_LISTEN_TECH_MASK, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.ese_listen_tech_mask = num;
-  }else {
-    pInpOutData->out.data.nxpConfigs.ese_listen_tech_mask = 0x07;
-  }
-  if (GetNxpNumValue(NAME_NXP_DEFAULT_NFCEE_DISC_TIMEOUT, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.default_nfcee_disc_timeout = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_DEFAULT_NFCEE_TIMEOUT, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.default_nfcee_timeout = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_ESE_WIRED_PRT_MASK, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.ese_wired_prt_mask = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_UICC_WIRED_PRT_MASK, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.uicc_wired_prt_mask = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_WIRED_MODE_RF_FIELD_ENABLE, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.wired_mode_rf_field_enable = num;
-  }
-  if (GetNxpNumValue(NAME_AID_BLOCK_ROUTE, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.aid_block_route = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_ESE_POWER_DH_CONTROL, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.esePowerDhControl = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_SWP_RD_TAG_OP_TIMEOUT, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.tagOpTimeout = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_LOADER_SERICE_VERSION, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.loaderServiceVersion = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_DEFAULT_NFCEE_DISC_TIMEOUT, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.defaultNfceeDiscTimeout = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_DUAL_UICC_ENABLE, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.dualUiccEnable = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_CE_ROUTE_STRICT_DISABLE, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.ceRouteStrictDisable = num;
-  }
-  if (GetNxpNumValue(NAME_OS_DOWNLOAD_TIMEOUT_VALUE, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.osDownloadTimeoutValue = num;
-  }
-  if (GetNxpNumValue(NAME_DEFAULT_AID_ROUTE, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.defaultAidRoute = num;
-  }
-  if (GetNxpNumValue(NAME_DEFAULT_AID_PWR_STATE, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.defaultAidPwrState = num;
-  }
-  if (GetNxpNumValue(NAME_DEFAULT_ISODEP_PWR_STATE, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.defaultRoutePwrState = num;
-  }
-  if (GetNxpNumValue(NAME_DEFAULT_OFFHOST_PWR_STATE, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.defaultOffHostPwrState = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_JCOPDL_AT_BOOT_ENABLE, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.jcopDlAtBootEnable = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_DEFAULT_NFCEE_TIMEOUT, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.defaultNfceeTimeout = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_NFC_CHIP, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.nxpNfcChip = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_CORE_SCRN_OFF_AUTONOMOUS_ENABLE, &num,
-                     sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.coreScrnOffAutonomousEnable = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_ESE_LS_DEFAULT_INTERFACE, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.p61LsDefaultInterface = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_ESE_JCOP_DEFAULT_INTERFACE, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.p61JcopDefaultInterface = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_AGC_DEBUG_ENABLE, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.agcDebugEnable = num;
-  }
-  if (GetNxpNumValue(NAME_DEFAULT_NFCF_PWR_STATE, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.felicaCltPowerState = num;
-  } else {
-    pInpOutData->out.data.nxpConfigs.felicaCltPowerState = 0x3F;
-  }
-  if (GetNxpNumValue(NAME_NXP_HCEF_CMD_RSP_TIMEOUT_VALUE, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.cmdRspTimeoutValue = num;
-  }
-  if (GetNxpNumValue(NAME_CHECK_DEFAULT_PROTO_SE_ID, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.checkDefaultProtoSeId = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_NFCC_PASSIVE_LISTEN_TIMEOUT, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.nfccPassiveListenTimeout = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_NFCC_STANDBY_TIMEOUT, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.nfccStandbyTimeout = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_WM_MAX_WTX_COUNT, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.wmMaxWtxCount = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_NFCC_RF_FIELD_EVENT_TIMEOUT, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.nfccRfFieldEventTimeout = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_ALLOW_WIRED_IN_MIFARE_DESFIRE_CLT, &num,
-                     sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.allowWiredInMifareDesfireClt = num;
-  }
-  if (GetNxpNumValue(NAME_NXP_DWP_INTF_RESET_ENABLE, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.dwpIntfResetEnable = num;
-  }
-  if (GetNxpNumValue(NAME_NXPLOG_HAL_LOGLEVEL, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.nxpLogHalLoglevel = num;
-  }
-  if (GetNxpNumValue(NAME_NXPLOG_EXTNS_LOGLEVEL, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.nxpLogExtnsLogLevel = num;
-  }
-  if (GetNxpNumValue(NAME_NXPLOG_TML_LOGLEVEL, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.nxpLogTmlLogLevel = num;
-  }
-  if (GetNxpNumValue(NAME_NXPLOG_FWDNLD_LOGLEVEL, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.nxpLogFwDnldLogLevel = num;
-  }
-  if (GetNxpNumValue(NAME_NXPLOG_NCIX_LOGLEVEL, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.nxpLogNcixLogLevel = num;
-  }
-  if (GetNxpNumValue(NAME_NXPLOG_NCIR_LOGLEVEL, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.nxpLogNcirLogLevel = num;
-  }
-  if (GetNxpNumValue(NAME_NFA_CONFIG_FORMAT, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.scrCfgFormat = num;
-  }
-  if (GetNxpNumValue(NAME_ETSI_READER_ENABLE, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.etsiReaderEnable = num;
-  }
-  if (GetNxpNumValue(NAME_DEFAULT_TECH_ABF_ROUTE, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.techAbfRoute = num;
-  }
-  if (GetNxpNumValue(NAME_DEFAULT_TECH_ABF_PWR_STATE, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.techAbfPwrState = num;
-  }
-  if (GetNxpNumValue(NAME_WTAG_SUPPORT, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.wTagSupport = num;
-  }
-  if (GetNxpNumValue(NAME_DEFAULT_T4TNFCEE_AID_POWER_STATE, &num, sizeof(num))) {
-    pInpOutData->out.data.nxpConfigs.t4tNfceePwrState = num;
-  } else {
-    //sete Default power state as Phone off (Low power mode)
-    pInpOutData->out.data.nxpConfigs.t4tNfceePwrState = 0x02;
-  }
-  if (buffer) {
-    if (GetNxpByteArrayValue(NAME_NXP_PROP_RESET_EMVCO_CMD, (char *)buffer,
-                             bufflen, &retlen)) {
-      memcpy(pInpOutData->out.data.nxpConfigs.scrResetEmvco.cmd, (char *)buffer,
-             retlen);
-      pInpOutData->out.data.nxpConfigs.scrResetEmvco.len = retlen;
+   buffer = (uint8_t *)malloc(bufflen * sizeof(uint8_t));
+  memset(pNxpNfcHalConfig, 0x00, sizeof(phNxpNfcHalConfig));
+   if (GetNxpNumValue(NAME_NXP_ESE_LISTEN_TECH_MASK, &num, sizeof(num))) {
+    pNxpNfcHalConfig->ese_listen_tech_mask = num;
+   }else {
+    pNxpNfcHalConfig->ese_listen_tech_mask = 0x07;
+   }
+   if (GetNxpNumValue(NAME_NXP_DEFAULT_NFCEE_DISC_TIMEOUT, &num, sizeof(num))) {
+    pNxpNfcHalConfig->default_nfcee_disc_timeout = num;
+   }
+   if (GetNxpNumValue(NAME_NXP_DEFAULT_NFCEE_TIMEOUT, &num, sizeof(num))) {
+    pNxpNfcHalConfig->default_nfcee_timeout = num;
+   }
+   if (GetNxpNumValue(NAME_NXP_ESE_WIRED_PRT_MASK, &num, sizeof(num))) {
+    pNxpNfcHalConfig->ese_wired_prt_mask = num;
+   }
+   if (GetNxpNumValue(NAME_NXP_UICC_WIRED_PRT_MASK, &num, sizeof(num))) {
+    pNxpNfcHalConfig->uicc_wired_prt_mask = num;
+   }
+   if (GetNxpNumValue(NAME_NXP_WIRED_MODE_RF_FIELD_ENABLE, &num, sizeof(num))) {
+    pNxpNfcHalConfig->wired_mode_rf_field_enable = num;
+   }
+   if (GetNxpNumValue(NAME_AID_BLOCK_ROUTE, &num, sizeof(num))) {
+    pNxpNfcHalConfig->aid_block_route = num;
+   }
+   if (GetNxpNumValue(NAME_NXP_ESE_POWER_DH_CONTROL, &num, sizeof(num))) {
+    pNxpNfcHalConfig->esePowerDhControl = num;
+   }
+   if (GetNxpNumValue(NAME_NXP_SWP_RD_TAG_OP_TIMEOUT, &num, sizeof(num))) {
+    pNxpNfcHalConfig->tagOpTimeout = num;
+   }
+   if (GetNxpNumValue(NAME_NXP_LOADER_SERICE_VERSION, &num, sizeof(num))) {
+    pNxpNfcHalConfig->loaderServiceVersion = num;
+   }
+   if (GetNxpNumValue(NAME_NXP_DEFAULT_NFCEE_DISC_TIMEOUT, &num, sizeof(num))) {
+    pNxpNfcHalConfig->defaultNfceeDiscTimeout = num;
+   }
+   if (GetNxpNumValue(NAME_NXP_DUAL_UICC_ENABLE, &num, sizeof(num))) {
+    pNxpNfcHalConfig->dualUiccEnable = num;
+   }
+   if (GetNxpNumValue(NAME_NXP_CE_ROUTE_STRICT_DISABLE, &num, sizeof(num))) {
+    pNxpNfcHalConfig->ceRouteStrictDisable = num;
+   }
+   if (GetNxpNumValue(NAME_OS_DOWNLOAD_TIMEOUT_VALUE, &num, sizeof(num))) {
+    pNxpNfcHalConfig->osDownloadTimeoutValue = num;
+   }
+   if (GetNxpNumValue(NAME_DEFAULT_AID_ROUTE, &num, sizeof(num))) {
+    pNxpNfcHalConfig->defaultAidRoute = num;
+   }
+   if (GetNxpNumValue(NAME_DEFAULT_AID_PWR_STATE, &num, sizeof(num))) {
+    pNxpNfcHalConfig->defaultAidPwrState = num;
+   }
+   if (GetNxpNumValue(NAME_DEFAULT_ISODEP_PWR_STATE, &num, sizeof(num))) {
+    pNxpNfcHalConfig->defaultRoutePwrState = num;
+   }
+   if (GetNxpNumValue(NAME_DEFAULT_OFFHOST_PWR_STATE, &num, sizeof(num))) {
+    pNxpNfcHalConfig->defaultOffHostPwrState = num;
+   }
+   if (GetNxpNumValue(NAME_NXP_JCOPDL_AT_BOOT_ENABLE, &num, sizeof(num))) {
+    pNxpNfcHalConfig->jcopDlAtBootEnable = num;
+   }
+   if (GetNxpNumValue(NAME_NXP_DEFAULT_NFCEE_TIMEOUT, &num, sizeof(num))) {
+    pNxpNfcHalConfig->defaultNfceeTimeout = num;
+   }
+   if (GetNxpNumValue(NAME_NXP_NFC_CHIP, &num, sizeof(num))) {
+    pNxpNfcHalConfig->nxpNfcChip = num;
+   }
+   if (GetNxpNumValue(NAME_NXP_CORE_SCRN_OFF_AUTONOMOUS_ENABLE, &num,
+                      sizeof(num))) {
+    pNxpNfcHalConfig->coreScrnOffAutonomousEnable = num;
+   }
+   if (GetNxpNumValue(NAME_NXP_ESE_LS_DEFAULT_INTERFACE, &num, sizeof(num))) {
+    pNxpNfcHalConfig->p61LsDefaultInterface = num;
+   }
+   if (GetNxpNumValue(NAME_NXP_ESE_JCOP_DEFAULT_INTERFACE, &num, sizeof(num))) {
+    pNxpNfcHalConfig->p61JcopDefaultInterface = num;
+   }
+   if (GetNxpNumValue(NAME_NXP_AGC_DEBUG_ENABLE, &num, sizeof(num))) {
+    pNxpNfcHalConfig->agcDebugEnable = num;
+   }
+   if (GetNxpNumValue(NAME_DEFAULT_NFCF_PWR_STATE, &num, sizeof(num))) {
+    pNxpNfcHalConfig->felicaCltPowerState = num;
+   } else {
+    pNxpNfcHalConfig->felicaCltPowerState = 0x3F;
+   }
+   if (GetNxpNumValue(NAME_NXP_HCEF_CMD_RSP_TIMEOUT_VALUE, &num, sizeof(num))) {
+    pNxpNfcHalConfig->cmdRspTimeoutValue = num;
+   }
+   if (GetNxpNumValue(NAME_CHECK_DEFAULT_PROTO_SE_ID, &num, sizeof(num))) {
+    pNxpNfcHalConfig->checkDefaultProtoSeId = num;
+   }
+   if (GetNxpNumValue(NAME_NXP_NFCC_PASSIVE_LISTEN_TIMEOUT, &num, sizeof(num))) {
+    pNxpNfcHalConfig->nfccPassiveListenTimeout = num;
+   }
+   if (GetNxpNumValue(NAME_NXP_NFCC_STANDBY_TIMEOUT, &num, sizeof(num))) {
+    pNxpNfcHalConfig->nfccStandbyTimeout = num;
+   }
+   if (GetNxpNumValue(NAME_NXP_WM_MAX_WTX_COUNT, &num, sizeof(num))) {
+    pNxpNfcHalConfig->wmMaxWtxCount = num;
+   }
+   if (GetNxpNumValue(NAME_NXP_NFCC_RF_FIELD_EVENT_TIMEOUT, &num, sizeof(num))) {
+    pNxpNfcHalConfig->nfccRfFieldEventTimeout = num;
+   }
+   if (GetNxpNumValue(NAME_NXP_ALLOW_WIRED_IN_MIFARE_DESFIRE_CLT, &num,
+                      sizeof(num))) {
+    pNxpNfcHalConfig->allowWiredInMifareDesfireClt = num;
+   }
+   if (GetNxpNumValue(NAME_NXP_DWP_INTF_RESET_ENABLE, &num, sizeof(num))) {
+    pNxpNfcHalConfig->dwpIntfResetEnable = num;
+   }
+   if (GetNxpNumValue(NAME_NXPLOG_HAL_LOGLEVEL, &num, sizeof(num))) {
+    pNxpNfcHalConfig->nxpLogHalLoglevel = num;
+   }
+   if (GetNxpNumValue(NAME_NXPLOG_EXTNS_LOGLEVEL, &num, sizeof(num))) {
+    pNxpNfcHalConfig->nxpLogExtnsLogLevel = num;
+   }
+   if (GetNxpNumValue(NAME_NXPLOG_TML_LOGLEVEL, &num, sizeof(num))) {
+    pNxpNfcHalConfig->nxpLogTmlLogLevel = num;
+   }
+   if (GetNxpNumValue(NAME_NXPLOG_FWDNLD_LOGLEVEL, &num, sizeof(num))) {
+    pNxpNfcHalConfig->nxpLogFwDnldLogLevel = num;
+   }
+   if (GetNxpNumValue(NAME_NXPLOG_NCIX_LOGLEVEL, &num, sizeof(num))) {
+    pNxpNfcHalConfig->nxpLogNcixLogLevel = num;
+   }
+   if (GetNxpNumValue(NAME_NXPLOG_NCIR_LOGLEVEL, &num, sizeof(num))) {
+    pNxpNfcHalConfig->nxpLogNcirLogLevel = num;
+   }
+   if (GetNxpNumValue(NAME_NFA_CONFIG_FORMAT, &num, sizeof(num))) {
+    pNxpNfcHalConfig->scrCfgFormat = num;
+   }
+   if (GetNxpNumValue(NAME_ETSI_READER_ENABLE, &num, sizeof(num))) {
+    pNxpNfcHalConfig->etsiReaderEnable = num;
+   }
+   if (GetNxpNumValue(NAME_DEFAULT_TECH_ABF_ROUTE, &num, sizeof(num))) {
+    pNxpNfcHalConfig->techAbfRoute = num;
+   }
+   if (GetNxpNumValue(NAME_DEFAULT_TECH_ABF_PWR_STATE, &num, sizeof(num))) {
+    pNxpNfcHalConfig->techAbfPwrState = num;
+   }
+   if (GetNxpNumValue(NAME_WTAG_SUPPORT, &num, sizeof(num))) {
+    pNxpNfcHalConfig->wTagSupport = num;
+   }
+   if (GetNxpNumValue(NAME_DEFAULT_T4TNFCEE_AID_POWER_STATE, &num, sizeof(num))) {
+    pNxpNfcHalConfig->t4tNfceePwrState = num;
+   } else {
+     //sete Default power state as Phone off (Low power mode)
+    pNxpNfcHalConfig->t4tNfceePwrState = 0x02;
+   }
+   if (buffer) {
+     if (GetNxpByteArrayValue(NAME_NXP_PROP_RESET_EMVCO_CMD, (char *)buffer,
+                              bufflen, &retlen)) {
+      memcpy(pNxpNfcHalConfig->scrResetEmvco.cmd, (char *)buffer,
+              retlen);
+      pNxpNfcHalConfig->scrResetEmvco.len = retlen;
     }
     free(buffer);
     buffer = NULL;
@@ -3753,10 +3753,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
       level = pInpOutData->inp.level;
       ret = phPalEse_spi_ioctl(phPalEse_e_SetPowerScheme,
                                gpphTmlNfc_Context->pDevHandle, level);
-      break;
-    case HAL_NFC_GET_NXP_CONFIG:
-      phNxpNciHal_getNxpConfig(pInpOutData);
-      ret = 0;
       break;
     case HAL_NFC_IOCTL_SET_TRANSIT_CONFIG:
       phNxpNciHal_setNxpTransitConfig(
