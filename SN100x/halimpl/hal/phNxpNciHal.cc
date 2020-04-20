@@ -1348,7 +1348,8 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       0x20, 0x02, 0x05, 0x01, 0xA0, 0x91, 0x01, 0x01};
   static uint8_t swp_switch_timeout_cmd[] = {0x20, 0x02, 0x06, 0x01, 0xA0,
                                              0xF3, 0x02, 0x00, 0x00};
-  static uint8_t cmd_get_cfg_dbg_info[] = {0x20, 0x03, 0x4, 0xA0, 0x1B, 0xA0, 0x27};
+  uint8_t cmd_get_cfg_dbg_info[] = {0x20, 0x03, 0x0B, 0x05, 0xA0, 0x39, 0xA0,
+          0x1A, 0xA0, 0x1B, 0xA0, 0x1C, 0xA0, 0x27};
 
   config_success = true;
   long bufflen = 260;
@@ -1441,6 +1442,10 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       retry_core_init_cnt++;
       goto retry_core_init;
     }
+  }
+  status = phNxpNciHal_send_ext_cmd(sizeof(cmd_get_cfg_dbg_info), cmd_get_cfg_dbg_info);
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("Failed to retrieve NFCC debug info");
   }
 
   mEEPROM_info.buffer = &enable_ce_in_phone_off;
@@ -1630,15 +1635,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
         NXPLOG_NCIHAL_E("Wrong Configuration Value %ld", num);
       }
     }
-  if(phNxpNciHal_lastResetNtfReason() == FW_DBG_REASON_AVAILABLE){
-
-    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_get_cfg_dbg_info), cmd_get_cfg_dbg_info);
-    if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("NFCC texted reset ntf failed");
-    }
-    NXPLOG_NCIHAL_D("NFCC txed reset ntf with reason code 0xA3");
-  }
-
   }
   if ((true == fw_dwnld_flag) || (true == setConfigAlways) ||
       isNxpConfigModified()) {
