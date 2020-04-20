@@ -93,3 +93,14 @@ struct NxpNfcHalConfig {
   uint8_t t4tNfceePwrState;
   NxpNfcScrResetEmvcoCmd scrResetEmvco;
  };
+
+ struct NxpNciExtnCmd{
+  uint16_t cmd_len;
+  uint8_t[256] p_cmd;
+};
+
+struct NxpNciExtnResp{
+  uint32_t status;
+  uint16_t rsp_len;
+  uint8_t[256] p_rsp;
+};

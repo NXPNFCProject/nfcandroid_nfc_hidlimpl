@@ -71,6 +71,9 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 #define NXP_MAX_CONFIG_STRING_LEN 260
 #define NCI_HEADER_SIZE 3
 
+#define MAX_IOCTL_TRANSCEIVE_CMD_LEN 256
+#define MAX_IOCTL_TRANSCEIVE_RESP_LEN 256
+
 typedef struct nci_data {
   uint16_t len;
   uint8_t p_data[NCI_MAX_DATA_LEN];
@@ -206,6 +209,17 @@ typedef enum {
   phNxpNfcHciInitStatus_e_Complete = 0x00,
   phNxpNfcHciInitStatus_e_Start = 0x01
 } phNxpNfcHciInitStatus;
+
+typedef struct phNxpNci_Extn_Cmd{
+  uint16_t cmd_len;
+  uint8_t p_cmd[MAX_IOCTL_TRANSCEIVE_CMD_LEN];
+}phNxpNci_Extn_Cmd_t;
+
+typedef struct phNxpNci_Extn_Resp{
+  uint32_t status;
+  uint16_t rsp_len;
+  uint8_t p_rsp[MAX_IOCTL_TRANSCEIVE_RESP_LEN];
+}phNxpNci_Extn_Resp_t;
 
 typedef struct phNxpNci_EEPROM_info {
   uint8_t request_mode;
@@ -476,3 +490,13 @@ int32_t phNxpNciHal_hciInitUpdateStateComplete();
  *
  *******************************************************************************/
 void phNxpNciHal_GetCachedNfccConfig(phNxpNci_getCfg_info_t *pGetCfg_info);
+
+/******************************************************************************
+ * Function         phNxpNciHal_nciTransceive
+ *
+ * Description      This function does tarnsceive of nci command
+ *
+ * Returns          void.
+ *
+ *******************************************************************************/
+void phNxpNciHal_nciTransceive(phNxpNci_Extn_Cmd_t *in, phNxpNci_Extn_Resp_t *out);

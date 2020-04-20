@@ -95,4 +95,11 @@ interface INxpNfcLegacy {
      */
      getNxpConfig() generates(NxpNfcHalConfig ConfigData);
 
+     /*
+     * This function tarnsceive the nci command response
+     * @param Nci command as input
+     * @return nci response
+     */
+     nciTransceive(NxpNciExtnCmd NciCmd) generates(NxpNciExtnResp NciResp);
+
 };

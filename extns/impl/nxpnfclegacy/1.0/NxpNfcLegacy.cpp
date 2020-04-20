@@ -167,6 +167,27 @@ Return<void> NxpNfcLegacy::getNxpConfig(getNxpConfig_cb _hidl_cb)
   return Void();
 }
 
+Return<void> NxpNfcLegacy::nciTransceive( const NxpNciExtnCmd &NciCmd,nciTransceive_cb _hidl_cb){
+  phNxpNci_Extn_Cmd_t  in;
+  phNxpNci_Extn_Resp_t out;
+
+  NxpNciExtnResp nciResp;
+
+  ALOGD("NxpNfcLegacy::NciTransceive Entry" );
+
+  memcpy(&in,&NciCmd,sizeof(NxpNciExtnCmd));
+
+  phNxpNciHal_nciTransceive(&in,&out);
+
+  memcpy(&nciResp,&out,sizeof(NxpNciExtnResp));
+
+  _hidl_cb(nciResp);
+
+  ALOGD("NxpNfcLegacy::NciTransceive Exit");
+  return Void();
+}
+
+
 }  // namespace implementation
 }  // namespace V1_0
 }  // namespace nxpnfclegacy

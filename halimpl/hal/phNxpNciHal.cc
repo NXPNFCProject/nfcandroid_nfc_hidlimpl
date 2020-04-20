@@ -3689,27 +3689,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
             }
         }
       break;
-    case HAL_NFC_IOCTL_NCI_TRANSCEIVE:
-      if (p_data == NULL) {
-        ret = -1;
-        break;
-      }
-
-      if (pInpOutData->inp.data.nciCmd.cmd_len <= 0) {
-        ret = -1;
-        break;
-      }
-
-      ret = phNxpNciHal_send_ext_cmd(pInpOutData->inp.data.nciCmd.cmd_len,
-                                     pInpOutData->inp.data.nciCmd.p_cmd);
-      pInpOutData->out.data.nciRsp.rsp_len = nxpncihal_ctrl.rx_data_len;
-      if ((nxpncihal_ctrl.rx_data_len > 0) &&
-          (nxpncihal_ctrl.rx_data_len <= MAX_IOCTL_TRANSCEIVE_RESP_LEN) &&
-          (nxpncihal_ctrl.p_rx_data != NULL)) {
-        memcpy(pInpOutData->out.data.nciRsp.p_rsp, nxpncihal_ctrl.p_rx_data,
-               nxpncihal_ctrl.rx_data_len);
-      }
-      break;
     case HAL_ESE_IOCTL_NFC_JCOP_DWNLD :
         NXPLOG_NCIHAL_D("HAL_ESE_IOCTL_NFC_JCOP_DWNLD Enter value is %d: \n",pInpOutData->inp.data.nciCmd.p_cmd[0]);
         if(gpEseAdapt !=  NULL)
@@ -4922,4 +4901,36 @@ void phNxpNciHal_GetCachedNfccConfig(phNxpNci_getCfg_info_t *pGetCfg_info){
     }
 
     NXPLOG_NCIHAL_D("%s Exit ", __func__);
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_nciTransceive
+ *
+ * Description      This function does tarnsceive of nci command
+ *
+ * Returns          void.
+ *
+ *******************************************************************************/
+void phNxpNciHal_nciTransceive(phNxpNci_Extn_Cmd_t *in, phNxpNci_Extn_Resp_t *out){
+    uint32_t status = 0;
+    NXPLOG_NCIHAL_D("%s Enter ", __func__);
+
+    if (in == NULL ||(in->cmd_len <= 0) || out == NULL)  {
+      return;
+    }
+
+    status = phNxpNciHal_send_ext_cmd(in->cmd_len,
+                                   in->p_cmd);
+    out->rsp_len = nxpncihal_ctrl.rx_data_len;
+    if ((nxpncihal_ctrl.rx_data_len > 0) &&
+        (nxpncihal_ctrl.rx_data_len <= MAX_IOCTL_TRANSCEIVE_RESP_LEN) &&
+        (nxpncihal_ctrl.p_rx_data != NULL)) {
+      memcpy(out->p_rsp, nxpncihal_ctrl.p_rx_data,
+             nxpncihal_ctrl.rx_data_len);
+    }
+
+    out->status = status;
+
+    NXPLOG_NCIHAL_D("%s Exit ", __func__);
+    return;
 }
