@@ -188,7 +188,8 @@ std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
                                 "NXP_RDR_REQ_GUARD_TIME",
                                 "OFF_HOST_SIM2_PIPE_ID",
                                 "NXP_ENABLE_DISABLE_LOGS",
-                                "NXP_RDR_DISABLE_ENABLE_LPCD"};
+                                "NXP_RDR_DISABLE_ENABLE_LPCD",
+                                "NXP_SUPPORT_NON_STD_CARD"};
 
 /****************************************************************
  * Local Functions
@@ -861,6 +862,9 @@ void phNxpNciHal_getNxpConfigIf(nxp_nfc_config_t *configs) {
   }
   if (GetNxpNumValue(NAME_CHECK_DEFAULT_PROTO_SE_ID, &num, sizeof(num))) {
     configs->defaultProtoSeId = num;
+  }
+  if (GetNxpNumValue(NAME_NXP_SUPPORT_NON_STD_CARD, &num, sizeof(num))) {
+    configs->supportNonStdCard = num;
   }
 
   NXPLOG_NCIHAL_D("phNxpNciHal_getNxpConfig: Exit");

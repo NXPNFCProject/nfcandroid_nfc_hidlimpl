@@ -179,6 +179,7 @@ extern char Fw_Lib_Path[256];
 #define NAME_NXP_RDR_DISABLE_ENABLE_LPCD "NXP_RDR_DISABLE_ENABLE_LPCD"
 #define NAME_OFF_HOST_SIM2_PIPE_ID "OFF_HOST_SIM2_PIPE_ID"
 #define NAME_NXP_RDR_REQ_GUARD_TIME "NXP_RDR_REQ_GUARD_TIME"
+#define NAME_NXP_SUPPORT_NON_STD_CARD "NXP_SUPPORT_NON_STD_CARD"
 #endif
 /* default configuration */
 #define default_storage_location "/data/vendor/nfc"
