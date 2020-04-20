@@ -3689,15 +3689,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
             }
         }
       break;
-    case HAL_NFC_IOCTL_GET_CONFIG_INFO:
-      if (mGetCfg_info) {
-        memcpy(pInpOutData->out.data.nxpNciAtrInfo, mGetCfg_info,
-               sizeof(phNxpNci_getCfg_info_t));
-      } else {
-        NXPLOG_NCIHAL_E("%s : Error! mgetCfg_info is Empty ", __func__);
-      }
-      ret = 0;
-      break;
     case HAL_NFC_IOCTL_NCI_TRANSCEIVE:
       if (p_data == NULL) {
         ret = -1;
@@ -4913,4 +4904,26 @@ int32_t phNxpNciHal_hciInitUpdateStateComplete(){
 
     NXPLOG_NCIHAL_D("%s Exit ", __func__);
     return ret;
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_GetCachedNfccConfig
+ *
+ * Description      This function receives the cached configinfo.
+ *
+ * Returns          void.
+ *
+ *******************************************************************************/
+void phNxpNciHal_GetCachedNfccConfig(phNxpNci_getCfg_info_t *pGetCfg_info){
+
+    NXPLOG_NCIHAL_D("%s Enter ", __func__);
+
+    if (mGetCfg_info && pGetCfg_info != NULL) {
+      memcpy(pGetCfg_info, mGetCfg_info,
+             sizeof(phNxpNci_getCfg_info_t));
+    } else {
+      NXPLOG_NCIHAL_E("%s : Error! mgetCfg_info is Empty ", __func__);
+    }
+
+    NXPLOG_NCIHAL_D("%s Exit ", __func__);
 }

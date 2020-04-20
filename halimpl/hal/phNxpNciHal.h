@@ -412,3 +412,13 @@ int32_t phNxpNciHal_hciInitUpdateState(phNxpNfcHciInitStatus HciStatus);
  *
  *******************************************************************************/
 int32_t phNxpNciHal_hciInitUpdateStateComplete();
+
+/******************************************************************************
+ * Function         phNxpNciHal_GetCachedNfccConfig
+ *
+ * Description      This function receives the cached configinfo.
+ *
+ * Returns          void.
+ *
+ *******************************************************************************/
+void phNxpNciHal_GetCachedNfccConfig(phNxpNci_getCfg_info_t *pGetCfg_info);

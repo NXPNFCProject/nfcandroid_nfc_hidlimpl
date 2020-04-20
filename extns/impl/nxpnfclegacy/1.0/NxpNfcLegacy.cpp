@@ -141,6 +141,20 @@ NxpNfcLegacy::hciInitUpdateStateComplete() {
   return status;
 }
 
+Return<void> NxpNfcLegacy::getCachedNfccConfig(getCachedNfccConfig_cb _hidl_cb){
+  phNxpNci_getCfg_info_t GetCfg_info;
+  NxpNciCfgInfo ConfigData;
+
+  ALOGD("NxpNfcLegacy::GetCachedNfccConfig Entry" );
+
+  phNxpNciHal_GetCachedNfccConfig(&GetCfg_info);
+  memcpy(&ConfigData,&GetCfg_info,sizeof(NxpNciCfgInfo));
+  _hidl_cb(ConfigData);
+
+  ALOGD("NxpNfcLegacy::GetCachedNfccConfig Exit");
+  return Void();
+}
+
 }  // namespace implementation
 }  // namespace V1_0
 }  // namespace nxpnfclegacy

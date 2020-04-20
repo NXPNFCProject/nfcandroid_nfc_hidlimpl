@@ -81,4 +81,11 @@ interface INxpNfcLegacy {
      */
      hciInitUpdateStateComplete() generates(int32_t status);
 
+     /*
+     * This function receives the cached configinfo.
+     * @param none
+     * @return void
+     */
+     getCachedNfccConfig() generates(NxpNciCfgInfo ConfigData);
+
 };

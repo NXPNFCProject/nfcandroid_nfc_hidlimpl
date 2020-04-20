@@ -26,3 +26,15 @@ enum NfcHciInitStatus : uint8_t {
   NFC_HCI_INIT_COMPLETE = 0x00,
   NFC_HCI_INIT_START = 0x01
 };
+
+struct NxpNciCfgInfo {
+  bool  isGetcfg;
+  uint8_t[4] total_duration;
+  uint8_t total_duration_len;
+  uint8_t[48] atr_req_gen_bytes;
+  uint8_t atr_req_gen_bytes_len;
+  uint8_t[48] atr_res_gen_bytes;
+  uint8_t atr_res_gen_bytes_len;
+  uint8_t[3] pmid_wt;
+  uint8_t pmid_wt_len;
+};

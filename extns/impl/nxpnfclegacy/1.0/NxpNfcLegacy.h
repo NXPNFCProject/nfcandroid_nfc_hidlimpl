@@ -47,6 +47,7 @@ struct NxpNfcLegacy : public INxpNfcLegacy{
   Return<int8_t> getSPMStatus(uint32_t level) override;
   Return<int32_t> hciInitUpdateState(NfcHciInitStatus HciStatus) override;
   Return<int32_t> hciInitUpdateStateComplete() override;
+  Return<void> getCachedNfccConfig(getCachedNfccConfig_cb _hidl_cb) override;
 };
 
 }  // namespace implementation
