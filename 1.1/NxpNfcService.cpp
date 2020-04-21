@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2018-2019 NXP
+ *  Copyright 2018-2020 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 
 #define LOG_TAG "nxpnfc@1.0-service"
 #include <android/hardware/nfc/1.1/INfc.h>
-#include <vendor/nxp/nxpnfc/1.0/INxpNfc.h>
+#include <vendor/nxp/nxpnfc/2.0/INxpNfc.h>
 
 #include <hidl/LegacySupport.h>
 #include "Nfc.h"
@@ -35,8 +35,8 @@ using android::hardware::joinRpcThreadpool;
 using android::sp;
 using android::status_t;
 using android::OK;
-using vendor::nxp::nxpnfc::V1_0::INxpNfc;
-using vendor::nxp::nxpnfc::V1_0::implementation::NxpNfc;
+using vendor::nxp::nxpnfc::V2_0::INxpNfc;
+using vendor::nxp::nxpnfc::V2_0::implementation::NxpNfc;
 
 int main() {
   ALOGD("Registering NFC HALIMPL Service v1.1...");

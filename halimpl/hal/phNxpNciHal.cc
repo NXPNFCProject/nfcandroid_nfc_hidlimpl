@@ -32,7 +32,9 @@
 #include <EseAdaptation.h>
 #include "hal_nxpnfc.h"
 #include "spi_spm.h"
-#include <vendor/nxp/nxpnfc/1.0/types.h>
+#include <vendor/nxp/nxpnfc/2.0/types.h>
+#include "Nxp_Features.h"
+#include "NxpNfc.h"
 
 using namespace android::hardware::nfc::V1_1;
 using namespace android::hardware::nfc::V1_2;
@@ -3357,19 +3359,23 @@ int phNxpNciHal_configDiscShutdown(void) {
  * Returns          void.
  *
  ******************************************************************************/
-void phNxpNciHal_setNxpTransitConfig(char *transitConfValue) {
+bool phNxpNciHal_setNxpTransitConfig(char *transitConfValue) {
+  bool status = true;
   NXPLOG_NCIHAL_D("%s : Enter", __func__);
   std::string transitConfFileName = "/data/vendor/nfc/libnfc-nxpTransit.conf";
   if (transitConfValue != NULL) {
     if (!WriteStringToFile(transitConfValue, transitConfFileName)) {
+      status = false;
       NXPLOG_NCIHAL_D("Failed to write transit values in the config values");
     }
   } else {
     if (remove(transitConfFileName.c_str())) {
+      status = false;
       NXPLOG_NCIHAL_D("File deletion failed");
     }
   }
   NXPLOG_NCIHAL_D("%s : Exit", __func__);
+  return status;
 }
 /******************************************************************************
  * Function         phNxpNciHal_getVendorConfig
@@ -3694,16 +3700,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
         if(gpEseAdapt !=  NULL)
           ret = gpEseAdapt->HalIoctl(HAL_ESE_IOCTL_NFC_JCOP_DWNLD,pInpOutData);
         [[fallthrough]];
-    case HAL_NFC_IOCTL_ESE_JCOP_DWNLD :
-        eseUpdateSpi = ESE_UPDATE_COMPLETED;
-        NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_ESE_JCOP_DWNLD Enter value is %d: \n",pInpOutData->inp.data.nciCmd.p_cmd[0]);
-        if(p_nfc_stack_cback_backup != NULL)
-        {
-          (*p_nfc_stack_cback_backup)(
-              (uint32_t)HAL_NFC_HCI_NV_RESET, HAL_NFC_STATUS_OK);
-        }
-        ret = 0;
-        break;
     case HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE :
         NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE \n");
         if(p_nfc_stack_cback_backup != NULL)
@@ -3717,17 +3713,6 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
         }
         ret = 0;
         break;
-    case HAL_NFC_SET_SPM_PWR:
-      level = pInpOutData->inp.level;
-      if (nfcFL.chipType == pn557) {
-        /*set a bit to indicate signal trigger from driver is not required for PN557*/
-        level |= SIGNAL_TRIGGER_NOT_REQD;
-        ret = phPalEse_spi_ioctl(phPalEse_e_ChipRst,
-                                gpphTmlNfc_Context->pDevHandle, level);
-      } else {
-        ret = NFCSTATUS_FEATURE_NOT_SUPPORTED;
-      }
-      break;
     case HAL_NFC_SET_POWER_SCHEME:
       level = pInpOutData->inp.level;
       ret = phPalEse_spi_ioctl(phPalEse_e_SetPowerScheme,
@@ -4901,6 +4886,55 @@ void phNxpNciHal_GetCachedNfccConfig(phNxpNci_getCfg_info_t *pGetCfg_info){
     }
 
     NXPLOG_NCIHAL_D("%s Exit ", __func__);
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_resetEse
+**
+** Description      It shall be used to reset eSE by proprietary command.
+**
+** Parameters
+**
+** Returns          status of eSE reset response
+*******************************************************************************/
+NFCSTATUS phNxpNciHal_resetEse() {
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  int level = 0;
+  NXPLOG_NCIHAL_D("%s Entry ", __func__);
+  if (nfcFL.chipType == pn557) {
+    /*set a bit to indicate signal trigger from driver is not required for PN557*/
+    level = (uint64_t)Constants::HAL_NFC_ESE_HARD_RESET | SIGNAL_TRIGGER_NOT_REQD;
+    status = phPalEse_spi_ioctl(phPalEse_e_ChipRst,
+                             gpphTmlNfc_Context->pDevHandle, level);
+    if(status == NFCSTATUS_SUCCESS) {
+      ALOGD("HAL_NFC_ESE_HARD_RESET completed");
+    } else {
+      ALOGD("HAL_NFC_ESE_HARD_RESET failed");
+    }
+  } else {
+    ALOGD("ESE Reset Feature not supported");
+  }
+
+  return status;
+}
+
+void seteSEClientState(uint8_t state) {
+  DwpEseUpdater::setSpiEseClientState(state);
+}
+
+bool phNxpNciHal_Abort() { return false; }
+
+bool getJcopUpdateRequired() { return false; }
+
+bool getLsUpdateRequired() { return false; }
+
+string phNxpNciHal_getSystemProperty(string key) { key = ""; return key; }
+
+bool phNxpNciHal_setSystemProperty(string key, string value) { key = value = ""; return false; }
+
+void eSEClientUpdate_NFC_Thread() {
+  DwpEseUpdater::eSEClientUpdate_NFC_Thread();
 }
 
 /******************************************************************************

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2019 NXP Semiconductors
+ * Copyright (C) 2015-2020 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,12 @@
 #include <hardware/nfc.h>
 #include <phNxpNciHal_utils.h>
 #include "NxpNfcCapability.h"
+#include <vendor/nxp/nxpnfc/2.0/types.h>
+#include "DwpEseUpdater.h"
 #include "hal_nxpnfc.h"
 #include "EseUpdateChecker.h"
+
+using namespace std;
 
 /********************* Definitions and structures *****************************/
 #define MAX_RETRY_COUNT 5
@@ -336,6 +340,13 @@ NFCSTATUS phNxpNciHal_send_get_cfgs();
 int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t* p_data);
 NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info);
 NFCSTATUS phNxpNciHal_send_nfcee_pwr_cntl_cmd(uint8_t type);
+string phNxpNciHal_getSystemProperty(string key);
+bool phNxpNciHal_setSystemProperty(string key, string value);
+void seteSEClientState(uint8_t state);
+void eSEClientUpdate_NFC_Thread();
+bool phNxpNciHal_Abort();
+bool getJcopUpdateRequired();
+bool getLsUpdateRequired();
 
 /*******************************************************************************
 **
@@ -381,10 +392,10 @@ void phNxpNciHal_getNxpConfig(phNxpNfcHalConfig *pNxpNfcHalConfig);
  * Description      This function overwrite libnfc-nxpTransit.conf file
  *                  with transitConfValue.
  *
- * Returns          void.
+ * Returns          status.
  *
  ******************************************************************************/
-void phNxpNciHal_setNxpTransitConfig(char *transitConfValue);
+bool phNxpNciHal_setNxpTransitConfig(char *transitConfValue);
 #endif /* _PHNXPNCIHAL_H_ */
 
 /******************************************************************************
@@ -490,6 +501,18 @@ int32_t phNxpNciHal_hciInitUpdateStateComplete();
  *
  *******************************************************************************/
 void phNxpNciHal_GetCachedNfccConfig(phNxpNci_getCfg_info_t *pGetCfg_info);
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_resetEse
+**
+** Description      It shall be used to to reset eSE by proprietary command.
+**
+** Parameters       None
+**
+** Returns          status of eSE reset response
+*******************************************************************************/
+NFCSTATUS phNxpNciHal_resetEse();
 
 /******************************************************************************
  * Function         phNxpNciHal_nciTransceive

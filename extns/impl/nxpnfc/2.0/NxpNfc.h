@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2018 NXP
+ *  Copyright 2018-2020 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,35 +16,47 @@
  *
  ******************************************************************************/
 
-#ifndef VENDOR_NXP_NXPNFC_V1_0_NXPNFC_H
-#define VENDOR_NXP_NXPNFC_V1_0_NXPNFC_H
+#ifndef VENDOR_NXP_NXPNFC_V2_0_NXPNFC_H
+#define VENDOR_NXP_NXPNFC_V2_0_NXPNFC_H
 
-#include <vendor/nxp/nxpnfc/1.0/INxpNfc.h>
+#include <vendor/nxp/nxpnfc/2.0/INxpNfc.h>
 #include <hidl/MQDescriptor.h>
 #include <hidl/Status.h>
-#include "hal_nxpnfc.h"
+
+enum Constants : uint16_t {
+    HAL_NFC_ESE_HARD_RESET = 5,
+};
+
 
 namespace vendor {
 namespace nxp {
 namespace nxpnfc {
-namespace V1_0 {
+namespace V2_0 {
 namespace implementation {
 
 using ::android::hidl::base::V1_0::IBase;
-using ::vendor::nxp::nxpnfc::V1_0::INxpNfc;
+using ::vendor::nxp::nxpnfc::V2_0::INxpNfc;
 using ::android::hardware::hidl_vec;
 using ::android::hardware::Return;
 using ::android::hardware::Void;
 
-struct NxpNfc : public INxpNfc {
-  Return<void> ioctl(uint64_t ioctlType, const hidl_vec<uint8_t>& inOutData,
-                     ioctl_cb _hidl_cb) override;
+struct NxpNfc : public INxpNfc{
+  Return<void> getVendorParam(const ::android::hardware::hidl_string &key,
+                                 getVendorParam_cb _hidl_cb) override;
+  Return<bool>
+  setVendorParam(const ::android::hardware::hidl_string &key,
+                    const ::android::hardware::hidl_string &value) override;
+  Return<bool> resetEse(uint64_t resetType) override;
+  Return<bool> setEseUpdateState(NxpNfcHalEseState state) override;
+  Return<bool> setNxpTransitConfig(const ::android::hardware::hidl_string &strval) override;
+  Return<bool> isJcopUpdateRequired() override;
+  Return<bool> isLsUpdateRequired() override;
 };
 
 }  // namespace implementation
-}  // namespace V1_0
+}  // namespace V2_0
 }  // namespace nxpnfc
 }  // namespace nxp
 }  // namespace vendor
 
-#endif  // VENDOR_NXP_NXPNFC_V1_0_NXPNFC_H
+#endif  // VENDOR_NXP_NXPNFC_V2_0_NXPNFC_H

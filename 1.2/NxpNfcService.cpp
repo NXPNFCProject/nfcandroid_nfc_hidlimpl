@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2018-2019 NXP
+ *  Copyright 2018-2020 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 
 #define LOG_TAG "nxpnfc@1.2-service"
 #include <android/hardware/nfc/1.2/INfc.h>
-#include <vendor/nxp/nxpnfc/1.0/INxpNfc.h>
+#include <vendor/nxp/nxpnfc/2.0/INxpNfc.h>
 #include <vendor/nxp/nxpnfclegacy/1.0/INxpNfcLegacy.h>
 
 #include "DwpEseUpdater.h"
@@ -37,8 +37,8 @@ using android::hardware::configureRpcThreadpool;
 using android::hardware::joinRpcThreadpool;
 using android::hardware::nfc::V1_2::INfc;
 using android::hardware::nfc::V1_2::implementation::Nfc;
-using vendor::nxp::nxpnfc::V1_0::INxpNfc;
-using vendor::nxp::nxpnfc::V1_0::implementation::NxpNfc;
+using vendor::nxp::nxpnfc::V2_0::INxpNfc;
+using vendor::nxp::nxpnfc::V2_0::implementation::NxpNfc;
 using vendor::nxp::nxpnfclegacy::V1_0::INxpNfcLegacy;
 using vendor::nxp::nxpnfclegacy::V1_0::implementation::NxpNfcLegacy;
 
@@ -74,5 +74,4 @@ int main() {
   ALOGD("NFC HAL Service is ready");
   joinRpcThreadpool();
   return 1;
-
 }

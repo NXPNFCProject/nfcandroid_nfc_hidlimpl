@@ -44,10 +44,10 @@
 #include <android/hardware/nfc/1.0/types.h>
 #include <hardware/nfc.h>
 #include <utils/RefBase.h>
-#include <vendor/nxp/nxpnfc/1.0/INxpNfc.h>
+#include <vendor/nxp/nxpnfc/2.0/INxpNfc.h>
 
 using ::android::sp;
-using vendor::nxp::nxpnfc::V1_0::INxpNfc;
+using vendor::nxp::nxpnfc::V2_0::INxpNfc;
 
 namespace android {
 namespace hardware {
@@ -136,7 +136,7 @@ private:
   static HalAdaptationThreadCondVar mHalIoctlEvent;
   static android::sp<android::hardware::nfc::V1_0::INfc> mHal;
   static android::sp<android::hardware::nfc::V1_1::INfc> mHal_1_1;
-  static android::sp<vendor::nxp::nxpnfc::V1_0::INxpNfc> mHalNxpNfc;
+  static android::sp<vendor::nxp::nxpnfc::V2_0::INxpNfc> mHalNxpNfc;
   static android::hardware::nfc::V1_1::INfcClientCallback *mCallback;
   sp<NfcDeathRecipient> mNfcHalDeathRecipient;
 #if (NXP_EXTNS == TRUE)
@@ -159,9 +159,6 @@ private:
   static void HalCoreInitialized(uint16_t data_len,
                                  uint8_t *p_core_init_rsp_params);
   static void HalWrite(uint16_t data_len, uint8_t *p_data);
-#if (NXP_EXTNS == TRUE)
-  static int HalIoctl(long arg, void *p_data);
-#endif
   static bool HalPrediscover();
   static void HalControlGranted();
 };

@@ -36,7 +36,7 @@ cc_library_shared {
         "ese_spi_nxp",
         "vendor.nxp.nxpese@1.0",
         "vendor.nxp.eventprocessor@1.0",
-        "vendor.nxp.nxpnfc@1.0",
+        "vendor.nxp.nxpnfc@2.0",
         "vendor.nxp.nxpnfclegacy@1.0",
         "ese_client",
         "hal_libnfc"
@@ -51,6 +51,8 @@ cc_library_shared {
         "halimpl/configs",
     ],
     include_dirs: [
+        "hardware/nxp/nfc/extns/impl/",
+        "hardware/nxp/nfc/extns/impl/nxpnfc/2.0",
         "hardware/nxp/secure_element_extns/inc",
         "hardware/nxp/secure_element/libese-spi/src/include",
     ],
@@ -88,7 +90,7 @@ cc_binary {
     srcs: [
         "1.2/NxpNfcService.cpp",
         "1.2/Nfc.cpp",
-        "extns/impl/NxpNfc.cpp",
+        "extns/impl/nxpnfc/2.0/NxpNfc.cpp",
         "extns/impl/nxpnfclegacy/1.0/NxpNfcLegacy.cpp"
     ],
 
@@ -104,7 +106,7 @@ cc_binary {
         "android.hardware.nfc@1.2",
         "ese_spi_nxp",
         "libhidlbase",
-        "vendor.nxp.nxpnfc@1.0",
+        "vendor.nxp.nxpnfc@2.0",
         "vendor.nxp.nxpese@1.0",
         "vendor.nxp.nxpnfclegacy@1.0",
         "android.hardware.secure_element@1.0",
@@ -120,6 +122,7 @@ cc_binary {
         "halimpl/configs",
     ],
     include_dirs: [
+        "hardware/nxp/nfc/extns/impl/nxpnfc/2.0",
         "hardware/nxp/nfc/halimpl/src/include",
     ],
 }
