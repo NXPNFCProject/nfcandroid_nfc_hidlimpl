@@ -44,6 +44,8 @@
 #include <android/hardware/nfc/1.0/types.h>
 #include <hardware/nfc.h>
 #include <utils/RefBase.h>
+#include <vendor/nxp/nxpnfclegacy/1.0/INxpNfcLegacy.h>
+#include <vendor/nxp/nxpnfclegacy/1.0/types.h>
 #include <vendor/nxp/nxpnfc/2.0/INxpNfc.h>
 
 using ::android::sp;
@@ -111,6 +113,7 @@ public:
   void Finalize();
   void FactoryReset();
   void DeviceShutdown();
+  static uint8_t HalgetchipType();
   static HalNfcAdaptation &GetInstance();
   tHAL_NFC_ENTRY *GetHalEntryFuncs();
   void DownloadFirmware();
@@ -118,7 +121,6 @@ public:
 #if (NXP_EXTNS == TRUE)
   void MinInitialize();
   int HalGetFwDwnldFlag(uint8_t *fwDnldRequest);
-  nfc_nci_IoctlInOutData_t *mCurrentIoctlData;
 #endif
 
 private:
@@ -138,6 +140,7 @@ private:
   static android::sp<android::hardware::nfc::V1_1::INfc> mHal_1_1;
   static android::sp<vendor::nxp::nxpnfc::V2_0::INxpNfc> mHalNxpNfc;
   static android::hardware::nfc::V1_1::INfcClientCallback *mCallback;
+  static android::sp<vendor::nxp::nxpnfclegacy::V1_0::INxpNfcLegacy> mHalNxpNfcLegacy;
   sp<NfcDeathRecipient> mNfcHalDeathRecipient;
 #if (NXP_EXTNS == TRUE)
   static HalAdaptationThreadCondVar mHalCoreResetCompletedEvent;

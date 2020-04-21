@@ -47,7 +47,6 @@
 
 #include "nfc_target.h"
 
-#include "hal_nxpnfc.h"
 #include "nci_defs.h"
 #include "nci_hmsgs.h"
 #include "nfc_api.h"
@@ -85,63 +84,6 @@ uint8_t nfcc_dh_conn_id = 0xFF;
 extern void nfa_hci_rsp_timeout();
 void disc_deact_ntf_timeout_handler(tNFC_RESPONSE_EVT event);
 #endif
-
-/*******************************************************************************
-**
-** Function         nfc_hal_nfcc_get_reset_info
-**
-** Description      Register dump when CORE_RESET_NTF happens
-**
-** Returns          status of command transceive
-**
-*******************************************************************************/
-uint8_t nfc_hal_nfcc_get_reset_info(void) {
-  nfc_nci_IoctlInOutData_t inpOutData;
-  /*NCI_RESET_CMD*/
-  uint8_t nfc_hal_nfcc_get_reset_info[6][6] = {
-      {
-          0x20,
-          0x00,
-          0x01,
-          0x00,
-      },
-      {
-          0x20,
-          0x01,
-          0x00,
-      },
-      {0x20, 0x03, 0x03, 0x01, 0xA0, 0x1A},
-      {0x20, 0x03, 0x03, 0x01, 0xA0, 0x1B},
-      {0x20, 0x03, 0x03, 0x01, 0xA0, 0x1C},
-      {0x20, 0x03, 0x03, 0x01, 0xA0, 0x27}};
-  uint8_t core_status = NCI_STATUS_FAILED;
-  uint8_t retry_count = 0;
-  uint8_t i = 0, j = 0;
-  DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("%s Enter", __func__);
-
-  for (i = 0; i < 6; i++) {
-    memset(&inpOutData, 0x00, sizeof(nfc_nci_IoctlInOutData_t));
-    inpOutData.inp.data.nciCmd.cmd_len = nfc_hal_nfcc_get_reset_info[i][2] + 3;
-    memcpy(inpOutData.inp.data.nciCmd.p_cmd,
-           (uint8_t *)&nfc_hal_nfcc_get_reset_info[i],
-           nfc_hal_nfcc_get_reset_info[i][2] + 3);
-    do {
-      core_status =
-          nfc_cb.p_hal->ioctl(HAL_NFC_IOCTL_NCI_TRANSCEIVE, &inpOutData);
-      retry_count++;
-    } while (NCI_STATUS_OK != core_status &&
-             retry_count < (NFC_NFCC_INIT_MAX_RETRY + 1));
-    if (core_status == NCI_STATUS_OK) {
-      DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf(
-          "%s No.%d response for nfc_hal_nfcc_get_reset_info", __func__, i);
-      for (j = 0; j < inpOutData.out.data.nciRsp.rsp_len; j++) {
-        DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf(
-            " %s 0x%02x", __func__, inpOutData.out.data.nciRsp.p_rsp[j]);
-      }
-    }
-  }
-  return core_status;
-}
 
 /*******************************************************************************
 **

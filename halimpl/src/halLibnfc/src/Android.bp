@@ -23,6 +23,7 @@ cc_library_shared {
         "android.hardware.nfc@1.0",
         "android.hardware.nfc@1.1",
         "vendor.nxp.nxpnfc@2.0",
+        "vendor.nxp.nxpnfclegacy@1.0"
     ],
     cflags: [
         "-DBUILDCFG=1",
@@ -42,7 +43,6 @@ cc_library_shared {
         "gki/common",
     ],
     include_dirs: [
-        "hardware/nxp/nfc/extns/impl/",
         "hardware/nxp/nfc/extns/impl/nxpnfc/2.0",
         "hardware/nxp/secure_element/extns/impl/",
     ],

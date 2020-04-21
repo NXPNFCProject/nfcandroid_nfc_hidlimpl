@@ -30,7 +30,6 @@
 #include <phTmlNfc_i2c.h>
 #include "phNxpNciHal_nciParser.h"
 #include <EseAdaptation.h>
-#include "hal_nxpnfc.h"
 #include "spi_spm.h"
 #include <vendor/nxp/nxpnfc/2.0/types.h>
 #include "Nxp_Features.h"
@@ -3671,13 +3670,10 @@ int phNxpNciHal_check_ncicmd_write_window(uint16_t cmd_len, uint8_t* p_cmd) {
  ******************************************************************************/
 int phNxpNciHal_ioctl(long arg, void* p_data) {
   NXPLOG_NCIHAL_D("%s : enter - arg = %ld", __func__, arg);
-  nfc_nci_IoctlInOutData_t* pInpOutData = (nfc_nci_IoctlInOutData_t*)p_data;
+  ese_nxp_IoctlInOutData_t* pInpOutData = (ese_nxp_IoctlInOutData_t*)p_data;
   int ret = -1;
-  NFCSTATUS status = NFCSTATUS_FAILED;
-  long level;
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE &&
-    (arg != HAL_NFC_IOCTL_ESE_JCOP_DWNLD && arg
-    != HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE && arg != HAL_ESE_IOCTL_NFC_JCOP_DWNLD)) {
+    (arg != HAL_ESE_IOCTL_NFC_JCOP_DWNLD)) {
     NFCSTATUS status = NFCSTATUS_FAILED;
     status = phNxpNciHal_MinOpen();
     if (status != NFCSTATUS_SUCCESS) {
@@ -3685,44 +3681,11 @@ int phNxpNciHal_ioctl(long arg, void* p_data) {
     }
   }
   switch (arg) {
-    case HAL_NFC_IOCTL_P61_PWR_MODE:
-        if(nfcFL.nfcNxpEse) {
-            status = phTmlNfc_IoCtl(phTmlNfc_e_GetP61PwrMode);
-            if (NFCSTATUS_FAILED != status) {
-                if (NULL != p_data)
-                    pInpOutData->out.data.p61CurrentState = (uint16_t)status;
-                ret = 0;
-            }
-        }
-      break;
     case HAL_ESE_IOCTL_NFC_JCOP_DWNLD :
-        NXPLOG_NCIHAL_D("HAL_ESE_IOCTL_NFC_JCOP_DWNLD Enter value is %d: \n",pInpOutData->inp.data.nciCmd.p_cmd[0]);
+        NXPLOG_NCIHAL_D("HAL_ESE_IOCTL_NFC_JCOP_DWNLD Enter value is %d: \n",pInpOutData->inp.data.nxpCmd.p_cmd[0]);
         if(gpEseAdapt !=  NULL)
           ret = gpEseAdapt->HalIoctl(HAL_ESE_IOCTL_NFC_JCOP_DWNLD,pInpOutData);
         [[fallthrough]];
-    case HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE :
-        NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE \n");
-        if(p_nfc_stack_cback_backup != NULL)
-        {
-          (*p_nfc_stack_cback_backup)((uint32_t)HAL_NFC_STATUS_RESTART,
-            HAL_NFC_STATUS_OK);
-        }
-        else
-        {
-          NXPLOG_NCIHAL_D("p_nfc_stack_cback_backup cback NULL \n");
-        }
-        ret = 0;
-        break;
-    case HAL_NFC_SET_POWER_SCHEME:
-      level = pInpOutData->inp.level;
-      ret = phPalEse_spi_ioctl(phPalEse_e_SetPowerScheme,
-                               gpphTmlNfc_Context->pDevHandle, level);
-      break;
-    case HAL_NFC_IOCTL_SET_TRANSIT_CONFIG:
-      phNxpNciHal_setNxpTransitConfig(
-          pInpOutData->inp.data.transitConfig.val);
-      ret = 0;
-      break;
       default:
         NXPLOG_NCIHAL_E("%s : Wrong arg = %ld", __func__, arg);
         break;
@@ -4923,7 +4886,32 @@ void seteSEClientState(uint8_t state) {
   DwpEseUpdater::setSpiEseClientState(state);
 }
 
-bool phNxpNciHal_Abort() { return false; }
+/******************************************************************************
+** Function         phNxpNciHal_Abort
+**
+** Description      This function shall be used to trigger the abort
+**
+** Parameters       None
+**
+** Returns          bool.
+**
+*******************************************************************************/
+bool phNxpNciHal_Abort() {
+  bool ret = true;
+
+  NXPLOG_NCIHAL_D("phNxpNciHal_Abort aborting. \n");
+  /* When JCOP download is triggered phNxpNciHal_open is blocked, in this case only
+     we need to abort the libnfc , this can be done only by check the p_nfc_stack_cback_backup
+     pointer which is assigned before the JCOP download.*/
+  if (p_nfc_stack_cback_backup != NULL){
+      abort();
+  }
+  else {
+    ret = false;
+    NXPLOG_NCIHAL_D("phNxpNciHal_Abort not triggered\n");
+  }
+  return ret;
+}
 
 bool getJcopUpdateRequired() { return false; }
 

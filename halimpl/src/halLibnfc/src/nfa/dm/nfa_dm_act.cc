@@ -50,7 +50,6 @@
 #include "nfc_api.h"
 #include "nfa_ee_int.h"
 #if (NFC_NFCEE_INCLUDED == true)
-#include "hal_nxpnfc.h"
 #include "nfc_int.h"
 #endif
 

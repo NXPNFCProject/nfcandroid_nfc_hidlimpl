@@ -52,7 +52,6 @@
 
 #include "bt_types.h"
 #include "gki.h"
-#include "hal_nxpnfc.h"
 #include "nci_hmsgs.h"
 #include "nfa_sys.h"
 #include "nfc_int.h"
@@ -1525,24 +1524,6 @@ int get_i2c_fragmentation_enabled() { return i2c_fragmentation_enabled; }
 *******************************************************************************/
 uint8_t NFC_GetNCIVersion() { return nfc_cb.nci_version; }
 
-/*******************************************************************************
-**
-** Function         NFC_GetP61Status
-**
-** Description      This function gets the current access state
-**                  of P61. Current state would be updated to pdata
-**
-** Returns          0 if api call success, else -1
-**
-*******************************************************************************/
-int32_t NFC_GetP61Status(void *pdata) {
-  nfc_nci_IoctlInOutData_t inpOutData;
-  int32_t status;
-  status = nfc_cb.p_hal->ioctl(HAL_NFC_IOCTL_P61_PWR_MODE, &inpOutData);
-  *(uint32_t *)pdata = inpOutData.out.data.p61CurrentState;
-  return status;
-}
-
 #if (NXP_EXTNS == TRUE)
 /*******************************************************************************
 **
@@ -1570,67 +1551,6 @@ void  check_nfcee_session_and_reset()
 #endif
 
 #if (NXP_EXTNS == TRUE)
-
-/*******************************************************************************
-**
-** Function         NFC_SetNfcServicePid
-**
-** Description      This function request to pn54x driver to
-**                  update NFC service process ID for signalling.
-**
-** Returns          0 if api call success, else -1
-**
-*******************************************************************************/
-int32_t NFC_SetNfcServicePid() {
-  tNFC_STATUS setPidStatus = NFC_STATUS_OK;
-  nfc_nci_IoctlInOutData_t inpOutData;
-  if (NFC_IsLowRamDevice()) {
-    DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("NFC_SetNfcServicePid: Not valid for low RAM device");
-    return setPidStatus;
-  }
-  inpOutData.inp.data.nfcServicePid = getpid();
-  setPidStatus = nfc_cb.p_hal->ioctl(HAL_NFC_IOCTL_SET_NFC_SERVICE_PID,
-                                     (void *)&inpOutData);
-  if (setPidStatus == NFC_STATUS_OK) {
-    DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("nfc service set pid done");
-  } else {
-    DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("nfc service set pid failed");
-  }
-  return setPidStatus;
-}
-/*******************************************************************************
-**
-** Function         NFC_ResetNfcServicePid
-**
-** Description      This function request to pn54x driver to
-**                  update NFC service process ID for signalling.
-**
-** Returns          0 if api call success, else -1
-**
-*******************************************************************************/
-int32_t NFC_ResetNfcServicePid() {
-  tNFC_STATUS setPidStatus = NFC_STATUS_OK;
-  nfc_nci_IoctlInOutData_t inpOutData;
-  inpOutData.inp.data.nfcServicePid = 0;
-  if (NFC_IsLowRamDevice()) {
-    DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("NFC_ResetNfcServicePid: Not valid for low RAM device");
-    return setPidStatus;
-  }
-  setPidStatus = nfc_cb.p_hal->ioctl(HAL_NFC_IOCTL_SET_NFC_SERVICE_PID,
-                                     (void *)&inpOutData);
-  if (setPidStatus == NFC_STATUS_OK) {
-    DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("nfc service set pid done");
-  } else {
-    DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("nfc service set pid failed");
-  }
-  return setPidStatus;
-}
 
 /*******************************************************************************
 **
@@ -1693,16 +1613,10 @@ void NFC_SetStaticHciCback(tNFC_CONN_CBACK *p_cback) {
 void NFC_GetFeatureList() {
   DLOG_IF(INFO, nfc_debug_enabled)
       << StringPrintf("NFC_GetFeatureList() Enter");
-  tNFC_STATUS status = NFC_STATUS_FAILED;
-  nfc_nci_IoctlInOutData_t inpOutData;
-  status =
-      nfc_cb.p_hal->ioctl(HAL_NFC_IOCTL_GET_FEATURE_LIST, (void *)&inpOutData);
-  if (status == NFC_STATUS_OK) {
-    chipType = (tNFC_chipType)inpOutData.out.data.chipType;
-    DLOG_IF(INFO, nfc_debug_enabled)
-        << StringPrintf("NFC_GetFeatureList ()chipType = %d", chipType);
-
-  } else {
+  chipType = (tNFC_chipType)nfc_cb.p_hal->getchipType();
+  if(chipType != 0x00) {
+    DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("NFC_GetFeatureList ()chipType = %d", chipType);
+  } else{
     chipType = pn553;
   }
   CONFIGURE_FEATURELIST(chipType);

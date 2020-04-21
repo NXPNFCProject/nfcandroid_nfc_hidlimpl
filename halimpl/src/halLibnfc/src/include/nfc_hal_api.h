@@ -43,7 +43,6 @@
 #ifndef NFC_HAL_API_H
 #define NFC_HAL_API_H
 #include "data_types.h"
-#include "hal_nxpnfc.h"
 #include "nfc_hal_target.h"
 #include <hardware/nfc.h>
 
@@ -71,6 +70,7 @@ typedef uint8_t(tHAL_API_GET_MAX_NFCEE)(void);
 #if (NXP_EXTNS == TRUE)
 typedef int(tHAL_API_IOCTL)(long arg, void *p_data);
 typedef int(tHAL_API_GET_FW_DWNLD_FLAG)(uint8_t *fwDnldRequest);
+typedef uint8_t(tHAL_API_getchipType)(void);
 #endif
 
 typedef struct {
@@ -87,6 +87,7 @@ typedef struct {
 #if (NXP_EXTNS == TRUE)
   tHAL_API_IOCTL *ioctl;
   tHAL_API_GET_FW_DWNLD_FLAG *check_fw_dwnld_flag;
+  tHAL_API_getchipType* getchipType;
 #endif
 } tHAL_NFC_ENTRY;
 

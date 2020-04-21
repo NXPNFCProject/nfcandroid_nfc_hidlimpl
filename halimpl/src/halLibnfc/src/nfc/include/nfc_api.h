@@ -363,6 +363,12 @@ enum {
 };
 typedef uint16_t tNFC_CONN_EVT;
 
+enum {
+  HAL_NFC_ENABLE_I2C_FRAGMENTATION_EVT = 0x08,
+  HAL_NFC_POST_MIN_INIT_CPLT_EVT       = 0x09,
+  HAL_NFC_WRITE_COMPLETE = 0x0A
+};
+
 #define NFC_NFCC_INFO_LEN 4
 #ifndef NFC_NFCC_MAX_NUM_VS_INTERFACE
 #define NFC_NFCC_MAX_NUM_VS_INTERFACE 5
@@ -1537,39 +1543,6 @@ extern tNFC_STATUS NFC_Nfcee_PwrLinkCtrl(uint8_t nfcee_id, uint8_t cfg_value);
 **
 *******************************************************************************/
 int32_t NFC_ReqWiredAccess(void *pdata);
-/*******************************************************************************
-**
-** Function         NFC_GetWiredAccess
-**
-** Description      This function gets the current access state
-**                  of P61. Current state would be updated to pdata
-**
-** Returns          0 if api call success, else -1
-**
-*******************************************************************************/
-int32_t NFC_GetP61Status(void *pdata);
-/*******************************************************************************
-**
-** Function         NFC_SetNfcServicePid
-**
-** Description      This function request to pn54x driver to
-**                  update NFC service process ID for signalling.
-**
-** Returns          0 if api call success, else -1
-**
-*******************************************************************************/
-int32_t NFC_SetNfcServicePid();
-/*******************************************************************************
-**
-** Function         NFC_ResetNfcServicePid
-**
-** Description      This function request to pn54x driver to
-**                  reset NFC service process ID for signalling.
-**
-** Returns          0 if api call success, else -1
-**
-*******************************************************************************/
-int32_t NFC_ResetNfcServicePid();
 
 /*******************************************************************************
 **

@@ -21,7 +21,6 @@
 #include "DwpSeEvtCallback.h"
 #include "EseAdaptation.h"
 #include "EseUpdateChecker.h"
-#include "hal_nxpnfc.h"
 #include <JcDnld.h>
 #include <cutils/log.h>
 #include <dirent.h>
@@ -35,6 +34,7 @@
 #include <unistd.h>
 #include <vendor/nxp/nxpese/1.0/INxpEse.h>
 
+extern bool phNxpNciHal_Abort();
 #define HAL_ESE_IOCTL_NFC_JCOP_DWNLD 176
 
 using vendor::nxp::nxpese::V1_0::INxpEse;
@@ -75,15 +75,15 @@ void DwpEseUpdater::checkIfEseClientUpdateReqd()
 
 void IoctlCallback_DwpClient(hidl_vec<uint8_t> outputData) {
   const char* func = "IoctlCallback_DwpClient";
-  nfc_nci_ExtnOutputData_t *pOutData =
-      (nfc_nci_ExtnOutputData_t *)&outputData[0];
+  ese_nxp_ExtnOutputData_t *pOutData =
+      (ese_nxp_ExtnOutputData_t *)&outputData[0];
   ALOGD_IF(nfc_debug_enabled, "%s Ioctl Type=%lu", func,
            (unsigned long)pOutData->ioctlType);
   EseAdaptation* pAdaptation = (EseAdaptation*)pOutData->context;
   /*Output Data from stub->Proxy is copied back to output data
    * This data will be sent back to libese*/
   memcpy(&pAdaptation->mCurrentIoctlData->out, &outputData[0],
-         sizeof(nfc_nci_ExtnOutputData_t));
+         sizeof(ese_nxp_ExtnOutputData_t));
 }
 
 SESTATUS DwpEseUpdater::doEseUpdateIfReqd() {
@@ -168,13 +168,13 @@ void DwpEseUpdater::setDwpEseClientState(uint8_t state)
 }
 
 void DwpEseUpdater::sendeSEUpdateState(uint8_t state) {
-  nfc_nci_IoctlInOutData_t inpOutData;
+  ese_nxp_IoctlInOutData_t inpOutData;
   gpEseAdapt = &EseAdaptation::GetInstance();
   gpEseAdapt->Initialize();
   ALOGE("%s: State = %d", __FUNCTION__, state);
-  memset(&inpOutData, 0x00, sizeof(nfc_nci_IoctlInOutData_t));
-  inpOutData.inp.data.nciCmd.cmd_len = sizeof(state);
-  memcpy(inpOutData.inp.data.nciCmd.p_cmd, &state, sizeof(state));
+  memset(&inpOutData, 0x00, sizeof(ese_nxp_IoctlInOutData_t));
+  inpOutData.inp.data.nxpCmd.cmd_len = sizeof(state);
+  memcpy(inpOutData.inp.data.nxpCmd.p_cmd, &state, sizeof(state));
   inpOutData.inp.data_source = 2;
   phNxpNciHal_ioctl(HAL_ESE_IOCTL_NFC_JCOP_DWNLD, &inpOutData);
 }
@@ -203,13 +203,13 @@ SESTATUS DwpEseUpdater::eSEUpdate_SeqHandler() {
       case ESE_LS_UPDATE_COMPLETED:
       case ESE_UPDATE_COMPLETED:
       {
-        nfc_nci_IoctlInOutData_t inpOutData;
+        ese_nxp_IoctlInOutData_t inpOutData;
         DwpEseUpdater::setDwpEseClientState(ESE_UPDATE_COMPLETED);
         ALOGD("LSUpdate Thread not required inform NFC to restart");
-        memset(&inpOutData, 0x00, sizeof(nfc_nci_IoctlInOutData_t));
+        memset(&inpOutData, 0x00, sizeof(ese_nxp_IoctlInOutData_t));
         inpOutData.inp.data_source = 2;
         usleep(50 * 1000);
-        phNxpNciHal_ioctl(HAL_NFC_IOCTL_ESE_UPDATE_COMPLETE, &inpOutData);
+        phNxpNciHal_Abort();
       }
       break;
     }

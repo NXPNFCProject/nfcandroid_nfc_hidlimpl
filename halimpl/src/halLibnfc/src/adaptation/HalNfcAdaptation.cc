@@ -35,7 +35,6 @@
  *
  ******************************************************************************/
 #include "HalNfcAdaptation.h"
-#include "hal_nxpnfc.h"
 #include "nfa_api.h"
 #include "nfc_int.h"
 #include "nfc_target.h"
@@ -68,6 +67,7 @@ using android::hardware::hidl_vec;
 using android::hardware::nfc::V1_1::INfcClientCallback;
 using ::android::hidl::base::V1_0::IBase;
 using vendor::nxp::nxpnfc::V2_0::INxpNfc;
+using vendor::nxp::nxpnfclegacy::V1_0::INxpNfcLegacy;
 
 extern bool nfc_debug_enabled;
 
@@ -77,6 +77,7 @@ HalNfcAdaptation *HalNfcAdaptation::mpInstance = NULL;
 HalAdaptationThreadMutex HalNfcAdaptation::sLock;
 HalAdaptationThreadMutex HalNfcAdaptation::sIoctlLock;
 sp<INxpNfc> HalNfcAdaptation::mHalNxpNfc;
+sp<INxpNfcLegacy> HalNfcAdaptation::mHalNxpNfcLegacy;
 sp<INfc> HalNfcAdaptation::mHal;
 sp<INfcV1_1> HalNfcAdaptation::mHal_1_1;
 INfcClientCallback *HalNfcAdaptation::mCallback;
@@ -173,7 +174,6 @@ public:
 **
 *******************************************************************************/
 HalNfcAdaptation::HalNfcAdaptation() {
-  mCurrentIoctlData = NULL;
   mNfcHalDeathRecipient = new NfcDeathRecipient(mHal);
   memset(&mHalEntryFuncs, 0, sizeof(mHalEntryFuncs));
 }
@@ -385,6 +385,21 @@ uint32_t HalNfcAdaptation::Thread(__attribute__((unused)) uint32_t arg) {
 tHAL_NFC_ENTRY *HalNfcAdaptation::GetHalEntryFuncs() { return &mHalEntryFuncs; }
 
 /*******************************************************************************
+ **
+ ** Function         phNxpNciHal_getchipType
+ **
+ ** Description      Gets the chipType from hal which is already configured
+ **                  during init time.
+ **
+ ** Returns          chipType
+ *******************************************************************************/
+uint8_t HalNfcAdaptation::HalgetchipType() {
+  const char* func = "NfcAdaptation::HalgetchipType";
+  DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf("%s : Enter", func);
+  return mHalNxpNfcLegacy->getchipType();
+}
+
+/*******************************************************************************
 **
 ** Function:    HalNfcAdaptation::InitializeHalDeviceContext
 **
@@ -402,6 +417,7 @@ void HalNfcAdaptation::InitializeHalDeviceContext() {
   mHalEntryFuncs.close = HalClose;
   mHalEntryFuncs.core_initialized = HalCoreInitialized;
   mHalEntryFuncs.write = HalWrite;
+  mHalEntryFuncs.getchipType = HalgetchipType;
   mHalEntryFuncs.prediscover = HalPrediscover;
   mHalEntryFuncs.control_granted = HalControlGranted;
   LOG(INFO) << StringPrintf("%s: Try INfcV1_1::getService()", func);
@@ -427,6 +443,15 @@ void HalNfcAdaptation::InitializeHalDeviceContext() {
     LOG(INFO) << StringPrintf("%s: INxpNfc::getService() returned %p (%s)",
                               func, mHalNxpNfc.get(),
                               (mHalNxpNfc->isRemote() ? "remote" : "local"));
+  }
+
+  LOG(INFO) << StringPrintf("%s: INxpNfcLegacy::getService()", func);
+  mHalNxpNfcLegacy = INxpNfcLegacy::tryGetService();
+  if(mHalNxpNfcLegacy == nullptr) {
+    LOG(INFO) << StringPrintf ( "Failed to retrieve the NXPNFC Legacy HAL!");
+  } else {
+    LOG(INFO) << StringPrintf("%s: INxpNfcLegacy::getService() returned %p (%s)", func, mHalNxpNfcLegacy.get(),
+          (mHalNxpNfcLegacy->isRemote() ? "remote" : "local"));
   }
 }
 
@@ -551,29 +576,6 @@ void HalNfcAdaptation::HalWrite(uint16_t data_len, uint8_t *p_data) {
 }
 
 #if (NXP_EXTNS == TRUE)
-/*******************************************************************************
-**
-** Function:    IoctlCallback
-**
-** Description: Callback from HAL stub for IOCTL api invoked.
-**              Output data for IOCTL is sent as argument
-**
-** Returns:     None.
-**
-*******************************************************************************/
-void IoctlCallback(::android::hardware::nfc::V1_0::NfcData outputData) {
-  const char *func = "IoctlCallback";
-  nfc_nci_ExtnOutputData_t *pOutData =
-      (nfc_nci_ExtnOutputData_t *)&outputData[0];
-  DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf(
-      "%s Ioctl Type=%llu", func, (unsigned long long)pOutData->ioctlType);
-  HalNfcAdaptation *pAdaptation = (HalNfcAdaptation *)pOutData->context;
-  /*Output Data from stub->Proxy is copied back to output data
-   * This data will be sent back to libnfc*/
-  memcpy(&pAdaptation->mCurrentIoctlData->out, &outputData[0],
-         sizeof(nfc_nci_ExtnOutputData_t));
-}
-
 /*******************************************************************************
 **
 ** Function:    HalNfcAdaptation::HalGetFwDwnldFlag

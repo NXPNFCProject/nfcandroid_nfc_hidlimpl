@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "hal_nxpnfc.h"
 #include "phNxpNciHal_nciParser.h"
 #include <cutils/properties.h>
 #include <log/log.h>
@@ -109,14 +108,14 @@ void phNxpNciHal_ext_init(void) {
 **
 *******************************************************************************/
 void phNxpNciHal_sendRfEvtToEseHal(uint8_t rfEvtType) {
-  nfc_nci_IoctlInOutData_t inpOutData;
+  ese_nxp_IoctlInOutData_t inpOutData;
   gpEseAdapt = &EseAdaptation::GetInstance();
   gpEseAdapt->Initialize();
   uint8_t rf_state_update[] = {0x00};
-  memset(&inpOutData, 0x00, sizeof(nfc_nci_IoctlInOutData_t));
-  inpOutData.inp.data.nciCmd.cmd_len = sizeof(rf_state_update);
+  memset(&inpOutData, 0x00, sizeof(ese_nxp_IoctlInOutData_t));
+  inpOutData.inp.data.nxpCmd.cmd_len = sizeof(rf_state_update);
   rf_state_update[0] = rfEvtType;
-  memcpy(inpOutData.inp.data.nciCmd.p_cmd, rf_state_update,
+  memcpy(inpOutData.inp.data.nxpCmd.p_cmd, rf_state_update,
          sizeof(rf_state_update));
   inpOutData.inp.data_source = 2;
   if (gpEseAdapt != NULL)
@@ -364,10 +363,10 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
       NXPLOG_NCIHAL_D("RF_STATUS_UPDATE_ENABLE : %lu", rf_update_enable);
     }
     if (rf_update_enable == 0x01) {
-      nfc_nci_IoctlInOutData_t inpOutData;
-      memset(&inpOutData, 0x00, sizeof(nfc_nci_IoctlInOutData_t));
-      inpOutData.inp.data.nciCmd.cmd_len = p_ntf[2];
-      memcpy(inpOutData.inp.data.nciCmd.p_cmd, p_ntf + 3, p_ntf[2]);
+      ese_nxp_IoctlInOutData_t inpOutData;
+      memset(&inpOutData, 0x00, sizeof(ese_nxp_IoctlInOutData_t));
+      inpOutData.inp.data.nxpCmd.cmd_len = p_ntf[2];
+      memcpy(inpOutData.inp.data.nxpCmd.p_cmd, p_ntf + 3, p_ntf[2]);
       inpOutData.inp.data_source = 2;
       if (gpEseAdapt != NULL)
           gpEseAdapt->HalNfccNtf(HAL_ESE_IOCTL_RF_ACTION_NTF, &inpOutData);

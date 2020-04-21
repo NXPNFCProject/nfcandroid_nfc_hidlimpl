@@ -22,7 +22,6 @@
 #include "NxpNfcCapability.h"
 #include <vendor/nxp/nxpnfc/2.0/types.h>
 #include "DwpEseUpdater.h"
-#include "hal_nxpnfc.h"
 #include "EseUpdateChecker.h"
 
 using namespace std;
@@ -32,6 +31,7 @@ using namespace std;
 #define NCI_MAX_DATA_LEN 300
 #define NCI_POLL_DURATION 500
 #define HAL_NFC_ENABLE_I2C_FRAGMENTATION_EVT 0x07
+#define HAL_NFC_POST_MIN_INIT_CPLT_EVT  0x09
 #define NXP_STAG_TIMEOUT_BUF_LEN 0x04 /*FIXME:TODO:remove*/
 #define NXP_WIREDMODE_RESUME_TIMEOUT_LEN 0x04
 #define NFCC_DECIDES 00
@@ -96,6 +96,13 @@ typedef enum {
   GPIO_RESTORE_DONE = 0x20,
   GPIO_CLEAR = 0xFF
 } phNxpNciHal_GpioInfoState;
+
+enum NxpNfcHalStatus {
+    /** In case of an error, HCI network needs to be re-initialized */
+    HAL_NFC_STATUS_RESTART = 0x30,
+    HAL_NFC_HCI_NV_RESET = 0x40,
+    HAL_NFC_CONFIG_ESE_LINK_COMPLETE = 0x50
+};
 
 typedef struct phNxpNciGpioInfo {
   phNxpNciHal_GpioInfoState state;
