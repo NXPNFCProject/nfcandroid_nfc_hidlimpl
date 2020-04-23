@@ -4861,15 +4861,14 @@ void phNxpNciHal_GetCachedNfccConfig(phNxpNci_getCfg_info_t *pGetCfg_info){
 **
 ** Returns          status of eSE reset response
 *******************************************************************************/
-NFCSTATUS phNxpNciHal_resetEse() {
+NFCSTATUS phNxpNciHal_resetEse(uint64_t resetType) {
   NFCSTATUS status = NFCSTATUS_FAILED;
-  int level = 0;
+
   NXPLOG_NCIHAL_D("%s Entry ", __func__);
   if (nfcFL.chipType == pn557) {
-    /*set a bit to indicate signal trigger from driver is not required for PN557*/
-    level = (uint64_t)Constants::HAL_NFC_ESE_HARD_RESET | SIGNAL_TRIGGER_NOT_REQD;
+    resetType |= SIGNAL_TRIGGER_NOT_REQD;
     status = phPalEse_spi_ioctl(phPalEse_e_ChipRst,
-                             gpphTmlNfc_Context->pDevHandle, level);
+                             gpphTmlNfc_Context->pDevHandle, resetType);
     if(status == NFCSTATUS_SUCCESS) {
       ALOGD("HAL_NFC_ESE_HARD_RESET completed");
     } else {
