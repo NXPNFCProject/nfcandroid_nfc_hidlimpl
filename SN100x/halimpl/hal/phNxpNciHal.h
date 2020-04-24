@@ -21,6 +21,9 @@
 #include <hardware/nfc.h>
 #include <phNxpNciHal_utils.h>
 #include "eSEClientIntf.h"
+#include "eSEClientExtns.h"
+#include "eSEClientIntf.h"
+#include "phNxpNciHal_IoctlOperations.h"
 
 #include <vendor/nxp/nxpnfc/2.0/types.h>
 
