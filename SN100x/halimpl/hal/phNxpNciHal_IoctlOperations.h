@@ -103,7 +103,7 @@ string phNxpNciHal_getNxpConfigIf();
 **
 ** Returns          status of eSE reset response
 *******************************************************************************/
-NFCSTATUS phNxpNciHal_resetEse();
+NFCSTATUS phNxpNciHal_resetEse(uint64_t resetType);
 
 /******************************************************************************
 ** Function         phNxpNciHal_setNxpTransitConfig

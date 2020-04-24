@@ -52,18 +52,16 @@ NxpNfc::resetEse(uint64_t resetType) {
   NFCSTATUS status = NFCSTATUS_FAILED;
   bool ret = false;
   ALOGD("NxpNfc::resetEse Entry");
-  if((uint64_t)Constants::HAL_NFC_ESE_HARD_RESET == resetType) {
-    status = phNxpNciHal_resetEse();
-    if(NFCSTATUS_SUCCESS == status) {
-      ret = true;
-      status = NFCSTATUS_SUCCESS;
-      ALOGD("HAL_NFC_ESE_HARD_RESET completed");
-      } else {
-        ALOGD("HAL_NFC_ESE_HARD_RESET failed");
-      }
+
+  status = phNxpNciHal_resetEse(resetType);
+  if(NFCSTATUS_SUCCESS == status) {
+    ret = true;
+    status = NFCSTATUS_SUCCESS;
+    ALOGD("HAL_NFC_ESE_HARD_RESET completed");
     } else {
-      ALOGD("reset called with %lu type",resetType);
+        ALOGD("HAL_NFC_ESE_HARD_RESET failed");
     }
+
   ALOGD("NxpNfc::resetEse Exit");
   return ret;
 }
