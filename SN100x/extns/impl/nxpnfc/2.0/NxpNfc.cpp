@@ -19,11 +19,8 @@
 #include <log/log.h>
 
 #include "NxpNfc.h"
-#include "eSEClientExtns.h"
-#include "eSEClientIntf.h"
 #include "phNxpNciHal.h"
 #include "phNxpNciHal_Adaptation.h"
-#include "phNxpNciHal_IoctlOperations.h"
 
 extern bool nfc_debug_enabled;
 
