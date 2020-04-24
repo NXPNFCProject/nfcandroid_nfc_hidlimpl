@@ -597,8 +597,10 @@ static string phNxpNciHal_parseBytesString(string in) {
 **
 ** Returns          status of eSE reset response
 *******************************************************************************/
-NFCSTATUS phNxpNciHal_resetEse() {
+NFCSTATUS phNxpNciHal_resetEse(uint64_t resetType) {
   NFCSTATUS status = NFCSTATUS_FAILED;
+
+UNUSED(resetType);
 
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
     if (NFCSTATUS_SUCCESS != phNxpNciHal_MinOpen()) {
