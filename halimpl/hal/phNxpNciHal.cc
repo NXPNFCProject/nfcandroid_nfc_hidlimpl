@@ -3657,6 +3657,14 @@ int phNxpNciHal_check_ncicmd_write_window(uint16_t cmd_len, uint8_t* p_cmd) {
   return status;
 }
 
+void phNxpNciHal_MinCloseForOmapiClose(phNxpNci_Extn_Cmd_t *inp) {
+  if ((nxpncihal_ctrl.halStatus == HAL_STATUS_MIN_OPEN) &&
+      (inp->p_cmd[0] == 0x2F) &&
+      (inp->p_cmd[1] == 0x01) &&
+      (inp->p_cmd[3] == 0x00)) {
+    phNxpNciHal_Minclose();
+  }
+}
 /******************************************************************************
  * Function         phNxpNciHal_ioctl
  *
@@ -4949,18 +4957,114 @@ void phNxpNciHal_nciTransceive(phNxpNci_Extn_Cmd_t *in, phNxpNci_Extn_Resp_t *ou
       return;
     }
 
-    status = phNxpNciHal_send_ext_cmd(in->cmd_len,
-                                   in->p_cmd);
-    out->rsp_len = nxpncihal_ctrl.rx_data_len;
-    if ((nxpncihal_ctrl.rx_data_len > 0) &&
-        (nxpncihal_ctrl.rx_data_len <= MAX_IOCTL_TRANSCEIVE_RESP_LEN) &&
-        (nxpncihal_ctrl.p_rx_data != NULL)) {
-      memcpy(out->p_rsp, nxpncihal_ctrl.p_rx_data,
-             nxpncihal_ctrl.rx_data_len);
+        /* check for sync command and proceed */
+    if((in->p_cmd[0] == 0x2F) && (in->p_cmd[1] == 0x01) && (in->p_cmd[2] = 0x01)) {
+      /* logic to skip delay */
+      if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
+        NFCSTATUS status = NFCSTATUS_FAILED;
+        status = phNxpNciHal_MinOpen();
+        if (status != NFCSTATUS_SUCCESS) {
+          if (nfcFL.eseFL._NXP_SPI_DWP_SYNC) {
+            /* p_rsp[3] is the status for DWP sync response. value 0x00 equals
+            Success and 0x01 for Fail. */
+          out->p_rsp[3] = 0x01;
+        }
+        goto exit;
+      }
     }
+
+    if (!nfcFL.eseFL._NXP_SPI_DWP_SYNC) {
+        ALOGD_IF(nfc_debug_enabled,
+                 "phNxpNciHal_ioctl HAL_NFC_IOCTL_SPI_DWP_SYNC not supported. "
+                 "Returning..");
+        phNxpNciHal_MinCloseForOmapiClose(in);
+        goto exit;
+    }
+    phNxpNciHal_SendHalCmd(in,out);
+
+    } else {
+      status = phNxpNciHal_send_ext_cmd(in->cmd_len,
+                                     in->p_cmd);
+      out->rsp_len = nxpncihal_ctrl.rx_data_len;
+      if ((nxpncihal_ctrl.rx_data_len > 0) &&
+          (nxpncihal_ctrl.rx_data_len <= MAX_IOCTL_TRANSCEIVE_RESP_LEN) &&
+          (nxpncihal_ctrl.p_rx_data != NULL)) {
+        memcpy(out->p_rsp, nxpncihal_ctrl.p_rx_data,
+               nxpncihal_ctrl.rx_data_len);
+      }
+    }
+
+exit :
 
     out->status = status;
 
     NXPLOG_NCIHAL_D("%s Exit ", __func__);
     return;
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_nciTransceive
+ *
+ * Description      This function does tarnsceive of proprietary nci command
+ *
+ * Returns          void.
+ *
+ *******************************************************************************/
+int phNxpNciHal_SendHalCmd(phNxpNci_Extn_Cmd_t *in, phNxpNci_Extn_Resp_t *out){
+    int ret = -1;
+
+    if (!nfcFL.eseFL._NXP_SPI_DWP_SYNC) {
+      ALOGD_IF(nfc_debug_enabled,
+              "phNxpNciHal_ioctl HAL_NFC_IOCTL_SPI_DWP_SYNC not supported. "
+              "Returning..");
+      ret = 0;
+      phNxpNciHal_MinCloseForOmapiClose(in);
+      return ret;
+    }
+
+    ret = phNxpNciHal_send_ese_hal_cmd(in->cmd_len,
+                                       in->p_cmd);
+    out->rsp_len = nxpncihal_ctrl.rx_ese_data_len;
+    if ((nxpncihal_ctrl.rx_ese_data_len > 0) &&
+        (nxpncihal_ctrl.rx_ese_data_len <= MAX_IOCTL_TRANSCEIVE_RESP_LEN) &&
+        (nxpncihal_ctrl.p_rx_ese_data != NULL)) {
+      memcpy(out->p_rsp, nxpncihal_ctrl.p_rx_ese_data,
+             nxpncihal_ctrl.rx_ese_data_len);
+    }
+
+    if (out->p_rsp[0] == 0x4F &&
+        out->p_rsp[1] == 0x01 &&
+        out->p_rsp[2] == 0x01 &&
+        out->p_rsp[3] == 0x00 &&
+        in->p_cmd[3] == 0x01) {
+        NXPLOG_NCIHAL_D("OMAPI COMMAND for Open SUCCESS : 0x%x",
+                        out->p_rsp[3]);
+        ret = out->p_rsp[3];
+    } else if (  out->p_rsp[0] == 0x4F &&
+                 out->p_rsp[1] == 0x01 &&
+                 out->p_rsp[2] == 0x01 &&
+                 out->p_rsp[3] == 0x00 &&
+                 in->p_cmd[3] == 0x00)
+      {
+        NXPLOG_NCIHAL_D("OMAPI COMMAND for Close SUCCESS : 0x%x",
+                        out->p_rsp[3]);
+        ret = out->p_rsp[3];
+      } else if (out->p_rsp[0] == 0x4F &&
+                 out->p_rsp[1] == 0x01 &&
+                 out->p_rsp[2] == 0x01 &&
+                 out->p_rsp[3] == 0x00 &&
+                 in->p_cmd[3] == 0x02) {
+        NXPLOG_NCIHAL_D("OMAPI COMMAND for Switch Allowed SUCCESS : 0x%x",
+                        out->p_rsp[3]);
+        ret = out->p_rsp[3];
+        phNxpNciHal_notifyHciEvtProcessComplete();
+      } else {
+        NXPLOG_NCIHAL_D("OMAPI COMMAND FAILURE : 0x%x",
+                        out->p_rsp[3]);
+        ret = out->p_rsp[3] =
+            3;  // magic number for omapi failure
+      }
+      phNxpNciHal_MinCloseForOmapiClose(in);
+
+      return ret;
 }

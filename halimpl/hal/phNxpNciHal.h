@@ -530,3 +530,13 @@ NFCSTATUS phNxpNciHal_resetEse(uint64_t resetType);
  *
  *******************************************************************************/
 void phNxpNciHal_nciTransceive(phNxpNci_Extn_Cmd_t *in, phNxpNci_Extn_Resp_t *out);
+
+/******************************************************************************
+ * Function         phNxpNciHal_nciTransceive
+ *
+ * Description      This function does tarnsceive of proprietary nci command
+ *
+ * Returns          void.
+ *
+ *******************************************************************************/
+int phNxpNciHal_SendHalCmd(phNxpNci_Extn_Cmd_t *in, phNxpNci_Extn_Resp_t *out);
