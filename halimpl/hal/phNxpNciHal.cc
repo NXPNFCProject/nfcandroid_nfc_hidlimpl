@@ -4907,6 +4907,7 @@ void seteSEClientState(uint8_t state) {
 bool phNxpNciHal_Abort() {
   bool ret = true;
 
+  seteSEClientState(ESE_UPDATE_COMPLETED);
   NXPLOG_NCIHAL_D("phNxpNciHal_Abort aborting. \n");
   /* When JCOP download is triggered phNxpNciHal_open is blocked, in this case only
      we need to abort the libnfc , this can be done only by check the p_nfc_stack_cback_backup
