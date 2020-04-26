@@ -4865,6 +4865,15 @@ NFCSTATUS phNxpNciHal_resetEse(uint64_t resetType) {
   NFCSTATUS status = NFCSTATUS_FAILED;
 
   NXPLOG_NCIHAL_D("%s Entry ", __func__);
+
+  if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
+    NFCSTATUS status = NFCSTATUS_FAILED;
+    status = phNxpNciHal_MinOpen();
+    if (status != NFCSTATUS_SUCCESS) {
+      return status;
+    }
+  }
+
   if (nfcFL.chipType == pn557) {
     resetType |= SIGNAL_TRIGGER_NOT_REQD;
     status = phPalEse_spi_ioctl(phPalEse_e_ChipRst,
@@ -4906,7 +4915,6 @@ bool phNxpNciHal_Abort() {
       abort();
   }
   else {
-    ret = false;
     NXPLOG_NCIHAL_D("phNxpNciHal_Abort not triggered\n");
   }
   return ret;
