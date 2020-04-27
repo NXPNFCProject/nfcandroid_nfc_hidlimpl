@@ -35,7 +35,7 @@
 #include <vendor/nxp/nxpese/1.0/INxpEse.h>
 
 extern bool phNxpNciHal_Abort();
-#define HAL_ESE_IOCTL_NFC_JCOP_DWNLD 176
+#define HAL_ESE_IOCTL_NFC_JCOP_DWNLD 182
 
 using vendor::nxp::nxpese::V1_0::INxpEse;
 using android::hardware::hidl_vec;
