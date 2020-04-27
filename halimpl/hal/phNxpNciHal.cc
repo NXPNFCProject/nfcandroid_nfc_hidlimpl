@@ -4978,6 +4978,7 @@ void phNxpNciHal_nciTransceive(phNxpNci_Extn_Cmd_t *in, phNxpNci_Extn_Resp_t *ou
                  "phNxpNciHal_ioctl HAL_NFC_IOCTL_SPI_DWP_SYNC not supported. "
                  "Returning..");
         phNxpNciHal_MinCloseForOmapiClose(in);
+        out->p_rsp[3] = 0x00;
         goto exit;
     }
     phNxpNciHal_SendHalCmd(in,out);
