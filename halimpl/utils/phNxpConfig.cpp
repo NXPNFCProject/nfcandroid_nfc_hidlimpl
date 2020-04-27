@@ -476,7 +476,6 @@ CNfcConfig::~CNfcConfig() {}
 *******************************************************************************/
 CNfcConfig& CNfcConfig::GetInstance() {
   static CNfcConfig theInstance;
-  char valueStr[PROPERTY_VALUE_MAX] = {0};
   string config_file_name = "libnfc-nxp";
   if (theInstance.size() == 0 && theInstance.mValidFile) {
     string strPath;
@@ -488,15 +487,6 @@ CNfcConfig& CNfcConfig::GetInstance() {
         return theInstance;
       }
     }
-    // update config file based on system property
-    int len = property_get("persist.vendor.nfc.config_file_name", valueStr, "");
-
-    if (len > 0) {
-      config_file_name = config_file_name + "_" + valueStr + ".conf";
-    } else {
-      config_file_name = config_name;
-    }
-    ALOGD("nxp config referred : %s", config_file_name.c_str());
 
     if (findConfigFilePathFromTransportConfigPaths(
         android::base::GetProperty("persist.vendor.nfc.config_file_name", ""),
