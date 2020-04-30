@@ -22,6 +22,23 @@
 
 
 
+#### Supported Version on "br_android_ncihalx_row_11" branch
+| Android Version        | NXP Release          | NXP Tag  |
+| :-------------: |:---------------------:| :-----:|
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
