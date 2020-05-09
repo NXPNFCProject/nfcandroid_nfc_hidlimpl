@@ -669,7 +669,7 @@ bool phNxpNciHal_Abort() {
   bool ret = true;
 
   NXPLOG_NCIHAL_D("phNxpNciHal_Abort aborting. \n");
-  /* When JCOP download is triggered phNxpNciHal_open is blocked, in this case only
+  /* When JCOP download is triggered phNxpNciHal_open is blocked, in this case only 
      we need to abort the libnfc , this can be done only by check the p_nfc_stack_cback_backup
      pointer which is assigned before the JCOP download.*/
   if (p_nfc_stack_cback_backup != NULL){
