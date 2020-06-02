@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2018 NXP Semiconductors
+ * Copyright (C) 2010-2018, 2020 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@
 #define PHNFCSTATUS(phNfcStatus) ((phNfcStatus)&0x00FFU)
 #define PHNFCCID(phNfcStatus) (((phNfcStatus)&0xFF00U) >> 8)
 
-#define PHNFC_I2C_FRAGMENT_SIZE 512
+#define PHNFC_I2C_FRAGMENT_SIZE 554
 /*
  *  Status Codes
  *
