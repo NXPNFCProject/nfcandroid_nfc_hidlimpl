@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019 NXP Semiconductors
+ * Copyright (C) 2012-2020 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,9 @@
 #define LX_DEBUG_CFG_ENABLE_FELICA_SYSCODE 0x04
 #define LX_DEBUG_CFG_ENABLE_L2_EVENT_READER 0x08
 #define LX_DEBUG_CFG_ENABLE_L1_EVENT 0x10
-#define LX_DEBUG_CFG_MASK_RFU 0xE0
-#define LX_DEBUG_CFG_MASK_RSSI 0xFF00
-#define LX_DEBUG_CFG_ENABLE_RSSI 0x01
+#define LX_DEBUG_CFG_ENABLE_MOD_DETECTED_EVENT 0x20
+#define LX_DEBUG_CFG_MASK_RFU 0xFFC0
+#define LX_DEBUG_CFG_MASK 0x00FF
 
 typedef void* (*tHAL_API_NATIVE_CREATE_PARSER)();
 typedef void  (*tHAL_API_NATIVE_DESTROY_PARSER)(void*);

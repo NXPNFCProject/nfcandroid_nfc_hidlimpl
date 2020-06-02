@@ -3878,18 +3878,11 @@ void phNxpNciHal_configNciParser(bool enable)
         if (lx_debug_cfg & LX_DEBUG_CFG_ENABLE_L2_EVENT_READER) {
           NXPLOG_NCIHAL_D("Enable L2 RF NTF debugs (Reader)");
         }
-        cmd_lxdebug[7] = lx_debug_cfg & ~LX_DEBUG_CFG_MASK_RSSI;
-        if((lx_debug_cfg & LX_DEBUG_CFG_MASK_RSSI) == 0x0100)
-        {/*If valid value id present for the RSSI i.e. Byte1 of the flag*/
-            if(lx_debug_cfg & (LX_DEBUG_CFG_ENABLE_L1_EVENT | LX_DEBUG_CFG_ENABLE_L2_EVENT)){
-                NXPLOG_NCIHAL_D("Enable RSSI");
-                cmd_lxdebug[8] = LX_DEBUG_CFG_ENABLE_RSSI;;
-            }else{
-                NXPLOG_NCIHAL_E("RSSI should be used only with L1 and L2 events!!\nDiscarding RSSI....");
-            }
-        }else{
-            NXPLOG_NCIHAL_E("Invalid RSSI Value!!\nDiscarding RSSI....");
+        if (lx_debug_cfg & LX_DEBUG_CFG_ENABLE_MOD_DETECTED_EVENT ) {
+          NXPLOG_NCIHAL_D("Enable Modulation detected event");
         }
+
+        cmd_lxdebug[7] = (uint8_t)lx_debug_cfg & LX_DEBUG_CFG_MASK;
     }
     status = phNxpNciHal_send_ext_cmd(sizeof(cmd_lxdebug)/sizeof(cmd_lxdebug[0]),cmd_lxdebug);
     if (status != NFCSTATUS_SUCCESS)
