@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2019 NXP Semiconductors
+ * Copyright (C) 2010-2020 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,10 @@
 #include <phDnldNfc_Status.h>
 
 #define PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE                 \
-  (0x100U) /* DL Host Frame Buffer Size for all CMD/RSP \
-                except pipelined WRITE */
+  (0x22AU) /* DL Host Frame Buffer Size for all CMD/RSP \
+                except pipelined WRITE
+                Host can be configured to support both 256(0x100) & 554(0x22A)
+                frame size*/
 #if (PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE > PHNFC_I2C_FRAGMENT_SIZE)
 #undef PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE
 #define PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE (PHNFC_I2C_FRAGMENT_SIZE)
