@@ -94,7 +94,11 @@
 #define NFC_STATUS_NOT_INITIALIZED_PROP (0x0004)
 
 /*
+ * The function indicates given module not initialized
+ */
+#define NFCSTATUS_FW_CHECK_INTEGRITY_FAILED (0x0005)
 
+/*
  * Device specifier/handle value is invalid for the operation
  */
 #define NFCSTATUS_INVALID_DEVICE (0x0006)
