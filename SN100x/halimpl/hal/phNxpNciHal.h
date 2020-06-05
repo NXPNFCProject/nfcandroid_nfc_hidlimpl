@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2020 NXP Semiconductors
+ * Copyright (C) 2010-2020 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,8 +38,8 @@
 #define NCI_VERSION_1_0 0x10
 #define NCI_VERSION_UNKNOWN 0x00
 #define NXP_AUTH_TIMEOUT_BUF_LEN 0x04
-
-#define HAL_NFC_FW_UPDATE_STATUS_EVT 0xA
+#define SN1XX_ROM_VERSION      0x01
+#define SN1XX_FW_MAJOR_VERSION 0x10
 
 /*Mem alloc with 8 byte alignment*/
 #define size_align(sz) ((((sz)-1) | 7) + 1)
@@ -213,7 +213,6 @@ typedef int (*fpRegRfFwDndl_t)(uint8_t* fw_update_req,
                    uint8_t skipEEPROMRead);
 typedef int (*fpPropConfCover_t)(bool attached, int type);
 void phNxpNciHal_initializeRegRfFwDnld();
-void phNxpNciHal_initializeRegRfFwDnld();
 void phNxpNciHal_deinitializeRegRfFwDnld();
 /*set config management*/
 
@@ -293,6 +292,7 @@ typedef struct phNxpNciProfile_Control {
 #define NCI_HAL_ERROR_MSG 0x415
 #define NCI_HAL_HCI_NETWORK_RESET_MSG 0x416
 #define NCI_HAL_RX_MSG 0xF01
+#define HAL_NFC_FW_UPDATE_STATUS_EVT 0x0A
 
 #define NCIHAL_CMD_CODE_LEN_BYTE_OFFSET (2U)
 #define NCIHAL_CMD_CODE_BYTE_LEN (3U)
@@ -306,8 +306,8 @@ int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t *p_data,
                                int origin);
 NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info);
 int phNxpNciHal_check_config_parameter();
-NFCSTATUS phNxpNciHal_fw_download(void);
-NFCSTATUS phNxpNciHal_nfcc_core_reset_init();
+NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset = 0);
+NFCSTATUS phNxpNciHal_nfcc_core_reset_init(bool keep_config = false);
 int phNxpNciHal_fw_mw_ver_check();
 NFCSTATUS phNxpNciHal_check_clock_config(void);
 NFCSTATUS phNxpNciHal_china_tianjin_rf_setting(void);
