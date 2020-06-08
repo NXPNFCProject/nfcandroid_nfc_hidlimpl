@@ -341,7 +341,7 @@ NCI_LxDebug_Decoder::parseL2DbgNtf(psLxNtfCoded_t   psLxNtfCoded,
 
     do
     {
-        psLxNtfDecoded->psL2NtfDecoded->tlvCount = tlvCount++;
+        psLxNtfDecoded->psL2NtfDecoded->tlvCount = tlvCount;
         psLxNtfDecodingInfo->baseIndex           = tlvIndex;
 
         if(psLxNtfCoded->pLxNtf[tlvIndex] == (L2_EVT_TAG_ID | L2_EVT_TAG_ID_LEN))
@@ -453,7 +453,7 @@ NCI_LxDebug_Decoder::parseL2DbgNtf(psLxNtfCoded_t   psLxNtfCoded,
         {
             phOsal_LogDebug((const uint8_t*)"LxDecoder> Invalid Length !");
         }
-    } while((totalTLVlength > 0) && (tlvCount <= MAX_TLV));
+    } while((totalTLVlength > 0) && (++tlvCount < MAX_TLV));
 
     LOG_FUNCTION_EXIT;
 }
