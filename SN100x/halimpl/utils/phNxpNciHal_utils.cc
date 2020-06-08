@@ -479,16 +479,6 @@ void phNxpNciHal_emergency_recovery(uint8_t status) {
   case CORE_RESET_TRIGGER_TYPE_WATCHDOG_RESET:
   case CORE_RESET_TRIGGER_TYPE_INPUT_CLOCK_LOST:
   case CORE_RESET_TRIGGER_TYPE_UNRECOVERABLE_ERROR: {
-    const uint8_t cmd[] = {0x20, 0x03, 0x0B, 0x05, 0xA0, 0x39, 0xA0,
-                     0x1A, 0xA0, 0x1B, 0xA0, 0x1C, 0xA0, 0x27};
-    if (!phNxpNciHal_nfcc_core_reset_init()) {
-      if (phNxpNciHal_send_get_cfg(cmd, sizeof(cmd))) {
-        NXPLOG_NCIHAL_E("%s Get config failed.", __func__);
-      }
-    } else {
-      NXPLOG_NCIHAL_E(
-          "Core reset and init failed..! aborting without Getconfig");
-    }
     NXPLOG_NCIHAL_E("abort()");
     abort();
   }
