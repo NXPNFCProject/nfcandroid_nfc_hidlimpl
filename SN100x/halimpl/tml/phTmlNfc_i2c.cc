@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2020 NXP Semiconductors
+ * Copyright (C) 2010-2020 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ bool_t notifyFwrequest;
 sem_t txrxSemaphore;
 static int phTmlNfc_sem_timed_wait();
 static void phTmlNfc_sem_post();
+extern phTmlNfc_Context_t* gpphTmlNfc_Context;
 #endif
 /*******************************************************************************
 **
@@ -114,6 +115,42 @@ NFCSTATUS phTmlNfc_i2c_open_and_configure(pphTmlNfc_Config_t pConfig,
 #endif
   return NFCSTATUS_SUCCESS;
 }
+
+#if(NXP_EXTNS == TRUE)
+/*******************************************************************************
+**
+** Function         phTmlNfc_i2c_flushdata
+**
+** Description      Reads payload of FW rsp from PN54X device into given buffer
+**
+** Parameters       pDevHandle - valid device handle
+**                  pBuffer    - buffer for read data
+**                  numRead    - number of bytes read by calling function
+**
+** Returns          always returns -1
+**
+*******************************************************************************/
+static int phTmlNfc_i2c_flushdata(void* pDevHandle, uint8_t* pBuffer, int numRead) {
+  int retRead = 0;
+  uint16_t totalBtyesToRead = pBuffer[FW_DNLD_LEN_OFFSET] + FW_DNLD_HEADER_LEN + CRC_LEN;
+  /* we shall read totalBtyesToRead-1 as one byte is already read by calling function*/
+  retRead = read((intptr_t)pDevHandle, pBuffer + numRead, totalBtyesToRead - 1);
+  if (retRead > 0) {
+    numRead += retRead;
+    phNxpNciHal_print_packet("RECV", pBuffer, numRead);
+  } else if (retRead == 0) {
+    NXPLOG_TML_E("%s _i2c_read() [pyld] EOF", __func__);
+  } else {
+    if (bFwDnldFlag == false) {
+      NXPLOG_TML_D("%s _i2c_read() [hdr] received", __func__);
+      phNxpNciHal_print_packet("RECV", pBuffer - numRead, NORMAL_MODE_HEADER_LEN);
+    }
+    NXPLOG_TML_E("%s _i2c_read() [pyld] errno : %x", __func__, errno);
+  }
+  phTmlNfc_sem_post();
+  return -1;
+}
+#endif
 
 /*******************************************************************************
 **
@@ -183,13 +220,19 @@ int phTmlNfc_i2c_read(void* pDevHandle, uint8_t* pBuffer, int nNbBytesToRead) {
 
     if (bFwDnldFlag == false) {
       totalBtyesToRead = NORMAL_MODE_HEADER_LEN;
+#if(NXP_EXTNS == TRUE)
+      if (gpphTmlNfc_Context->tReadInfo.pContext != NULL &&
+              !memcmp(gpphTmlNfc_Context->tReadInfo.pContext, "MinOpen", 0x07) &&
+              !pBuffer[0] && pBuffer[1]) {
+        return phTmlNfc_i2c_flushdata(pDevHandle, pBuffer, numRead);
+      }
+#endif
     } else {
       totalBtyesToRead = FW_DNLD_HEADER_LEN;
     }
 
     if (numRead < totalBtyesToRead) {
-      ret_Read =
-          read((intptr_t)pDevHandle, pBuffer, totalBtyesToRead - numRead);
+      ret_Read = read((intptr_t)pDevHandle, pBuffer, totalBtyesToRead - numRead);
 
       if (ret_Read != totalBtyesToRead - numRead) {
 #if(NXP_EXTNS == TRUE)
@@ -202,15 +245,12 @@ int phTmlNfc_i2c_read(void* pDevHandle, uint8_t* pBuffer, int nNbBytesToRead) {
       }
     }
     if (bFwDnldFlag == true) {
-      totalBtyesToRead =
-          pBuffer[FW_DNLD_LEN_OFFSET] + FW_DNLD_HEADER_LEN + CRC_LEN;
+      totalBtyesToRead = pBuffer[FW_DNLD_LEN_OFFSET] + FW_DNLD_HEADER_LEN + CRC_LEN;
     } else {
-      totalBtyesToRead =
-          pBuffer[NORMAL_MODE_LEN_OFFSET] + NORMAL_MODE_HEADER_LEN;
+      totalBtyesToRead = pBuffer[NORMAL_MODE_LEN_OFFSET] + NORMAL_MODE_HEADER_LEN;
     }
     if ((totalBtyesToRead - numRead) != 0) {
-      ret_Read = read((intptr_t)pDevHandle, (pBuffer + numRead),
-                      totalBtyesToRead - numRead);
+      ret_Read = read((intptr_t)pDevHandle, (pBuffer + numRead), totalBtyesToRead - numRead);
       if (ret_Read > 0) {
         numRead += ret_Read;
       } else if (ret_Read == 0) {
