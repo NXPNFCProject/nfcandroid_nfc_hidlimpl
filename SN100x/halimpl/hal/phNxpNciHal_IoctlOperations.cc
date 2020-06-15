@@ -273,7 +273,6 @@ int phNxpNciHal_ioctlIf(long arg, void *p_data) {
   NXPLOG_NCIHAL_D("%s : enter - arg = %ld", __func__, arg);
   nfc_nci_IoctlInOutData_t *pInpOutData = (nfc_nci_IoctlInOutData_t *)p_data;
   int ret = -1;
-
   switch (arg) {
   case HAL_NFC_IOCTL_CHECK_FLASH_REQ:
     ret = phNxpNciHal_CheckFlashReq(pInpOutData);
@@ -287,6 +286,7 @@ int phNxpNciHal_ioctlIf(long arg, void *p_data) {
   case HAL_ESE_IOCTL_NFC_JCOP_DWNLD:
     if (pInpOutData == NULL) {
       NXPLOG_NCIHAL_E("%s : received invalid param", __func__);
+      break;
     } else{
       NXPLOG_NCIHAL_D("HAL_ESE_IOCTL_NFC_JCOP_DWNLD Enter value is %d: \n",
               pInpOutData->inp.data.nciCmd.p_cmd[0]);
