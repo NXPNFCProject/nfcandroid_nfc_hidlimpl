@@ -470,7 +470,7 @@ string phNxpNciHal_getNxpConfigIf() {
   size_t config_size = readConfigFile(default_nxp_config_path, &p_config);
   if (config_size) {
     config.assign((char *)p_config, config_size);
-    free(p_config);
+    delete[] p_config;
     phNxpNciHal_getFilteredConfig(config);
   }
   return config;
