@@ -51,6 +51,7 @@ using android::base::WriteStringToFile;
 #define PN547C2_CLOCK_SETTING
 #define CORE_RES_STATUS_BYTE 3
 #define MAX_NXP_HAL_EXTN_BYTES 10
+#define MAX_CORE_INIT_RETRY  4
 
 /* Processing of ISO 15693 EOF */
 extern uint8_t icode_send_eof;
@@ -1388,7 +1389,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       free(buffer);
       buffer = NULL;
     }
-    if (retry_core_init_cnt > 3) {
+    if (retry_core_init_cnt >=  MAX_CORE_INIT_RETRY) {
         return NFCSTATUS_FAILED;
     }
     if(nfcFL.chipType != sn100u) {
@@ -1828,7 +1829,10 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     status = phNxpNciHal_china_tianjin_rf_setting();
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("phNxpNciHal_china_tianjin_rf_setting failed");
-      return NFCSTATUS_FAILED;
+      /*Skipping retry as it is performed as part of the function itself.
+      Hence keeping retry count to max value to exit from the function*/
+      retry_core_init_cnt = MAX_CORE_INIT_RETRY;
+      goto retry_core_init;
     }
     if(nfcFL.chipType != sn100u) {
       // Update eeprom value
