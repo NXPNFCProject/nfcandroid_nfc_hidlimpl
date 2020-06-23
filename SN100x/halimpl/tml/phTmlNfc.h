@@ -110,7 +110,6 @@ typedef enum {
                                  */
   phTmlNfc_e_EnableDownloadModeWithVenRst,
   phTmlNfc_e_PowerReset = 5,
-  phTmlNfc_e_SetFwDownloadHdrSize,
 } phTmlNfc_ControlCode_t;     /* Control code for IOCTL call */
 
 /*
