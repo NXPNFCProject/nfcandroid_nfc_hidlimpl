@@ -43,9 +43,11 @@ tNFC_chipType capability::processChipType(uint8_t* msg, uint16_t msg_len) {
              chipType = sn100u;
            else if (msg[msg_len-3] == 0x01 && msg[msg_len-2] == 0x01)
              chipType = sn220u;
-        }  else if ((offsetInitFwVersion < msg_len) &&
-             (msg[offsetInitFwVersion] == 0x12)) {
-             chipType = pn81T;
+        }  else if (msg[0] == 0x00) {
+            if (msg[offsetFwRomCodeVersion] == 0x01 && msg[offsetFwMajorVersion] == 0x01)
+                chipType = sn220u;
+            if (msg[offsetFwRomCodeVersion] == 0x01 && msg[offsetFwMajorVersion] == 0x10)
+                chipType = sn100u;
         }
         else if(offsetHwVersion < msg_len) {
             ALOGD ("%s HwVersion : 0x%02x", __func__,msg[msg_len-4]);

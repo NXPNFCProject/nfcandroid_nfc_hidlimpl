@@ -40,6 +40,8 @@
 #define NXP_AUTH_TIMEOUT_BUF_LEN 0x04
 #define SN1XX_ROM_VERSION      0x01
 #define SN1XX_FW_MAJOR_VERSION 0x10
+#define SN2XX_ROM_VERSION      0x01
+#define SN2XX_FW_MAJOR_VERSION 0x01
 
 /*Mem alloc with 8 byte alignment*/
 #define size_align(sz) ((((sz)-1) | 7) + 1)

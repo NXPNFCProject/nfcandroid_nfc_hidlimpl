@@ -25,8 +25,8 @@ class capability {
 private:
     static capability* instance;
     const uint16_t offsetHwVersion = 24;
-    const uint16_t offsetInitFwVersion = 25;
-    //const uint16_t offsetRstFwVersion = 9;
+    const uint16_t offsetFwRomCodeVersion = 4;
+    const uint16_t offsetFwMajorVersion = 7;
   /*product[] will be used to print product version and
   should be kept in accordance with tNFC_chipType*/
   const char* product[13] = {"UNKNOWN", "PN547C2", "PN65T", "PN548C2",
