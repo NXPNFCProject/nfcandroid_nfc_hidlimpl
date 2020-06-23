@@ -955,6 +955,16 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
         wStatus = phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, MODE_FW_DWND_HDR);
         break;
       }
+      case phTmlNfc_e_EnableDownloadModeWithVenRst: {
+        phTmlNfc_ConfigNciPktReTx(phTmlNfc_e_DisableRetrans, 0);
+        gpphTmlNfc_Context->tReadInfo.bEnable = 0;
+        NXPLOG_TML_D(" phTmlNfc_e_EnableDownloadModewithVenRst complete with VEN RESET ");
+        wStatus = phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, MODE_FW_DWNLD_WITH_VEN);
+        usleep(100 * 1000);
+        gpphTmlNfc_Context->tReadInfo.bEnable = 1;
+        sem_post(&gpphTmlNfc_Context->rxSemaphore);
+        break;
+      }
       default: {
         wStatus = NFCSTATUS_INVALID_PARAMETER;
         break;

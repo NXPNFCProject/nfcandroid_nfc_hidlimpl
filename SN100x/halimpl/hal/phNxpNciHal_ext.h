@@ -38,7 +38,6 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
 
 extern bool_t wFwUpdateReq;
 extern bool_t wRfUpdateReq;
-extern bool_t force_fw_download_req;
 extern fpRegRfFwDndl_t fpRegRfFwDndl;
 extern fpPropConfCover_t fpPropConfCover;
 #define UINT8_TO_STREAM(p, u8) \
