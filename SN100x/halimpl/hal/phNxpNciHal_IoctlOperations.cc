@@ -702,7 +702,7 @@ int phNxpNciHal_CheckFwRegFlashRequired(uint8_t *fw_update_req,
     status = fpRegRfFwDndl(fw_update_req, rf_update_req, skipEEPROMRead);
   } else {
     status = phDnldNfc_InitImgInfo();
-    NXPLOG_NCIHAL_D("FW version of the libsn100u.so binary = 0x%x", wFwVer);
+    NXPLOG_NCIHAL_D("FW version from the binary(.so/bin) = 0x%x", wFwVer);
     NXPLOG_NCIHAL_D("FW version found on the device = 0x%x", wFwVerRsp);
 
     if (!GetNxpNumValue(NAME_NXP_FLASH_CONFIG, &option,
