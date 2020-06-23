@@ -1713,11 +1713,6 @@ static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
         /* Call Tml Ioctl to enable/restore normal mode */
         wStatus = phTmlNfc_IoCtl(phTmlNfc_e_EnableNormalMode);
       }
-      if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD || (gphNxpNciHal_fw_IoctlCtx.bChipVer & PHDNLDNFC_HWVER_VENUS_MRA1_0)){
-        phDnldNfc_SetDlRspTimeout((uint16_t)PHDNLDNFC_RESET_RSP_TIMEOUT);
-        wStatus = phNxpNciHal_fw_dnld_reset(pContext, wStatus, &pInfo);
-        phDnldNfc_SetDlRspTimeout((uint16_t)PHDNLDNFC_RSP_TIMEOUT);
-      }
       if (NFCSTATUS_SUCCESS != wStatus) {
         NXPLOG_FWDNLD_E("Switching to NormalMode Failed!!");
       } else {
