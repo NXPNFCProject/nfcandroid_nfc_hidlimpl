@@ -583,7 +583,7 @@ void phTmlNfc_CleanUp(void) {
   }
   if (NULL != gpphTmlNfc_Context->pDevHandle) {
 #if(NXP_EXTNS == TRUE)
-    if(nfcFL.chipType != sn100u){
+    if(nfcFL.chipType < sn100u){
 #endif
       (void)phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_OFF);
 #if(NXP_EXTNS == TRUE)

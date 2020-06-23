@@ -160,6 +160,7 @@ static void phNxpNciHal_initialize_mifare_flag();
 static NFCSTATUS phNxpNciHalRFConfigCmdRecSequence();
 static NFCSTATUS phNxpNciHal_CheckRFCmdRespStatus();
 static void phNxpNciHal_UpdateFwStatus(HalNfcFwUpdateStatus fwStatus);
+static NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode();
 static NFCSTATUS phNxpNciHal_resetDefaultSettings(uint8_t fw_update_req, bool keep_config);
 static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset = 0);
 static int phNxpNciHal_MinOpen_Clean (char *nfc_dev_node);
@@ -376,12 +377,10 @@ static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset) {
   NXPLOG_NCIHAL_D("FW version for FW file = 0x%x", wFwVer);
   NXPLOG_NCIHAL_D("FW version from device = 0x%x", wFwVerRsp);
   if (wFwVerRsp == 0) {
-    nfcFL.chipType = sn100u;
-    tNFC_chipType chipType = sn100u;
-    CONFIGURE_FEATURELIST(chipType);
-    nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_VEN_RESET;
-    fw_maj_ver = SN1XX_FW_MAJOR_VERSION;
-    rom_version = SN1XX_ROM_VERSION;
+      status = phNxpNciHal_getChipInfoInFwDnldMode();
+      if (status != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("phNxpNciHal_getChipInfoInFwDnldMode Failed");
+      }
   }
   if (NFCSTATUS_SUCCESS == phNxpNciHal_CheckValidFwVersion()) {
     NXPLOG_NCIHAL_D("FW update required");
@@ -463,6 +462,7 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset) {
   if (NFCSTATUS_SUCCESS == status) {
     phTmlNfc_EnableFwDnldMode(true);
     /* Set the obtained device handle to download module */
+
     phDnldNfc_SetHwDevHandle();
     NXPLOG_NCIHAL_D("Calling Seq handler for FW Download \n");
     uint8_t retry = 2;
@@ -530,7 +530,11 @@ NFCSTATUS phNxpNciHal_CheckValidFwVersion(void) {
   ufw_current_major_no = ((0x00FF) & (wFwVer >> 8U));
   NXPLOG_NCIHAL_D("%s current_major_no = 0x%x", __func__, ufw_current_major_no);
 
-  if ((ufw_current_major_no == nfcFL._FW_MOBILE_MAJOR_NUMBER) ||
+  if (wFwVerRsp == 0) {
+    NXPLOG_NCIHAL_E(
+        "FW Version not received by NCI command >>> Force Firmware download");
+    status = NFCSTATUS_SUCCESS;
+  } else if ((ufw_current_major_no == nfcFL._FW_MOBILE_MAJOR_NUMBER) ||
       ((ufw_current_major_no == FW_MOBILE_MAJOR_NUMBER_PN81A) &&
         (nxpncihal_ctrl.nci_info.nci_version == NCI_VERSION_2_0)))
   {
@@ -551,13 +555,7 @@ NFCSTATUS phNxpNciHal_CheckValidFwVersion(void) {
     status = NFCSTATUS_SUCCESS;
   }
 #endif
-  else if (wFwVerRsp == 0) {
-    NXPLOG_NCIHAL_E(
-        "FW Version not received by NCI command >>> Force Firmware download");
-    tNFC_chipType chipType = sn100u;
-    CONFIGURE_FEATURELIST(chipType);
-    status = NFCSTATUS_SUCCESS;
-  } else {
+  else {
     NXPLOG_NCIHAL_E("Wrong FW Version >>> Firmware download not allowed");
   }
 
@@ -919,6 +917,9 @@ int phNxpNciHal_fw_mw_ver_check() {
     } else if ((nfcFL.chipType == sn100u) &&
             (rom_version == SN1XX_ROM_VERSION) && (fw_maj_ver == SN1XX_FW_MAJOR_VERSION)) {
         status = NFCSTATUS_SUCCESS;
+    } else if ((nfcFL.chipType == sn220u) &&
+            (rom_version == SN2XX_ROM_VERSION) && (fw_maj_ver == SN2XX_FW_MAJOR_VERSION)) {
+        status = NFCSTATUS_SUCCESS;
     }
     if (NFCSTATUS_SUCCESS != status) {
       NXPLOG_NCIHAL_D("Chip Version Middleware Version mismatch!!!!");
@@ -1240,6 +1241,9 @@ static void phNxpNciHal_read_complete(void* pContext,
         nxpncihal_ctrl.rx_data_len = pInfo->wLength;
         status = phNxpNciHal_process_ext_rsp(nxpncihal_ctrl.p_rx_data,
                                           &nxpncihal_ctrl.rx_data_len);
+        if (nxpncihal_ctrl.hal_ext_enabled && getDownloadFlag()) {
+          SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
+        }
     }
     phNxpNciHal_print_res_status(pInfo->pBuff,
                                     &pInfo->wLength);
@@ -3292,6 +3296,49 @@ retry_send_ext:
     }
   }
 
+  return status;
+}
+
+
+/******************************************************************************
+ * Function         phNxpNciHal_getChipInfoInFwDnldMode
+ *
+ * Description      Helper function to get the chip info in download mode
+ *
+ * Returns          Status
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode() {
+  uint8_t retry_cnt = 0;
+  nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_VEN_RESET;
+  uint8_t get_chip_info_cmd[] = {0x00, 0x04, 0xF1, 0x00,
+                                 0x00, 0x00, 0x6E, 0xEF};
+  NFCSTATUS status = phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadMode);
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("Enable Download mode failed");
+  }
+  phTmlNfc_EnableFwDnldMode(true);
+  HAL_ENABLE_EXT();
+retry:
+  status =
+      phNxpNciHal_send_ext_cmd(sizeof(get_chip_info_cmd), get_chip_info_cmd);
+  if(status == NFCSTATUS_SUCCESS) {
+    /* Check FW getResponse command response status byte */
+    if(nxpncihal_ctrl.p_rx_data[2] != 0x00)
+      status = NFCSTATUS_FAILED;
+  }
+  if (status != NFCSTATUS_SUCCESS) {
+    if (retry_cnt < 3) {
+      NXPLOG_NCIHAL_D("Retry: get chip info");
+      retry_cnt++;
+      goto retry;
+    }
+  }
+  HAL_DISABLE_EXT();
+  phTmlNfc_EnableFwDnldMode(false);
+  phNxpNciHal_configFeatureList(nxpncihal_ctrl.p_rx_data,
+                                nxpncihal_ctrl.rx_data_len);
+  nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_VEN_RESET;
   return status;
 }
 
