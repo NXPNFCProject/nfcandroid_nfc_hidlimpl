@@ -123,6 +123,19 @@ class NfccTransport {
   virtual int NfccReset(void *pDevHandle, NfccResetType eType);
 
   /*****************************************************************************
+  **
+  ** Function         GetNfcState
+  **
+  ** Description      Get NFC state
+  **
+  ** Parameters       pDevHandle     - valid device handle
+  ** Returns           0   - unknown
+  **                   1   - FW DWL
+  **                   2   - NCI
+  **
+  *****************************************************************************/
+  virtual int GetNfcState(void *pDevHandle);
+  /*****************************************************************************
    **
    ** Function         EseReset
    **

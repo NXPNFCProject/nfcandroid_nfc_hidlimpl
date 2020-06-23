@@ -46,7 +46,12 @@
  * get platform interface type(i2c or i3c) for common MW
  * return 0 - i2c, 1 - i3c
  */
-#define P544_GET_PLATFORM_INTERFACE _IO(PN544_MAGIC, 0x0B)
+#define P544_GET_PLATFORM_INTERFACE _IO(PN544_MAGIC, 0x04)
+/*
+ * get boot state
+ * return unknown, fw dwl, fw teared, nci
+ */
+#define P544_GET_NFC_STATE _IO(PN544_MAGIC, 0x05)
 
 extern phTmlNfc_i2cfragmentation_t fragmentation_enabled;
 
@@ -203,6 +208,20 @@ class NfccI2cTransport : public NfccTransport {
    **
    ****************************************************************************/
   int GetPlatform(void *pDevHandle);
+
+  /*****************************************************************************
+  **
+  ** Function         GetNfcState
+  **
+  ** Description      Get Nfc state
+  **
+  ** Parameters       pDevHandle     - valid device handle
+  ** Returns           0   - unknown
+  **                   1   - FW DWL
+  **                   2   - NCI
+  **
+  *****************************************************************************/
+  int GetNfcState(void *pDevHandle);
 
   /*****************************************************************************
    **

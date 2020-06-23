@@ -417,6 +417,28 @@ int NfccI2cTransport::GetPlatform(void *pDevHandle) {
 
 /*******************************************************************************
 **
+** Function         GetNfcState
+**
+** Description      Get NFC state
+**
+** Parameters       pDevHandle     - valid device handle
+** Returns           0   - unknown
+**                   1   - FW DWL
+**                   2 	 - NCI
+**
+*******************************************************************************/
+int NfccI2cTransport::GetNfcState(void *pDevHandle) {
+  int ret = NFC_STATE_UNKNOWN;
+  NXPLOG_TML_D("%s ", __func__);
+  if (NULL == pDevHandle) {
+    return ret;
+  }
+  ret = ioctl((intptr_t)pDevHandle, P544_GET_NFC_STATE);
+  NXPLOG_TML_D("%s :nfc state = %d", __func__, ret);
+  return ret;
+}
+/*******************************************************************************
+**
 ** Function         EnableFwDnldMode
 **
 ** Description      updates the state to Download mode

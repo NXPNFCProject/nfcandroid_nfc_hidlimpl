@@ -122,6 +122,15 @@ typedef enum {
   phTmlNfc_e_DisableRetrans = 0x01 /*Disable retransmission of Nci packet */
 } phTmlNfc_ConfigRetrans_t;        /* Configuration for Retransmission */
 
+/*nfc state flags*/
+enum nfc_state_flags {
+    /*nfc in unknown state */
+    NFC_STATE_UNKNOWN = 0,
+    /*nfc booted in download mode */
+    NFC_STATE_FW_DWL = 0x1,
+    /*nfc booted in NCI mode */
+    NFC_STATE_NCI = 0x2,
+};
 /*
  * Structure containing details related to read and write operations
  *
@@ -178,6 +187,7 @@ typedef struct phTmlNfc_Context {
                         queue*/
   long    nfc_service_pid; /*NFC Service PID to be used by driver to signal*/
   int platform_type; /*for common(i2c or i3c) mw implementation*/
+  int nfc_state;    /*to get the initial boot state*/
 } phTmlNfc_Context_t;
 
 /*
