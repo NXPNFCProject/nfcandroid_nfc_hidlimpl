@@ -386,7 +386,7 @@ static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset) {
   if (NFCSTATUS_SUCCESS == phNxpNciHal_CheckValidFwVersion()) {
     NXPLOG_NCIHAL_D("FW update required");
     nxpncihal_ctrl.phNxpNciGpioInfo.state = GPIO_UNKNOWN;
-    if(nfcFL.chipType != sn100u)
+    if(nfcFL.chipType < sn100u)
       phNxpNciHal_gpio_restore(GPIO_STORE);
     fw_download_success = 0;
     status = phNxpNciHal_fw_download(seq_handler_offset);
@@ -409,8 +409,8 @@ static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset) {
       wConfigStatus = NFCSTATUS_FAILED;
     }
 
-    if(nfcFL.chipType != sn100u) {
-      status = phNxpNciHal_nfcc_core_reset_init();
+    status = phNxpNciHal_nfcc_core_reset_init();
+    if(status == NFCSTATUS_SUCCESS && nfcFL.chipType < sn100u) {
       if(status == NFCSTATUS_SUCCESS) {
         phNxpNciHal_gpio_restore(GPIO_RESTORE);
       } else {
@@ -671,8 +671,6 @@ int phNxpNciHal_MinOpen (){
     NXPLOG_NCIHAL_D("phNxpNciHal_MinOpen(): already open");
     return NFCSTATUS_SUCCESS;
   }
-  setNxpRfConfigPath("/system/vendor/libnfc-nxp_RF.conf");
-  setNxpFwConfigPath("/system/vendor/lib64/libsn100u_fw.so");
   phNxpNciHal_initializeRegRfFwDnld();
 
   int8_t ret_val = 0x00;
@@ -788,6 +786,7 @@ int phNxpNciHal_MinOpen (){
       fw_update_req = FALSE;
       rf_update_req = FALSE;
     }
+    setNxpFwConfigPath(nfcFL._FW_LIB_PATH.c_str());
 
     if (!wFwUpdateReq) {
       uint8_t is_teared_down = 0x00;
@@ -2267,7 +2266,7 @@ int phNxpNciHal_close(bool bShutdown) {
   GetNxpNumValue(NAME_NXP_CORE_PWR_OFF_AUTONOMOUS_ENABLE, &num, sizeof(num));
   bool bIsAutonomousModeEnableReqdInPhoneOff = (num == 0x01);
   nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
-  if (bShutdown && bIsAutonomousModeEnableReqdInPhoneOff ) {
+  if (bShutdown && bIsAutonomousModeEnableReqdInPhoneOff && (nfcFL.chipType = sn220u)) {
     NXPLOG_NCIHAL_D("Power shutdown with autonomous mode enable");
     uint8_t coreStandBy[] = {0x2F, 0x00, 0x01, 0x02};
     status = phNxpNciHal_send_ext_cmd(sizeof(coreStandBy), coreStandBy);
@@ -3790,8 +3789,6 @@ void phNxpNciHal_configFeatureList(uint8_t* init_rsp, uint16_t rsp_len) {
     tNFC_chipType chipType = nxpncihal_ctrl.chipType;
     NXPLOG_NCIHAL_D("phNxpNciHal_configFeatureList ()chipType = %d", chipType);
     CONFIGURE_FEATURELIST(chipType);
-    NXPLOG_NCIHAL_D("phNxpNciHal_configFeatureList ()chipType = %d", chipType);
-        NXPLOG_NCIHAL_D("phNxpNciHal_configFeatureList ()FW = %d", nfcFL._FW_MOBILE_MAJOR_NUMBER);
 }
 
 /*******************************************************************************

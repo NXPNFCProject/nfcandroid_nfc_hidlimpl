@@ -32,6 +32,7 @@
 #define FW_MOBILE_MAJOR_NUMBER_PN81A 0x02
 #define FW_MOBILE_MAJOR_NUMBER_PN557 0x01
 #define FW_MOBILE_MAJOR_NUMBER_SN100U 0x010
+#define FW_MOBILE_MAJOR_NUMBER_SN220U 0x01
 
 /*Including T4T NFCEE by incrementing 1*/
 #define NFA_EE_MAX_EE_SUPPORTED 5
@@ -71,7 +72,8 @@ typedef enum {
     pn80T,
     pn557,
     pn81T,
-    sn100u
+    sn100u,
+    sn220u
 }tNFC_chipType;
 
 typedef struct {
@@ -185,7 +187,8 @@ extern tNfc_featureList nfcFL;
         }                                                                   \
         if ((chipType == pn65T) || (chipType == pn66T) ||                   \
                 (chipType == pn67T) || (chipType == pn80T) ||               \
-                (chipType == pn81T) || (chipType == sn100u)) {                                      \
+                (chipType == pn81T) || (chipType == sn100u) ||              \
+                (chipType == sn220u)) {                                     \
             nfcFL.nfcNxpEse = true;                                         \
             CONFIGURE_FEATURELIST_NFCC_WITH_ESE(chipType)                   \
         } \
@@ -213,7 +216,7 @@ extern tNfc_featureList nfcFL;
         \
         nfcFL.eseFL._NCI_NFCEE_PWR_LINK_CMD = false;                        \
         nfcFL.nfcMwFL._NFC_NXP_AID_MAX_SIZE_DYN = true;                     \
-        if ((chipType == sn100u)) {                                         \
+        if (chipType == sn100u) {                                           \
             CONFIGURE_FEATURELIST_NFCC(sn100u)                              \
             nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true;                 \
             nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 5;                      \
@@ -225,7 +228,7 @@ extern tNfc_featureList nfcFL;
             nfcFL.eseFL._ESE_DUAL_MODE_PRIO_SCHEME =                        \
             nfcFL.eseFL._ESE_UICC_DUAL_MODE;                                \
             nfcFL.eseFL._ESE_RESET_METHOD = true;                           \
-            nfcFL.eseFL._ESE_POWER_MODE = false;                             \
+            nfcFL.eseFL._ESE_POWER_MODE = false;                            \
             nfcFL.eseFL._ESE_P73_ISO_RST = true;                            \
             nfcFL.eseFL._WIRED_MODE_STANDBY = false;                        \
             nfcFL.eseFL._ESE_ETSI_READER_ENABLE = true;                     \
@@ -234,7 +237,32 @@ extern tNfc_featureList nfcFL;
             nfcFL.eseFL._UICC_HANDLE_CLEAR_ALL_PIPES = true;                \
             nfcFL.eseFL._GP_CONTINOUS_PROCESSING = false;                   \
             nfcFL.eseFL._ESE_DWP_SPI_SYNC_ENABLE = false;                   \
-            nfcFL.eseFL._ESE_ETSI12_PROP_INIT = false;                       \
+            nfcFL.eseFL._ESE_ETSI12_PROP_INIT = false;                      \
+            nfcFL.eseFL._BLOCK_PROPRIETARY_APDU_GATE = false;               \
+            nfcFL.eseFL._LEGACY_APDU_GATE = true;                           \
+        }                                                                   \
+        if (chipType == sn220u) {                                           \
+            CONFIGURE_FEATURELIST_NFCC(sn220u)                              \
+            nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true;                 \
+            nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 4;                      \
+            \
+            \
+            nfcFL.eseFL._NCI_NFCEE_PWR_LINK_CMD = true;                     \
+            nfcFL.eseFL._NXP_ESE_JCOP_OSU_UAI_ENABLED = true;               \
+            nfcFL.eseFL._ESE_FELICA_CLT = true;                             \
+            nfcFL.eseFL._ESE_DUAL_MODE_PRIO_SCHEME =                        \
+            nfcFL.eseFL._ESE_UICC_DUAL_MODE;                                \
+            nfcFL.eseFL._ESE_RESET_METHOD = true;                           \
+            nfcFL.eseFL._ESE_POWER_MODE = false;                            \
+            nfcFL.eseFL._ESE_P73_ISO_RST = true;                            \
+            nfcFL.eseFL._WIRED_MODE_STANDBY = false;                        \
+            nfcFL.eseFL._ESE_ETSI_READER_ENABLE = true;                     \
+            nfcFL.eseFL._ESE_SVDD_SYNC = false;                             \
+            nfcFL.eseFL._ESE_JCOP_DWNLD_PROTECTION = true;                  \
+            nfcFL.eseFL._UICC_HANDLE_CLEAR_ALL_PIPES = true;                \
+            nfcFL.eseFL._GP_CONTINOUS_PROCESSING = false;                   \
+            nfcFL.eseFL._ESE_DWP_SPI_SYNC_ENABLE = false;                   \
+            nfcFL.eseFL._ESE_ETSI12_PROP_INIT = false;                      \
             nfcFL.eseFL._BLOCK_PROPRIETARY_APDU_GATE = false;               \
             nfcFL.eseFL._LEGACY_APDU_GATE = true;                           \
         }                                                                   \
@@ -369,14 +397,14 @@ extern tNfc_featureList nfcFL;
         nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_VEN_RESET;          \
         \
         \
-        if (chipType == sn100u)                                              \
+        if (chipType == sn220u)                                             \
         {                                                                   \
-            nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_NCI_CMD;         \
+            nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_NCI_CMD;        \
             nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;           \
             nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = false;                      \
             nfcFL.nfccFL._NFCC_MW_RCVRY_BLK_FW_DNLD = true;                 \
             nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_EXT_SWITCH = false;        \
-            nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_WO_EXT_SWITCH = false;      \
+            nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_WO_EXT_SWITCH = false;     \
             nfcFL.nfccFL._NFCC_FW_WA = true;                                \
             nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT = false;                   \
             nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true;                 \
@@ -391,7 +419,7 @@ extern tNfc_featureList nfcFL;
             \
             \
             nfcFL.eseFL._ESE_ETSI12_PROP_INIT = true;                       \
-            nfcFL.eseFL._EXCLUDE_NV_MEM_DEPENDENCY = true;                 \
+            nfcFL.eseFL._EXCLUDE_NV_MEM_DEPENDENCY = true;                  \
             \
             \
             nfcFL.platformFL._NFCC_RESET_RSP_LEN = 0x10U;                   \
@@ -399,14 +427,51 @@ extern tNfc_featureList nfcFL;
             \
             nfcFL.nfcMwFL._NCI_INTERFACE_UICC_DIRECT = 0x82;                \
             nfcFL.nfcMwFL._NCI_INTERFACE_ESE_DIRECT = 0x83;                 \
-            nfcFL._FW_MOBILE_MAJOR_NUMBER =                         \
+            nfcFL._FW_MOBILE_MAJOR_NUMBER =                                 \
+            FW_MOBILE_MAJOR_NUMBER_SN220U;                                  \
+            SRTCPY_FW("libsn220u_fw", "libsn220u_fw_platform",              \
+                    "libsn220u_fw_pku")                                     \
+            STRCPY_FW_BIN("sn220u")\
+            \
+        }                                                                   \
+        if (chipType == sn100u)                                             \
+        {                                                                   \
+            nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_NCI_CMD;        \
+            nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;           \
+            nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = false;                      \
+            nfcFL.nfccFL._NFCC_MW_RCVRY_BLK_FW_DNLD = true;                 \
+            nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_EXT_SWITCH = false;        \
+            nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_WO_EXT_SWITCH = false;     \
+            nfcFL.nfccFL._NFCC_FW_WA = true;                                \
+            nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT = false;                   \
+            nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true;                 \
+            nfcFL.nfccFL._HW_ANTENNA_LOOP4_SELF_TEST = false;               \
+            nfcFL.nfccFL._NFCEE_REMOVED_NTF_RECOVERY = true;                \
+            nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                    \
+            nfcFL.nfccFL._UICC_CREATE_CONNECTIVITY_PIPE = true;             \
+            nfcFL.nfccFL._NXP_NFC_UICC_ETSI12 = false;                      \
+            nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 3;                      \
+            nfcFL.nfccFL._NFCC_ROUTING_BLOCK_BIT_PROP = false;              \
+            nfcFL.nfccFL._NFCC_AID_MATCHING_PLATFORM_CONFIG = false;        \
+            \
+            \
+            nfcFL.eseFL._ESE_ETSI12_PROP_INIT = true;                       \
+            nfcFL.eseFL._EXCLUDE_NV_MEM_DEPENDENCY = true;                  \
+            \
+            \
+            nfcFL.platformFL._NFCC_RESET_RSP_LEN = 0x10U;                   \
+            \
+            \
+            nfcFL.nfcMwFL._NCI_INTERFACE_UICC_DIRECT = 0x82;                \
+            nfcFL.nfcMwFL._NCI_INTERFACE_ESE_DIRECT = 0x83;                 \
+            nfcFL._FW_MOBILE_MAJOR_NUMBER =                                 \
             FW_MOBILE_MAJOR_NUMBER_SN100U;                                  \
-            SRTCPY_FW("libsn100u_fw", "libsn100u_fw_platform",            \
-                    "libsn100u_fw_pku")                                    \
+            SRTCPY_FW("libsn100u_fw", "libsn100u_fw_platform",              \
+                    "libsn100u_fw_pku")                                     \
             STRCPY_FW_BIN("sn100u")\
             \
             \
-        }                                                                 \
+        }                                                                   \
         if (chipType == pn557)                                              \
         {                                                                   \
             nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;           \

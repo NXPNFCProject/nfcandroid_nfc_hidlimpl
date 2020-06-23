@@ -32,6 +32,7 @@
 #define NFC_MEM_WRITE (0xD1U)
 #define NFC_FW_DOWNLOAD (0x09F7U)
 #define PHLIBNFC_IOCTL_DNLD_SN100U_GETVERLEN (0x07U)
+ #define PHLIBNFC_IOCTL_DNLD_SN220U_GETVERLEN (0x0FU)
 #define PHLIBNFC_DNLD_CHECKINTEGRITYLEN (0x1FU)
 /* External global variable to get FW version */
 extern uint16_t wFwVer;
@@ -541,16 +542,17 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
     if ((0 != pRespBuff->wLen) && (NULL != pRespBuff->pBuff)) {
       bHwVer = (pRespBuff->pBuff[0]);
       bHwVer &= 0x0F; /* 0x0F is the mask to extract chip version */
-
-      if ((PHDNLDNFC_HWVER_MRA2_1 == bHwVer) ||
+      bool isChipTypeMatchedWithHwVersion = ((PHDNLDNFC_HWVER_MRA2_1 == bHwVer) ||
           (PHDNLDNFC_HWVER_MRA2_2 == bHwVer) ||
               ((nfcFL.chipType == pn551) &&
                       ((PHDNLDNFC_HWVER_PN551_MRA1_0 == bHwVer))) ||
                               (((nfcFL.chipType == pn553) || (nfcFL.chipType == pn557)) &&
                                       ((PHDNLDNFC_HWVER_PN553_MRA1_0 == bHwVer ||
                                               (PHDNLDNFC_HWVER_PN553_MRA1_0_UPDATED & pRespBuff->pBuff[0])))) ||
-                                              ((nfcFL.chipType == sn100u) && (PHDNLDNFC_HWVER_VENUS_MRA1_0 & pRespBuff->pBuff[0]))
-      ) {
+                                              ((nfcFL.chipType == sn100u) && (PHDNLDNFC_HWVER_VENUS_MRA1_0 & pRespBuff->pBuff[0])) ||
+                                              ((nfcFL.chipType == sn220u) && (PHDNLDNFC_HWVER_VULCAN_MRA1_0 & pRespBuff->pBuff[0])));
+
+      if (isChipTypeMatchedWithHwVersion) {
           bExpectedLen = PHLIBNFC_IOCTL_DNLD_GETVERLEN_MRA2_1;
           (gphNxpNciHal_fw_IoctlCtx.bChipVer) = bHwVer;
           if (((nfcFL.chipType == pn553) &&
@@ -560,7 +562,11 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
           else if ((PHDNLDNFC_HWVER_VENUS_MRA1_0 & pRespBuff->pBuff[0])) {
               (gphNxpNciHal_fw_IoctlCtx.bChipVer) = pRespBuff->pBuff[0];
               bExpectedLen = PHLIBNFC_IOCTL_DNLD_SN100U_GETVERLEN;
-        }
+          }
+          else if (PHDNLDNFC_HWVER_VULCAN_MRA1_0 & pRespBuff->pBuff[0]) {
+            (gphNxpNciHal_fw_IoctlCtx.bChipVer) = pRespBuff->pBuff[0];
+            bExpectedLen = PHLIBNFC_IOCTL_DNLD_SN220U_GETVERLEN;
+          }
       } else if ((bHwVer >= PHDNLDNFC_HWVER_MRA1_0) &&
                  (bHwVer <= PHDNLDNFC_HWVER_MRA2_0)) {
           bExpectedLen = PHLIBNFC_IOCTL_DNLD_GETVERLEN;
