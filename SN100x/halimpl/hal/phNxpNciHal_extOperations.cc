@@ -144,20 +144,20 @@ void phNxpNciHal_read_and_update_se_state()
       case SE_TYPE_ESE:
         NXPLOG_NCIHAL_D("Get property : SUPPORT_ESE %d", val);
         values[SE_TYPE_ESE] = val;
-        if(val != -1) {
+        if(val > -1) {
           num_se++;
         }
         break;
       case SE_TYPE_UICC:
         NXPLOG_NCIHAL_D("Get property : SUPPORT_UICC %d", val);
         values[SE_TYPE_UICC] = val;
-        if(val != -1) {
+        if(val > -1) {
           num_se++;
         }
         break;
       case SE_TYPE_UICC2:
         values[SE_TYPE_UICC2] = val;
-        if(val != -1) {
+        if(val > -1) {
           num_se++;
         }
         NXPLOG_NCIHAL_D("Get property : SUPPORT_UICC2 %d", val);
@@ -176,7 +176,7 @@ void phNxpNciHal_read_and_update_se_state()
   for (i = 0; i < NUM_SE_TYPES; i++) {
     switch(i) {
       case SE_TYPE_ESE:
-        if(values[SE_TYPE_ESE] != -1) {
+        if(values[SE_TYPE_ESE] > -1) {
           *index++ = 0xA0;
           *index++ = 0xED;
           *index++ = 0x01;
@@ -184,7 +184,7 @@ void phNxpNciHal_read_and_update_se_state()
         }
         break;
       case SE_TYPE_UICC:
-        if(values[SE_TYPE_UICC] != -1) {
+        if(values[SE_TYPE_UICC] > -1) {
           *index++ = 0xA0;
           *index++ = 0xEC;
           *index++ = 0x01;
@@ -192,7 +192,7 @@ void phNxpNciHal_read_and_update_se_state()
         }
         break;
       case SE_TYPE_UICC2:
-        if(values[SE_TYPE_UICC2] != -1) {
+        if(values[SE_TYPE_UICC2] > -1) {
           *index++ = 0xA0;
           *index++ = 0xD4;
           *index++ = 0x01;
