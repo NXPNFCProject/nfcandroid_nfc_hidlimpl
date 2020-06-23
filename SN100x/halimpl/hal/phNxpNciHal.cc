@@ -502,6 +502,10 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset, bool bIsNfccDlStat
 
     nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
     phTmlNfc_EnableFwDnldMode(false);
+    status = phNxpNciHal_changeModeFromFw2NCI();
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("Failed Booting in NCI mode");
+    }
     nxpncihal_ctrl.hal_ext_enabled = FALSE;
     nxpncihal_ctrl.nci_info.wait_for_ntf = FALSE;
     /* FW download done.Therefore if previous I2C write failed then we can change the state to NFCSTATUS_SUCCESS*/
@@ -3364,11 +3368,7 @@ void phNxpNciHal_CheckAndHandleFwTearDown() {
   session_state = phNxpNciHal_getSessionInfoInFwDnldMode();
   if (session_state == 0) {
     NXPLOG_NCIHAL_E("NFC not in the teared state, boot NFCC in NCI mode");
-    status = phNxpNciHal_changeModeFromFw2NCI();
-    if (status != NFCSTATUS_SUCCESS) {
-        NXPLOG_NCIHAL_E("Failed Booting in NCI mode");
-    }
-    return;
+    goto dl_reset;
   }
 
   phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadMode);
@@ -3390,6 +3390,11 @@ void phNxpNciHal_CheckAndHandleFwTearDown() {
   phNxpNciHal_enableTmlRead();
   fw_download_success = 1;
   property_set("nfc.fw.downloadmode_force", "1");
+dl_reset:
+  status = phNxpNciHal_changeModeFromFw2NCI();
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("Failed Booting in NCI mode");
+  }
   return;
 }
 
