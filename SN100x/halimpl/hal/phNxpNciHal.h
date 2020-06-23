@@ -308,7 +308,7 @@ int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t *p_data,
                                int origin);
 NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info);
 int phNxpNciHal_check_config_parameter();
-NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset = 0);
+NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset = 0, bool bIsVenResetReqd = false);
 NFCSTATUS phNxpNciHal_nfcc_core_reset_init(bool keep_config = false);
 int phNxpNciHal_fw_mw_ver_check();
 NFCSTATUS phNxpNciHal_check_clock_config(void);

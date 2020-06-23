@@ -108,6 +108,7 @@ typedef enum {
                                     download mode */
   phTmlNfc_e_EnableNormalMode, /* Hardware setting for normal mode of operation
                                  */
+  phTmlNfc_e_EnableDownloadModeWithVenRst,
   phTmlNfc_e_PowerReset = 5,
   phTmlNfc_e_SetFwDownloadHdrSize,
 } phTmlNfc_ControlCode_t;     /* Control code for IOCTL call */
