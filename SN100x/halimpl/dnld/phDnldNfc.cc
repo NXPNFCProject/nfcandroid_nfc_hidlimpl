@@ -790,16 +790,21 @@ NFCSTATUS phDnldNfc_InitImgInfo(void) {
     gpphDnldContext->nxp_nfc_fw_len = ImageInfoLen;
     if ((NULL != gpphDnldContext->nxp_nfc_fw) &&
         (0 != gpphDnldContext->nxp_nfc_fw_len)) {
-      NXPLOG_FWDNLD_D("FW Major Version Num - %x",
-                      gpphDnldContext->nxp_nfc_fw[5]);
-      NXPLOG_FWDNLD_D("FW Minor Version Num - %x",
-                      gpphDnldContext->nxp_nfc_fw[4]);
+      uint16_t offsetFwMajorNum, offsetFwMinorNum;
+      if (nfcFL.chipType == sn220u) {
+        offsetFwMajorNum = ((uint16_t)(gpphDnldContext->nxp_nfc_fw[795]) << 8U);
+        offsetFwMinorNum = ((uint16_t)(gpphDnldContext->nxp_nfc_fw[794]));
+      }else {
+        offsetFwMajorNum = ((uint16_t)(gpphDnldContext->nxp_nfc_fw[5]) << 8U);
+        offsetFwMinorNum = ((uint16_t)(gpphDnldContext->nxp_nfc_fw[4]));
+      }
+      NXPLOG_FWDNLD_D("FW Major Version Num - %x", offsetFwMajorNum);
+      NXPLOG_FWDNLD_D("FW Minor Version Num - %x", offsetFwMinorNum);
+      /* get the FW version */
+      wFwVer = (offsetFwMajorNum | offsetFwMinorNum);
+
       NXPLOG_FWDNLD_D("FW Image Length - %d", ImageInfoLen);
       NXPLOG_FWDNLD_D("FW Image Info Pointer - %p", pImageInfo);
-
-      /* get the FW version */
-      wFwVer = (((uint16_t)(gpphDnldContext->nxp_nfc_fw[5]) << 8U) |
-                (gpphDnldContext->nxp_nfc_fw[4]));
       wStatus = NFCSTATUS_SUCCESS;
     } else {
       NXPLOG_FWDNLD_E("Image details extraction Failed!!");

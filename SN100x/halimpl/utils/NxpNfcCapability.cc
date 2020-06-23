@@ -39,8 +39,10 @@ tNFC_chipType capability::processChipType(uint8_t* msg, uint16_t msg_len) {
              chipType = pn81T;
            else if(msg[msg_len-3] == 0x11 && msg[msg_len-2] == 0x02)
              chipType = pn553;
-           else if(msg[msg_len-3] == 0x01)
-             chipType = sn100u;/*Need to be updated*/
+           else if(msg[msg_len-3] == 0x01 && msg[msg_len-2] == 0x10)
+             chipType = sn100u;
+           else if (msg[msg_len-3] == 0x01 && msg[msg_len-2] == 0x01)
+             chipType = sn220u;
         }  else if ((offsetInitFwVersion < msg_len) &&
              (msg[offsetInitFwVersion] == 0x12)) {
              chipType = pn81T;
