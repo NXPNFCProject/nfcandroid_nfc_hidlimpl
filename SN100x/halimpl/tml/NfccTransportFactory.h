@@ -21,7 +21,7 @@
 #include <memory>
 
 #define transportFactory (NfccTransportFactory::getInstance())
-typedef std::unique_ptr<NfccTransport> spTransport;
+typedef std::shared_ptr<NfccTransport> spTransport;
 enum transportIntf { I2C, UNKNOWN };
 
 extern spTransport gpTransportObj;
@@ -38,7 +38,6 @@ class NfccTransportFactory {
    ** Returns          none
    ****************************************************************************/
   NfccTransportFactory();
-  spTransport mspTransportInterface;
 
 public:
   /*****************************************************************************
@@ -64,5 +63,5 @@ public:
   **
   ** Returns          Selected transport channel
   ****************************************************************************/
-  spTransport &getTransport(transportIntf transportType);
+  spTransport getTransport(transportIntf transportType);
 };

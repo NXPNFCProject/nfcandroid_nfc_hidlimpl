@@ -187,8 +187,7 @@ NFCSTATUS phTmlNfc_ConfigTransport() {
   if (isfound > 0) {
       transportType = value;
   }
-  gpTransportObj =
-  move(transportFactory.getTransport((transportIntf)transportType));
+  gpTransportObj = transportFactory.getTransport((transportIntf)transportType);
   if (gpTransportObj == nullptr) {
     NXPLOG_TML_E("No Transport channel available \n");
     return NFCSTATUS_FAILED;
@@ -628,6 +627,7 @@ void phTmlNfc_CleanUp(void) {
   pthread_mutex_destroy(&gpphTmlNfc_Context->wait_busy_lock);
   pthread_cond_destroy(&gpphTmlNfc_Context->wait_busy_condition);
   gpTransportObj->Close(gpphTmlNfc_Context->pDevHandle);
+  gpTransportObj = NULL;
   gpphTmlNfc_Context->pDevHandle = NULL;
   /* Clear memory allocated for storing Context variables */
   free((void*)gpphTmlNfc_Context);
