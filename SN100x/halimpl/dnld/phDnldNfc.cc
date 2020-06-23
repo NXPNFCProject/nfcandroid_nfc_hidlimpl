@@ -754,12 +754,12 @@ NFCSTATUS phDnldNfc_InitImgInfo(void) {
     gpphDnldContext->FwFormat = FW_FORMAT_SO;
 #ifdef NXP_DUMMY_FW_DNLD
     if (gRecFWDwnld == true) {
-      wStatus = phDnldNfc_LoadRecoveryFW(nfcFL._FW_LIB_PATH.c_str(), &pImageInfo, &ImageInfoLen);
+      wStatus = phDnldNfc_LoadRecoveryFW(Fw_Lib_Path, &pImageInfo, &ImageInfoLen);
     } else {
-      wStatus = phDnldNfc_LoadFW(nfcFL._FW_LIB_PATH.c_str(), &pImageInfo, &ImageInfoLen);
+      wStatus = phDnldNfc_LoadFW(Fw_Lib_Path, &pImageInfo, &ImageInfoLen);
     }
 #else
-    wStatus = phDnldNfc_LoadFW(nfcFL._FW_LIB_PATH.c_str(), &pImageInfo, &ImageInfoLen);
+    wStatus = phDnldNfc_LoadFW(Fw_Lib_Path, &pImageInfo, &ImageInfoLen);
 #endif
   } else {
     NXPLOG_FWDNLD_E("firmware file format mismatch!!!\n");
