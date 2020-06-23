@@ -168,7 +168,7 @@ static int phNxpNciHal_MinOpen_Clean (char *nfc_dev_node);
 static void phNxpNciHal_CheckAndHandleFwTearDown(void);
 static NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd = false);
 static uint8_t phNxpNciHal_getSessionInfoInFwDnldMode();
-static NFCSTATUS phNxpNciHal_changeModeFromFw2NCI();
+static NFCSTATUS phNxpNciHal_dlResetInFwDnldMode();
 static void phNxpNciHal_enableTmlRead();
 /******************************************************************************
  * Function         phNxpNciHal_initialize_debug_enabled_flag
@@ -502,10 +502,12 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset, bool bIsNfccDlStat
 
     nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
     phTmlNfc_EnableFwDnldMode(false);
-    status = phNxpNciHal_changeModeFromFw2NCI();
+
+    status = phNxpNciHal_dlResetInFwDnldMode();
     if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("Failed Booting in NCI mode");
+      NXPLOG_NCIHAL_E("DL Reset failed in FW DN mode");
     }
+
     nxpncihal_ctrl.hal_ext_enabled = FALSE;
     nxpncihal_ctrl.nci_info.wait_for_ntf = FALSE;
     /* FW download done.Therefore if previous I2C write failed then we can change the state to NFCSTATUS_SUCCESS*/
@@ -798,7 +800,8 @@ int phNxpNciHal_MinOpen (){
         NXPLOG_NCIHAL_D("NFCC is initilly booted in NCI mode");
         break;
       default:
-        NXPLOG_NCIHAL_D("NFCC is Unlikely in unknown state, lets try Normal NCI mode");
+        NXPLOG_NCIHAL_D("NFCC is Unlikely in unknown state, check FW download state");
+        phNxpNciHal_CheckAndHandleFwTearDown();
     };
   }
 
@@ -3368,7 +3371,7 @@ void phNxpNciHal_CheckAndHandleFwTearDown() {
   session_state = phNxpNciHal_getSessionInfoInFwDnldMode();
   if (session_state == 0) {
     NXPLOG_NCIHAL_E("NFC not in the teared state, boot NFCC in NCI mode");
-    goto dl_reset;
+    return;
   }
 
   phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadMode);
@@ -3390,12 +3393,11 @@ void phNxpNciHal_CheckAndHandleFwTearDown() {
   phNxpNciHal_enableTmlRead();
   fw_download_success = 1;
   property_set("nfc.fw.downloadmode_force", "1");
-dl_reset:
-  status = phNxpNciHal_changeModeFromFw2NCI();
+
+  status = phNxpNciHal_dlResetInFwDnldMode();
   if (status != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("Failed Booting in NCI mode");
+    NXPLOG_NCIHAL_E("DL Reset failed in FW DN mode");
   }
-  return;
 }
 
 /******************************************************************************
@@ -3410,6 +3412,7 @@ NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd) {
   uint8_t get_chip_info_cmd[] = {0x00, 0x04, 0xF1, 0x00,
                                  0x00, 0x00, 0x6E, 0xEF};
   NFCSTATUS status = NFCSTATUS_FAILED;
+  int retry_cnt = 0;
   if (bIsVenResetReqd) {
     status = phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadModeWithVenRst);
     if (status != NFCSTATUS_SUCCESS) {
@@ -3418,12 +3421,28 @@ NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd) {
   }
   phTmlNfc_EnableFwDnldMode(true);
   nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
+get_chip_info_retry:
   status =
       phNxpNciHal_send_ext_cmd(sizeof(get_chip_info_cmd), get_chip_info_cmd);
   if(status == NFCSTATUS_SUCCESS) {
     /* Check FW getResponse command response status byte */
-    if(nxpncihal_ctrl.p_rx_data[2] != 0x00)
+    if(nxpncihal_ctrl.p_rx_data[0] == 0x00) {
+      if (nxpncihal_ctrl.p_rx_data[2] != 0x00) {
+        status = NFCSTATUS_FAILED;
+        if (retry_cnt < MAX_RETRY_COUNT) {
+          /*reset NFCC state to avoid any failures
+           *such as DL_PROTOCOL_ERROR
+           */
+          status = phNxpNciHal_dlResetInFwDnldMode();
+          if (status != NFCSTATUS_SUCCESS) {
+            NXPLOG_NCIHAL_E("DL Reset failed in FW DN mode");
+          }
+          goto get_chip_info_retry;
+        }
+      }
+    } else {
       status = NFCSTATUS_FAILED;
+    }
   }
 
   nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
@@ -3436,6 +3455,7 @@ NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd) {
   }
   return status;
 }
+
 
 /******************************************************************************
  * Function         phNxpNciHal_getSessionInfoInFwDnldMode
@@ -3468,18 +3488,22 @@ uint8_t phNxpNciHal_getSessionInfoInFwDnldMode() {
   nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
   phTmlNfc_EnableFwDnldMode(false);
   phNxpNciHal_enableTmlRead();
+  status = phNxpNciHal_dlResetInFwDnldMode();
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("DL Reset failed in FW DN mode");
+  }
   return session_status;
 }
 
 /******************************************************************************
- * Function         phNxpNciHal_changeModeFromFw2NCI
+ * Function         phNxpNciHal_dlResetInFwDnldMode
  *
  * Description      Helper function to change the mode from FW to NCI
  *
  * Returns          Status
  *
  ******************************************************************************/
-NFCSTATUS phNxpNciHal_changeModeFromFw2NCI() {
+NFCSTATUS phNxpNciHal_dlResetInFwDnldMode() {
   NFCSTATUS status = NFCSTATUS_FAILED;
   uint8_t dl_reset_cmd[] = {0x00, 0x04, 0xF0, 0x00, 0x00, 0x00, 0x18, 0x5B};
   phTmlNfc_EnableFwDnldMode(true);
