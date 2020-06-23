@@ -786,8 +786,10 @@ int phNxpNciHal_MinOpen (){
     return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
   }
 
-  if (gsIsFirstHalMinOpen && PLATFORM_IF_I2C == gpphTmlNfc_Context->platform_type)
-    phNxpNciHal_CheckAndHandleFwTearDown();
+  if (PLATFORM_IF_I2C == gpphTmlNfc_Context->platform_type) {
+    if (gsIsFirstHalMinOpen)
+      phNxpNciHal_CheckAndHandleFwTearDown();
+  }
   else {
     gpphTmlNfc_Context->nfc_state = gpTransportObj->GetNfcState(gpphTmlNfc_Context->pDevHandle);
 
@@ -3366,6 +3368,7 @@ void phNxpNciHal_CheckAndHandleFwTearDown() {
   status = phNxpNciHal_getChipInfoInFwDnldMode();
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("Get Chip Info Failed");
+    usleep(150 * 1000);
     return;
   }
   session_state = phNxpNciHal_getSessionInfoInFwDnldMode();
