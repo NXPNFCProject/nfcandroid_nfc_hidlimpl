@@ -36,6 +36,10 @@ int NfccTransport::GetPlatform(__attribute__((unused)) void *pDevHandle) {
   return 0x00;
 }
 
+int NfccTransport::GetNfcState(__attribute__((unused)) void *pDevHandle) {
+  return NFC_STATE_UNKNOWN;
+}
+
 void NfccTransport::EnableFwDnldMode(__attribute__((unused)) bool mode) {
   return;
 }
