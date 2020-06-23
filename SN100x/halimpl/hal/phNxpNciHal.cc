@@ -3444,6 +3444,8 @@ NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd) {
 NFCSTATUS phNxpNciHal_getSessionInfoInFwDnldMode() {
   uint8_t get_session_info_cmd[] = {0x00, 0x04, 0xF2, 0x00,
                                     0x00, 0x00, 0xF5, 0x33};
+  uint8_t dl_reset_cmd[] = {0x00, 0x04, 0xF0, 0x00,
+                                    0x00, 0x00, 0x18, 0x5B};
   phTmlNfc_EnableFwDnldMode(true);
   nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
   NFCSTATUS status = phNxpNciHal_send_ext_cmd(sizeof(get_session_info_cmd),
@@ -3452,9 +3454,16 @@ NFCSTATUS phNxpNciHal_getSessionInfoInFwDnldMode() {
     /* Check FW getResponse command response status byte */
     status = NFCSTATUS_FAILED;
     if (nxpncihal_ctrl.p_rx_data[2] == 0x00 &&
-        nxpncihal_ctrl.p_rx_data[0] == 0x00 &&
-        nxpncihal_ctrl.p_rx_data[3] != 0x00) {
-      status = NFCSTATUS_SUCCESS;
+        nxpncihal_ctrl.p_rx_data[0] == 0x00) {
+      if (nxpncihal_ctrl.p_rx_data[3] != 0x00) {
+        status = NFCSTATUS_SUCCESS;
+      } else {
+        NXPLOG_NCIHAL_D("NFCC is in DL mode, but DL session is closed. Do DL reset");
+        int retLen = phNxpNciHal_write(sizeof(dl_reset_cmd), dl_reset_cmd);
+        if (retLen == (sizeof(dl_reset_cmd)/sizeof(dl_reset_cmd[0]))) {
+          NXPLOG_NCIHAL_D("DL Reset Success");
+        }
+      }
     } else {
       NXPLOG_NCIHAL_D("get session info Failed !!!");
       usleep(150 * 1000);
