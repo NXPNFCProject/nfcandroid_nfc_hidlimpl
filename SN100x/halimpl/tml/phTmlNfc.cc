@@ -957,7 +957,6 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
           }else{
             gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_FW_GPIO_LOW);
           }
-          usleep(100 * 1000);
         }
         if (read_flag) {
           gpphTmlNfc_Context->tReadInfo.bEnable = 1;
