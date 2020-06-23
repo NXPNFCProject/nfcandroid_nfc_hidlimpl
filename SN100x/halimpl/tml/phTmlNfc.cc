@@ -982,10 +982,6 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
         sem_post(&gpphTmlNfc_Context->rxSemaphore);
         break;
       }
-      case phTmlNfc_e_SetFwDownloadHdrSize: {
-        wStatus = gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_FW_DWND_HDR);
-        break;
-      }
       case phTmlNfc_e_EnableDownloadModeWithVenRst: {
         phTmlNfc_ConfigNciPktReTx(phTmlNfc_e_DisableRetrans, 0);
         gpphTmlNfc_Context->tReadInfo.bEnable = 0;

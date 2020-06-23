@@ -340,8 +340,7 @@ int NfccI2cTransport::NfccReset(void *pDevHandle, NfccResetType eType) {
   if (ret < 0) {
     NXPLOG_TML_E("%s :failed errno = 0x%x", __func__, errno);
   }
-  if ((eType != MODE_FW_DWNLD_WITH_VEN && eType != MODE_FW_DWND_HIGH &&
-       eType != MODE_FW_DWND_HDR) &&
+  if ((eType != MODE_FW_DWNLD_WITH_VEN && eType != MODE_FW_DWND_HIGH) &&
       ret == 0) {
     bFwDnldFlag = false;
   }

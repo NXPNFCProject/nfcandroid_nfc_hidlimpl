@@ -473,12 +473,7 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset, bool bIsVenResetRe
       NXPLOG_NCIHAL_E("Core reset FW download command failed \n");
     }
   }
-  if (PLATFORM_IF_I3C == gpphTmlNfc_Context->platform_type) {
-    status = phTmlNfc_IoCtl(phTmlNfc_e_SetFwDownloadHdrSize);
-  }
-  if (PLATFORM_IF_I3C == gpphTmlNfc_Context->platform_type) {
-    status = phTmlNfc_IoCtl(phTmlNfc_e_SetFwDownloadHdrSize);
-  }
+
   if (NFCSTATUS_SUCCESS == status) {
     phTmlNfc_EnableFwDnldMode(true);
     /* Set the obtained device handle to download module */
@@ -3349,13 +3344,6 @@ retry_send_ext:
  ******************************************************************************/
 void phNxpNciHal_CheckAndHandleFwTearDown() {
   NFCSTATUS status = NFCSTATUS_FAILED;
-  if (PLATFORM_IF_I3C == gpphTmlNfc_Context->platform_type) {
-    status = phTmlNfc_IoCtl(phTmlNfc_e_SetFwDownloadHdrSize);
-    if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("SetFwDownloadHdrSize for I3C failed");
-      return;
-    }
-  }
   status = phNxpNciHal_getSessionInfoInFwDnldMode();
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("Chip is not in Tear Down Mode");
@@ -3401,13 +3389,6 @@ NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd) {
                                  0x00, 0x00, 0x6E, 0xEF};
   NFCSTATUS status = NFCSTATUS_FAILED;
   if (bIsVenResetReqd) {
-    if (PLATFORM_IF_I3C == gpphTmlNfc_Context->platform_type) {
-      status = phTmlNfc_IoCtl(phTmlNfc_e_SetFwDownloadHdrSize);
-      if (status != NFCSTATUS_SUCCESS) {
-        NXPLOG_NCIHAL_E("SetFwDownloadHdrSize for I3C failed");
-        return status;
-      }
-    }
     status = phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadModeWithVenRst);
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("Enable Download mode failed");
