@@ -741,15 +741,14 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
     NXPLOG_NCIHAL_D("> Going through the set host list");
         if(nfcFL.chipType == sn100u)
         {
-            *cmd_len = 11;
+            *cmd_len = 10;
 
-            p_cmd_data[2] = 0x08;
+            p_cmd_data[2] = 0x07;
 
             p_cmd_data[6] = 0x02;
             p_cmd_data[7] = 0x80;
             p_cmd_data[8] = 0x81;
-            p_cmd_data[9] = 0x82;
-            p_cmd_data[10] = 0xC0;
+            p_cmd_data[9] = 0xC0;
         }
         else
         {
