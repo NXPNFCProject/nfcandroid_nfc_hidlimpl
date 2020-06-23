@@ -458,6 +458,11 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset, bool bIsVenResetRe
     phNxpNciHal_UpdateFwStatus(HAL_NFC_FW_UPDATE_FAILED);
     return NFCSTATUS_FAILED;
   }
+  if (NFCSTATUS_SUCCESS != status) {
+     nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
+     phNxpNciHal_UpdateFwStatus(HAL_NFC_FW_UPDATE_FAILED);
+     return NFCSTATUS_FAILED;
+  }
   if (nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD && (!bIsVenResetReqd)) {
     /*NCI_RESET_CMD*/
     static uint8_t cmd_reset_nci_dwnld[] = { 0x20, 0x00, 0x01, 0x80 };
@@ -467,6 +472,9 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset, bool bIsVenResetRe
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("Core reset FW download command failed \n");
     }
+  }
+  if (PLATFORM_IF_I3C == gpphTmlNfc_Context->platform_type) {
+    status = phTmlNfc_IoCtl(phTmlNfc_e_SetFwDownloadHdrSize);
   }
   if (PLATFORM_IF_I3C == gpphTmlNfc_Context->platform_type) {
     status = phTmlNfc_IoCtl(phTmlNfc_e_SetFwDownloadHdrSize);
@@ -3341,6 +3349,13 @@ retry_send_ext:
  ******************************************************************************/
 void phNxpNciHal_CheckAndHandleFwTearDown() {
   NFCSTATUS status = NFCSTATUS_FAILED;
+  if (PLATFORM_IF_I3C == gpphTmlNfc_Context->platform_type) {
+    status = phTmlNfc_IoCtl(phTmlNfc_e_SetFwDownloadHdrSize);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("SetFwDownloadHdrSize for I3C failed");
+      return;
+    }
+  }
   status = phNxpNciHal_getSessionInfoInFwDnldMode();
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("Chip is not in Tear Down Mode");
@@ -3386,6 +3401,13 @@ NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd) {
                                  0x00, 0x00, 0x6E, 0xEF};
   NFCSTATUS status = NFCSTATUS_FAILED;
   if (bIsVenResetReqd) {
+    if (PLATFORM_IF_I3C == gpphTmlNfc_Context->platform_type) {
+      status = phTmlNfc_IoCtl(phTmlNfc_e_SetFwDownloadHdrSize);
+      if (status != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("SetFwDownloadHdrSize for I3C failed");
+        return status;
+      }
+    }
     status = phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadModeWithVenRst);
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("Enable Download mode failed");
