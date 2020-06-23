@@ -3432,6 +3432,7 @@ NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd) {
   if (status == NFCSTATUS_SUCCESS) {
     phNxpNciHal_configFeatureList(nxpncihal_ctrl.p_rx_data,
                                   nxpncihal_ctrl.rx_data_len);
+    setNxpFwConfigPath(nfcFL._FW_LIB_PATH.c_str());
   }
   return status;
 }
