@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020 NXP Semiconductors
+ * Copyright (C) 2012-2020 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1644,19 +1644,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   }
 
 
-  retlen = 0;
   config_access = true;
-  isfound = GetNxpByteArrayValue(NAME_NXP_NFC_PROFILE_EXTN, (char*)buffer,
-                                 bufflen, &retlen);
-  if (isfound > 0 && retlen > 0) {
-    /* NXP ACT Proprietary Ext */
-    status = phNxpNciHal_send_ext_cmd(retlen, buffer);
-    if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("NXP ACT Proprietary Ext failed");
-      retry_core_init_cnt++;
-      goto retry_core_init;
-    }
-  }
   setConfigAlways = false;
   isfound = GetNxpNumValue(NAME_NXP_SET_CONFIG_ALWAYS, &num, sizeof(num));
   if (isfound > 0) {
