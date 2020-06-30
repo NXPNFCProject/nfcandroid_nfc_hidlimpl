@@ -19,7 +19,6 @@
 #include <android-base/file.h>
 #include <android-base/strings.h>
 #include <android-base/parseint.h>
-#include "phTmlNfc_i2c.h"
 #include "phNxpNciHal_ext.h"
 #include "phNxpNciHal_utils.h"
 #include "phDnldNfc_Internal.h"
@@ -30,6 +29,8 @@
 #include "phNfcCommon.h"
 #include "phNxpNciHal_Adaptation.h"
 #include "phNxpNciHal_extOperations.h"
+#include "NfccTransportFactory.h"
+#include "NfccTransport.h"
 
 using android::base::WriteStringToFile;
 using namespace ::std;
@@ -610,7 +611,7 @@ UNUSED(resetType);
   }
 
   CONCURRENCY_LOCK();
-  status = phTmlNfc_ese_reset(gpphTmlNfc_Context->pDevHandle, MODE_ESE_COLD_RESET);
+  status = gpTransportObj->EseReset(gpphTmlNfc_Context->pDevHandle, MODE_ESE_COLD_RESET);
   CONCURRENCY_UNLOCK();
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("EsePowerCycle failed");

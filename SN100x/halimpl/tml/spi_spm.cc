@@ -19,12 +19,12 @@
 #include <sys/stat.h>
 #include <log/log.h>
 
-#include <sys/ioctl.h>
-#include <fcntl.h>
-#include <errno.h>
-#include "spi_spm.h"
+#include "NfccTransportFactory.h"
 #include "phNxpLog.h"
-#include "phTmlNfc_i2c.h"
+#include "spi_spm.h"
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
 
 /*******************************************************************************
 **
@@ -50,13 +50,13 @@ int phPalEse_spi_ioctl(phPalEse_ControlCode_t eControlCode,void *pDevHandle, lon
   switch (eControlCode) {
     case phPalEse_e_ChipRst:
         if(level == 1 || level == 0)
-        ret = ioctl((intptr_t)pDevHandle, ESE_SET_PWR, level);
+        ret = gpTransportObj->EseReset(pDevHandle, (EseResetType)level);
         else
         ret=0;
         break;
 
     case phPalEse_e_GetSPMStatus:
-        ret = ioctl((intptr_t)pDevHandle, ESE_GET_PWR, level);
+        ret = gpTransportObj->EseGetPower(pDevHandle, level);
         break;
 
     case phPalEse_e_SetPowerScheme:
@@ -71,7 +71,7 @@ int phPalEse_spi_ioctl(phPalEse_ControlCode_t eControlCode,void *pDevHandle, lon
         break;
 #endif
     case phPalEse_e_DisablePwrCntrl:
-        ret = ioctl((intptr_t)pDevHandle, ESE_SET_PWR, 1);
+        ret = gpTransportObj->EseReset(pDevHandle, MODE_ESE_POWER_OFF);
         break;
     default:
         ret=-1;
