@@ -2295,8 +2295,10 @@ int phNxpNciHal_close(bool bShutdown) {
   unsigned long num = 0;
   /* Sending Core Standby command during phone off added to handle HW limitation
      in SN220 A0. This Work Around can be removed after SN220 B0 */
-  GetNxpNumValue(NAME_NXP_CORE_PWR_OFF_AUTONOMOUS_ENABLE, &num, sizeof(num));
-  bool bIsAutonomousModeEnableReqdInPhoneOff = (num == 0x01);
+  bool bIsAutonomousModeEnableReqdInPhoneOff = false;
+  int found = GetNxpNumValue(NAME_NXP_CORE_PWR_OFF_AUTONOMOUS_ENABLE, &num, sizeof(num));
+  if (isfound)
+    bIsAutonomousModeEnableReqdInPhoneOff = (num == 0x01);
   nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
   if (bShutdown && bIsAutonomousModeEnableReqdInPhoneOff && (nfcFL.chipType = sn220u)) {
     NXPLOG_NCIHAL_D("Power shutdown with autonomous mode enable");

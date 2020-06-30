@@ -181,9 +181,13 @@ NFCSTATUS phTmlNfc_Init(pphTmlNfc_Config_t pConfig) {
 *******************************************************************************/
 NFCSTATUS phTmlNfc_ConfigTransport() {
   unsigned long transportType = UNKNOWN;
-  GetNxpNumValue(NAME_NXP_TRANSPORT, &transportType, sizeof(transportType));
+  unsigned long value = 0;
+  int isfound = GetNxpNumValue(NAME_NXP_TRANSPORT, &value, sizeof(value));
+  if (isfound > 0) {
+      transportType = value;
+  }
   gpTransportObj =
-      move(transportFactory.getTransport((transportIntf)transportType));
+  move(transportFactory.getTransport((transportIntf)transportType));
   if (gpTransportObj == nullptr) {
     NXPLOG_TML_E("No Transport channel available \n");
     return NFCSTATUS_FAILED;
