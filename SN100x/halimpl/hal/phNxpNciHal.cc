@@ -798,7 +798,7 @@ int phNxpNciHal_MinOpen (){
   phNxpNciHal_ext_init();
 
   if (NFCSTATUS_SUCCESS == phNxpNciHal_nfcc_core_reset_init(true)) {
-    if(nfcFL.chipType != sn100u)
+    if(nfcFL.chipType < sn100u)
       phNxpNciHal_enable_i2c_fragmentation();
 
     status = phNxpNciHal_CheckFwRegFlashRequired(&fw_update_req, &rf_update_req, false);
@@ -1069,7 +1069,7 @@ int phNxpNciHal_write_internal(uint16_t data_len, const uint8_t* p_data) {
                                         nxpncihal_ctrl.p_cmd_data, ORIG_LIBNFC);
   CONCURRENCY_UNLOCK();
 
-  if (nfcFL.chipType != sn100u && icode_send_eof == 1) {
+  if (nfcFL.chipType < sn100u && icode_send_eof == 1) {
     usleep(10000);
     icode_send_eof = 2;
     status = phNxpNciHal_send_ext_cmd(3, cmd_icode_eof);
@@ -1280,7 +1280,7 @@ static void phNxpNciHal_read_complete(void* pContext,
       }
       /* Unlock semaphore only for responses*/
       if ((nxpncihal_ctrl.p_rx_data[0x00] & NCI_MT_MASK) == NCI_MT_RSP ||
-          ((nfcFL.chipType != sn100u) && (icode_detected == true) && (icode_send_eof == 3))) {
+          ((nfcFL.chipType < sn100u) && (icode_detected == true) && (icode_send_eof == 3))) {
         /* Unlock semaphore */
         SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
       }
@@ -1472,7 +1472,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     if (retry_core_init_cnt > 3) {
         return NFCSTATUS_FAILED;
     }
-    if(nfcFL.chipType != sn100u) {
+    if(nfcFL.chipType < sn100u) {
       status = phTmlNfc_IoCtl(phTmlNfc_e_ResetDevice);
       if (NFCSTATUS_SUCCESS == status) {
         NXPLOG_NCIHAL_D("PN54X Reset - SUCCESS\n");
@@ -1550,7 +1550,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     }
     phNxpNciHal_hci_network_reset();
   }
-  if(nfcFL.chipType == sn100u) {
+  if(nfcFL.chipType >= sn100u) {
     if(fw_dwnld_flag) {
       mEEPROM_info.buffer = &flash_update_done;
       mEEPROM_info.bufflen = sizeof(flash_update_done);
@@ -1911,7 +1911,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       NXPLOG_NCIHAL_E("phNxpNciHal_china_tianjin_rf_setting failed");
       return NFCSTATUS_FAILED;
     }
-    if(nfcFL.chipType != sn100u) {
+    if(nfcFL.chipType < sn100u) {
       // Update eeprom value
       status = phNxpNciHal_set_mw_eeprom();
       if (status != NFCSTATUS_SUCCESS) {
@@ -2005,7 +2005,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   {
     if (isNxpRFConfigModified() || isNxpConfigModified() || fw_dwnld_flag ||
         setConfigAlways) {
-      if (nfcFL.chipType == sn100u) {
+      if (nfcFL.chipType >= sn100u) {
         status = phNxpNciHal_ext_send_sram_config_to_flash();
         if (status != NFCSTATUS_SUCCESS) {
           NXPLOG_NCIHAL_E("Updation of the SRAM contents failed");
@@ -2218,7 +2218,7 @@ int phNxpNciHal_close(bool bShutdown) {
     return NFCSTATUS_FAILED;
   }
 #if(NXP_EXTNS == TRUE)
-  if(nfcFL.chipType != sn100u){
+  if(nfcFL.chipType < sn100u){
 #endif
     if (!(GetNxpNumValue(NAME_NXP_UICC_LISTEN_TECH_MASK, &uiccListenMask,
                           sizeof(uiccListenMask)))) {
@@ -2260,7 +2260,7 @@ int phNxpNciHal_close(bool bShutdown) {
   }
 
 #if(NXP_EXTNS == TRUE)
-  if(nfcFL.chipType != sn100u){
+  if(nfcFL.chipType < sn100u){
 #endif
   if((uiccListenMask & 0x1) == 0x01 || (eseListenMask & 0x1) == 0x01) {
     NXPLOG_NCIHAL_D("phNxpNciHal_close (): Adding A passive listen");
@@ -2304,7 +2304,7 @@ int phNxpNciHal_close(bool bShutdown) {
   /* Sending Core Standby command during phone off added to handle HW limitation
      in SN220 A0. This Work Around can be removed after SN220 B0 */
   bool bIsAutonomousModeEnableReqdInPhoneOff = false;
-  int found = GetNxpNumValue(NAME_NXP_CORE_PWR_OFF_AUTONOMOUS_ENABLE, &num, sizeof(num));
+  int isfound = GetNxpNumValue(NAME_NXP_CORE_PWR_OFF_AUTONOMOUS_ENABLE, &num, sizeof(num));
   if (isfound)
     bIsAutonomousModeEnableReqdInPhoneOff = (num == 0x01);
   nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
@@ -2431,7 +2431,7 @@ int phNxpNciHal_configDiscShutdown(void) {
     NXPLOG_NCIHAL_E("CMD_DISABLE_DISCOVERY: Failed");
   }
 #if (NXP_EXTNS == TRUE)
-  if (nfcFL.chipType != sn100u) {
+  if (nfcFL.chipType < sn100u) {
 #endif
     status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ven_pulld_enable_nci), cmd_ven_pulld_enable_nci);
     if (status != NFCSTATUS_SUCCESS) {
@@ -2441,7 +2441,7 @@ int phNxpNciHal_configDiscShutdown(void) {
   }
 #endif
 
-  if(nfcFL.chipType == sn100u) {
+  if(nfcFL.chipType >= sn100u) {
     status = phNxpNciHal_ext_send_sram_config_to_flash();
     if(status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("Updation of the SRAM contents failed");
@@ -2452,7 +2452,7 @@ int phNxpNciHal_configDiscShutdown(void) {
     NXPLOG_NCIHAL_E("CMD_CE_DISC_NCI: Failed");
   }
 #if(NXP_EXTNS == TRUE)
-  if(nfcFL.chipType != sn100u){
+  if(nfcFL.chipType < sn100u){
 #endif
     status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
     if (status != NFCSTATUS_SUCCESS) {
@@ -2847,7 +2847,7 @@ int   phNxpNciHal_determineConfiguredClockSrc()
     if(nfcFL.chipType == pn553) {
         param_clock_src = param_clock_src << 3;
     }
-    else if(nfcFL.chipType == sn100u)
+    else if(nfcFL.chipType >= sn100u)
     {
         param_clock_src = 0;
     }
@@ -2879,7 +2879,7 @@ int   phNxpNciHal_determineConfiguredClockSrc()
         else
         {
             NXPLOG_NCIHAL_E("Wrong clock freq, send default PLL@19.2MHz");
-            if(nfcFL.chipType != sn100u)
+            if(nfcFL.chipType < sn100u)
                 param_clock_src = 0x11;
             else
                 param_clock_src = 0x01;
@@ -2972,7 +2972,7 @@ NFCSTATUS phNxpNciHal_nfccClockCfgApply(void) {
       0x01, 0x0A, 0x32, 0x02, 0x01, 0xF6, 0xF6};
   uint8_t get_clk_size = 0;
 
-  if(nfcFL.chipType != sn100u)
+  if(nfcFL.chipType < sn100u)
   {
      get_clock_cmd = get_clck_cmd;
      get_clk_size = sizeof(get_clck_cmd);
@@ -2993,7 +2993,7 @@ NFCSTATUS phNxpNciHal_nfccClockCfgApply(void) {
   }
 
   nfcc_cfg_clock_src = phNxpNciHal_determineConfiguredClockSrc();
-  if(nfcFL.chipType != sn100u)
+  if(nfcFL.chipType < sn100u)
   {
       nfcc_cur_clock_src = phNxpNciClock.p_rx_data[12];
   }else
@@ -3001,7 +3001,7 @@ NFCSTATUS phNxpNciHal_nfccClockCfgApply(void) {
       nfcc_cur_clock_src = phNxpNciClock.p_rx_data[8];
   }
 
-  if(nfcFL.chipType != sn100u)
+  if(nfcFL.chipType < sn100u)
   {
       nfcc_clock_set_needed = (nfcc_cfg_clock_src != nfcc_cur_clock_src ||
                                   phNxpNciClock.p_rx_data[16] == nxpprofile_ctrl.bTimeout) ?\

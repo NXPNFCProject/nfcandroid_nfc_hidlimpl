@@ -896,10 +896,11 @@ static NFCSTATUS phNxpNciHal_fw_dnld_log_read(void* pContext, NFCSTATUS status,
   UNUSED_PROP(status);
   UNUSED_PROP(pInfo);
   if ((((((gphNxpNciHal_fw_IoctlCtx.bSkipSeq) == true) ||
-        ((gphNxpNciHal_fw_IoctlCtx.bForceDnld) == true)) &&
-       ((gphNxpNciHal_fw_IoctlCtx.bPrevSessnOpen) == false)) ||
+       ((gphNxpNciHal_fw_IoctlCtx.bForceDnld) == true)) &&
+      ((gphNxpNciHal_fw_IoctlCtx.bPrevSessnOpen) == false)) ||
       ((((gphNxpNciHal_fw_IoctlCtx.bPrevSessnOpen) == true)) &&
-       ((gphNxpNciHal_fw_IoctlCtx.bRetryDnld) == true))) || (nfcFL.chipType == sn100u))
+      ((gphNxpNciHal_fw_IoctlCtx.bRetryDnld) == true))) ||
+      (nfcFL.chipType == sn100u) || (nfcFL.chipType == sn220u))
 
   {
     return NFCSTATUS_SUCCESS;
@@ -1093,7 +1094,7 @@ static void phNxpNciHal_fw_dnld_chk_integrity_cb(void* pContext,
     NXPLOG_FWDNLD_D(
         "phNxpNciHal_fw_dnld_chk_integrity_cb - Request Successful");
     pRespBuff = (pphDnldNfc_Buff_t)pInfo;
-    if((nfcFL.chipType == sn100u) && (NULL != (pRespBuff->pBuff))) {
+    if((nfcFL.chipType >= sn100u) && (NULL != (pRespBuff->pBuff))) {
         NXPLOG_FWDNLD_D("phNxpNciHal_fw_dnld_chk_integrity_cb - Valid Resp Buff!!...\n");
         wStatus = phLibNfc_VerifySN100U_CrcStatus(&pRespBuff->pBuff[0]);
     } else if ((PHLIBNFC_DNLD_CHECKINTEGRITYLEN == (pRespBuff->wLen)) && (NULL != (pRespBuff->pBuff))) {
@@ -1465,7 +1466,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_log(void* pContext, NFCSTATUS status,
   UNUSED_PROP(status);
   UNUSED_PROP(pContext);
 
-  if(nfcFL.chipType == sn100u)
+  if(nfcFL.chipType >= sn100u)
   {
       return wStatus;
   }

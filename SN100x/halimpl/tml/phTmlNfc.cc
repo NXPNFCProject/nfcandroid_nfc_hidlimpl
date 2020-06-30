@@ -918,7 +918,7 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
 
        {
 #if(NXP_EXTNS == TRUE)
-         if(nfcFL.chipType != sn100u){
+         if(nfcFL.chipType < sn100u){
 #endif
            /*Reset PN54X*/
            gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_ON);
@@ -941,7 +941,7 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
         gpphTmlNfc_Context->tReadInfo.bEnable = 0;
         if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_VEN_RESET) {
           NXPLOG_TML_D(" phTmlNfc_e_EnableNormalMode complete with VEN RESET ");
-          if(nfcFL.chipType != sn100u){
+          if(nfcFL.chipType < sn100u){
             gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_OFF);
             usleep(10 * 1000);
             gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_ON);
@@ -952,7 +952,7 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
         }
         else if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD) {
           NXPLOG_TML_D(" phTmlNfc_e_EnableNormalMode complete with NCI CMD ");
-          if(nfcFL.chipType != sn100u){
+          if(nfcFL.chipType < sn100u){
             gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_ON);
           }else{
             gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_FW_GPIO_LOW);

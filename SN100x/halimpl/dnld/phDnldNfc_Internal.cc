@@ -697,7 +697,7 @@ static NFCSTATUS phDnldNfc_CreateFramePld(pphDnldNfc_DlContext_t pDlContext) {
       (pDlContext->tCmdRspFrameInfo.dwSendlength) += PHDNLDNFC_MIN_PLD_LEN;
     } else if (phDnldNfc_ChkIntg == (pDlContext->FrameInp.Type)) {
       (pDlContext->tCmdRspFrameInfo.dwSendlength) += PHDNLDNFC_MIN_PLD_LEN;
-    if (nfcFL.chipType != sn100u) {
+    if (nfcFL.chipType < sn100u) {
       wChkIntgVal = nfcFL._PHDNLDNFC_USERDATA_EEPROM_OFFSET;
 
       memcpy(&(pDlContext->tCmdRspFrameInfo
