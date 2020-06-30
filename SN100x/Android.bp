@@ -41,8 +41,9 @@ cc_library_shared {
         "halimpl/tml/phDal4Nfc_messageQueueLib.cc",
         "halimpl/tml/phOsalNfc_Timer.cc",
         "halimpl/tml/phTmlNfc.cc",
-        "halimpl/tml/phTmlNfc_i2c.cc",
         "halimpl/tml/spi_spm.cc",
+        "halimpl/tml/NfccTransportFactory.cc",
+        "halimpl/tml/transport/*.cc",
         "halimpl/utils/NxpNfcCapability.cc",
         "halimpl/utils/phNxpConfig.cc",
         "halimpl/utils/phNxpNciHal_utils.cc",
@@ -60,6 +61,7 @@ cc_library_shared {
         "halimpl/inc",
         "halimpl/log",
         "halimpl/self-test",
+        "halimpl/tml/transport",
         "halimpl/tml",
         "halimpl/utils",
         "halimpl/eseclients_extns/inc",
@@ -88,8 +90,5 @@ cc_library_shared {
         "libutils",
         "vendor.nxp.nxpese@1.0",
         "vendor.nxp.nxpnfc@2.0",
-    ],
-    static_libs: [
-        //"libnfcutils",
     ],
 }

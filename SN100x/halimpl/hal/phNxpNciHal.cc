@@ -27,7 +27,6 @@
 #include <phNxpNciHal_NfcDepSWPrio.h>
 #include <phNxpNciHal_ext.h>
 #include <phTmlNfc.h>
-#include <phTmlNfc_i2c.h>
 #if(NXP_EXTNS == TRUE)
 #include "phNxpNciHal_nciParser.h"
 #endif
@@ -1257,7 +1256,7 @@ static void phNxpNciHal_read_complete(void* pContext,
         nxpncihal_ctrl.rx_data_len = pInfo->wLength;
         status = phNxpNciHal_process_ext_rsp(nxpncihal_ctrl.p_rx_data,
                                           &nxpncihal_ctrl.rx_data_len);
-        if (nxpncihal_ctrl.hal_ext_enabled && getDownloadFlag()) {
+        if (nxpncihal_ctrl.hal_ext_enabled && phTmlNfc_IsFwDnldModeEnabled()) {
           SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
         }
     }
@@ -3890,32 +3889,6 @@ NFCSTATUS phNxpNciHal_send_get_cfgs() {
     retry_cnt = 0;
   }
   mGetCfg_info->isGetcfg = false;
-  return status;
-}
-/*******************************************************************************
-**
-** Function         phNxpNciHal_getFWDownloadFlags
-**
-** Description      Returns the current mode
-**
-** Parameters       none
-**
-** Returns          Current mode download/NCI
-*******************************************************************************/
-int phNxpNciHal_getFWDownloadFlag(uint8_t* fwDnldRequest) {
-  int status = NFCSTATUS_FAILED;
-
-  NXPLOG_NCIHAL_D("notifyFwrequest %d", notifyFwrequest);
-  if (fwDnldRequest != NULL) {
-    status = NFCSTATUS_OK;
-    if (notifyFwrequest == true) {
-      *fwDnldRequest = true;
-      notifyFwrequest = false;
-    } else {
-      *fwDnldRequest = false;
-    }
-  }
-
   return status;
 }
 
