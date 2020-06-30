@@ -89,7 +89,7 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
 *******************************************************************************/
 void phNxpNciHal_ext_init(void) {
   icode_detected = 0x00;
-  if(nfcFL.chipType != sn100u){
+  if(nfcFL.chipType < sn100u){
     icode_send_eof = 0x00;
   }
   setEEModeDone = 0x00;
@@ -294,7 +294,7 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
   }
   phNxpNciHal_ext_process_nfc_init_rsp(p_ntf, p_len);
   if(p_ntf[0] == 0x42 && p_ntf[1] == 0x01 && p_ntf[2] == 0x01 && p_ntf[3] == 0x00) {
-    if(nxpncihal_ctrl.hal_ext_enabled == TRUE && nfcFL.chipType == sn100u) {
+    if(nxpncihal_ctrl.hal_ext_enabled == TRUE && nfcFL.chipType >= sn100u) {
       nxpncihal_ctrl.nci_info.wait_for_ntf = TRUE;
       NXPLOG_NCIHAL_D(" Mode set received");
     }
@@ -304,9 +304,9 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
     icode_detected = 0x01;
     p_ntf[21] = 0x01;
     p_ntf[22] = 0x01;
-  } else if (nfcFL.chipType != sn100u && icode_detected == 1 && icode_send_eof == 2) {
+  } else if (nfcFL.chipType < sn100u && icode_detected == 1 && icode_send_eof == 2) {
     icode_send_eof = 3;
-  } else if (nfcFL.chipType != sn100u && p_ntf[0] == 0x00 && p_ntf[1] == 0x00 &&
+  } else if (nfcFL.chipType < sn100u && p_ntf[0] == 0x00 && p_ntf[1] == 0x00 &&
           icode_detected == 1) {
     if (icode_send_eof == 3) {
       icode_send_eof = 0;
@@ -320,13 +320,13 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
         p_ntf[p_ntf[2] + 2] |= 0x01;
       }
     }
-  } else if (nfcFL.chipType != sn100u && p_ntf[2] == 0x02 &&
+  } else if (nfcFL.chipType < sn100u && p_ntf[2] == 0x02 &&
           p_ntf[1] == 0x00 && icode_detected == 1) {
     NXPLOG_NCIHAL_D("> ICODE EOF response do not send to upper layer");
   } else if (p_ntf[0] == 0x61 && p_ntf[1] == 0x06 && icode_detected == 1) {
     NXPLOG_NCIHAL_D("> Polling Loop Re-Started");
     icode_detected = 0;
-    if (nfcFL.chipType != sn100u)
+    if (nfcFL.chipType < sn100u)
       icode_send_eof = 0;
   } else if (*p_len == 4 && p_ntf[0] == 0x40 && p_ntf[1] == 0x02 &&
              p_ntf[2] == 0x01 && p_ntf[3] == 0x06) {
@@ -739,7 +739,7 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
              (p_cmd_data[3] == 0x81 && p_cmd_data[4] == 0x01 &&
               p_cmd_data[5] == 0x03)) {
     NXPLOG_NCIHAL_D("> Going through the set host list");
-        if(nfcFL.chipType == sn100u)
+        if(nfcFL.chipType >= sn100u)
         {
             *cmd_len = 10;
 
@@ -760,7 +760,7 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
         }
     status = NFCSTATUS_SUCCESS;
   } else if (icode_detected) {
-    if (nfcFL.chipType != sn100u && (p_cmd_data[3] & 0x40) == 0x40 &&
+    if (nfcFL.chipType < sn100u && (p_cmd_data[3] & 0x40) == 0x40 &&
         (p_cmd_data[4] == 0x21 || p_cmd_data[4] == 0x22 ||
          p_cmd_data[4] == 0x24 || p_cmd_data[4] == 0x27 ||
          p_cmd_data[4] == 0x28 || p_cmd_data[4] == 0x29 ||
@@ -777,7 +777,7 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
   } else if (p_cmd_data[0] == 0x21 && p_cmd_data[1] == 0x03) {
     NXPLOG_NCIHAL_D("> Polling Loop Started");
     icode_detected = 0;
-    if(nfcFL.chipType != sn100u){
+    if(nfcFL.chipType < sn100u){
       icode_send_eof = 0;
     }
   }
