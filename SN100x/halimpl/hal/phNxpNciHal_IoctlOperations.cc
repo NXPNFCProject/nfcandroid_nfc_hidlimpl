@@ -37,6 +37,8 @@ using namespace ::std;
 using namespace ::android::base;
 
 #define TERMINAL_LEN 5
+/* HAL_NFC_STATUS_REFUSED sent to restart NFC service */
+#define HAL_NFC_STATUS_RESTART HAL_NFC_STATUS_REFUSED
 
 /****************************************************************
  * Global Variables Declaration
@@ -660,7 +662,7 @@ bool phNxpNciHal_setNxpTransitConfig(char *transitConfValue) {
 /******************************************************************************
 ** Function         phNxpNciHal_Abort
 **
-** Description      This function shall be used to trigger the abort
+** Description      This function shall be used to trigger the abort in libnfc
 **
 ** Parameters       None
 **
@@ -675,7 +677,7 @@ bool phNxpNciHal_Abort() {
      we need to abort the libnfc , this can be done only by check the p_nfc_stack_cback_backup
      pointer which is assigned before the JCOP download.*/
   if (p_nfc_stack_cback_backup != NULL){
-      abort();
+    (*p_nfc_stack_cback_backup)(HAL_NFC_OPEN_CPLT_EVT, HAL_NFC_STATUS_RESTART);
   }
   else {
     ret = false;
