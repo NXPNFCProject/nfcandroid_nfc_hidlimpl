@@ -192,7 +192,8 @@ std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
                                 "OFF_HOST_SIM2_PIPE_ID",
                                 "NXP_ENABLE_DISABLE_LOGS",
                                 "NXP_RDR_DISABLE_ENABLE_LPCD",
-                                "NXP_SUPPORT_NON_STD_CARD"};
+                                "NXP_SUPPORT_NON_STD_CARD",
+                                "NXP_GET_HW_INFO_LOG"};
 
 /****************************************************************
  * Local Functions
@@ -407,6 +408,7 @@ static string phNxpNciHal_extractConfig(string &config) {
   stringstream ss(config);
   string line;
   string result;
+  bool apduGate = false;
   while (getline(ss, line)) {
     line = Trim(line);
     if (line.empty())
@@ -423,9 +425,10 @@ static string phNxpNciHal_extractConfig(string &config) {
     string key(Trim(line.substr(0, search)));
     if (!phNxpNciHal_CheckKeyNeeded(key))
       continue;
-    if (key == "NXP_NFC_SE_TERMINAL_NUM") {
+    if (key == "NXP_NFC_SE_TERMINAL_NUM" && !apduGate) {
       line = "NXP_SE_APDU_GATE_SUPPORT=0x01\n";
       result += line;
+      apduGate = true;
       continue;
     }
     string value_string(Trim(line.substr(search + 1, string::npos)));
@@ -435,6 +438,14 @@ static string phNxpNciHal_extractConfig(string &config) {
 
     line = key + "=" + value_string + "\n";
     result += line;
+    if (key == "NXP_GET_HW_INFO_LOG" &&
+        (value_string == "1" || value_string == "0x01")) {
+      if (!apduGate) {
+        line = "NXP_SE_APDU_GATE_SUPPORT=0x01\n";
+        result += line;
+        apduGate = true;
+      }
+    }
   }
 
   return result;
