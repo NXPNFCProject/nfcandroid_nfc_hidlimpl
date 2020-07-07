@@ -639,7 +639,7 @@ UNUSED(resetType);
 }
 
 /******************************************************************************
- * Function         phNxpNciHal_getNxpTransitConfig
+ * Function         phNxpNciHal_setNxpTransitConfig
  *
  * Description      This function overwrite libnfc-nxpTransit.conf file
  *                  with transitConfValue.
@@ -651,8 +651,9 @@ bool phNxpNciHal_setNxpTransitConfig(char *transitConfValue) {
   bool status = true;
   NXPLOG_NCIHAL_D("%s : Enter", __func__);
   std::string transitConfFileName = "/data/vendor/nfc/libnfc-nxpTransit.conf";
+  long transitConfValueLen = strlen(transitConfValue)+1;
 
-  if (transitConfValue != NULL) {
+  if (transitConfValueLen > 1) {
     if (!WriteStringToFile(transitConfValue, transitConfFileName)) {
       NXPLOG_NCIHAL_E("WriteStringToFile: Failed");
       status = false;
