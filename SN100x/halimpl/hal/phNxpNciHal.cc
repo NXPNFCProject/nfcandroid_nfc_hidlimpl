@@ -344,7 +344,29 @@ static void phNxpNciHal_kill_client_thread(
 
   return;
 }
-
+/******************************************************************************
+ * Function         phNxpNciHal_CheckIntegrityRecovery
+ *
+ * Description     This function to enter in recovery if FW download fails with
+ *                 check integrity.
+ *
+ * Returns         NFCSTATUS
+ *
+ ******************************************************************************/
+static NFCSTATUS phNxpNciHal_CheckIntegrityRecovery(uint8_t seq_handler_offset) {
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  /* call read pending */
+  status = phTmlNfc_Read(
+      nxpncihal_ctrl.p_rsp_data, NCI_MAX_DATA_LEN,
+      (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete, NULL);
+  if (status != NFCSTATUS_PENDING) {
+    NXPLOG_NCIHAL_E("TML Read status error status B= %x", status);
+    status = NFCSTATUS_FW_CHECK_INTEGRITY_FAILED;
+  } else if (phNxpNciHal_nfcc_core_reset_init(false) == NFCSTATUS_SUCCESS) {
+    status = phNxpNciHal_fw_download(seq_handler_offset);
+  }
+  return status;
+}
 /******************************************************************************
  * Function         phNxpNciHal_force_fw_download
  *
@@ -390,6 +412,9 @@ static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset) {
       phNxpNciHal_gpio_restore(GPIO_STORE);
     fw_download_success = 0;
     status = phNxpNciHal_fw_download(seq_handler_offset);
+    if (status == NFCSTATUS_FW_CHECK_INTEGRITY_FAILED) {
+      status = phNxpNciHal_CheckIntegrityRecovery(seq_handler_offset);
+    }
     property_set("nfc.fw.downloadmode_force", "0");
     if (status == NFCSTATUS_SUCCESS) {
       wConfigStatus = NFCSTATUS_SUCCESS;
@@ -465,18 +490,9 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset) {
     /* Set the obtained device handle to download module */
     phDnldNfc_SetHwDevHandle();
     NXPLOG_NCIHAL_D("Calling Seq handler for FW Download \n");
-    uint8_t retry = 2;
-    do {
-      status = phNxpNciHal_fw_download_seq(nxpprofile_ctrl.bClkSrcVal,
+    status = phNxpNciHal_fw_download_seq(nxpprofile_ctrl.bClkSrcVal,
                                          nxpprofile_ctrl.bClkFreqVal,
                                          seq_handler_offset);
-
-      if (status == NFCSTATUS_FW_CHECK_INTEGRITY_FAILED) {
-        seq_handler_offset ? seq_handler_offset = 0 : retry--, usleep(50000);
-      } else {
-        retry = 0;
-      }
-    } while (retry);
 
     if (status == NFCSTATUS_FW_CHECK_INTEGRITY_FAILED) {
       (void)phNxpNciHal_fw_dnld_switch_normal_mode(nullptr, status,nullptr);
@@ -848,7 +864,6 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
                      nfc_stack_data_callback_t* p_data_cback) {
   NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
   NFCSTATUS status = NFCSTATUS_SUCCESS;
-
   NXPLOG_NCIHAL_E("phNxpNciHal_open NFC HAL OPEN");
   if(ese_update != ESE_UPDATE_COMPLETED)
   {
