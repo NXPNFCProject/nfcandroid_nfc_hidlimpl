@@ -813,6 +813,7 @@ int phNxpNciHal_MinOpen (){
   phNxpNciHal_ext_init();
 
   if (NFCSTATUS_SUCCESS == phNxpNciHal_nfcc_core_reset_init(true)) {
+    setNxpFwConfigPath(nfcFL._FW_LIB_PATH.c_str());
     if(nfcFL.chipType < sn100u)
       phNxpNciHal_enable_i2c_fragmentation();
 
@@ -822,7 +823,6 @@ int phNxpNciHal_MinOpen (){
       fw_update_req = FALSE;
       rf_update_req = FALSE;
     }
-    setNxpFwConfigPath(nfcFL._FW_LIB_PATH.c_str());
 
     if (!wFwUpdateReq) {
       uint8_t is_teared_down = 0x00;
