@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020 NXP Semiconductors
+ * Copyright 2012-2020 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2480,7 +2480,7 @@ void phNxpNciHal_getVendorConfig(android::hardware::nfc::V1_1::NfcConfig& config
   }
   if (GetNxpByteArrayValue(NAME_DEVICE_HOST_WHITE_LIST, (char*)buffer.data(), buffer.size(), &retlen)) {
     config.hostWhitelist.resize(retlen);
-    for(int i=0; i<retlen; i++)
+    for (long i = 0; i < retlen; i++)
       config.hostWhitelist[i] = buffer[i];
   }
   if (GetNxpNumValue(NAME_OFF_HOST_ESE_PIPE_ID, &num, sizeof(num))) {
