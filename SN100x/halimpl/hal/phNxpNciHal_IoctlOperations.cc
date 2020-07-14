@@ -193,7 +193,8 @@ std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
                                 "NXP_RDR_DISABLE_ENABLE_LPCD",
                                 "NXP_SUPPORT_NON_STD_CARD",
                                 "NXP_GET_HW_INFO_LOG",
-                                "NXP_T4T_NDEF_NFCEE_AID"};
+                                "NXP_T4T_NDEF_NFCEE_AID",
+                                "NXP_NON_STD_CARD_TIMEDIFF"};
 
 /****************************************************************
  * Local Functions
