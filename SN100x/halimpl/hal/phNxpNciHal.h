@@ -247,6 +247,7 @@ typedef enum {
   EEPROM_AUTONOMOUS_MODE,
   EEPROM_CE_PHONE_OFF_CFG,
   EEPROM_ISODEP_MERGE_SAK,
+  EEPROM_ENABLE_VEN_CFG,
 } phNxpNci_EEPROM_request_type_t;
 
 typedef struct phNxpNci_EEPROM_info {

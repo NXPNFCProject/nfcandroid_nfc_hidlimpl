@@ -1389,11 +1389,8 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
 
   uint8_t swp_full_pwr_mode_on_cmd[] = {0x20, 0x02, 0x05, 0x01,
                                         0xA0, 0xF1, 0x01, 0x01};
-
-  uint8_t cmd_ven_enable[] = {0x20, 0x02, 0x05, 0x01,
-          0xA0, 0x07, 0x01, 0x01};
-
   uint8_t enable_ce_in_phone_off = 0x01;
+  uint8_t enable_ven_cfg = 0x01;
 
   static uint8_t android_l_aid_matching_mode_on_cmd[] = {
       0x20, 0x02, 0x05, 0x01, 0xA0, 0x91, 0x01, 0x01};
@@ -1498,6 +1495,11 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("Failed to retrieve NFCC debug info");
   }
+  mEEPROM_info.buffer = &enable_ven_cfg;
+  mEEPROM_info.bufflen = sizeof(enable_ven_cfg);
+  mEEPROM_info.request_type = EEPROM_ENABLE_VEN_CFG;
+  mEEPROM_info.request_mode = SET_EEPROM_DATA;
+  request_EEPROM(&mEEPROM_info);
 
   mEEPROM_info.buffer = &enable_ce_in_phone_off;
   mEEPROM_info.bufflen = sizeof(enable_ce_in_phone_off);
@@ -1512,12 +1514,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   }
   fw_dwnld_flag |= (bool)fw_download_success;
   if (fw_dwnld_flag == true) {
-    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ven_enable), cmd_ven_enable);
-    if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("CMD_VEN_ENABLE: Failed");
-      retry_core_init_cnt++;
-      goto retry_core_init;
-    }
     phNxpNciHal_hci_network_reset();
   }
   if(nfcFL.chipType == sn100u) {
