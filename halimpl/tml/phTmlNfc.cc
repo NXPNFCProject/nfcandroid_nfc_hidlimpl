@@ -120,7 +120,7 @@ NFCSTATUS phTmlNfc_Init(pphTmlNfc_Config_t pConfig) {
         gpphTmlNfc_Context->tWriteInfo.bThreadBusy = false;
 
         if (pthread_mutex_init(&gpphTmlNfc_Context->readInfoUpdateMutex,
-                               NULL) == -1) {
+                               NULL) != 0) {
           wInitStatus = NFCSTATUS_FAILED;
         } else if (0 != sem_init(&gpphTmlNfc_Context->rxSemaphore, 0, 0)) {
           wInitStatus = NFCSTATUS_FAILED;
