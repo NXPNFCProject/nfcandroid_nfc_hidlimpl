@@ -44,4 +44,4 @@ void NfccTransport::EnableFwDnldMode(__attribute__((unused)) bool mode) {
   return;
 }
 
-bool_t NfccTransport::IsFwDnldModeEnabled(void) { return true; }
+bool_t NfccTransport::IsFwDnldModeEnabled(void) { return false; }
