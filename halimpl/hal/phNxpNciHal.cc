@@ -2296,6 +2296,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
 
   if (persist_hci_network_reset_req) {
     phNxpNciHal_hci_network_reset();
+    property_set("persist.vendor.nfc.hci_network_reset_req", "false");
   }
 
   config_access = false;
