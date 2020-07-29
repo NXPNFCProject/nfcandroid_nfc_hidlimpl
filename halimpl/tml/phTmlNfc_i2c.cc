@@ -122,13 +122,14 @@ int phTmlNfc_i2c_read(void* pDevHandle, uint8_t* pBuffer, int nNbBytesToRead) {
   struct timeval tv;
   fd_set rfds;
   uint16_t totalBtyesToRead = 0;
+  bool bIsDlMode = bFwDnldFlag;
 
   UNUSED(nNbBytesToRead);
   if (NULL == pDevHandle) {
     return -1;
   }
 
-  if (false == bFwDnldFlag) {
+  if (false == bIsDlMode) {
     totalBtyesToRead = NORMAL_MODE_HEADER_LEN;
   } else {
     totalBtyesToRead = FW_DNLD_HEADER_LEN;
@@ -161,8 +162,13 @@ int phTmlNfc_i2c_read(void* pDevHandle, uint8_t* pBuffer, int nNbBytesToRead) {
       NXPLOG_TML_E("_i2c_read() [hdr] errno : %x", errno);
       return -1;
     }
+    if (bIsDlMode && (pBuffer[0] != 0x00)) {
+      /* Recieved Non DL response.
+       * Chage read logic as per NCI packets */
+      bIsDlMode = false;
+    }
 
-    if (false == bFwDnldFlag) {
+    if (false == bIsDlMode) {
       totalBtyesToRead = NORMAL_MODE_HEADER_LEN;
     } else {
       totalBtyesToRead = FW_DNLD_HEADER_LEN;
@@ -170,7 +176,7 @@ int phTmlNfc_i2c_read(void* pDevHandle, uint8_t* pBuffer, int nNbBytesToRead) {
 
     if (numRead < totalBtyesToRead) {
       ret_Read =
-          read((intptr_t)pDevHandle, pBuffer, totalBtyesToRead - numRead);
+          read((intptr_t)pDevHandle, pBuffer + numRead, totalBtyesToRead - numRead);
       if (ret_Read != totalBtyesToRead - numRead) {
         NXPLOG_TML_E("_i2c_read() [hdr] errno : %x", errno);
         return -1;
@@ -178,7 +184,7 @@ int phTmlNfc_i2c_read(void* pDevHandle, uint8_t* pBuffer, int nNbBytesToRead) {
         numRead += ret_Read;
       }
     }
-    if (true == bFwDnldFlag) {
+    if (true == bIsDlMode) {
       totalBtyesToRead =
           pBuffer[FW_DNLD_LEN_OFFSET] + FW_DNLD_HEADER_LEN + CRC_LEN;
     } else {
