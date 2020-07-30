@@ -16,8 +16,6 @@ cc_library_shared {
 
         // Treble configuration
         "libhidlbase",
-        "libhidltransport",
-        "libhwbinder",
         "libutils",
         "ese_client",
         "android.hardware.nfc@1.0",
