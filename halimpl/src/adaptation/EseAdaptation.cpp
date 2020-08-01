@@ -23,6 +23,7 @@
 #include <hwbinder/ProcessState.h>
 #include <pthread.h>
 #include "EseAdaptation.h"
+#include "Nxp_Features.h"
 #include <log/log.h>
 
 using android::hardware::Return;
@@ -207,6 +208,10 @@ tHAL_ESE_ENTRY* EseAdaptation::GetHalEntryFuncs() {
 void EseAdaptation::InitializeHalDeviceContext() {
   const char* func = "EseAdaptation::InitializeHalDeviceContext";
   ALOGD_IF(nfc_debug_enabled, "%s: enter", func);
+  if (!nfcFL.nfcNxpEse) {
+    ALOGD_IF(nfc_debug_enabled, "%s: Ignored. Reason : eSE Not Supported", func);
+    return;
+  }
   ALOGD_IF(nfc_debug_enabled, "%s: INxpEse::tryGetService()", func);
   for (int cnt = 0; ((mHalNxpEse == nullptr) && (cnt < 3)); cnt++) {
     mHalNxpEse = INxpEse::tryGetService();
