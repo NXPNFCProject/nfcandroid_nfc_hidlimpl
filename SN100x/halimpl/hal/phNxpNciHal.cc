@@ -2370,16 +2370,19 @@ void phNxpNciHal_close_complete(NFCSTATUS status) {
 int phNxpNciHal_configDiscShutdown(void) {
   NFCSTATUS status;
   /*NCI_RESET_CMD*/
-  static uint8_t cmd_reset_nci[] = {0x20, 0x00, 0x01, 0x00};
+  uint8_t cmd_reset_nci[] = {0x20, 0x00, 0x01, 0x00};
 
-  static uint8_t cmd_disable_disc[] = {0x21, 0x06, 0x01, 0x00};
+  uint8_t cmd_disable_disc[] = {0x21, 0x06, 0x01, 0x00};
 
-  static uint8_t cmd_ce_disc_nci[] = {0x21, 0x03, 0x07, 0x03, 0x80,
+  uint8_t cmd_ce_disc_nci[] = {0x21, 0x03, 0x07, 0x03, 0x80,
                                       0x01, 0x81, 0x01, 0x82, 0x01};
 
-  static uint8_t cmd_ven_pulld_enable_nci[] = {0x20, 0x02, 0x05, 0x01,
+  uint8_t cmd_ven_pulld_enable_nci[] = {0x20, 0x02, 0x05, 0x01,
                                          0xA0, 0x07, 0x01, 0x03};
 
+  /* Discover map - PROTOCOL_ISO_DEP, PROTOCOL_T3T and MIFARE Classic*/
+  uint8_t cmd_disc_map[] = {0x21, 0x00, 0x0A, 0x03, 0x04, 0x03, 0x02,
+                                   0x03, 0x02, 0x01, 0x80, 0x01, 0x80};
   CONCURRENCY_LOCK();
 
   status = phNxpNciHal_send_ext_cmd(sizeof(cmd_disable_disc), cmd_disable_disc);
@@ -2398,6 +2401,10 @@ int phNxpNciHal_configDiscShutdown(void) {
 #endif
 
   if(nfcFL.chipType == sn100u) {
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_disc_map), cmd_disc_map);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("Discovery Map command: Failed");
+    }
     status = phNxpNciHal_ext_send_sram_config_to_flash();
     if(status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("Updation of the SRAM contents failed");
