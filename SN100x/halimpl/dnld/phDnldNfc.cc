@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2019 NXP Semiconductors
+ * Copyright (C) 2010-2020 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1028,8 +1028,8 @@ NFCSTATUS phDnldNfc_LoadFW(const char* pathName, uint8_t** pImgInfo,
 *******************************************************************************/
 NFCSTATUS phDnldNfc_LoadBinFW(uint8_t** pImgInfo, uint32_t* pImgInfoLen) {
   FILE* pFile = NULL;
-  uint32_t fileSize = 0;
-  uint32_t bytesRead = 0;
+  long fileSize = 0;
+  long bytesRead = 0;
   long ftellFileSize = 0;
 
   /* check for path name */
