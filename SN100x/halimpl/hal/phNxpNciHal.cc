@@ -1852,7 +1852,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       // Check the permissible range [0 - 60]
       if (0 <= retlen && retlen <= 60) {
         if (0 < retlen) {
-          unsigned int timeout = retlen * 1000;
+          unsigned int timeout = (uint32_t)retlen * 1000;
           unsigned int timeoutHx = 0x0000;
 
           char tmpbuffer[10] = {0};
