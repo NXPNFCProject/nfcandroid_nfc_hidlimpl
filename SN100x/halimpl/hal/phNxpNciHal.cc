@@ -2447,32 +2447,32 @@ void phNxpNciHal_getVendorConfig(android::hardware::nfc::V1_1::NfcConfig& config
   memset(&config_ext, 0x00, sizeof(nxp_nfc_config_ext_t));
 
   if ((GetNxpNumValue(NAME_NXP_AUTONOMOUS_ENABLE, &num, sizeof(num)))) {
-    config_ext.autonomous_mode = num;
+    config_ext.autonomous_mode = (uint8_t)num;
   }
   if ((GetNxpNumValue(NAME_NXP_GUARD_TIMER_VALUE, &num, sizeof(num)))) {
-    config_ext.guard_timer_value = num;
+    config_ext.guard_timer_value = (uint8_t)num;
   }
   if (GetNxpNumValue(NAME_NFA_POLL_BAIL_OUT_MODE, &num, sizeof(num))) {
-    config.nfaPollBailOutMode = num;
+    config.nfaPollBailOutMode = (bool)num;
   }
   if (GetNxpNumValue(NAME_ISO_DEP_MAX_TRANSCEIVE, &num, sizeof(num))) {
-    config.maxIsoDepTransceiveLength = num;
+    config.maxIsoDepTransceiveLength = (uint32_t)num;
   }
   if (GetNxpNumValue(NAME_DEFAULT_OFFHOST_ROUTE, &num, sizeof(num))) {
-    config.defaultOffHostRoute = num;
+    config.defaultOffHostRoute = (uint8_t)num;
   }
   if (GetNxpNumValue(NAME_DEFAULT_NFCF_ROUTE, &num, sizeof(num))) {
-    config.defaultOffHostRouteFelica = num;
+    config.defaultOffHostRouteFelica = (uint8_t)num;
   }
   if (GetNxpNumValue(NAME_DEFAULT_SYS_CODE_ROUTE, &num, sizeof(num))) {
-    config.defaultSystemCodeRoute = num;
+    config.defaultSystemCodeRoute = (uint8_t)num;
   }
   if (GetNxpNumValue(NAME_DEFAULT_SYS_CODE_PWR_STATE, &num, sizeof(num))) {
     config.defaultSystemCodePowerState =
-        phNxpNciHal_updateAutonomousPwrState(num);
+        phNxpNciHal_updateAutonomousPwrState((uint8_t)num);
   }
   if (GetNxpNumValue(NAME_DEFAULT_ROUTE, &num, sizeof(num))) {
-    config.defaultRoute = num;
+    config.defaultRoute = (uint8_t)num;
   }
   if (GetNxpByteArrayValue(NAME_DEVICE_HOST_WHITE_LIST, (char*)buffer.data(), buffer.size(), &retlen)) {
     config.hostWhitelist.resize(retlen);
@@ -2480,10 +2480,10 @@ void phNxpNciHal_getVendorConfig(android::hardware::nfc::V1_1::NfcConfig& config
       config.hostWhitelist[i] = buffer[i];
   }
   if (GetNxpNumValue(NAME_OFF_HOST_ESE_PIPE_ID, &num, sizeof(num))) {
-    config.offHostESEPipeId = num;
+    config.offHostESEPipeId = (uint8_t)num;
   }
   if (GetNxpNumValue(NAME_OFF_HOST_SIM_PIPE_ID, &num, sizeof(num))) {
-    config.offHostSIMPipeId = num;
+    config.offHostSIMPipeId = (uint8_t)num;
   }
   if ((GetNxpByteArrayValue(NAME_NFA_PROPRIETARY_CFG, (char*)buffer.data(), buffer.size(), &retlen))
          && (retlen == 9)) {
