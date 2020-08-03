@@ -66,7 +66,6 @@ extern uint32_t timeoutTimerId;
 
 /************** HAL extension functions ***************************************/
 static void hal_extns_write_rsp_timeout_cb(uint32_t TimerId, void* pContext);
-static void phNxpNciHal_detect_error_ntf(uint8_t* p_ntf, uint16_t p_len);
 
 /*Proprietary cmd sent to HAL to send reader mode flag
  * Last byte of 4 byte proprietary cmd data contains ReaderMode flag
@@ -131,7 +130,6 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
   /*parse and decode LxDebug Notifications*/
   if(p_ntf[0] == 0x6F && (p_ntf[1] == 0x35 || p_ntf[1] == 0x36))
   {
-    phNxpNciHal_detect_error_ntf(p_ntf,*p_len);
     if(gParserCreated)
       phNxpNciHal_parsePacket(p_ntf,*p_len);
   }
@@ -1348,35 +1346,4 @@ void phNxpNciHal_conf_nfc_forum_mode() {
   }
   NXPLOG_NCIHAL_E("%s: failed!!", __func__);
   return;
-}
-
-/******************************************************************************
- * Function         phNxpNciHal_detect_error_ntf
- *
- * Description      If error_ntf received contineously and exceed
- *                  NXP_NFC_MAX_ERROR_NTF_RETRY_COUNT then abort.
- *
- * Returns          none
- *
- ******************************************************************************/
-static void phNxpNciHal_detect_error_ntf(uint8_t* p_ntf, uint16_t p_len) {
- static uint8_t errorNtfCounter=0;
- static uint8_t errorNtfLastbyte;
- if(p_ntf[1]==NXP_NFC_LX_DBG_NTF && p_ntf[2]==NXP_NFC_ERROR_NTF_PL_LEN && p_ntf[3]==NXP_NFC_ERROR_NTF_TAGID1) {
-    if(p_ntf[p_len-1] ==  errorNtfLastbyte) {
-      NXPLOG_NCIHAL_E("%s: error ntf retry count = %d ", __func__,errorNtfCounter);
-      if(errorNtfCounter++ >= NXP_NFC_MAX_ERROR_NTF_RETRY_COUNT) {
-        //error ntf exceed NXP_NFC_MAX_ERROR_NTF_RETRY_COUNT reset counter and abort
-        errorNtfCounter=0;
-        errorNtfLastbyte=0;
-        abort();
-      }
-    } else {
-      errorNtfCounter=0;
-    }
-   errorNtfLastbyte = p_ntf[p_len-1];
-  } else {
-   errorNtfCounter=0;
-   errorNtfLastbyte=0;
-  }
 }
