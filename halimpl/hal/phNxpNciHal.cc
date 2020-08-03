@@ -914,6 +914,8 @@ int phNxpNciHal_MinOpen() {
   phNxpNciHal_initialize_debug_enabled_flag();
   /* initialize trace level */
   phNxpLog_InitializeLogLevel();
+  /* initialize Mifare flags*/
+  phNxpNciHal_initialize_mifare_flag();
 
   /*Create the timer for extns write response*/
   timeoutTimerId = phOsalNfc_Timer_Create();
