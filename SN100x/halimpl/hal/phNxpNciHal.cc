@@ -1543,6 +1543,17 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("Failed to retrieve NFCC debug info");
   }
+  num = 0;
+  if (GetNxpNumValue("NXP_I3C_MODE", &num, sizeof(num))) {
+    if (num == 1) {
+      uint8_t coreStandBy[] = {0x2F, 0x00, 0x01, 0x00};
+      NXPLOG_NCIHAL_E("Disable NFCC standby");
+      status = phNxpNciHal_send_ext_cmd(sizeof(coreStandBy), coreStandBy);
+      if (status != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("Failed to set NFCC Standby Disabled");
+      }
+    }
+  }
 
   mEEPROM_info.buffer = &enable_ce_in_phone_off;
   mEEPROM_info.bufflen = sizeof(enable_ce_in_phone_off);
