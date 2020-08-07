@@ -294,6 +294,7 @@ static void* phNxpNciHal_client_thread(void* arg) {
           /* Send the event */
           (*nxpncihal_ctrl.p_nfc_stack_cback)(
               (uint32_t)NfcEvent::HCI_NETWORK_RESET, HAL_NFC_STATUS_OK);
+          property_set("persist.vendor.nfc.hci_network_reset_req", "false");
         }
         REENTRANCE_UNLOCK();
         break;
@@ -1157,6 +1158,7 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
   }
   nxpncihal_ctrl.p_nfc_stack_cback = p_cback;
   nxpncihal_ctrl.p_nfc_stack_data_cback = p_data_cback;
+
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
     memset(&nxpncihal_ctrl, 0x00, sizeof(nxpncihal_ctrl));
     memset(&nxpprofile_ctrl, 0, sizeof(phNxpNciProfile_Control_t));
@@ -2298,7 +2300,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
 
   if (persist_hci_network_reset_req) {
     phNxpNciHal_hci_network_reset();
-    property_set("persist.vendor.nfc.hci_network_reset_req", "false");
   }
 
   config_access = false;
