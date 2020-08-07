@@ -248,6 +248,7 @@ typedef enum {
   EEPROM_T4T_NFCEE_ENABLE,
   EEPROM_AUTONOMOUS_MODE,
   EEPROM_CE_PHONE_OFF_CFG,
+  EEPROM_ENABLE_VEN_CFG,
 } phNxpNci_EEPROM_request_type_t;
 
 typedef struct phNxpNci_EEPROM_info {
