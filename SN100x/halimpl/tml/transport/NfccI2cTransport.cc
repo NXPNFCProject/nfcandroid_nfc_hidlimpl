@@ -212,7 +212,7 @@ int NfccI2cTransport::Read(void *pDevHandle, uint8_t *pBuffer,
     }
 
     if (numRead < totalBtyesToRead) {
-      ret_Read = read((intptr_t)pDevHandle, pBuffer, totalBtyesToRead - numRead);
+      ret_Read = read((intptr_t)pDevHandle, (pBuffer + numRead), totalBtyesToRead - numRead);
 
       if (ret_Read != totalBtyesToRead - numRead) {
         SemPost();
