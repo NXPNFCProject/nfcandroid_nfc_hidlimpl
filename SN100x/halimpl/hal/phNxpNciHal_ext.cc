@@ -708,7 +708,8 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
     mfc_mode = false;
   }
 
-  if (bEnableMfcReader && (p_cmd_data[0] == 0x21 && p_cmd_data[1] == 0x00) &&
+  if (*cmd_len <= (NCI_MAX_DATA_LEN - 3) && bEnableMfcReader &&
+      (p_cmd_data[0] == 0x21 && p_cmd_data[1] == 0x00) &&
       (nxpprofile_ctrl.profile_type == NFC_FORUM_PROFILE)) {
     unsigned long retval = 0;
     if (p_cmd_data[2] == 0x04 && p_cmd_data[3] == 0x01 &&
