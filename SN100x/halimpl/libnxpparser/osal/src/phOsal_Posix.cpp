@@ -320,7 +320,7 @@ OSALSTATUS phOsal_MutexCreate(void        **hMutex)
     }
 
     status = pthread_mutex_init((pthread_mutex_t*)*hMutex, 0);
-    if(status == -1)
+    if(status != 0)
     {
         phOsal_LogErrorU32d((const uint8_t*)"Osal>Error in Mutex Lock",(uint32_t)status);
         return OSALSTATUS_FAILED;
