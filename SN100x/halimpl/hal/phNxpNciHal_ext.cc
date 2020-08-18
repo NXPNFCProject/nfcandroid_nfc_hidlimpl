@@ -957,6 +957,10 @@ NFCSTATUS phNxpNciHal_send_ext_cmd(uint16_t cmd_len, uint8_t* p_cmd) {
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_send_ese_hal_cmd(uint16_t cmd_len, uint8_t* p_cmd) {
   NFCSTATUS status = NFCSTATUS_FAILED;
+  if (cmd_len > NCI_MAX_DATA_LEN) {
+    NXPLOG_NCIHAL_E("cmd_len exceeds limit NCI_MAX_DATA_LEN");
+    return status;
+  }
   nxpncihal_ctrl.cmd_len = cmd_len;
   memcpy(nxpncihal_ctrl.p_cmd_data, p_cmd, cmd_len);
   status = phNxpNciHal_process_ext_cmd_rsp(nxpncihal_ctrl.cmd_len,
