@@ -1255,8 +1255,9 @@ void phNxpNciHal_TestMode_close() {
 
     phLibNfc_Message_t msg = { 0, nullptr, 0};
     phDal4Nfc_msgsnd(gDrvCfg.nClientId, &msg, 0);
-    pthread_join(test_rx_thread, nullptr);
-
+    if (0 != pthread_join(test_rx_thread, nullptr)) {
+      NXPLOG_TML_E("Fail to kill test rx thread!");
+    }
     phDal4Nfc_msgrelease(gDrvCfg.nClientId);
 
     status = phOsalNfc_Timer_Delete(timeoutTimerId);
