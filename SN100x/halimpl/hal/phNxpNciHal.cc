@@ -87,7 +87,7 @@ extern void phTmlNfc_set_fragmentation_enabled(
 extern NFCSTATUS phNxpNciHal_ext_send_sram_config_to_flash();
 extern NFCSTATUS phNxpNciHal_enableDefaultUICC2SWPline(uint8_t uicc2_sel);
 extern void phNxpNciHal_conf_nfc_forum_mode();
-extern void phNxpNciHal_prop_conf_lpcd();
+extern void phNxpNciHal_prop_conf_lpcd(bool enableLPCD);
 
 nfc_stack_callback_t* p_nfc_stack_cback_backup;
 phNxpNci_getCfg_info_t* mGetCfg_info = NULL;
@@ -3650,7 +3650,9 @@ NFCSTATUS phNxpNciHal_resetDefaultSettings(uint8_t fw_update_req, bool keep_conf
     phNxpNciHal_conf_nfc_forum_mode();
     ret = GetNxpNumValue(NAME_NXP_RDR_DISABLE_ENABLE_LPCD, &num, sizeof(num));
     if (!ret || num == 1 || num == 2) {
-      phNxpNciHal_prop_conf_lpcd();
+      phNxpNciHal_prop_conf_lpcd(true);
+    } else if (ret && num == 0) {
+      phNxpNciHal_prop_conf_lpcd(false);
     }
   }
   return status;
