@@ -1669,10 +1669,10 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     mEEPROM_info.request_mode = GET_EEPROM_DATA;
     retlen = 0;
     memset(buffer, 0x00, bufflen);
-    GetNxpByteArrayValue(NAME_NXP_AUTH_TIMEOUT_CFG, (char *)buffer, bufflen,
+    isfound = GetNxpByteArrayValue(NAME_NXP_AUTH_TIMEOUT_CFG, (char *)buffer, bufflen,
                          &retlen);
 
-    if (retlen == NXP_AUTH_TIMEOUT_BUF_LEN) {
+    if ((isfound > 0) && (retlen == NXP_AUTH_TIMEOUT_BUF_LEN)) {
       memcpy(&auth_timeout_buffer, buffer, NXP_AUTH_TIMEOUT_BUF_LEN);
       mEEPROM_info.request_mode = SET_EEPROM_DATA;
 
