@@ -219,21 +219,13 @@ int phNxpNciHal_ioctlIf(long arg, void *p_data) {
     if (pInpOutData == NULL) {
       NXPLOG_NCIHAL_E("%s : received invalid param", __func__);
     } else{
-
       NXPLOG_NCIHAL_D("HAL_ESE_IOCTL_NFC_JCOP_DWNLD Enter value is %d: \n",
               pInpOutData->inp.data.nxpCmd.p_cmd[0]);
-    }
-    if (gpEseAdapt == NULL) {
-      gpEseAdapt = &EseAdaptation::GetInstance();
-      gpEseAdapt->Initialize();
-    }
-    if (gpEseAdapt != NULL)
-      ret = gpEseAdapt->HalIoctl(HAL_ESE_IOCTL_NFC_JCOP_DWNLD, pInpOutData);
-    if (pInpOutData == NULL) {
-      NXPLOG_NCIHAL_E("%s : received invalid param", __func__);
-    } else{
-       NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_ESE_JCOP_DWNLD Enter value is %d: \n",
-              pInpOutData->inp.data.nxpCmd.p_cmd[0]);
+      if (gpEseAdapt == NULL) {
+        gpEseAdapt = &EseAdaptation::GetInstance();
+        gpEseAdapt->Initialize();
+      }
+      (void)gpEseAdapt->HalIoctl(HAL_ESE_IOCTL_NFC_JCOP_DWNLD, pInpOutData);
     }
     ret = 0;
     break;
