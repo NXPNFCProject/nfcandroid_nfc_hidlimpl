@@ -2016,15 +2016,15 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
        isNxpConfigModified()) {
     retlen = 0;
     config_access = true;
-    isfound = GetNxpByteArrayValue(NAME_NXP_NFC_PROFILE_EXTN, (char*) buffer,
-        bufflen, &retlen);
-    if (retlen > 0) {
-      /* NXP ACT Proprietary Ext */
-      status = phNxpNciHal_send_ext_cmd(retlen, buffer);
-      if (status != NFCSTATUS_SUCCESS) {
-        NXPLOG_NCIHAL_E("NXP ACT Proprietary Ext failed");
-        NXP_NCI_HAL_CORE_INIT_RECOVER(retry_core_init_cnt, retry_core_init);
-      }
+
+    /* NXP ACT Proprietary Ext */
+    static uint8_t cmd_nxp_nfc_profile_extn[] = {0x20, 0x02, 0x05, 0x01,
+                                                 0xA0, 0x44, 0x01, 0x00};
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_nxp_nfc_profile_extn),
+                                      cmd_nxp_nfc_profile_extn);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("NXP ACT Proprietary Ext failed");
+      NXP_NCI_HAL_CORE_INIT_RECOVER(retry_core_init_cnt, retry_core_init);
     }
 
     retlen = 0;
