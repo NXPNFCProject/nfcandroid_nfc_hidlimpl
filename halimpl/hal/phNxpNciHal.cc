@@ -4937,7 +4937,14 @@ bool getJcopUpdateRequired() { return false; }
 
 bool getLsUpdateRequired() { return false; }
 
-string phNxpNciHal_getSystemProperty(string key) { key = ""; return key; }
+string phNxpNciHal_getSystemProperty(string key) {
+  string value(NXP_MAX_CONFIG_STRING_LEN, ' ');
+  if (GetNxpValueAsString(key.c_str(), const_cast<char*>(value.c_str()),
+                          value.size()))
+    return value;
+  /*In case no match found, return empty string*/
+  return {};
+}
 
 bool phNxpNciHal_setSystemProperty(string key, string value) { key = value = ""; return false; }
 

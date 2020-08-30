@@ -929,6 +929,28 @@ extern int GetNxpStrValue(const char* name, char* pValue, unsigned long len) {
 
 /*******************************************************************************
 **
+** Function:    GetNxpValueAsString
+**
+** Description: This API will return string format of value if value is either
+**              given as string or long in config file.
+**
+** Returns:     True if found, otherwise False.
+**
+*******************************************************************************/
+extern bool GetNxpValueAsString(const char* name, char* pValue,
+                                unsigned long len) {
+  const nxp::CNfcParam* pParam = nxp::CNfcConfig::GetInstance().find(name);
+  if (pParam == NULL) return false;
+  memset(pValue, 0, len);
+  if (pParam->str_len() > 0)
+    memcpy(pValue, pParam->str_value(), pParam->str_len());
+  else
+    memcpy(pValue, to_string(pParam->numValue()).c_str(),
+           sizeof(pParam->numValue()));
+  return true;
+}
+/*******************************************************************************
+**
 ** Function:    GetByteArrayValue()
 **
 ** Description: Read byte array value from the config file.
