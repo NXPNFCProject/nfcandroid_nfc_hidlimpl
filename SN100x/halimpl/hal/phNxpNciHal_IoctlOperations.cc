@@ -215,26 +215,24 @@ int phNxpNciHal_ioctlIf(long arg, void *p_data) {
 
   switch (arg) {
   case HAL_ESE_IOCTL_NFC_JCOP_DWNLD:
-
     if (pInpOutData == NULL) {
       NXPLOG_NCIHAL_E("%s : received invalid param", __func__);
-    } else{
-
-      NXPLOG_NCIHAL_D("HAL_ESE_IOCTL_NFC_JCOP_DWNLD Enter value is %d: \n",
-              pInpOutData->inp.data.nxpCmd.p_cmd[0]);
+      break;
     }
+
     if (gpEseAdapt == NULL) {
       gpEseAdapt = &EseAdaptation::GetInstance();
+      if (gpEseAdapt == NULL) {
+        NXPLOG_NCIHAL_E("%s :invalid gpEseAdapt param", __func__);
+        break;
+      }
       gpEseAdapt->Initialize();
     }
-    if (gpEseAdapt != NULL)
-      ret = gpEseAdapt->HalIoctl(HAL_ESE_IOCTL_NFC_JCOP_DWNLD, pInpOutData);
-    if (pInpOutData == NULL) {
-      NXPLOG_NCIHAL_E("%s : received invalid param", __func__);
-    } else{
-       NXPLOG_NCIHAL_D("HAL_NFC_IOCTL_ESE_JCOP_DWNLD Enter value is %d: \n",
-              pInpOutData->inp.data.nxpCmd.p_cmd[0]);
-    }
+
+    NXPLOG_NCIHAL_D("HAL_ESE_IOCTL_NFC_JCOP_DWNLD Enter value is %d: \n",
+                    pInpOutData->inp.data.nxpCmd.p_cmd[0]);
+
+    gpEseAdapt->HalIoctl(HAL_ESE_IOCTL_NFC_JCOP_DWNLD, pInpOutData);
     ret = 0;
     break;
   default:
