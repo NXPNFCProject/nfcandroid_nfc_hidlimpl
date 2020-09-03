@@ -109,8 +109,6 @@ void phNxpNciHal_ext_init(void) {
 *******************************************************************************/
 void phNxpNciHal_sendRfEvtToEseHal(uint8_t rfEvtType) {
   ese_nxp_IoctlInOutData_t inpOutData;
-  gpEseAdapt = &EseAdaptation::GetInstance();
-  gpEseAdapt->Initialize();
   uint8_t rf_state_update[] = {0x00};
   memset(&inpOutData, 0x00, sizeof(ese_nxp_IoctlInOutData_t));
   inpOutData.inp.data.nxpCmd.cmd_len = sizeof(rf_state_update);
@@ -134,8 +132,6 @@ void phNxpNciHal_sendRfEvtToEseHal(uint8_t rfEvtType) {
 NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   uint16_t rf_technology_length_param = 0;
-  gpEseAdapt = &EseAdaptation::GetInstance();
-  gpEseAdapt->Initialize();
   /*parse and decode LxDebug Notifications*/
     if(p_ntf[0] == 0x6F && (p_ntf[1] == 0x35 || p_ntf[1] == 0x36))
     {
