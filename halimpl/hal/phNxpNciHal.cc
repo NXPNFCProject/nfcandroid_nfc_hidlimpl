@@ -635,7 +635,7 @@ static NFCSTATUS phNxpNciHal_CheckValidFwVersion(void) {
 
   NXPLOG_NCIHAL_D("%s current_major_no = 0x%x", __func__, ufw_current_major_no);
 
-  if (nfcFL.chipType == pn553) {
+  if (nfcFL.chipType >= pn547C2 && nfcFL.chipType <= pn81T) {
     unsigned char fw_major_no = 0x00;
     if(wFwVerRsp != 0x00) {
       fw_major_no = ((wFwVerRsp >> 8) & 0x000000FF);
