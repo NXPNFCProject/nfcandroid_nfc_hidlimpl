@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 NXP Semiconductors
+ * Copyright 2015,2020 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,5 +23,8 @@
 #include <phDnldNfc.h>
 
 extern uint16_t phDnldNfc_CalcCrc16(uint8_t* pBuff, uint16_t wLen);
+
+/* Internal function to verify Crc Status byte received during CheckIntegrity */
+extern NFCSTATUS phLibNfc_VerifyCrcStatus(uint8_t bCrcStatus);
 
 #endif /* PHDNLDNFC_UTILS_H */

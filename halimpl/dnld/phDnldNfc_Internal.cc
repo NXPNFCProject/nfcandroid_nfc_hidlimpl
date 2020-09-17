@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 NXP Semiconductors
+ * Copyright 2015,2020 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -483,6 +483,12 @@ static void phDnldNfc_ProcessRWSeqState(void* pContext,
 
           if (NFCSTATUS_SUCCESS == wStatus) {
             pDlCtxt->tCurrState = phDnldNfc_StateRecv;
+
+            if (!pDlCtxt->tRWInfo.bFirstChunkResp && pDlCtxt->tCmdRspFrameInfo.aFrameBuff[0] == 0x00 &&
+              pDlCtxt->tCmdRspFrameInfo.aFrameBuff[2] == PH_DL_CMD_CHECKINTEGRITY) {
+              pDlCtxt->tRWInfo.bCheckIntegMergedInWriteCmd = true;
+            }
+
             wStatus = phTmlNfc_Write(
                 (pDlCtxt->tCmdRspFrameInfo.aFrameBuff),
                 (uint16_t)(pDlCtxt->tCmdRspFrameInfo.dwSendlength),
@@ -1107,6 +1113,11 @@ static NFCSTATUS phDnldNfc_UpdateRsp(pphDnldNfc_DlContext_t pDlContext,
           }
         }
 
+        if (false == (pDlContext->tRWInfo.bFirstChunkResp) &&
+                    pDlContext->tRWInfo.bCheckIntegMergedInWriteCmd) {
+          wStatus = phLibNfc_VerifyCrcStatus(pInfo->pBuff[3]);
+        }
+
         if (NFCSTATUS_SUCCESS == wStatus) {
           (pDlContext->tRWInfo.wRemBytes) -=
               (pDlContext->tRWInfo.wBytesToSendRecv);
@@ -1168,6 +1179,9 @@ static NFCSTATUS phDnldNfc_UpdateRsp(pphDnldNfc_DlContext_t pDlContext,
       } else {
         NXPLOG_FWDNLD_E("Unsuccessful Status received!!");
         wStatus = PHNFCSTVAL(CID_NFC_DNLD, NFCSTATUS_FAILED);
+      }
+      if (pDlContext->tRWInfo.bCheckIntegMergedInWriteCmd) {
+        pDlContext->tRWInfo.bCheckIntegMergedInWriteCmd = false;
       }
     } else if (PH_DL_CMD_READ == (pDlContext->tCmdId)) {
       if (PH_DL_STATUS_OK == (pInfo->pBuff[PHDNLDNFC_FRAMESTATUS_OFFSET])) {

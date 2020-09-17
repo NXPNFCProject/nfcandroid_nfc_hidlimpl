@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 NXP Semiconductors
+ * Copyright 2015,2020 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -162,6 +162,9 @@ typedef struct phDnldNfc_RWInfo {
                          sent */
   bool_t
       bFirstChunkResp; /* Flag to indicate if we got the first chunk response */
+  bool_t
+      bCheckIntegMergedInWriteCmd; /* Flag to set if Check Integrity command
+                                      merged as part of WriteCmd */
 } phDnldNfc_RWInfo_t, *pphDnldNfc_RWInfo_t; /* pointer to #phDnldNfc_RWInfo_t */
 
 /*

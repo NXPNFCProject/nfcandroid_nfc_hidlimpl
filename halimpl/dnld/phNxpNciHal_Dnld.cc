@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 NXP Semiconductors
+ * Copyright 2015,2020 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 #include <phTmlNfc.h>
 #include <phDnldNfc.h>
+#include <phDnldNfc_Utils.h>
 #include <phNxpNciHal_Dnld.h>
 #include <phNxpNciHal_utils.h>
 #include <phNxpLog.h>
@@ -163,9 +164,6 @@ static NFCSTATUS phNxpNciHal_fw_dnld_recover(void* pContext, NFCSTATUS status,
 
 static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
                                               void* pInfo);
-
-/* Internal function to verify Crc Status byte received during CheckIntegrity */
-static NFCSTATUS phLibNfc_VerifyCrcStatus(uint8_t bCrcStatus);
 
 static void phNxpNciHal_fw_dnld_recover_cb(void* pContext, NFCSTATUS status,
                                            void* pInfo);
@@ -1751,65 +1749,4 @@ NFCSTATUS phNxpNciHal_fw_download_seq(uint8_t bClkSrcVal, uint8_t bClkFreqVal,
   }*/
 
   return status;
-}
-
-static NFCSTATUS phLibNfc_VerifyCrcStatus(uint8_t bCrcStatus) {
-    uint8_t bBitPos;
-    uint8_t bShiftVal;
-    if ((nfcFL.chipType == pn551) || (nfcFL.chipType == pn553) ||
-        (nfcFL.chipType == pn557)) {
-      bBitPos = 1;
-      bShiftVal = 2;
-    } else {
-        bBitPos = 0;
-        bShiftVal = 1;
-    }
-  NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
-  while (bBitPos < 7) {
-    if (!(bCrcStatus & bShiftVal)) {
-      switch (bBitPos) {
-        case 0: {
-          NXPLOG_FWDNLD_E("User Data Crc is NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
-          break;
-        }
-        case 1: {
-          NXPLOG_FWDNLD_E("Trim Data Crc is NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
-          break;
-        }
-        case 2: {
-          NXPLOG_FWDNLD_E("Protected Data Crc is NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
-          break;
-        }
-        case 3: {
-          NXPLOG_FWDNLD_E("Patch Code Crc is NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
-          break;
-        }
-        case 4: {
-          NXPLOG_FWDNLD_E("Function Code Crc is NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
-          break;
-        }
-        case 5: {
-          NXPLOG_FWDNLD_E("Patch Table Crc is NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
-          break;
-        }
-        case 6: {
-          NXPLOG_FWDNLD_E("Function Table Crc is NOT OK!!");
-          wStatus = NFCSTATUS_FAILED;
-          break;
-        }
-        default: { break; }
-      }
-    }
-
-    bShiftVal <<= 1;
-    ++bBitPos;
-  }
-
-  return wStatus;
 }
