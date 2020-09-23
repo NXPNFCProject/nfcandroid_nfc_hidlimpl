@@ -353,7 +353,7 @@ static void phNxpNciHal_kill_client_thread(
  * Returns         NFCSTATUS
  *
  ******************************************************************************/
-static NFCSTATUS phNxpNciHal_CheckIntegrityRecovery(uint8_t seq_handler_offset) {
+static NFCSTATUS phNxpNciHal_CheckIntegrityRecovery() {
   NFCSTATUS status = NFCSTATUS_FAILED;
   /* call read pending */
   status = phTmlNfc_Read(
@@ -363,7 +363,7 @@ static NFCSTATUS phNxpNciHal_CheckIntegrityRecovery(uint8_t seq_handler_offset) 
     NXPLOG_NCIHAL_E("TML Read status error status B= %x", status);
     status = NFCSTATUS_FW_CHECK_INTEGRITY_FAILED;
   } else if (phNxpNciHal_nfcc_core_reset_init(false) == NFCSTATUS_SUCCESS) {
-    status = phNxpNciHal_fw_download(seq_handler_offset);
+    status = phNxpNciHal_fw_download();
   }
   return status;
 }
@@ -413,7 +413,7 @@ static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset) {
     fw_download_success = 0;
     status = phNxpNciHal_fw_download(seq_handler_offset);
     if (status == NFCSTATUS_FW_CHECK_INTEGRITY_FAILED) {
-      status = phNxpNciHal_CheckIntegrityRecovery(seq_handler_offset);
+      status = phNxpNciHal_CheckIntegrityRecovery();
     }
     property_set("nfc.fw.downloadmode_force", "0");
     if (status == NFCSTATUS_SUCCESS) {
