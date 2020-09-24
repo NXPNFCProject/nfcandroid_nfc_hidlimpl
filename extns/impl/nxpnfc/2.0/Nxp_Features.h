@@ -367,6 +367,8 @@ extern tNfc_featureList nfcFL;
             nfcFL.nfcMwFL._NCI_INTERFACE_UICC_DIRECT = 0x82;                \
             nfcFL.nfcMwFL._NCI_INTERFACE_ESE_DIRECT = 0x83;                 \
             \
+            nfcFL.nfcMwFL._PHDNLDNFC_USERDATA_EEPROM_OFFSET = 0x02BCU;      \
+            nfcFL.nfcMwFL._PHDNLDNFC_USERDATA_EEPROM_LEN = 0x0BC0U;         \
             \
         }                                                                   \
         else if (chipType == pn553)                                         \
@@ -406,6 +408,8 @@ extern tNfc_featureList nfcFL;
                     "libpn553tc_fw_pku")                                    \
             \
             \
+            nfcFL.nfcMwFL._PHDNLDNFC_USERDATA_EEPROM_OFFSET = 0x02BCU;      \
+            nfcFL.nfcMwFL._PHDNLDNFC_USERDATA_EEPROM_LEN = 0x0BC0U;         \
             nfcFL.nfcMwFL._FW_MOBILE_MAJOR_NUMBER =                         \
             FW_MOBILE_MAJOR_NUMBER_PN553;                                   \
             \
