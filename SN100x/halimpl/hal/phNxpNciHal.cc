@@ -1742,16 +1742,17 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       if(retlen > 0)
         phNxpNciHal_enableDefaultUICC2SWPline((uint8_t)retlen);
     }
-
-    status = phNxpNciHal_setGuardTimer();
-    if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("phNxpNciHal_setGuardTimer failed");
-      retry_core_init_cnt++;
-      goto retry_core_init;
-    } else {
-      status = phNxpNciHal_setAutonomousMode();
+    if (nfcFL.chipType != pn557) {
+      status = phNxpNciHal_setGuardTimer();
       if (status != NFCSTATUS_SUCCESS) {
-        NXPLOG_NCIHAL_E("Set Autonomous enable: Failed");
+        NXPLOG_NCIHAL_E("phNxpNciHal_setGuardTimer failed");
+        retry_core_init_cnt++;
+        goto retry_core_init;
+      } else {
+        status = phNxpNciHal_setAutonomousMode();
+        if (status != NFCSTATUS_SUCCESS) {
+          NXPLOG_NCIHAL_E("Set Autonomous enable: Failed");
+        }
       }
     }
 
