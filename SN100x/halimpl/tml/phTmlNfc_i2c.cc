@@ -508,3 +508,26 @@ static int phTmlNfc_sem_timed_wait() {
   return status;
 }
 #endif
+
+/*******************************************************************************
+**
+** Function         phTmlNfc_get_irq_state
+**
+** Description      Get state of IRQ GPIO
+**
+** Parameters       pDevHandle - valid device handle
+**
+** Returns          The state of IRQ line i.e. +ve if read is pending else Zer0.
+**                  In the case of IOCTL error, it returns -ve value.
+**
+*******************************************************************************/
+int phTmlNfc_get_irq_state(void *pDevHandle) {
+  int ret = -1;
+
+  NXPLOG_TML_D("phTmlNfc_get_irq_state Enter");
+  if (NULL != pDevHandle) {
+    ret = ioctl((intptr_t)pDevHandle, PN544_GET_IRQ_STATE, 0x00);
+  }
+  NXPLOG_TML_D("%s exit: state = %d", __func__, ret);
+  return ret;
+}

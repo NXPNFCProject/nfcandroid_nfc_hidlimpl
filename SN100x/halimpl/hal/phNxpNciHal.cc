@@ -788,6 +788,8 @@ int phNxpNciHal_MinOpen (){
     wConfigStatus = NFCSTATUS_FAILED;
     return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
   }
+  /* Timed wait for IRQ to be Low before issuing write */
+  phTmlNfc_WaitForIRQLow();
 
   uint8_t seq_handler_offset = 0x00;
   uint8_t fw_update_req = 1;

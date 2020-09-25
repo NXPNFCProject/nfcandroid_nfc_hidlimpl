@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2020 NXP Semiconductors
+ * Copyright 2010-2020 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,6 +72,7 @@ NFCSTATUS phTmlNfc_i2c_reset_spm_state(void* pa_data, void* pDevHandle);
 NFCSTATUS phTmlNfc_rel_svdd_wait(void* pDevHandle);
 NFCSTATUS phTmlNfc_rel_dwpOnOff_wait(void* pDevHandle);
 int phTmlNfc_get_platform(void* pDevHandle);
+int phTmlNfc_get_irq_state(void *pDevHandle);
 /*
  * 1. SPI Request NFCC to enable p61 power, only in param
  *   Only for SPI
@@ -127,4 +128,6 @@ int phTmlNfc_get_platform(void* pDevHandle);
  * return 0 - i2c, 1 - i3c
  */
 #define P544_GET_PLATFORM_INTERFACE _IO(PN544_MAGIC, 0x0B)
+/* NFC HAL can call this ioctl to get the current IRQ state */
+#define PN544_GET_IRQ_STATE _IOW(PN544_MAGIC, 0x0C, long)
 //#endif
