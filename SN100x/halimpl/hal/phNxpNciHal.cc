@@ -1494,14 +1494,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("Failed to retrieve NFCC debug info");
   }
-
-  status = phNxpNciHal_setAutonomousMode();
-  if (status != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("Set Autonomous enable: Failed");
-    retry_core_init_cnt++;
-    goto retry_core_init;
-  }
-
   mEEPROM_info.buffer = &enable_ven_cfg;
   mEEPROM_info.bufflen = sizeof(enable_ven_cfg);
   mEEPROM_info.request_type = EEPROM_ENABLE_VEN_CFG;
@@ -1694,6 +1686,11 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       NXPLOG_NCIHAL_E("phNxpNciHal_setGuardTimer failed");
       retry_core_init_cnt++;
       goto retry_core_init;
+    } else {
+      status = phNxpNciHal_setAutonomousMode();
+      if (status != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("Set Autonomous enable: Failed");
+      }
     }
     status = phNxpNciHal_setMdttimeout();
     if (status != NFCSTATUS_SUCCESS &&
@@ -2206,11 +2203,6 @@ int phNxpNciHal_close(bool bShutdown) {
       status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_in_phone_off), cmd_ce_in_phone_off);
       if(status != NFCSTATUS_SUCCESS) {
         NXPLOG_NCIHAL_E("CMD_CE_IN_PHONE_OFF: Failed");
-      }
-      config_ext.autonomous_mode = 0x00;
-      status = phNxpNciHal_setAutonomousMode();
-      if (status != NFCSTATUS_SUCCESS) {
-        NXPLOG_NCIHAL_E("Autonomous mode Disable: Failed");
       }
     }
   if (nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT &&
