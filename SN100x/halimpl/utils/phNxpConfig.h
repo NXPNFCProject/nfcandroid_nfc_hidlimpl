@@ -182,7 +182,7 @@ extern char Fw_Lib_Path[256];
 #define NAME_NXP_GET_HW_INFO_LOG "NXP_GET_HW_INFO_LOG"
 #define NAME_NXP_T4T_NDEF_NFCEE_AID "NXP_T4T_NDEF_NFCEE_AID"
 #define NAME_NXP_NON_STD_CARD_TIMEDIFF "NXP_NON_STD_CARD_TIMEDIFF"
-#define NAME_NXP_MDT_TIMEOUT "NXP_MDT_TIMEOUT"
+#define NAME_NXP_SRD_TIMEOUT "NXP_SRD_TIMEOUT"
 #endif
 /* default configuration */
 #define default_storage_location "/data/vendor/nfc"

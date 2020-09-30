@@ -136,7 +136,7 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
   if (p_ntf[0] == 0x01 && p_ntf[1] == 0x00 && p_ntf[5] == 0x81 &&
       p_ntf[23] == 0x82 && p_ntf[26] == 0xA0 && p_ntf[27] == 0xFE) {
     if (p_ntf[29] == 0x01) {
-      nxpprofile_ctrl.profile_type = MDT_PROFILE;
+      nxpprofile_ctrl.profile_type = SRD_PROFILE;
     } else if (p_ntf[29] == 0x00) {
       nxpprofile_ctrl.profile_type = NFC_FORUM_PROFILE;
     }
@@ -1168,7 +1168,7 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
       addr[0] = 0xA0;
       addr[1] = 0x07;
       break;
-    case EEPROM_MDT_TIMEOUT:
+    case EEPROM_SRD_TIMEOUT:
       mEEPROM_info->update_mode = BYTEWISE;
       memIndex = 0x00;
       fieldLen = 0x02;

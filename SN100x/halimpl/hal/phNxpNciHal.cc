@@ -1695,10 +1695,10 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       retry_core_init_cnt++;
       goto retry_core_init;
     }
-    status = phNxpNciHal_setMdttimeout();
+    status = phNxpNciHal_setSrdtimeout();
     if (status != NFCSTATUS_SUCCESS &&
         status != NFCSTATUS_FEATURE_NOT_SUPPORTED) {
-      NXPLOG_NCIHAL_E("phNxpNciHal_setMdttimeout failed");
+      NXPLOG_NCIHAL_E("phNxpNciHal_setSrdtimeout failed");
       retry_core_init_cnt++;
       goto retry_core_init;
     }

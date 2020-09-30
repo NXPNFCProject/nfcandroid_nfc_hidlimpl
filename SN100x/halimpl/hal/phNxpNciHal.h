@@ -248,7 +248,7 @@ typedef enum {
   EEPROM_CE_PHONE_OFF_CFG,
   EEPROM_ISODEP_MERGE_SAK,
   EEPROM_ENABLE_VEN_CFG,
-  EEPROM_MDT_TIMEOUT,
+  EEPROM_SRD_TIMEOUT,
 } phNxpNci_EEPROM_request_type_t;
 
 typedef struct phNxpNci_EEPROM_info {
@@ -275,7 +275,7 @@ typedef struct phNxpNci_getCfg_info {
 typedef enum {
   NFC_FORUM_PROFILE,
   EMV_CO_PROFILE,
-  MDT_PROFILE,
+  SRD_PROFILE,
   INVALID_PROFILe
 } phNxpNciProfile_t;
 /* NXP Poll Profile control structure */
