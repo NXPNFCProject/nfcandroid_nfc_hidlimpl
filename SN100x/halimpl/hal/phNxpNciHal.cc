@@ -1697,6 +1697,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       retry_core_init_cnt++;
       goto retry_core_init;
     }
+#if(NXP_EXTNS == TRUE && NXP_SRD == TRUE)
     status = phNxpNciHal_setSrdtimeout();
     if (status != NFCSTATUS_SUCCESS &&
         status != NFCSTATUS_FEATURE_NOT_SUPPORTED) {
@@ -1704,7 +1705,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       retry_core_init_cnt++;
       goto retry_core_init;
     }
-
+#endif
     config_access = true;
     retlen = 0;
     NXPLOG_NCIHAL_D("Performing ndef nfcee config settings");

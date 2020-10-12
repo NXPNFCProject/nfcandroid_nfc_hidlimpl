@@ -133,6 +133,7 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
     if(gParserCreated)
       phNxpNciHal_parsePacket(p_ntf,*p_len);
   }
+#if(NXP_SRD == TRUE)
   if (p_ntf[0] == 0x01 && p_ntf[1] == 0x00 && p_ntf[5] == 0x81 &&
       p_ntf[23] == 0x82 && p_ntf[26] == 0xA0 && p_ntf[27] == 0xFE) {
     if (p_ntf[29] == 0x01) {
@@ -144,6 +145,7 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
             p_ntf[3] == 0xE2){
       nxpprofile_ctrl.profile_type = NFC_FORUM_PROFILE;
   }
+#endif
 #endif
 
   if (p_ntf[0] == 0x61 && p_ntf[1] == 0x05 && *p_len < 14) {

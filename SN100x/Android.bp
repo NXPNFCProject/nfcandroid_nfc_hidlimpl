@@ -22,7 +22,8 @@ cc_library_shared {
         "-Werror",
         "-Wextra",
         "-DNXP_EXTNS=TRUE",
-        "-DNXP_HW_SELF_TEST=TRUE"
+        "-DNXP_HW_SELF_TEST=TRUE",
+        "-DNXP_SRD=TRUE"
     ],
 
     srcs: [
