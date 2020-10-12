@@ -179,6 +179,7 @@ extern char Fw_Lib_Path[256];
 #define NAME_NXP_RDR_DISABLE_ENABLE_LPCD "NXP_RDR_DISABLE_ENABLE_LPCD"
 #define NAME_NXP_TRANSPORT "NXP_TRANSPORT"
 #define NAME_NXP_GET_HW_INFO_LOG "NXP_GET_HW_INFO_LOG"
+#define NAME_NXP_ISO_DEP_MERGE_SAK "NXP_ISO_DEP_MERGE_SAK"
 #endif
 /* default configuration */
 #define default_storage_location "/data/vendor/nfc"
