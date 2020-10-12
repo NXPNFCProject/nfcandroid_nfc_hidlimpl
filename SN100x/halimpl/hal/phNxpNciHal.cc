@@ -2122,7 +2122,6 @@ NFCSTATUS phNxpNciHalRFConfigCmdRecSequence() {
     phDnldNfc_InitImgInfo();
     if (NFCSTATUS_SUCCESS == phNxpNciHal_CheckValidFwVersion()) {
       status = phNxpNciHal_fw_download();
-#if(NXP_EXTNS != TRUE)
       status = phTmlNfc_Read(
           nxpncihal_ctrl.p_rsp_data, NCI_MAX_DATA_LEN,
           (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete, NULL);
@@ -2132,7 +2131,6 @@ NFCSTATUS phNxpNciHalRFConfigCmdRecSequence() {
         phTmlNfc_Shutdown_CleanUp();
         status = NFCSTATUS_FAILED;
       }
-#endif
       break;
     }
     gRecFWDwnld = false;
