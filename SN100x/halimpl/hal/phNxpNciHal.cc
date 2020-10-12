@@ -1773,6 +1773,9 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
     mEEPROM_info.request_type = EEPROM_T4T_NFCEE_ENABLE;
     mEEPROM_info.request_mode = SET_EEPROM_DATA;
     request_EEPROM(&mEEPROM_info);
+    if (phNxpNciHal_configure_merge_sak() != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("Applying iso_dep sak merge settings failed");
+    }
   }
   if ((true == fw_dwnld_flag) || (true == setConfigAlways) ||
      isNxpConfigModified() || (wRfUpdateReq == true)) {

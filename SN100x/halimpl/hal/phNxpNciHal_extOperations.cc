@@ -280,3 +280,35 @@ NFCSTATUS phNxpNciHal_send_get_cfg(const uint8_t *cmd_get_cfg, long cmd_len) {
   NXPLOG_NCIHAL_D("%s status : 0x%02X", __func__, status);
   return status;
 }
+
+/*****************************************************************************
+ * Function         phNxpNciHal_configure_merge_sak
+ *
+ * Description      This function is called to apply iso_dep sak merge settings
+ *                  as per the config option NAME_NXP_ISO_DEP_MERGE_SAK
+ *
+ * Params           None
+
+ * Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS
+ *
+ *****************************************************************************/
+NFCSTATUS phNxpNciHal_configure_merge_sak() {
+  long retlen = 0;
+  phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
+  NXPLOG_NCIHAL_D("Performing ISODEP sak merge settings");
+  uint8_t val = 0;
+
+  if (!GetNxpNumValue(NAME_NXP_ISO_DEP_MERGE_SAK, (void *)&retlen,
+                      sizeof(retlen))) {
+    retlen = 0x01;
+    NXPLOG_NCIHAL_D(
+        "ISO_DEP_MERGE_SAK not found. default shall be enabled : 0x%02lx",
+        retlen);
+  }
+  val = (uint8_t)retlen;
+  mEEPROM_info.buffer = &val;
+  mEEPROM_info.bufflen = sizeof(val);
+  mEEPROM_info.request_type = EEPROM_ISODEP_MERGE_SAK;
+  mEEPROM_info.request_mode = SET_EEPROM_DATA;
+  return request_EEPROM(&mEEPROM_info);
+}

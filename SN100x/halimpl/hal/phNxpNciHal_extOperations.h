@@ -71,3 +71,16 @@ NFCSTATUS phNxpNciHal_setGuardTimer();
  *
  *****************************************************************************/
 NFCSTATUS phNxpNciHal_send_get_cfg(const uint8_t *cmd_get_cfg, long cmd_len);
+
+/*****************************************************************************
+ * Function         phNxpNciHal_configure_merge_sak
+ *
+ * Description      This function is called to apply iso_dep sak merge settings
+ *                  as per the config option NAME_NXP_ISO_DEP_MERGE_SAK
+ *
+ * Params           None
+
+ * Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS
+ *
+ *****************************************************************************/
+NFCSTATUS phNxpNciHal_configure_merge_sak();
