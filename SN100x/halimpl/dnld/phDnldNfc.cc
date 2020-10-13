@@ -1034,8 +1034,8 @@ NFCSTATUS phDnldNfc_LoadFW(const char* pathName, uint8_t** pImgInfo,
 *******************************************************************************/
 NFCSTATUS phDnldNfc_LoadBinFW(uint8_t** pImgInfo, uint32_t* pImgInfoLen) {
   FILE* pFile = NULL;
-  uint32_t fileSize = 0;
-  uint32_t bytesRead = 0;
+  long fileSize = 0;
+  long bytesRead = 0;
   long ftellFileSize = 0;
 
   /* check for path name */
