@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2020 NXP Semiconductors
+ * Copyright 2010-2020 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -498,10 +498,14 @@ static void * phTmlNfc_TmlWriterThread(void* pParam) {
         dwNoBytesWrRd = PH_TMLNFC_RESET_VALUE;
         /* Write the data in the buffer onto the file */
         NXPLOG_TML_D("PN54X - Invoking I2C Write.....\n");
+        /* TML reader writer callback synchronization mutex lock --- START */
+        pthread_mutex_lock(&gpphTmlNfc_Context->wait_busy_lock);
         gpphTmlNfc_Context->gWriterCbflag = false;
         dwNoBytesWrRd = gpTransportObj->Write(gpphTmlNfc_Context->pDevHandle,
                                         gpphTmlNfc_Context->tWriteInfo.pBuffer,
                                         gpphTmlNfc_Context->tWriteInfo.wLength);
+        /* TML reader writer callback synchronization mutex lock --- END */
+        pthread_mutex_unlock(&gpphTmlNfc_Context->wait_busy_lock);
 
         /* Try I2C Write Five Times, if it fails : Raju */
         if (-1 == dwNoBytesWrRd) {
