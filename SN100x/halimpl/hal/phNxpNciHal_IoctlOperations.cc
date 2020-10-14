@@ -663,7 +663,7 @@ bool phNxpNciHal_setNxpTransitConfig(char *transitConfValue) {
       NXPLOG_NCIHAL_E("WriteStringToFile: Failed");
       status = false;
     }
-    if (!remove(transitConfFileName.c_str())) {
+    if (remove(transitConfFileName.c_str())) {
       NXPLOG_NCIHAL_E("Unable to remove file");
       status = false;
     }
