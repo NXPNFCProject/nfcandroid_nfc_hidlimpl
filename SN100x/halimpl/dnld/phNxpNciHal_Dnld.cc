@@ -82,6 +82,7 @@ typedef struct {
   bool_t bForceDnld; /* Flag to indicate if forced download option is enabled */
   bool_t bRetryDnld; /* Flag to indicate retry download after successful
                         recovery complete */
+  bool_t bVenReset;  /* Flag to indicate VEN_RESET is needed after DL_RESET */
   uint8_t
       bDnldAttempts;  /* Holds the count of no. of dnld attempts made.max 3 */
   uint16_t IoctlCode; /* Ioctl code*/
@@ -751,6 +752,7 @@ static void phNxpNciHal_fw_dnld_get_sessn_state_cb(void* pContext,
         if (PHLIBNFC_FWDNLD_SESSNOPEN == pRespBuff->pBuff[0]) {
           NXPLOG_FWDNLD_E("Prev Fw Upgrade Session still Open..");
           (gphNxpNciHal_fw_IoctlCtx.bPrevSessnOpen) = true;
+          gphNxpNciHal_fw_IoctlCtx.bVenReset = true;
           if ((gphNxpNciHal_fw_IoctlCtx.bDnldInitiated) == true) {
             NXPLOG_FWDNLD_D(
                 "Session still Open after Prev Fw Upgrade attempt!!");
@@ -1723,6 +1725,12 @@ static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
       wStatus = NFCSTATUS_FW_CHECK_INTEGRITY_FAILED;
     }
 
+    if (gphNxpNciHal_fw_IoctlCtx.bVenReset == true) {
+      (gphNxpNciHal_fw_IoctlCtx.bVenReset) = false;
+      if (NFCSTATUS_SUCCESS != phTmlNfc_IoCtl(phTmlNfc_e_PowerReset)) {
+        NXPLOG_FWDNLD_E("VEN_RESET failed");
+      }
+    }
     (gphNxpNciHal_fw_IoctlCtx.bPrevSessnOpen) = false;
     (gphNxpNciHal_fw_IoctlCtx.bDnldInitiated) = false;
     (gphNxpNciHal_fw_IoctlCtx.bChipVer) = 0;
