@@ -1101,6 +1101,7 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
       addr[1] = 0xED;
       break;
     case EEPROM_FLASH_UPDATE:
+      /* This flag is no more used in MW */
       fieldLen = 0x20;
       memIndex = 0x00;
       len = fieldLen + 4;
