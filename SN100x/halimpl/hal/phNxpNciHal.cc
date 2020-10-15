@@ -1464,7 +1464,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   long bufflen = 260;
   long retlen = 0;
   phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
-  uint8_t flash_update_done = FALSE;
 #if (NFC_NXP_HFO_SETTINGS == TRUE)
   /* Temp fix to re-apply the proper clock setting */
   int temp_fix = 1;
@@ -1588,38 +1587,22 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   if (fw_dwnld_flag == true) {
     phNxpNciHal_hci_network_reset();
   }
-  if(nfcFL.chipType >= sn100u) {
-    if(fw_dwnld_flag) {
-      mEEPROM_info.buffer = &flash_update_done;
-      mEEPROM_info.bufflen = sizeof(flash_update_done);
-      mEEPROM_info.request_type = EEPROM_FLASH_UPDATE;
-      mEEPROM_info.request_mode = SET_EEPROM_DATA;
-      request_EEPROM(&mEEPROM_info);
-    } else {
-      mEEPROM_info.buffer = &flash_update_done;
-      mEEPROM_info.bufflen = sizeof(flash_update_done);
-      mEEPROM_info.request_type = EEPROM_FLASH_UPDATE;
-      mEEPROM_info.request_mode = GET_EEPROM_DATA;
-      request_EEPROM(&mEEPROM_info);
-      if(flash_update_done == FALSE)
-        fw_dwnld_flag = TRUE;
+  if (nfcFL.chipType < sn100u) {
+    // Check if firmware download success
+    status = phNxpNciHal_get_mw_eeprom();
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("NXP GET MW EEPROM AREA Proprietary Ext failed");
+      retry_core_init_cnt++;
+      goto retry_core_init;
     }
-  } else {
-  // Check if firmware download success
-  status = phNxpNciHal_get_mw_eeprom();
-  if (status != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("NXP GET MW EEPROM AREA Proprietary Ext failed");
-    retry_core_init_cnt++;
-    goto retry_core_init;
-  }
 
-  //
-  status = phNxpNciHal_check_clock_config();
-  if (status != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("phNxpNciHal_check_clock_config failed");
-    retry_core_init_cnt++;
-    goto retry_core_init;
-  }
+    //
+    status = phNxpNciHal_check_clock_config();
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("phNxpNciHal_check_clock_config failed");
+      retry_core_init_cnt++;
+      goto retry_core_init;
+    }
 
 #ifdef PN547C2_CLOCK_SETTING
   if (isNxpRFConfigModified() || (fw_dwnld_flag == true) ||
@@ -1665,7 +1648,6 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   }
 #endif
   }
-
 
   config_access = true;
   setConfigAlways = false;
@@ -1871,13 +1853,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
           goto retry_core_init;
         }
     }
-    flash_update_done = TRUE;
-    mEEPROM_info.buffer = &flash_update_done;
-    mEEPROM_info.bufflen = sizeof(flash_update_done);
-    mEEPROM_info.request_type = EEPROM_FLASH_UPDATE;
-    mEEPROM_info.request_mode = SET_EEPROM_DATA;
-    request_EEPROM(&mEEPROM_info);
-    retlen = 0;
+
     config_access = true;
 
     retlen = 0;
