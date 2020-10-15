@@ -84,3 +84,13 @@ NFCSTATUS phNxpNciHal_send_get_cfg(const uint8_t *cmd_get_cfg, long cmd_len);
  *
  *****************************************************************************/
 NFCSTATUS phNxpNciHal_configure_merge_sak();
+/******************************************************************************
+ * Function         phNxpNciHal_setMdttimeout
+ *
+ * Description      This function can be used to set mdt MDT Timeout.
+ *
+ * Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS or
+ *                  NFCSTATUS_FEATURE_NOT_SUPPORTED
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_setMdttimeout();
