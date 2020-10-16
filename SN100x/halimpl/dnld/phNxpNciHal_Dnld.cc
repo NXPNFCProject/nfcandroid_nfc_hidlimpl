@@ -752,7 +752,8 @@ static void phNxpNciHal_fw_dnld_get_sessn_state_cb(void* pContext,
         if (PHLIBNFC_FWDNLD_SESSNOPEN == pRespBuff->pBuff[0]) {
           NXPLOG_FWDNLD_E("Prev Fw Upgrade Session still Open..");
           (gphNxpNciHal_fw_IoctlCtx.bPrevSessnOpen) = true;
-          gphNxpNciHal_fw_IoctlCtx.bVenReset = true;
+          if (nfcFL.chipType == sn100u)
+            gphNxpNciHal_fw_IoctlCtx.bVenReset = true;
           if ((gphNxpNciHal_fw_IoctlCtx.bDnldInitiated) == true) {
             NXPLOG_FWDNLD_D(
                 "Session still Open after Prev Fw Upgrade attempt!!");
