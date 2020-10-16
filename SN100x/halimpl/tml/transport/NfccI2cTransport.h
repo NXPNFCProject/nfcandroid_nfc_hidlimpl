@@ -53,6 +53,9 @@
  */
 #define P544_GET_NFC_STATE _IO(PN544_MAGIC, 0x05)
 
+/* NFC HAL can call this ioctl to get the current IRQ state */
+#define PN544_GET_IRQ_STATE _IOW(PN544_MAGIC, 0x0C, long)
+
 extern phTmlNfc_i2cfragmentation_t fragmentation_enabled;
 
 class NfccI2cTransport : public NfccTransport {
@@ -246,4 +249,18 @@ class NfccI2cTransport : public NfccTransport {
    ** Returns           Current mode download/NCI
    ****************************************************************************/
   bool_t IsFwDnldModeEnabled(void);
+
+  /*******************************************************************************
+   **
+   ** Function         GetIrqState
+   **
+   ** Description      Get state of IRQ GPIO
+   **
+   ** Parameters       pDevHandle - valid device handle
+   **
+   ** Returns          The state of IRQ line i.e. +ve if read is pending else Zer0.
+   **                  In the case of IOCTL error, it returns -ve value.
+   **
+   *******************************************************************************/
+  int GetIrqState(void *pDevHandle);
 };
