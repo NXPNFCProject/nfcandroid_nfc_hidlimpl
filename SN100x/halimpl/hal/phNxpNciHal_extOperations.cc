@@ -328,7 +328,6 @@ NFCSTATUS phNxpNciHal_setSrdtimeout() {
   static const int NXP_SRD_TIMEOUT_BUF_LEN = 2;
   static const uint16_t TIMEOUT_MASK = 0xFFFF;
   static const uint16_t MAX_TIMEOUT_VALUE = 0x0258;
-  static const uint16_t MIN_TIMEOUT_VALUE = 0x0000;
   uint16_t isValid_timeout;
   uint8_t timeout_buffer[NXP_SRD_TIMEOUT_BUF_LEN];
   NFCSTATUS status = NFCSTATUS_FEATURE_NOT_SUPPORTED;
@@ -346,23 +345,18 @@ NFCSTATUS phNxpNciHal_setSrdtimeout() {
     if (retlen == NXP_SRD_TIMEOUT_BUF_LEN) {
       isValid_timeout = ((buffer[1] << 8) & TIMEOUT_MASK);
       isValid_timeout = (isValid_timeout | buffer[0]);
-      if (isValid_timeout < MIN_TIMEOUT_VALUE) {
-        NXPLOG_NCIHAL_D("SRD Feature not supported");
-        return status;
-      } else {
-        if (isValid_timeout > MAX_TIMEOUT_VALUE) {
-          /*if timeout is setting more than 600 sec
-           * than setting to MAX limit 0x0258*/
-          buffer[0] = 0x58;
-          buffer[1] = 0x02;
-        }
-        memcpy(&timeout_buffer, buffer, NXP_SRD_TIMEOUT_BUF_LEN);
-        mEEPROM_info.buffer = timeout_buffer;
-        mEEPROM_info.bufflen = sizeof(timeout_buffer);
-        mEEPROM_info.request_type = EEPROM_SRD_TIMEOUT;
-        mEEPROM_info.request_mode = SET_EEPROM_DATA;
-        status = request_EEPROM(&mEEPROM_info);
+      if (isValid_timeout > MAX_TIMEOUT_VALUE) {
+        /*if timeout is setting more than 600 sec
+         * than setting to MAX limit 0x0258*/
+        buffer[0] = 0x58;
+        buffer[1] = 0x02;
       }
+      memcpy(&timeout_buffer, buffer, NXP_SRD_TIMEOUT_BUF_LEN);
+      mEEPROM_info.buffer = timeout_buffer;
+      mEEPROM_info.bufflen = sizeof(timeout_buffer);
+      mEEPROM_info.request_type = EEPROM_SRD_TIMEOUT;
+      mEEPROM_info.request_mode = SET_EEPROM_DATA;
+      status = request_EEPROM(&mEEPROM_info);
     }
   }
   if (buffer != NULL) {
