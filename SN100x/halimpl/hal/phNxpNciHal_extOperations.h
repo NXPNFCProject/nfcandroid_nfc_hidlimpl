@@ -85,12 +85,12 @@ NFCSTATUS phNxpNciHal_send_get_cfg(const uint8_t *cmd_get_cfg, long cmd_len);
  *****************************************************************************/
 NFCSTATUS phNxpNciHal_configure_merge_sak();
 /******************************************************************************
- * Function         phNxpNciHal_setMdttimeout
+ * Function         phNxpNciHal_setSrdtimeout
  *
- * Description      This function can be used to set mdt MDT Timeout.
+ * Description      This function can be used to set srd SRD Timeout.
  *
  * Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS or
  *                  NFCSTATUS_FEATURE_NOT_SUPPORTED
  *
  ******************************************************************************/
-NFCSTATUS phNxpNciHal_setMdttimeout();
+NFCSTATUS phNxpNciHal_setSrdtimeout();
