@@ -137,7 +137,11 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
       p_ntf[23] == 0x82 && p_ntf[26] == 0xA0 && p_ntf[27] == 0xFE) {
     if (p_ntf[29] == 0x01) {
       nxpprofile_ctrl.profile_type = MDT_PROFILE;
-    } else if (p_ntf[29] == 0x00)
+    } else if (p_ntf[29] == 0x00) {
+      nxpprofile_ctrl.profile_type = NFC_FORUM_PROFILE;
+    }
+  } else if(p_ntf[0] == 0x60 && p_ntf[1] == 0x07 && p_ntf[2] == 0x01 &&
+            p_ntf[3] == 0xE2){
       nxpprofile_ctrl.profile_type = NFC_FORUM_PROFILE;
   }
 #endif

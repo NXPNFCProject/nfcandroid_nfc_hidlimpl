@@ -346,8 +346,9 @@ NFCSTATUS phNxpNciHal_setMdttimeout() {
     if (retlen == NXP_MDT_TIMEOUT_BUF_LEN) {
       isValid_timeout = ((buffer[1] << 8) & TIMEOUT_MASK);
       isValid_timeout = (isValid_timeout | buffer[0]);
-      if (isValid_timeout == MIN_TIMEOUT_VALUE) {
+      if (isValid_timeout < MIN_TIMEOUT_VALUE) {
         NXPLOG_NCIHAL_D("MDT Feature not supported");
+        return status;
       } else {
         if (isValid_timeout > MAX_TIMEOUT_VALUE) {
           /*if timeout is setting more than 600 sec
