@@ -43,5 +43,8 @@ int NfccTransport::GetNfcState(__attribute__((unused)) void *pDevHandle) {
 void NfccTransport::EnableFwDnldMode(__attribute__((unused)) bool mode) {
   return;
 }
+int NfccTransport::GetIrqState(__attribute__((unused)) void *pDevHandle) {
+  return -1;
+}
 
 bool_t NfccTransport::IsFwDnldModeEnabled(void) { return false; }
