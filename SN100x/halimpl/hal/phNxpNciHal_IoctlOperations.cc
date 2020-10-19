@@ -617,7 +617,6 @@ static string phNxpNciHal_parseBytesString(string in) {
 NFCSTATUS phNxpNciHal_resetEse(uint64_t resetType) {
   NFCSTATUS status = NFCSTATUS_FAILED;
 
-
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
     if (NFCSTATUS_SUCCESS != phNxpNciHal_MinOpen()) {
       return NFCSTATUS_FAILED;
@@ -625,7 +624,7 @@ NFCSTATUS phNxpNciHal_resetEse(uint64_t resetType) {
   }
 
   CONCURRENCY_LOCK();
-  status = phTmlNfc_ese_reset(gpphTmlNfc_Context->pDevHandle, resetType);
+  status = gpTransportObj->EseReset(gpphTmlNfc_Context->pDevHandle, (EseResetType)resetType);
   CONCURRENCY_UNLOCK();
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("EsePowerCycle failed");
