@@ -1177,6 +1177,22 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
       addr[0] = 0xA1;
       addr[1] = 0x17;
       break;
+    case EEPROM_UICC1_SESSION_ID:
+      fieldLen = mEEPROM_info->bufflen;
+      len = fieldLen + 4;
+      memIndex = 0x00;
+      addr[0] = 0xA0;
+      addr[1] = 0xE4;
+      mEEPROM_info->update_mode = BYTEWISE;
+      break;
+    case EEPROM_UICC2_SESSION_ID:
+      fieldLen = mEEPROM_info->bufflen;
+      len = fieldLen + 4;
+      memIndex = 0x00;
+      addr[0] = 0xA0;
+      addr[1] = 0xE5;
+      mEEPROM_info->update_mode = BYTEWISE;
+      break;
     default:
       ALOGE("No valid request information found");
       break;
@@ -1189,7 +1205,6 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
       addr[0],        // First byte of Address
       addr[1]         // Second byte of Address
   };
-
   uint8_t set_cfg_cmd_hdr[7] = {
       0x20,    0x02,  // set_cfg header
       len,            // len of following value
@@ -1216,6 +1231,13 @@ retryget:
     if (status != NFCSTATUS_SUCCESS) {
       ALOGE("failed to get requested memory address");
     } else if (mEEPROM_info->request_mode == GET_EEPROM_DATA) {
+      if (mEEPROM_info->bufflen == 0xFF) {
+        /* Max bufferlenth for single Get Config Command is 0xFF.
+         * If buffer length set to max value, reassign buffer value
+         * depends on response from Get Config command */
+        mEEPROM_info->bufflen =
+            *(nxpncihal_ctrl.p_rx_data + getCfgStartIndex + memIndex - 1);
+      }
       memcpy(mEEPROM_info->buffer,
              nxpncihal_ctrl.p_rx_data + getCfgStartIndex + memIndex,
              mEEPROM_info->bufflen);

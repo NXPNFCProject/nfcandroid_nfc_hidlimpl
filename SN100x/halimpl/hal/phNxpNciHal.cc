@@ -66,7 +66,8 @@ const char *rf_block_name = "NXP_RF_CONF_BLK_";
 static uint8_t read_failed_disable_nfc = false;
 /* FW download success flag */
 static uint8_t fw_download_success = 0;
-
+static std::vector<uint8_t> uicc1HciParams(0);
+static std::vector<uint8_t> uicc2HciParams(0);
 static uint8_t config_access = false;
 static uint8_t config_success = true;
 static ThreadMutex sHalFnLock;
@@ -473,6 +474,23 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset, bool bIsNfccDlStat
   status = phNxpNciHal_write_fw_dw_status(TRUE);
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("%s: NXP Set FW DW Flag failed", __FUNCTION__);
+  }
+
+  /*Getting UICC1 CL params */
+  uicc1HciParams.resize(0xFF);
+  status = phNxpNciHal_get_uicc_hci_params(
+      uicc1HciParams, uicc1HciParams.size(), EEPROM_UICC1_SESSION_ID);
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("%s: phNxpNciHal_get_uicc_hci_params for uicc1 is failed  ",
+                    __FUNCTION__);
+  }
+  /*Getting UICC2 CL params */
+  uicc2HciParams.resize(0xFF);
+  status = phNxpNciHal_get_uicc_hci_params(
+      uicc2HciParams, uicc2HciParams.size(), EEPROM_UICC2_SESSION_ID);
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("%s: phNxpNciHal_get_uicc_hci_params for uicc2 is failed  ",
+                    __FUNCTION__);
   }
 
   if (!bIsNfccDlState) {
@@ -2041,6 +2059,29 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       }
     }
     if (status == NFCSTATUS_SUCCESS) {
+      if (uicc1HciParams.size() > 0) {
+        status = phNxpNciHal_set_uicc_hci_params(
+            uicc1HciParams, uicc1HciParams.size(), EEPROM_UICC1_SESSION_ID);
+        if (status != NFCSTATUS_SUCCESS) {
+          NXPLOG_NCIHAL_E(
+              "%s: NXP Set phNxpNciHal_set_uicc_hci_params for uicc1 failed",
+              __FUNCTION__);
+        } else {
+          uicc1HciParams.resize(0);
+        }
+      }
+      if (uicc2HciParams.size() > 0) {
+        status = phNxpNciHal_set_uicc_hci_params(
+            uicc2HciParams, uicc2HciParams.size(), EEPROM_UICC2_SESSION_ID);
+        if (status != NFCSTATUS_SUCCESS) {
+          NXPLOG_NCIHAL_E(
+              "%s: NXP Set phNxpNciHal_set_uicc_hci_params for uicc2 failed",
+              __FUNCTION__);
+        } else {
+          uicc2HciParams.resize(0);
+        }
+      }
+
       fw_dwnld_flag = false;
       status = phNxpNciHal_write_fw_dw_status(fw_dwnld_flag);
       if (status != NFCSTATUS_SUCCESS) {

@@ -251,6 +251,8 @@ typedef enum {
   EEPROM_ENABLE_VEN_CFG,
   EEPROM_ISODEP_MERGE_SAK,
   EEPROM_SRD_TIMEOUT,
+  EEPROM_UICC1_SESSION_ID,
+  EEPROM_UICC2_SESSION_ID,
 } phNxpNci_EEPROM_request_type_t;
 
 typedef struct phNxpNci_EEPROM_info {
@@ -382,5 +384,36 @@ NFCSTATUS phNxpNciHal_read_fw_dw_status(uint8_t &value);
  *
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_write_fw_dw_status(uint8_t value);
+
+/******************************************************************************
+ * Function         phNxpNciHal_set_uicc_hci_params
+ *
+ * Description      This will update value of uicc session status to store flag
+ *                  to eeprom
+ *
+ * Parameters       value - this value will be updated to eeprom flag.
+ *
+ * Returns          status of the write
+ *
+ ******************************************************************************/
+NFCSTATUS
+phNxpNciHal_set_uicc_hci_params(std::vector<uint8_t> &ptr, uint8_t bufflen,
+                                phNxpNci_EEPROM_request_type_t uiccType);
+
+/******************************************************************************
+ * Function         phNxpNciHal_get_uicc_hci_params
+ *
+ * Description      This will read the value of fw download status flag
+ *                  from eeprom
+ *
+ * Parameters       value - this parameter will be updated with the flag
+ *                  value from eeprom.
+ *
+ * Returns          status of the read
+ *
+ ******************************************************************************/
+NFCSTATUS
+phNxpNciHal_get_uicc_hci_params(std::vector<uint8_t> &ptr, uint8_t bufflen,
+                                phNxpNci_EEPROM_request_type_t uiccType);
 
 #endif /* _PHNXPNCIHAL_H_ */

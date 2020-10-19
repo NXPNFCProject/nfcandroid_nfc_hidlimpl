@@ -22,7 +22,6 @@
 
 #define NCI_HEADER_SIZE 3
 #define NCI_SE_CMD_LEN  4
-
 nxp_nfc_config_ext_t config_ext;
 /******************************************************************************
  * Function         phNxpNciHal_updateAutonomousPwrState
@@ -250,6 +249,61 @@ NFCSTATUS phNxpNciHal_write_fw_dw_status(uint8_t value) {
   mEEPROM_info.buffer = &value;
   mEEPROM_info.bufflen = sizeof(value);
   mEEPROM_info.request_type = EEPROM_FW_DWNLD;
+  mEEPROM_info.request_mode = SET_EEPROM_DATA;
+  return request_EEPROM(&mEEPROM_info);
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_get_uicc_hci_params
+ *
+ * Description      This will read the UICC HCI param values
+ *                  from eeprom
+ *
+ * Parameters       value - this parameter will be updated with the flag
+ *                  value from eeprom.
+ *
+ * Returns          status of the read
+ *
+ ******************************************************************************/
+NFCSTATUS
+phNxpNciHal_get_uicc_hci_params(std::vector<uint8_t> &ptr, uint8_t bufflen,
+                                phNxpNci_EEPROM_request_type_t uiccType) {
+  if (nfcFL.chipType < sn220u) {
+    NXPLOG_NCIHAL_E("%s Not supported", __func__);
+    return NFCSTATUS_SUCCESS;
+  }
+  phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
+  mEEPROM_info.buffer = &ptr[0];
+  mEEPROM_info.bufflen = bufflen;
+  mEEPROM_info.request_type = uiccType;
+  mEEPROM_info.request_mode = GET_EEPROM_DATA;
+  NFCSTATUS status = request_EEPROM(&mEEPROM_info);
+  ptr.resize(mEEPROM_info.bufflen);
+  return status;
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_set_uicc_hci_params
+ *
+ * Description      This will update the UICC HCI param values
+ *                  to eeprom
+ *
+ * Parameters       value - this value will be updated to eeprom flag.
+ *
+ * Returns          status of the write
+ *
+ *****************************************************************************/
+NFCSTATUS
+phNxpNciHal_set_uicc_hci_params(std::vector<uint8_t> &ptr, uint8_t bufflen,
+                                phNxpNci_EEPROM_request_type_t uiccType) {
+  if (nfcFL.chipType < sn220u) {
+    NXPLOG_NCIHAL_E("%s Not supported", __func__);
+    return NFCSTATUS_SUCCESS;
+  }
+  phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
+  mEEPROM_info.buffer = &ptr[0];
+  mEEPROM_info.bufflen = bufflen;
+  mEEPROM_info.request_type = uiccType;
   mEEPROM_info.request_mode = SET_EEPROM_DATA;
   return request_EEPROM(&mEEPROM_info);
 }
