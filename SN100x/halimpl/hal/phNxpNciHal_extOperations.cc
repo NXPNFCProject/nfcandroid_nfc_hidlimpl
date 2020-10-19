@@ -50,7 +50,8 @@ uint8_t phNxpNciHal_updateAutonomousPwrState(uint8_t num) {
  *
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_setAutonomousMode() {
-
+  if (nfcFL.chipType != sn100u)
+    return NFCSTATUS_FAILED;
   phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
   uint8_t autonomous_mode_value = 0x01;
   if (config_ext.autonomous_mode == true)
