@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2020 NXP Semiconductors
+ * Copyright 2010-2020 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -256,4 +256,5 @@ phTmlNfc_i2cfragmentation_t phTmlNfc_get_fragmentation_enabled();
 NFCSTATUS phTmlNfc_ConfigTransport();
 void phTmlNfc_EnableFwDnldMode(bool mode);
 bool phTmlNfc_IsFwDnldModeEnabled(void);
+void phTmlNfc_WaitForIRQLow();
 #endif /*  PHTMLNFC_H  */
