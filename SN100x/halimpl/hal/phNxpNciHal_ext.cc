@@ -38,6 +38,8 @@ extern phNxpNciHal_Control_t nxpncihal_ctrl;
 extern phNxpNciProfile_Control_t nxpprofile_ctrl;
 extern phNxpNci_getCfg_info_t* mGetCfg_info;
 
+extern bool_t gsIsFwRecoveryRequired;
+
 extern uint32_t cleanup_timer;
 extern bool nfc_debug_enabled;
 uint8_t icode_detected = 0x00;
@@ -352,12 +354,20 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
     p_ntf[4] = 0x00;
     *p_len = 5;
   }
-  if((p_ntf[0] == 0x60 && p_ntf[1] == 0x07 && p_ntf[2] == 0x01 && ((p_ntf[3] == 0xE5)
-  ||(p_ntf[3] == 0x60)))||(p_ntf[0] == 0x61 && p_ntf[1] == 0x21 && p_ntf[2] == 0x00))
-  {
-      status = NFCSTATUS_FAILED;
+
+  if (p_ntf[0] == 0x60 && p_ntf[1] == 0x07 && p_ntf[2] == 0x01) {
+    if (p_ntf[3] == 0xEA) {
+      gsIsFwRecoveryRequired = true;
+      NXPLOG_NCIHAL_D("FW update required");
+    } else if ((p_ntf[3] == 0xE5) || (p_ntf[3] == 0x60)) {
       NXPLOG_NCIHAL_D("ignore core generic error");
-      return status;
+    }
+    status = NFCSTATUS_FAILED;
+    return status;
+  } else if (p_ntf[0] == 0x61 && p_ntf[1] == 0x21 && p_ntf[2] == 0x00) {
+    status = NFCSTATUS_FAILED;
+    NXPLOG_NCIHAL_D("ignore core generic error");
+    return status;
   }
   // 4200 02 00 01
   else if (p_ntf[0] == 0x42 && p_ntf[1] == 0x00 && ee_disc_done == 0x01) {
@@ -386,9 +396,8 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
   } else if (p_ntf[0] == 0x41 && p_ntf[1] == 0x04 && cleanup_timer != 0) {
     status = NFCSTATUS_FAILED;
     return status;
-  }
-  else if (*p_len == 4 && p_ntf[0] == 0x4F && p_ntf[1] == 0x11 &&
-           p_ntf[2] == 0x01) {
+  } else if (*p_len == 4 && p_ntf[0] == 0x4F && p_ntf[1] == 0x11 &&
+             p_ntf[2] == 0x01) {
     if (p_ntf[3] == 0x00) {
       NXPLOG_NCIHAL_D(
           ">  Workaround for ISO-DEP Presence Check, ignore response and wait "
