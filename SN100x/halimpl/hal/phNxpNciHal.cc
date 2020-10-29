@@ -846,7 +846,7 @@ int phNxpNciHal_MinOpen (){
             fw_download_success?false:true);
 
     if ((status != NFCSTATUS_SUCCESS && fw_download_success) ||
-        gsIsFwRecoveryRequired) {
+        (gsIsFwRecoveryRequired && fw_update_req)) {
       NXPLOG_NCIHAL_E("FW Recovery required, Perform Force FW Download "
                       "gsIsFwRecoveryRequired %d",
                       gsIsFwRecoveryRequired);
