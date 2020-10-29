@@ -90,7 +90,8 @@ NFCSTATUS phLibNfc_VerifyCrcStatus(uint8_t bCrcStatus) {
   NXPLOG_FWDNLD_D("phLibNfc_VerifyCrcStatus : Enter");
     uint8_t bBitPos;
     uint8_t bShiftVal;
-    if (nfcFL.chipType == pn551) {
+    if ((nfcFL.chipType == pn551) || (nfcFL.chipType == pn553) ||
+        (nfcFL.chipType == pn557)) {
       bBitPos = 1;
       bShiftVal = 2;
     } else {
