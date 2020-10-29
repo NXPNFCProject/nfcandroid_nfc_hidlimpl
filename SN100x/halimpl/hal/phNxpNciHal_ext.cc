@@ -359,10 +359,11 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
     if (p_ntf[3] == 0xEA) {
       gsIsFwRecoveryRequired = true;
       NXPLOG_NCIHAL_D("FW update required");
+      status = NFCSTATUS_FAILED;
     } else if ((p_ntf[3] == 0xE5) || (p_ntf[3] == 0x60)) {
       NXPLOG_NCIHAL_D("ignore core generic error");
+      status = NFCSTATUS_FAILED;
     }
-    status = NFCSTATUS_FAILED;
     return status;
   } else if (p_ntf[0] == 0x61 && p_ntf[1] == 0x21 && p_ntf[2] == 0x00) {
     status = NFCSTATUS_FAILED;
