@@ -201,8 +201,10 @@ void NxpMfcReader::BuildWrite16Cmd() {
 *******************************************************************************/
 void NxpMfcReader::BuildRawCmd() {
   mMfcTagCmdIntfData.sendBufLen = mMfcTagCmdIntfData.sendBufLen + 1;
-  memcpy(mMfcTagCmdIntfData.sendBuf + 1, mMfcTagCmdIntfData.sendBuf,
-          mMfcTagCmdIntfData.sendBufLen);
+  uint8_t buff[mMfcTagCmdIntfData.sendBufLen];
+  memset(buff, 0, mMfcTagCmdIntfData.sendBufLen);
+  memcpy(buff, mMfcTagCmdIntfData.sendBuf, mMfcTagCmdIntfData.sendBufLen);
+  memcpy(mMfcTagCmdIntfData.sendBuf + 1, buff, mMfcTagCmdIntfData.sendBufLen);
   mMfcTagCmdIntfData.sendBuf[0] = eMfRawDataXchgHdr;
 }
 
@@ -218,8 +220,10 @@ void NxpMfcReader::BuildRawCmd() {
 void NxpMfcReader::BuildIncDecCmd() {
   mMfcTagCmdIntfData.sendBufLen = 0x03; // eMfRawDataXchgHdr + cmd +
                                         // blockaddress
-  memcpy(mMfcTagCmdIntfData.sendBuf + 1, mMfcTagCmdIntfData.sendBuf,
-          mMfcTagCmdIntfData.sendBufLen);
+  uint8_t buff[mMfcTagCmdIntfData.sendBufLen];
+  memset(buff, 0, mMfcTagCmdIntfData.sendBufLen);
+  memcpy(buff, mMfcTagCmdIntfData.sendBuf, mMfcTagCmdIntfData.sendBufLen);
+  memcpy(mMfcTagCmdIntfData.sendBuf + 1, buff, mMfcTagCmdIntfData.sendBufLen);
   mMfcTagCmdIntfData.sendBuf[0] = eMfRawDataXchgHdr;
 }
 
