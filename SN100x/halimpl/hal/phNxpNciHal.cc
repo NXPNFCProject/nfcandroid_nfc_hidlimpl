@@ -93,7 +93,6 @@ extern void phNxpNciHal_prop_conf_lpcd(bool enableLPCD);
 nfc_stack_callback_t* p_nfc_stack_cback_backup;
 phNxpNci_getCfg_info_t* mGetCfg_info = NULL;
 bool_t gParserCreated = FALSE;
-static bool_t gsIsFirstHalMinOpen = true;
 /* global variable to get FW version from NCI response*/
 uint32_t wFwVerRsp;
 EseAdaptation *gpEseAdapt = NULL;
@@ -125,6 +124,9 @@ phNxpNciClock_t phNxpNciClock = {0, {0}, false};
 phNxpNciRfSetting_t phNxpNciRfSet = {false, {0}};
 
 phNxpNciMwEepromArea_t phNxpNciMwEepromArea = {false, {0}};
+
+static bool_t gsIsFirstHalMinOpen = true;
+volatile bool_t gsIsFwRecoveryRequired = false;
 
 void *RfFwRegionDnld_handle = NULL;
 fpVerInfoStoreInEeprom_t fpVerInfoStoreInEeprom = NULL;
@@ -877,8 +879,14 @@ int phNxpNciHal_MinOpen (){
     }
   }
 
+  if (gsIsFirstHalMinOpen && gsIsFwRecoveryRequired) {
+    NXPLOG_NCIHAL_E("FW Recovery is required");
+    fw_update_req = true;
+  }
+
   do {
     if (fw_update_req) {
+      gsIsFwRecoveryRequired = false;
       status = phNxpNciHal_force_fw_download(seq_handler_offset);
       if (status == NFCSTATUS_CMD_ABORTED ) {
         return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
@@ -888,11 +896,17 @@ int phNxpNciHal_MinOpen (){
     }
     status = phNxpNciHal_resetDefaultSettings(fw_update_req,
             fw_download_success?false:true);
-    if(status != NFCSTATUS_SUCCESS && fw_download_success) {
-      NXPLOG_NCIHAL_E("Applying default settings failed, Perform Force FW Download");
+
+    if ((status != NFCSTATUS_SUCCESS && fw_download_success) ||
+        (gsIsFwRecoveryRequired && fw_update_req)) {
+      NXPLOG_NCIHAL_E("FW Recovery required, Perform Force FW Download "
+                      "gsIsFwRecoveryRequired %d",
+                      gsIsFwRecoveryRequired);
       fw_update_req = 1;
-    } else { break; }
-  } while (status != NFCSTATUS_SUCCESS);
+    } else {
+      break;
+    }
+  } while (status != NFCSTATUS_SUCCESS || gsIsFwRecoveryRequired);
   /* Call open complete */
   phNxpNciHal_MinOpen_complete(wConfigStatus);
   NXPLOG_NCIHAL_D("phNxpNciHal_MinOpen(): exit");
