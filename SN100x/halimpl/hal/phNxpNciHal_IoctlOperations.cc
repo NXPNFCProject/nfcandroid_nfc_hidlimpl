@@ -339,8 +339,10 @@ bool phNxpNciHal_setSystemProperty(string key, string value) {
     if (fpPropConfCover != NULL) {
       stat = (fpPropConfCover(cstate, cid) == NFCSTATUS_SUCCESS ) ? true : false;
     }
+  } else if(strcmp(key.c_str(), "nfc.cmd_timeout") == 0){
+    NXPLOG_NCIHAL_E("%s : nci_timeout, sem post", __func__);
+    sem_post(&(nxpncihal_ctrl.syncSpiNfc));
   }
-
   gsystemProperty[key] = value;
   return stat;
 }
