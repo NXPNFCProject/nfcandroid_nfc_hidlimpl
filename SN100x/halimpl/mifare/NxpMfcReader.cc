@@ -55,7 +55,7 @@ int NxpMfcReader::Write(uint16_t mfcDataLen, const uint8_t *pMfcData) {
   mfcDataLen = mfcTagCmdBuffLen + NCI_HEADER_SIZE;
 
   if (checkIsMFCIncDecRestore(mfcTagCmdBuff[4])) {
-    if (sem_init(&mNacksem, 0, 0) != -1) {
+    if (sem_init(&mNacksem, 0, 0) != 0) {
       NXPLOG_NCIHAL_E("%s : sem_init failed", __func__);
       return 0;
     }
