@@ -102,6 +102,7 @@ typedef struct MfcTagCmdIntfData {
 class NxpMfcReader {
 private:
   MfcTagCmdIntfData_t mMfcTagCmdIntfData;
+  sem_t mNacksem;
   bool isAck;
   void BuildMfcCmd(uint8_t *pData, uint16_t *pLength);
   void BuildAuthCmd();

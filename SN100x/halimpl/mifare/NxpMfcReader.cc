@@ -25,7 +25,6 @@
 extern bool sendRspToUpperLayer;
 extern bool bEnableMfcExtns;
 extern bool bDisableLegacyMfcExtns;
-static sem_t mNacksem;
 
 NxpMfcReader &NxpMfcReader::getInstance() {
   static NxpMfcReader msNxpMfcReader;
