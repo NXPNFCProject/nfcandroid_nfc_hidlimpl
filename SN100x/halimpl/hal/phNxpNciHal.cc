@@ -1396,7 +1396,7 @@ uint8_t phNxpNciHal_lastResetNtfReason(void) {
  * Returns          Always returns NFCSTATUS_SUCCESS (0).
  *
  ******************************************************************************/
-int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
+int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len, uint8_t* p_core_init_rsp_params) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   uint8_t* buffer = NULL;
   uint8_t isfound = 0;
@@ -1442,7 +1442,8 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   if (nxpncihal_ctrl.halStatus != HAL_STATUS_OPEN) {
     return NFCSTATUS_FAILED;
   }
-  if ((*p_core_init_rsp_params > 0) &&
+  if (core_init_rsp_params_len >= 1 &&
+      (*p_core_init_rsp_params > 0) &&
       (*p_core_init_rsp_params < 4))  // initializing for recovery.
   {
   retry_core_init:
@@ -1899,7 +1900,8 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
   config_access = false;
   // if recovery mode and length of last command is 0 then only reset the P2P
   // listen mode routing.
-  if ((*p_core_init_rsp_params > 0) && (*p_core_init_rsp_params < 4) &&
+  if (core_init_rsp_params_len >= 36 &&
+      (*p_core_init_rsp_params > 0) && (*p_core_init_rsp_params < 4) &&
       p_core_init_rsp_params[35] == 0) {
     /* P2P listen mode routing */
     status = phNxpNciHal_send_ext_cmd(sizeof(p2p_listen_mode_routing_cmd),
