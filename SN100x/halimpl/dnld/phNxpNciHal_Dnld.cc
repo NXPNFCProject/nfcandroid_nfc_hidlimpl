@@ -1560,23 +1560,16 @@ static NFCSTATUS phNxpNciHal_fw_seq_handler(
 ** Returns          NFCSTATUS_SUCCESS if success
 **
 *******************************************************************************/
-NFCSTATUS phNxpNciHal_fw_dnld_switch_normal_mode(void* pContext, NFCSTATUS fStatus,
-        void* pInfo) {
+NFCSTATUS phNxpNciHal_fw_dnld_switch_normal_mode() {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
-  /* Call Tml Ioctl to enable/restore normal mode */
-  wStatus = phTmlNfc_IoCtl(phTmlNfc_e_EnableNormalMode);
 
-  if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD ||
-          (gphNxpNciHal_fw_IoctlCtx.bChipVer & PHDNLDNFC_HWVER_VENUS_MRA1_0)){
-
+  if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD) {
     phDnldNfc_SetDlRspTimeout((uint16_t)PHDNLDNFC_RESET_RSP_TIMEOUT);
-    wStatus = phNxpNciHal_fw_dnld_reset(pContext, wStatus, &pInfo);
+    wStatus = phNxpNciHal_fw_dnld_reset(nullptr, wStatus,nullptr);
     phDnldNfc_SetDlRspTimeout((uint16_t)PHDNLDNFC_RSP_TIMEOUT);
   }
   if (NFCSTATUS_SUCCESS != wStatus) {
     NXPLOG_FWDNLD_E("Switching to NormalMode Failed!!");
-  } else {
-    wStatus = fStatus;
   }
   return wStatus;
 }
@@ -1712,11 +1705,8 @@ static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
     }
 
     if (gphNxpNciHal_fw_IoctlCtx.bSendNciCmd == false) {
-      if (status != NFCSTATUS_FW_CHECK_INTEGRITY_FAILED) {
-        /* Call Tml Ioctl to enable/restore normal mode */
-        wStatus = phTmlNfc_IoCtl(phTmlNfc_e_EnableNormalMode);
-      }
-      if (NFCSTATUS_SUCCESS != wStatus) {
+      /* Call Tml Ioctl to enable/restore normal mode */
+      if (NFCSTATUS_SUCCESS != (phTmlNfc_IoCtl(phTmlNfc_e_EnableNormalMode))) {
         NXPLOG_FWDNLD_E("Switching to NormalMode Failed!!");
       } else {
         wStatus = fStatus;

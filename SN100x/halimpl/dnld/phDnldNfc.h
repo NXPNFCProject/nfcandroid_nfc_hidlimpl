@@ -1,5 +1,5 @@
 /*
- *  Copyright 2010-2020 NXP
+ *  Copyright 2010-2021 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ typedef void (*pphDnldNfc_RspCb_t)(void* pContext, NFCSTATUS wStatus,
 /* Timeout value to wait for response from NFCC */
 #define PHDNLDNFC_RSP_TIMEOUT (2500)
 /* Timeout value to wait for dnld  reset rsp */
-#define PHDNLDNFC_RESET_RSP_TIMEOUT (10)
+#define PHDNLDNFC_RESET_RSP_TIMEOUT (15)
 
 #define PHLIBNFC_FWDNLD_SESSNOPEN (0x01U)   /* download session is Open */
 #define PHLIBNFC_FWDNLD_SESSNCLOSED (0x00U) /* download session is Closed */

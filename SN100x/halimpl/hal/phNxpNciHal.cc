@@ -170,7 +170,7 @@ static void phNxpNciHal_CheckAndHandleFwTearDown(void);
 static NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd = false);
 static uint8_t phNxpNciHal_getSessionInfoInFwDnldMode();
 static NFCSTATUS phNxpNciHal_dlResetInFwDnldMode();
-static void phNxpNciHal_enableTmlRead();
+static NFCSTATUS phNxpNciHal_enableTmlRead();
 /******************************************************************************
  * Function         phNxpNciHal_initialize_debug_enabled_flag
  *
@@ -363,15 +363,10 @@ static void phNxpNciHal_kill_client_thread(
  ******************************************************************************/
 static NFCSTATUS phNxpNciHal_CheckIntegrityRecovery(bool bIsNfccDlState) {
   NFCSTATUS status = NFCSTATUS_FAILED;
-  /* call read pending */
-  status = phTmlNfc_Read(
-      nxpncihal_ctrl.p_rsp_data, NCI_MAX_DATA_LEN,
-      (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete, NULL);
-  if (status != NFCSTATUS_PENDING) {
-    NXPLOG_NCIHAL_E("TML Read status error status B= %x", status);
-    status = NFCSTATUS_FW_CHECK_INTEGRITY_FAILED;
-  } else if (phNxpNciHal_nfcc_core_reset_init(false) == NFCSTATUS_SUCCESS) {
+  if (phNxpNciHal_nfcc_core_reset_init(false) == NFCSTATUS_SUCCESS) {
     status = phNxpNciHal_fw_download(0, bIsNfccDlState);
+  } else {
+    status = NFCSTATUS_FW_CHECK_INTEGRITY_FAILED;
   }
   return status;
 }
@@ -421,6 +416,7 @@ static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset) {
     fw_download_success = 0;
     /*We are expecting NFC to be either in NFC or in the FW Download state*/
     status = phNxpNciHal_fw_download(seq_handler_offset, bIsNfccDlState);
+
     if (status == NFCSTATUS_FW_CHECK_INTEGRITY_FAILED) {
       status = phNxpNciHal_CheckIntegrityRecovery(bIsNfccDlState);
     }
@@ -523,13 +519,8 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset, bool bIsNfccDlStat
                                          nxpprofile_ctrl.bClkFreqVal,
                                          seq_handler_offset);
 
-    if (status == NFCSTATUS_FW_CHECK_INTEGRITY_FAILED) {
-      (void)phNxpNciHal_fw_dnld_switch_normal_mode(nullptr, status,nullptr);
-    }
-    if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD)
-    {
-      nxpncihal_ctrl.hal_ext_enabled = TRUE;
-      nxpncihal_ctrl.nci_info.wait_for_ntf = TRUE;
+    if (phNxpNciHal_dlResetInFwDnldMode() != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("DL Reset failed in FW DN mode");
     }
 
     phDnldNfc_ReSetHwDevHandle();
@@ -537,13 +528,6 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset, bool bIsNfccDlStat
     nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
     phTmlNfc_EnableFwDnldMode(false);
 
-    status = phNxpNciHal_dlResetInFwDnldMode();
-    if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("DL Reset failed in FW DN mode");
-    }
-
-    nxpncihal_ctrl.hal_ext_enabled = FALSE;
-    nxpncihal_ctrl.nci_info.wait_for_ntf = FALSE;
     /* FW download done.Therefore if previous I2C write failed then we can change the state to NFCSTATUS_SUCCESS*/
     write_unlocked_status = NFCSTATUS_SUCCESS;
   } else {
@@ -1445,18 +1429,18 @@ uint8_t phNxpNciHal_lastResetNtfReason(void) {
  * Description      Invokes TmlNfc Read to make sure always read thread is
  *                  pending
  *
- * Returns          None
+ * Returns          Returns read status
  *
  ******************************************************************************/
-void phNxpNciHal_enableTmlRead() {
+NFCSTATUS phNxpNciHal_enableTmlRead() {
   /* Read again because read must be pending always.*/
   NFCSTATUS status = phTmlNfc_Read(
       nxpncihal_ctrl.p_rsp_data, NCI_MAX_DATA_LEN,
       (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete, NULL);
   if (status != NFCSTATUS_PENDING) {
     NXPLOG_NCIHAL_E("read status error status = %x", status);
-    /* TODO: Not sure how to handle this ? */
   }
+  return status;
 }
 /******************************************************************************
  * Function         phNxpNciHal_core_initialized
@@ -3460,7 +3444,9 @@ void phNxpNciHal_CheckAndHandleFwTearDown() {
 
   nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
   phTmlNfc_EnableFwDnldMode(false);
-  phNxpNciHal_enableTmlRead();
+  if(phNxpNciHal_enableTmlRead() != NFCSTATUS_PENDING) {
+    NXPLOG_NCIHAL_E("%s read status error status", __FUNCTION__);
+  }
   fw_download_success = 1;
   property_set("nfc.fw.downloadmode_force", "1");
 
@@ -3517,7 +3503,9 @@ get_chip_info_retry:
 
   nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
   phTmlNfc_EnableFwDnldMode(false);
-  phNxpNciHal_enableTmlRead();
+  if(phNxpNciHal_enableTmlRead() != NFCSTATUS_PENDING) {
+    NXPLOG_NCIHAL_E("%s read status error status", __FUNCTION__);
+  }
   if (status == NFCSTATUS_SUCCESS) {
     phNxpNciHal_configFeatureList(nxpncihal_ctrl.p_rx_data,
                                   nxpncihal_ctrl.rx_data_len);
@@ -3557,7 +3545,9 @@ uint8_t phNxpNciHal_getSessionInfoInFwDnldMode() {
   }
   nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
   phTmlNfc_EnableFwDnldMode(false);
-  phNxpNciHal_enableTmlRead();
+  if(phNxpNciHal_enableTmlRead() != NFCSTATUS_PENDING) {
+    NXPLOG_NCIHAL_E("%s read status error status", __FUNCTION__);
+  }
   status = phNxpNciHal_dlResetInFwDnldMode();
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("DL Reset failed in FW DN mode");
@@ -3575,18 +3565,18 @@ uint8_t phNxpNciHal_getSessionInfoInFwDnldMode() {
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_dlResetInFwDnldMode() {
   NFCSTATUS status = NFCSTATUS_FAILED;
-  uint8_t dl_reset_cmd[] = {0x00, 0x04, 0xF0, 0x00, 0x00, 0x00, 0x18, 0x5B};
   phTmlNfc_EnableFwDnldMode(true);
   nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
   NXPLOG_NCIHAL_D("Sending DL Reset to boot NFCC in NCI mode");
-  int retLen = phNxpNciHal_write(sizeof(dl_reset_cmd), dl_reset_cmd);
-  if (retLen == (sizeof(dl_reset_cmd)/sizeof(dl_reset_cmd[0]))) {
-    NXPLOG_NCIHAL_D("DL Reset Success");
-    status = NFCSTATUS_SUCCESS;
-  }
+
+  status = phNxpNciHal_fw_dnld_switch_normal_mode();
+
   nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
   phTmlNfc_EnableFwDnldMode(false);
-  phNxpNciHal_enableTmlRead();
+  if(phNxpNciHal_enableTmlRead() != NFCSTATUS_PENDING) {
+    NXPLOG_NCIHAL_E("%s read status error status", __FUNCTION__);
+    status = NFCSTATUS_FAILED;
+  }
   return status;
 }
 
