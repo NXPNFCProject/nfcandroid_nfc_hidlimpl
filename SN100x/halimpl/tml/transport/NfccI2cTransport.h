@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020 NXP
+ *  Copyright 2020-2021 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,42 +19,42 @@
 #pragma once
 #include <NfccTransport.h>
 
-#define PN544_MAGIC 0xE9
+#define NFC_MAGIC 0xE9
 /*
- * PN544 power control via ioctl
- * PN544_SET_PWR(0): power off
- * PN544_SET_PWR(1): power on
- * PN544_SET_PWR(2): reset and power on with firmware download enabled
+ * NFCC power control via ioctl
+ * NFC_SET_PWR(0): power off
+ * NFC_SET_PWR(1): power on
+ * NFC_SET_PWR(2): reset and power on with firmware download enabled
  */
-#define PN544_SET_PWR _IOW(PN544_MAGIC, 0x01, long)
+#define NFC_SET_PWR _IOW(NFC_MAGIC, 0x01, long)
 /*
- * 1. SPI Request NFCC to enable p61 power, only in param
+ * 1. SPI Request NFCC to enable ESE power, only in param
  *   Only for SPI
  *   level 1 = Enable power
  *   level 0 = Disable power
  * 2. NFC Request the eSE cold reset, only with MODE_ESE_COLD_RESET
  */
-#define ESE_SET_PWR _IOW(PN544_MAGIC, 0x02, long)
+#define ESE_SET_PWR _IOW(NFC_MAGIC, 0x02, long)
 
 /*
  * SPI or DWP can call this ioctl to get the current
- * power state of P61
+ * power state of ESE
  */
-#define ESE_GET_PWR _IOR(PN544_MAGIC, 0x03, long)
+#define ESE_GET_PWR _IOR(NFC_MAGIC, 0x03, long)
 
 /*
  * get platform interface type(i2c or i3c) for common MW
  * return 0 - i2c, 1 - i3c
  */
-#define P544_GET_PLATFORM_INTERFACE _IO(PN544_MAGIC, 0x04)
+#define NFC_GET_PLATFORM_TYPE _IO(NFC_MAGIC, 0x04)
 /*
  * get boot state
  * return unknown, fw dwl, fw teared, nci
  */
-#define P544_GET_NFC_STATE _IO(PN544_MAGIC, 0x05)
+#define NFC_GET_NFC_STATE _IO(NFC_MAGIC, 0x05)
 
 /* NFC HAL can call this ioctl to get the current IRQ state */
-#define PN544_GET_IRQ_STATE _IOW(PN544_MAGIC, 0x06, long)
+#define NFC_GET_IRQ_STATE _IOW(NFC_MAGIC, 0x06, long)
 
 extern phTmlNfc_i2cfragmentation_t fragmentation_enabled;
 
@@ -93,7 +93,7 @@ class NfccI2cTransport : public NfccTransport {
   **
   ** Function         Close
   **
-  ** Description      Closes PN54X device
+  ** Description      Closes NFCC device
   **
   ** Parameters       pDevHandle - device handle
   **
@@ -106,7 +106,7 @@ class NfccI2cTransport : public NfccTransport {
    **
    ** Function         OpenAndConfigure
    **
-   ** Description      Open and configure PN54X device
+   ** Description      Open and configure NFCC device
    **
    ** Parameters       pConfig     - hardware information
    **                  pLinkHandle - device handle
@@ -122,7 +122,7 @@ class NfccI2cTransport : public NfccTransport {
    **
    ** Function         Read
    **
-   ** Description      Reads requested number of bytes from PN54X device into
+   ** Description      Reads requested number of bytes from NFCC device into
    *given
    **                  buffer
    **
@@ -141,7 +141,7 @@ class NfccI2cTransport : public NfccTransport {
   ** Function         Write
   **
   ** Description      Writes requested number of bytes from given buffer into
-  **                  PN54X device
+  **                  NFCC device
   **
   ** Parameters       pDevHandle       - valid device handle
   **                  pBuffer          - buffer for read data
@@ -157,7 +157,7 @@ class NfccI2cTransport : public NfccTransport {
    **
    ** Function         Reset
    **
-   ** Description      Reset PN54X device, using VEN pin
+   ** Description      Reset NFCC device, using VEN pin
    **
    ** Parameters       pDevHandle     - valid device handle
    **                  level          - reset level
