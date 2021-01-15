@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2020 NXP
+ * Copyright 2012-2021 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@
 
 #include "phNxpNciHal_IoctlOperations.h"
 #include "phNxpNciHal_extOperations.h"
-#include "spi_spm.h"
 #include <EseAdaptation.h>
 #include <sys/stat.h>
 
@@ -104,7 +103,6 @@ extern uint16_t rom_version;
 extern uint8_t gRecFWDwnld;
 static uint8_t gRecFwRetryCount;  // variable to hold dummy FW recovery count
 static uint8_t write_unlocked_status = NFCSTATUS_SUCCESS;
-extern int phPalEse_spi_ioctl(phPalEse_ControlCode_t eControlCode,void *pDevHandle, long level);
 uint8_t wFwUpdateReq = false;
 uint8_t wRfUpdateReq = false;
 uint32_t timeoutTimerId = 0;
