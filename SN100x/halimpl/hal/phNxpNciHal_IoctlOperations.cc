@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 NXP Semiconductors
+ * Copyright (C) 2019-2021 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -195,7 +195,8 @@ std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
                                 "NXP_GET_HW_INFO_LOG",
                                 "NXP_T4T_NDEF_NFCEE_AID",
                                 "NXP_NON_STD_CARD_TIMEDIFF",
-                                "NXP_SRD_TIMEOUT"};
+                                "NXP_SRD_TIMEOUT",
+                                "NXP_P2P_DISC_NTF_TIMEOUT"};
 
 /****************************************************************
  * Local Functions
