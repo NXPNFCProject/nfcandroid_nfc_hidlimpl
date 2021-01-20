@@ -54,7 +54,7 @@
 #define NFC_GET_NFC_STATE _IO(NFC_MAGIC, 0x05)
 
 /* NFC HAL can call this ioctl to get the current IRQ state */
-#define NFC_GET_IRQ_STATE _IOW(NFC_MAGIC, 0x06, long)
+#define NFC_GET_IRQ_STATE _IO(NFC_MAGIC, 0x06)
 
 extern phTmlNfc_i2cfragmentation_t fragmentation_enabled;
 
