@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020 NXP Semiconductors
+ * Copyright 2012-2021 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -308,6 +308,12 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
     }
   }
   phNxpNciHal_ext_process_nfc_init_rsp(p_ntf, p_len);
+  if (p_ntf[0] == NCI_MT_NTF && ((p_ntf[1] & NCI_OID_MASK) == NCI_MSG_CORE_RESET) &&
+    p_ntf[3] == CORE_RESET_TRIGGER_TYPE_POWERED_ON) {
+    status = NFCSTATUS_FAILED;
+    NXPLOG_NCIHAL_D("Skipping power on reset notification!!:");
+    return status;
+  }
   if(p_ntf[0] == 0x42 && p_ntf[1] == 0x01 && p_ntf[2] == 0x01 && p_ntf[3] == 0x00) {
     if(nxpncihal_ctrl.hal_ext_enabled == TRUE && nfcFL.chipType >= sn100u) {
       nxpncihal_ctrl.nci_info.wait_for_ntf = TRUE;
