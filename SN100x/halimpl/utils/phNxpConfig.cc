@@ -1001,7 +1001,7 @@ extern "C" int GetNxpNumValue(const char* name, void* pValue,
   unsigned long v = pParam->numValue();
   if (v == 0 && pParam->str_len() > 0 && pParam->str_len() < 4) {
     const unsigned char* p = (const unsigned char*)pParam->str_value();
-    for (unsigned int i = 0; i < pParam->str_len(); ++i) {
+    for (size_t i = 0; i < pParam->str_len(); ++i) {
       v *= 256;
       v += *p++;
     }
