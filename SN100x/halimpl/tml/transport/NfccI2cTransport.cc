@@ -525,7 +525,7 @@ int NfccI2cTransport::GetIrqState(void *pDevHandle) {
 
   NXPLOG_TML_D("%s Enter",__func__);
   if (NULL != pDevHandle) {
-    ret = ioctl((intptr_t)pDevHandle, NFC_GET_IRQ_STATE, 0x00);
+    ret = ioctl((intptr_t)pDevHandle, NFC_GET_IRQ_STATE);
   }
   NXPLOG_TML_D("%s exit: state = %d", __func__, ret);
   return ret;
