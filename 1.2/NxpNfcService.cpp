@@ -43,50 +43,43 @@ int main() {
     sp<INfc> nfc_service = nullptr;
     sp<INxpNfc> nxp_nfc_service = nullptr;
 
-    ALOGD("NFC HAL Service 1.2 is starting.");
-    nfc_service = new Nfc();
-    if (nfc_service == nullptr) {
+    try {
+      ALOGD("NFC HAL Service 1.2 is starting.");
+      nfc_service = new Nfc();
+      if (nfc_service == nullptr) {
         ALOGE("Can not create an instance of NFC HAL Iface, exiting.");
         return -1;
-    }
+      }
 
-    configureRpcThreadpool(1, true /*callerWillJoin*/);
-    initializeEseClient();
-    checkEseClientUpdate();
-    try {
-        status = nfc_service->registerAsService();
-        if (status != OK) {
-            LOG_ALWAYS_FATAL("Could not register service for NFC HAL Iface (%d).", status);
-            return -1;
-        }
-    } catch(const std::length_error& le) {
-      ALOGE("Could not register ese_wired_service service due to exception reason %s ",
-      le.what());
-    }
+      configureRpcThreadpool(1, true /*callerWillJoin*/);
+      initializeEseClient();
+      checkEseClientUpdate();
+      status = nfc_service->registerAsService();
+      if (status != OK) {
+        LOG_ALWAYS_FATAL("Could not register service for NFC HAL Iface (%d).",
+                         status);
+        return -1;
+      }
 
-    ALOGI("NXP NFC Extn Service 1.0 is starting.");
-    nxp_nfc_service = new NxpNfc();
-    if (nxp_nfc_service == nullptr) {
+      ALOGI("NXP NFC Extn Service 1.0 is starting.");
+      nxp_nfc_service = new NxpNfc();
+      if (nxp_nfc_service == nullptr) {
         ALOGE("Can not create an instance of NXP NFC Extn Iface, exiting.");
         return -1;
-    }
-    try {
+      }
       status = nxp_nfc_service->registerAsService();
       if (status != OK) {
-          ALOGE("Could not register service for NXP NFC Extn Iface (%d).", status);
+        ALOGE("Could not register service for NXP NFC Extn Iface (%d).",
+              status);
       }
-    } catch(const std::__1::system_error& e) {
-      ALOGE("Could not register nxp_nfc_service service due to exception reason %s ",
-      e.what());
-    } catch(const std::length_error& le) {
-      ALOGE("Could not register ese_wired_service service due to exception reason %s ",
-      le.what());
-    }
-
     ALOGE("Before calling JCOP JCOS_doDownload");
     perform_eSEClientUpdate();
     ALOGE("After calling JCOS_doDownload");
     ALOGI("NFC service is ready");
     joinRpcThreadpool();
+    } catch (const std::length_error &le) {
+    } catch (const std::__1::ios_base::failure &e) {
+    } catch (std::__1::system_error &e) {
+    }
     return 1;
 }
