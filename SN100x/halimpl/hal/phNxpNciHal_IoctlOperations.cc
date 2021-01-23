@@ -198,7 +198,8 @@ std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
                                 "NXP_T4T_NDEF_NFCEE_AID",
                                 "NXP_NON_STD_CARD_TIMEDIFF",
                                 "NXP_SRD_TIMEOUT",
-                                "NXP_UICC_ETSI_SUPPORT"};
+                                "NXP_UICC_ETSI_SUPPORT",
+                                "NXP_MINIMAL_FW_VERSION"};
 
 /****************************************************************
  * Local Functions
