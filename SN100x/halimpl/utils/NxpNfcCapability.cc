@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2015-2018,2020 NXP
+ *  Copyright 2015-2018,2020-2021 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -96,4 +96,16 @@ tNFC_chipType capability::processChipType(uint8_t* msg, uint16_t msg_len) {
     }
     ALOGD("%s Product : %s", __func__, product[chipType]);
     return chipType;
+}
+
+uint32_t capability::getFWVersionInfo(uint8_t* msg, uint16_t msg_len) {
+  uint32_t versionInfo = 0;
+  if((msg != NULL) && (msg_len != 0)) {
+    if (msg[0] == 0x00) {
+      versionInfo = msg[offsetFwRomCodeVersion] << 16;
+      versionInfo |= msg[offsetFwMajorVersion] << 8;
+      versionInfo |= msg[offsetFwMinorVersion];
+    }
+  }
+  return versionInfo;
 }

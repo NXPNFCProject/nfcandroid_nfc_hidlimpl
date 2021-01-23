@@ -49,6 +49,7 @@ using android::base::WriteStringToFile;
 #define PN547C2_CLOCK_SETTING
 #define CORE_RES_STATUS_BYTE 3
 #define MAX_NXP_HAL_EXTN_BYTES 10
+#define DEFAULT_MINIMAL_FW_VERSION 0x0110DE
 
 bool bEnableMfcExtns = false;
 bool bEnableMfcReader = false;
@@ -94,6 +95,8 @@ phNxpNci_getCfg_info_t* mGetCfg_info = NULL;
 bool_t gParserCreated = FALSE;
 /* global variable to get FW version from NCI response*/
 uint32_t wFwVerRsp;
+/* global variable to get FW version from FW Dw get Version response*/
+uint32_t wFwVerGetVersionResp = 0;
 EseAdaptation *gpEseAdapt = NULL;
 ese_update_state_t ese_update = ESE_UPDATE_COMPLETED;
 /* External global variable to get FW version */
@@ -3414,18 +3417,25 @@ retry_send_ext:
 void phNxpNciHal_CheckAndHandleFwTearDown() {
   NFCSTATUS status = NFCSTATUS_FAILED;
   uint8_t session_state = -1;
+  unsigned long minimal_fw_version = DEFAULT_MINIMAL_FW_VERSION;
   status = phNxpNciHal_getChipInfoInFwDnldMode();
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("Get Chip Info Failed");
     usleep(150 * 1000);
     return;
   }
-  session_state = phNxpNciHal_getSessionInfoInFwDnldMode();
-  if (session_state == 0) {
-    NXPLOG_NCIHAL_E("NFC not in the teared state, boot NFCC in NCI mode");
-    return;
+  if(!GetNxpNumValue(NAME_NXP_MINIMAL_FW_VERSION, &minimal_fw_version,
+        sizeof(minimal_fw_version))) {
+    /* If config file doesn't contain the info use default */
+    minimal_fw_version = DEFAULT_MINIMAL_FW_VERSION;
   }
-
+  if(wFwVerGetVersionResp != minimal_fw_version) {
+    session_state = phNxpNciHal_getSessionInfoInFwDnldMode();
+    if (session_state == 0) {
+      NXPLOG_NCIHAL_E("NFC not in the teared state, boot NFCC in NCI mode");
+      return;
+    }
+  }
   phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadMode);
   phTmlNfc_EnableFwDnldMode(true);
   nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
@@ -3437,8 +3447,9 @@ void phNxpNciHal_CheckAndHandleFwTearDown() {
                                        nxpprofile_ctrl.bClkFreqVal);
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("FW Download Sequence Handler Failed.");
+  } else {
+    fw_download_success = 1;
   }
-  fw_download_success = 1;
   property_set("nfc.fw.downloadmode_force", "1");
 
   status = phNxpNciHal_dlResetInFwDnldMode();
@@ -3500,6 +3511,9 @@ get_chip_info_retry:
   if (status == NFCSTATUS_SUCCESS) {
     phNxpNciHal_configFeatureList(nxpncihal_ctrl.p_rx_data,
                                   nxpncihal_ctrl.rx_data_len);
+    wFwVerGetVersionResp = pConfigFL->getFWVersionInfo(nxpncihal_ctrl.p_rx_data,
+                                             nxpncihal_ctrl.rx_data_len);
+
     setNxpFwConfigPath(nfcFL._FW_LIB_PATH.c_str());
   }
   return status;
