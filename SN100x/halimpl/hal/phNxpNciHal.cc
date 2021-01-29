@@ -3437,6 +3437,14 @@ void phNxpNciHal_CheckAndHandleFwTearDown() {
     }
   }
   phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadMode);
+  if(wFwVerGetVersionResp == minimal_fw_version) {
+    /* since minimal fw required dlreset
+     * to boot in Download mode */
+    status = phNxpNciHal_dlResetInFwDnldMode();
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("DL Reset failed for minimal fw");
+    }
+  }
   phTmlNfc_EnableFwDnldMode(true);
   nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
 
@@ -3567,7 +3575,7 @@ NFCSTATUS phNxpNciHal_dlResetInFwDnldMode() {
   NFCSTATUS status = NFCSTATUS_FAILED;
   phTmlNfc_EnableFwDnldMode(true);
   nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
-  NXPLOG_NCIHAL_D("Sending DL Reset to boot NFCC in NCI mode");
+  NXPLOG_NCIHAL_D("Sending DL Reset for NFCC soft reboot");
   phDnldNfc_SetHwDevHandle();
   status = phNxpNciHal_fw_dnld_switch_normal_mode();
 
