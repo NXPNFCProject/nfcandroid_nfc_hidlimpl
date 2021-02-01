@@ -433,14 +433,6 @@ static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset) {
       phTmlNfc_Shutdown_CleanUp();
       return NFCSTATUS_CMD_ABORTED;
     }
-    /* call read pending */
-    status = phTmlNfc_Read(
-        nxpncihal_ctrl.p_rsp_data, NCI_MAX_DATA_LEN,
-        (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete, NULL);
-    if (status != NFCSTATUS_PENDING) {
-      NXPLOG_NCIHAL_E("TML Read status error status B= %x", status);
-      wConfigStatus = NFCSTATUS_FAILED;
-    }
 
     status = phNxpNciHal_nfcc_core_reset_init();
     if(status == NFCSTATUS_SUCCESS && nfcFL.chipType < sn100u) {
@@ -2167,14 +2159,8 @@ NFCSTATUS phNxpNciHalRFConfigCmdRecSequence() {
     phDnldNfc_InitImgInfo();
     if (NFCSTATUS_SUCCESS == phNxpNciHal_CheckValidFwVersion()) {
       status = phNxpNciHal_fw_download();
-      status = phTmlNfc_Read(
-          nxpncihal_ctrl.p_rsp_data, NCI_MAX_DATA_LEN,
-          (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete, NULL);
-      if (status != NFCSTATUS_PENDING) {
-        NXPLOG_NCIHAL_E("TML Read status error status = %x", status);
-        phOsalNfc_Timer_Cleanup();
-        phTmlNfc_Shutdown_CleanUp();
-        status = NFCSTATUS_FAILED;
+      if (status != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("error in download = %x", status);
       }
       break;
     }
