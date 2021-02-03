@@ -765,6 +765,7 @@ NFCSTATUS phTmlNfc_Read(uint8_t* pBuffer, uint16_t wLength,
                         pphTmlNfc_TransactCompletionCb_t pTmlReadComplete,
                         void* pContext) {
   NFCSTATUS wReadStatus;
+  int rxSemVal = 0, ret = 0;
 
   /* Check whether TML is Initialized */
   if (NULL != gpphTmlNfc_Context) {
@@ -784,7 +785,14 @@ NFCSTATUS phTmlNfc_Read(uint8_t* pBuffer, uint16_t wLength,
 
         /* Set event to invoke Reader Thread */
         gpphTmlNfc_Context->tReadInfo.bEnable = 1;
-        sem_post(&gpphTmlNfc_Context->rxSemaphore);
+        ret = sem_getvalue(&gpphTmlNfc_Context->rxSemaphore, &rxSemVal);
+        /* Post rxSemaphore either if sem_getvalue() is failed or rxSemVal is 0 */
+        if (ret || !rxSemVal) {
+          sem_post(&gpphTmlNfc_Context->rxSemaphore);
+        } else {
+          NXPLOG_TML_D("%s: skip reader thread scheduling, ret=%x, rxSemaVal=%x",
+                  __func__, ret, rxSemVal);
+        }
       } else {
         wReadStatus = PHNFCSTVAL(CID_NFC_TML, NFCSTATUS_BUSY);
       }

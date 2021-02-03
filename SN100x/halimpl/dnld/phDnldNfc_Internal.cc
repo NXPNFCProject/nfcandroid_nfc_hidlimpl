@@ -223,13 +223,11 @@ static void phDnldNfc_ProcessSeqState(void* pContext,
 
         if (NFCSTATUS_SUCCESS == wStatus) {
           pDlCtxt->tCurrState = phDnldNfc_StateRecv;
-          if (phDnldNfc_EventReset != pDlCtxt->tCurrEvent) {
-            phTmlNfc_Read(
-                pDlCtxt->tCmdRspFrameInfo.aFrameBuff,
-                (uint16_t)PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE,
-                (pphTmlNfc_TransactCompletionCb_t)&phDnldNfc_ProcessSeqState,
-                (void*)pDlCtxt);
-          }
+          phTmlNfc_Read(
+              pDlCtxt->tCmdRspFrameInfo.aFrameBuff,
+              (uint16_t)PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE,
+              (pphTmlNfc_TransactCompletionCb_t)&phDnldNfc_ProcessSeqState,
+              (void *)pDlCtxt);
           wStatus = phTmlNfc_Write(
               (pDlCtxt->tCmdRspFrameInfo.aFrameBuff),
               (uint16_t)(pDlCtxt->tCmdRspFrameInfo.dwSendlength),
