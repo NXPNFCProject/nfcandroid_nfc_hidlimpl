@@ -196,7 +196,8 @@ std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
                                 "NXP_T4T_NDEF_NFCEE_AID",
                                 "NXP_NON_STD_CARD_TIMEDIFF",
                                 "NXP_SRD_TIMEOUT",
-                                "NXP_P2P_DISC_NTF_TIMEOUT"};
+                                "NXP_P2P_DISC_NTF_TIMEOUT",
+                                "NXP_PRESENCE_CHECK_TIMEOUT"};
 
 /****************************************************************
  * Local Functions
