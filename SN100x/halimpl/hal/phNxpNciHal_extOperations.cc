@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 NXP Semiconductors
+ * Copyright 2019-2021 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -389,9 +389,9 @@ NFCSTATUS phNxpNciHal_setSrdtimeout() {
   long retlen = 0;
   uint8_t *buffer = nullptr;
   long bufflen = 260;
-  static const int NXP_SRD_TIMEOUT_BUF_LEN = 2;
-  static const uint16_t TIMEOUT_MASK = 0xFFFF;
-  static const uint16_t MAX_TIMEOUT_VALUE = 0x0258;
+  const int NXP_SRD_TIMEOUT_BUF_LEN = 2;
+  const uint16_t TIMEOUT_MASK = 0xFFFF;
+  const uint16_t MAX_TIMEOUT_VALUE = 0x0258;
   uint16_t isValid_timeout;
   uint8_t timeout_buffer[NXP_SRD_TIMEOUT_BUF_LEN];
   NFCSTATUS status = NFCSTATUS_FEATURE_NOT_SUPPORTED;
