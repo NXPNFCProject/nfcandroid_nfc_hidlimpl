@@ -185,6 +185,7 @@ extern char Fw_Lib_Path[256];
 #define NAME_NXP_SRD_TIMEOUT "NXP_SRD_TIMEOUT"
 #define NAME_NXP_UICC_ETSI_SUPPORT "NXP_UICC_ETSI_SUPPORT"
 #define NAME_NXP_MINIMAL_FW_VERSION "NXP_MINIMAL_FW_VERSION"
+#define NAME_NXP_P2P_DISC_NTF_TIMEOUT "NXP_P2P_DISC_NTF_TIMEOUT"
 #endif
 /* default configuration */
 #define default_storage_location "/data/vendor/nfc"
