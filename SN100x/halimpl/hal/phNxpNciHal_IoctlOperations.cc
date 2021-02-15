@@ -200,7 +200,8 @@ std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
                                 "NXP_SRD_TIMEOUT",
                                 "NXP_UICC_ETSI_SUPPORT",
                                 "NXP_MINIMAL_FW_VERSION",
-                                "NXP_P2P_DISC_NTF_TIMEOUT"};
+                                "NXP_P2P_DISC_NTF_TIMEOUT",
+                                "NXP_RESTART_RF_FOR_NFCEE_RECOVERY"};
 
 /****************************************************************
  * Local Functions
