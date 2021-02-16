@@ -328,7 +328,7 @@ NFCSTATUS phNxpNciHal_setSrdtimeout() {
   long bufflen = 260;
   const int NXP_SRD_TIMEOUT_BUF_LEN = 2;
   const uint16_t TIMEOUT_MASK = 0xFFFF;
-  const uint16_t MAX_TIMEOUT_VALUE = 0x0258;
+  const uint16_t MAX_TIMEOUT_VALUE = 0xFD70;
   uint16_t isValid_timeout;
   uint8_t timeout_buffer[NXP_SRD_TIMEOUT_BUF_LEN];
   NFCSTATUS status = NFCSTATUS_FEATURE_NOT_SUPPORTED;
@@ -347,10 +347,10 @@ NFCSTATUS phNxpNciHal_setSrdtimeout() {
       isValid_timeout = ((buffer[1] << 8) & TIMEOUT_MASK);
       isValid_timeout = (isValid_timeout | buffer[0]);
       if (isValid_timeout > MAX_TIMEOUT_VALUE) {
-        /*if timeout is setting more than 600 sec
-         * than setting to MAX limit 0x0258*/
-        buffer[0] = 0x58;
-        buffer[1] = 0x02;
+        /*if timeout is setting more than 18hrs
+         * than setting to MAX limit 0xFD70*/
+        buffer[0] = 0x70;
+        buffer[1] = 0xFD;
       }
       memcpy(&timeout_buffer, buffer, NXP_SRD_TIMEOUT_BUF_LEN);
       mEEPROM_info.buffer = timeout_buffer;
