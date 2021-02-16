@@ -93,16 +93,12 @@ extern void phNxpNciHal_prop_conf_lpcd(bool enableLPCD);
 nfc_stack_callback_t* p_nfc_stack_cback_backup;
 phNxpNci_getCfg_info_t* mGetCfg_info = NULL;
 bool_t gParserCreated = FALSE;
-/* global variable to get FW version from NCI response*/
+/* global variable to get FW version from NCI response or dl get version response*/
 uint32_t wFwVerRsp;
-/* global variable to get FW version from FW Dw get Version response*/
-uint32_t wFwVerGetVersionResp = 0;
 EseAdaptation *gpEseAdapt = NULL;
 ese_update_state_t ese_update = ESE_UPDATE_COMPLETED;
 /* External global variable to get FW version */
 extern uint16_t wFwVer;
-extern uint16_t fw_maj_ver;
-extern uint16_t rom_version;
 extern uint8_t gRecFWDwnld;
 static uint8_t gRecFwRetryCount;  // variable to hold dummy FW recovery count
 static uint8_t write_unlocked_status = NFCSTATUS_SUCCESS;
@@ -547,8 +543,7 @@ NFCSTATUS phNxpNciHal_CheckValidFwVersion(void) {
   NFCSTATUS status = NFCSTATUS_NOT_ALLOWED;
   const unsigned char sfw_infra_major_no = 0x02;
   unsigned char ufw_current_major_no = 0x00;
-  //unsigned long num = 0;
-  //int isfound = 0;
+  uint8_t rom_version = 0xFF & (wFwVerRsp  >> 16);
 
   /* extract the firmware's major no */
   ufw_current_major_no = ((0x00FF) & (wFwVer >> 8U));
@@ -948,6 +943,9 @@ clean_and_return:
  ******************************************************************************/
 int phNxpNciHal_fw_mw_ver_check() {
     NFCSTATUS status = NFCSTATUS_FAILED;
+    uint8_t rom_version = 0xFF & (wFwVerRsp  >> 16);
+    uint8_t fw_maj_ver  = 0xFF & (wFwVerRsp >> 8);
+
     if ((nfcFL.chipType == pn557) &&
       (rom_version == FW_MOBILE_ROM_VERSION_PN557) &&
       (fw_maj_ver == 0x01)) {
@@ -1639,8 +1637,6 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len, uint8_t* p_c
         retry_core_init_cnt++;
         goto retry_core_init;
       }
-      /* reset the NFCC after applying the clock setting and DPLL setting */
-      // phTmlNfc_IoCtl(phTmlNfc_e_ResetDevice);
       temp_fix = 0;
       goto retry_core_init;
     }
@@ -1810,8 +1806,6 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len, uint8_t* p_c
         goto retry_core_init;
       }
     }
-
-  //if (config_success == false) return NFCSTATUS_FAILED;
 
     if (fpVerInfoStoreInEeprom != NULL) {
       fpVerInfoStoreInEeprom();
@@ -2877,7 +2871,6 @@ static void phNxpNciHal_nfccClockCfgRead(void)
  *****************************************************************************/
 int   phNxpNciHal_determineConfiguredClockSrc()
 {
-    //NFCSTATUS status = NFCSTATUS_FAILED;
     uint8_t param_clock_src = CLK_SRC_PLL;
     if (nxpprofile_ctrl.bClkSrcVal == CLK_SRC_PLL)
     {
@@ -3206,9 +3199,6 @@ retrySetclock:
     } else {
       NXPLOG_NCIHAL_E("Set clk  failed -  max count = 0x%x exceeded ",
                       retryCount);
-      //            NXPLOG_NCIHAL_E("Set Config is failed for Clock Due to
-      //            elctrical disturbances, aborting the NFC process");
-      //            abort ();
     }
   }
 }
@@ -3400,7 +3390,7 @@ void phNxpNciHal_CheckAndHandleFwTearDown() {
     /* If config file doesn't contain the info use default */
     minimal_fw_version = DEFAULT_MINIMAL_FW_VERSION;
   }
-  if(wFwVerGetVersionResp != minimal_fw_version) {
+  if(wFwVerRsp != minimal_fw_version) {
     session_state = phNxpNciHal_getSessionInfoInFwDnldMode();
     if (session_state == 0) {
       NXPLOG_NCIHAL_E("NFC not in the teared state, boot NFCC in NCI mode");
@@ -3408,7 +3398,7 @@ void phNxpNciHal_CheckAndHandleFwTearDown() {
     }
   }
   phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadMode);
-  if(wFwVerGetVersionResp == minimal_fw_version) {
+  if(wFwVerRsp == minimal_fw_version) {
     /* since minimal fw required dlreset
      * to boot in Download mode */
     status = phNxpNciHal_dlResetInFwDnldMode();
@@ -3490,7 +3480,7 @@ get_chip_info_retry:
   if (status == NFCSTATUS_SUCCESS) {
     phNxpNciHal_configFeatureList(nxpncihal_ctrl.p_rx_data,
                                   nxpncihal_ctrl.rx_data_len);
-    wFwVerGetVersionResp = pConfigFL->getFWVersionInfo(nxpncihal_ctrl.p_rx_data,
+    wFwVerRsp = pConfigFL->getFWVersionInfo(nxpncihal_ctrl.p_rx_data,
                                              nxpncihal_ctrl.rx_data_len);
 
     setNxpFwConfigPath(nfcFL._FW_LIB_PATH.c_str());
