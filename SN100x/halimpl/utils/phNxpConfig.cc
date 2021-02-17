@@ -18,9 +18,7 @@
 
 /******************************************************************************
  *
- *  The original Work has been changed by NXP Semiconductors.
- *
- *  Copyright (C) 2013-2020 NXP Semiconductors
+ *  The original Work has been changed by NXP.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -33,6 +31,8 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
+ *
+ *  Copyright 2013-2021 NXP
  *
  ******************************************************************************/
 
@@ -83,8 +83,14 @@ const char config_timestamp_path[] =
         "/vendor/etc/libnfc-nxp.conf";*/
 char nxp_rf_config_path[256] =
         "/system/vendor/libnfc-nxp_RF.conf";
+#if (defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64))
 char Fw_Lib_Path[256] =
         "/vendor/lib64/libsn100u_fw.so";
+#else
+char Fw_Lib_Path[256] =
+        "/vendor/lib/libsn100u_fw.so";
+#endif
+
 const char transit_config_path[] = "/data/vendor/nfc/libnfc-nxpTransit.conf";
 void readOptionalConfig(const char* optional);
 
