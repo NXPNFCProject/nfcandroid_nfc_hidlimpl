@@ -3419,7 +3419,6 @@ void phNxpNciHal_CheckAndHandleFwTearDown() {
   } else {
     fw_download_success = 1;
   }
-  property_set("nfc.fw.downloadmode_force", "1");
 
   status = phNxpNciHal_dlResetInFwDnldMode();
   if (status != NFCSTATUS_SUCCESS) {
