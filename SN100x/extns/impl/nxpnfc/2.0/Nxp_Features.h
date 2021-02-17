@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2018-2020 NXP
+ *  Copyright 2018-2021 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -43,7 +43,11 @@
 #define JCOP_VER_4_0    4
 #define JCOP_VER_5_0    5
 #ifndef FW_LIB_ROOT_DIR
+#if (defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64))
 #define FW_LIB_ROOT_DIR "/vendor/lib64/"
+#else
+#define FW_LIB_ROOT_DIR "/vendor/lib/"
+#endif
 #endif
 #ifndef FW_BIN_ROOT_DIR
 #define FW_BIN_ROOT_DIR "/vendor/firmware/"
@@ -655,12 +659,7 @@ extern tNfc_featureList nfcFL;
             nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                   \
         }                                                                  \
 }
-#define STRCPY_FW_LIB(str) {                                                \
-  nfcFL._FW_LIB_PATH.clear();                                               \
-  nfcFL._FW_LIB_PATH.append(FW_LIB_ROOT_DIR);                               \
-  nfcFL._FW_LIB_PATH.append(str);                                           \
-  nfcFL._FW_LIB_PATH.append(FW_LIB_EXTENSION);                              \
-}
+
 #define STRCPY_FW_BIN(str) {                                                \
   nfcFL._FW_BIN_PATH.clear();                                               \
   nfcFL._FW_BIN_PATH.append(FW_BIN_ROOT_DIR);                               \
