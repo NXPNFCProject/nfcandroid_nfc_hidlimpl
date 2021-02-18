@@ -449,6 +449,9 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
       else if (0 == memcmp(pString, "RECV", 0x04)) {
           NXPLOG_NCIR_D("len = %3d > %s", len, print_buffer);
       }
+      else if (0 ==  memcmp(pString, "DEBUG", 0x05)) {
+          NXPLOG_NCIHAL_D(" Debug Info > len = %3d > %s", len, print_buffer);
+      }
 #if (NXP_EXTNS == TRUE)
       free(print_buffer);
   } else {
