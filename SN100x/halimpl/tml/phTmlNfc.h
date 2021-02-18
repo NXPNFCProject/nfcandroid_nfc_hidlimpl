@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2020 NXP
+ * Copyright 2010-2021 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,15 +122,6 @@ typedef enum {
   phTmlNfc_e_DisableRetrans = 0x01 /*Disable retransmission of Nci packet */
 } phTmlNfc_ConfigRetrans_t;        /* Configuration for Retransmission */
 
-/*nfc state flags*/
-enum nfc_state_flags {
-    /*nfc in unknown state */
-    NFC_STATE_UNKNOWN = 0,
-    /*nfc booted in download mode */
-    NFC_STATE_FW_DWL = 0x1,
-    /*nfc booted in NCI mode */
-    NFC_STATE_NCI = 0x2,
-};
 /*
  * Structure containing details related to read and write operations
  *
@@ -148,13 +139,6 @@ typedef struct phTmlNfc_ReadWriteInfo {
   NFCSTATUS wWorkStatus; /*Status of the transaction performed */
 } phTmlNfc_ReadWriteInfo_t;
 
-/*nfc platform interface type*/
-enum platform_interface_type {
-    /*I2C physical IF for NFCC*/
-    PLATFORM_IF_I2C = 0,
-    /*I3C physical IF for NFCC*/
-    PLATFORM_IF_I3C,
-};
 /*
  *Base Context Structure containing members required for entire session
  */
@@ -186,8 +170,6 @@ typedef struct phTmlNfc_Context {
       gWriterCbflag; /* flag to indicate write callback message is pushed to
                         queue*/
   long    nfc_service_pid; /*NFC Service PID to be used by driver to signal*/
-  int platform_type; /*for common(i2c or i3c) mw implementation*/
-  int nfc_state;    /*to get the initial boot state*/
 } phTmlNfc_Context_t;
 
 /*

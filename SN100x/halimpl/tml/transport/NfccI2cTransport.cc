@@ -394,51 +394,6 @@ int NfccI2cTransport::EseGetPower(void *pDevHandle, long level) {
 
 /*******************************************************************************
 **
-** Function         GetPlatform
-**
-** Description      Get platform interface type (i2c or i3c) for common mw
-**
-** Parameters       pDevHandle     - valid device handle
-**
-** Returns           0   - i2c
-**                   1   - i3c
-**
-*******************************************************************************/
-int NfccI2cTransport::GetPlatform(void *pDevHandle) {
-  int ret = -1;
-  NXPLOG_TML_D("%s ", __func__);
-  if (NULL == pDevHandle) {
-    return -1;
-  }
-  ret = ioctl((intptr_t)pDevHandle, NFC_GET_PLATFORM_TYPE);
-  NXPLOG_TML_D("%s :platform = %d", __func__, ret);
-  return ret;
-}
-
-/*******************************************************************************
-**
-** Function         GetNfcState
-**
-** Description      Get NFC state
-**
-** Parameters       pDevHandle     - valid device handle
-** Returns           0   - unknown
-**                   1   - FW DWL
-**                   2 	 - NCI
-**
-*******************************************************************************/
-int NfccI2cTransport::GetNfcState(void *pDevHandle) {
-  int ret = NFC_STATE_UNKNOWN;
-  NXPLOG_TML_D("%s ", __func__);
-  if (NULL == pDevHandle) {
-    return ret;
-  }
-  ret = ioctl((intptr_t)pDevHandle, NFC_GET_NFC_STATE);
-  NXPLOG_TML_D("%s :nfc state = %d", __func__, ret);
-  return ret;
-}
-/*******************************************************************************
-**
 ** Function         EnableFwDnldMode
 **
 ** Description      updates the state to Download mode

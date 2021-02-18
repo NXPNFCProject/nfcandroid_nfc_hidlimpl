@@ -135,19 +135,6 @@ class NfccTransport {
   virtual int NfccReset(void *pDevHandle, NfccResetType eType);
 
   /*****************************************************************************
-  **
-  ** Function         GetNfcState
-  **
-  ** Description      Get NFC state
-  **
-  ** Parameters       pDevHandle     - valid device handle
-  ** Returns           0   - unknown
-  **                   1   - FW DWL
-  **                   2   - NCI
-  **
-  *****************************************************************************/
-  virtual int GetNfcState(void *pDevHandle);
-  /*****************************************************************************
    **
    ** Function         EseReset
    **
@@ -176,20 +163,6 @@ class NfccTransport {
    **
    ****************************************************************************/
   virtual int EseGetPower(void *pDevHandle, long level);
-
-  /*****************************************************************************
-   **
-   ** Function         GetPlatform
-   **
-   ** Description      Get platform interface type (i2c or i3c) for common mw
-   **
-   ** Parameters       pDevHandle     - valid device handle
-   **
-   ** Returns           0   - i2c
-   **                   1   - i3c
-   **
-   ****************************************************************************/
-  virtual int GetPlatform(void *pDevHandle);
 
   /*****************************************************************************
    **

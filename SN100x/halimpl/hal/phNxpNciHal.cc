@@ -795,25 +795,8 @@ int phNxpNciHal_MinOpen (){
   /* Timed wait for IRQ to be Low before issuing write */
   phTmlNfc_WaitForIRQLow();
 
-  if (PLATFORM_IF_I2C == gpphTmlNfc_Context->platform_type) {
-    if (gsIsFirstHalMinOpen)
+  if (gsIsFirstHalMinOpen) {
       phNxpNciHal_CheckAndHandleFwTearDown();
-  }
-  else {
-    gpphTmlNfc_Context->nfc_state = gpTransportObj->GetNfcState(gpphTmlNfc_Context->pDevHandle);
-
-    switch(gpphTmlNfc_Context->nfc_state) {
-      case NFC_STATE_FW_DWL:
-        NXPLOG_NCIHAL_D("NFCC is initilly booted in FW DWL state");
-        phNxpNciHal_CheckAndHandleFwTearDown();
-        break;
-      case NFC_STATE_NCI:
-        NXPLOG_NCIHAL_D("NFCC is initilly booted in NCI mode");
-        break;
-      default:
-        NXPLOG_NCIHAL_D("NFCC is Unlikely in unknown state, check FW download state");
-        phNxpNciHal_CheckAndHandleFwTearDown();
-    };
   }
 
   uint8_t seq_handler_offset = 0x00;
