@@ -42,17 +42,6 @@
  */
 #define ESE_GET_PWR _IOR(NFC_MAGIC, 0x03, long)
 
-/*
- * get platform interface type(i2c or i3c) for common MW
- * return 0 - i2c, 1 - i3c
- */
-#define NFC_GET_PLATFORM_TYPE _IO(NFC_MAGIC, 0x04)
-/*
- * get boot state
- * return unknown, fw dwl, fw teared, nci
- */
-#define NFC_GET_NFC_STATE _IO(NFC_MAGIC, 0x05)
-
 /* NFC HAL can call this ioctl to get the current IRQ state */
 #define NFC_GET_IRQ_STATE _IO(NFC_MAGIC, 0x06)
 
@@ -197,34 +186,6 @@ class NfccI2cTransport : public NfccTransport {
    **
    ****************************************************************************/
   int EseGetPower(void *pDevHandle, long level);
-
-  /*****************************************************************************
-   **
-   ** Function         GetPlatform
-   **
-   ** Description      Get platform interface type (i2c or i3c) for common mw
-   **
-   ** Parameters       pDevHandle     - valid device handle
-   **
-   ** Returns           0   - i2c
-   **                   1   - i3c
-   **
-   ****************************************************************************/
-  int GetPlatform(void *pDevHandle);
-
-  /*****************************************************************************
-  **
-  ** Function         GetNfcState
-  **
-  ** Description      Get Nfc state
-  **
-  ** Parameters       pDevHandle     - valid device handle
-  ** Returns           0   - unknown
-  **                   1   - FW DWL
-  **                   2   - NCI
-  **
-  *****************************************************************************/
-  int GetNfcState(void *pDevHandle);
 
   /*****************************************************************************
    **
