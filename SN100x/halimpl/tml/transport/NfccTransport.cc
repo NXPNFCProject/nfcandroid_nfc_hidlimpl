@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020 NXP
+ *  Copyright 2020-2021 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -30,14 +30,6 @@ int NfccTransport::EseReset(__attribute__((unused)) void *pDevHandle,
 int NfccTransport::EseGetPower(__attribute__((unused)) void *pDevHandle,
                                __attribute__((unused)) long level) {
   return NFCSTATUS_SUCCESS;
-}
-
-int NfccTransport::GetPlatform(__attribute__((unused)) void *pDevHandle) {
-  return 0x00;
-}
-
-int NfccTransport::GetNfcState(__attribute__((unused)) void *pDevHandle) {
-  return NFC_STATE_UNKNOWN;
 }
 
 void NfccTransport::EnableFwDnldMode(__attribute__((unused)) bool mode) {
