@@ -641,6 +641,16 @@ static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
   NXPLOG_NCIHAL_D("Checking response");
   status = NFCSTATUS_SUCCESS;
 
+  /*Response check for Set config command sent part of HAL_EXT*/
+  if (nxpncihal_ctrl.p_rx_data[0] == 0x40 &&
+      nxpncihal_ctrl.p_rx_data[1] == 0x02 &&
+      nxpncihal_ctrl.p_rx_data[2] != 0x00) {
+    status = nxpncihal_ctrl.p_rx_data[3];
+    if (status != 0x00) {
+      NXPLOG_NCIHAL_D("Status Failed. Status = 0x%02x", status);
+    }
+  }
+
 clean_and_return:
   phNxpNciHal_cleanup_cb_data(&nxpncihal_ctrl.ext_cb_data);
   nxpncihal_ctrl.nci_info.wait_for_ntf = FALSE;
