@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright (C) 2015-2018 NXP Semiconductors
+ *  Copyright (C) 2015-2021 NXP Semiconductors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -35,7 +35,8 @@ capability* capability::getInstance() {
 tNFC_chipType capability::processChipType(uint8_t* msg, uint16_t msg_len) {
     if((msg != NULL) && (msg_len != 0)) {
         if(msg[0] == 0x60 && msg[1] == 0x00) {
-           if(msg[msg_len-3] == 0x12 && msg[msg_len-2] == 0x01)
+           if((msg[msg_len-3] == 0x12 && msg[msg_len-2] == 0x01) ||
+             (msg[msg_len-3] == 0x12 && msg[msg_len-2] == 0x21) )
              chipType = pn81T;
            else if(msg[msg_len-3] == 0x11 && msg[msg_len-2] == 0x02)
              chipType = pn553;
