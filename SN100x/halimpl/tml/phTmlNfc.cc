@@ -957,10 +957,10 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
             gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_OFF);
             usleep(10 * 1000);
             gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_ON);
+            usleep(100 * 1000);
           }else{
             gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_FW_GPIO_LOW);
           }
-          usleep(100 * 1000);
         }
         else if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD) {
           NXPLOG_TML_D(" phTmlNfc_e_EnableNormalMode complete with NCI CMD ");
@@ -989,7 +989,6 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
             wStatus = gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
                                       MODE_FW_DWND_HIGH);
         }
-        usleep(100 * 1000);
         gpphTmlNfc_Context->tReadInfo.bEnable = 1;
         sem_post(&gpphTmlNfc_Context->rxSemaphore);
         break;
@@ -999,7 +998,6 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
         gpphTmlNfc_Context->tReadInfo.bEnable = 0;
         NXPLOG_TML_D(" phTmlNfc_e_EnableDownloadModewithVenRst complete with VEN RESET ");
         wStatus = gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_FW_DWNLD_WITH_VEN);
-        usleep(100 * 1000);
         gpphTmlNfc_Context->tReadInfo.bEnable = 1;
         sem_post(&gpphTmlNfc_Context->rxSemaphore);
         break;

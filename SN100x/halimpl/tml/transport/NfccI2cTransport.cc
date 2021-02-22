@@ -81,21 +81,22 @@ void NfccI2cTransport::Close(void *pDevHandle) {
 NFCSTATUS NfccI2cTransport::OpenAndConfigure(pphTmlNfc_Config_t pConfig,
                                              void **pLinkHandle) {
   int nHandle;
-
+  NFCSTATUS status = NFCSTATUS_SUCCESS;
   NXPLOG_TML_D("%s Opening port=%s\n", __func__, pConfig->pDevName);
   /* open port */
   nHandle = open((const char *)pConfig->pDevName, O_RDWR);
   if (nHandle < 0) {
     NXPLOG_TML_E("_i2c_open() Failed: retval %x", nHandle);
     *pLinkHandle = NULL;
-    return NFCSTATUS_INVALID_DEVICE;
+    status = NFCSTATUS_INVALID_DEVICE;
+  } else {
+    *pLinkHandle = (void *)((intptr_t)nHandle);
+    if (0 != sem_init(&mTxRxSemaphore, 0, 1)) {
+      NXPLOG_TML_E("%s Failed: reason sem_init : retval %x", __func__, nHandle);
+      status = NFCSTATUS_FAILED;
+    }
   }
-
-  *pLinkHandle = (void *)((intptr_t)nHandle);
-  if (0 != sem_init(&mTxRxSemaphore, 0, 1)) {
-    NXPLOG_TML_E("%s Failed: reason sem_init : retval %x", __func__, nHandle);
-  }
-  return NFCSTATUS_SUCCESS;
+  return status;
 }
 
 /*******************************************************************************
