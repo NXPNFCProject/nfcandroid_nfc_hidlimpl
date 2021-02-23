@@ -351,7 +351,7 @@ NFCSTATUS phNxpNciHal_send_get_cfg(const uint8_t *cmd_get_cfg, long cmd_len) {
  *
  *****************************************************************************/
 NFCSTATUS phNxpNciHal_configure_merge_sak() {
-  if (nfcFL.chipType != sn100u) {
+  if (nfcFL.chipType < sn100u) {
     NXPLOG_NCIHAL_D("%s : Not applicable for chipType %d",
                                   __func__, nfcFL.chipType);
     return NFCSTATUS_SUCCESS;
