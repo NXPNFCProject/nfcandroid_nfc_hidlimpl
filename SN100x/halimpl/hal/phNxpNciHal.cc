@@ -475,6 +475,13 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset) {
     phNxpNciHal_UpdateFwStatus(HAL_NFC_FW_UPDATE_FAILED);
     return NFCSTATUS_FAILED;
   }
+
+  uint8_t ven_cfg_low_cmd[] = {0x20, 0x02, 0x05, 0x01, 0xA0, 0x07, 0x01, 0x00};
+  status = phNxpNciHal_send_ext_cmd(sizeof(ven_cfg_low_cmd), ven_cfg_low_cmd);
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("Failed to set VEN_CFG to low \n");
+  }
+
   if (nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD) {
     /*NCI_RESET_CMD*/
     static uint8_t cmd_reset_nci_dwnld[] = { 0x20, 0x00, 0x01, 0x80 };
