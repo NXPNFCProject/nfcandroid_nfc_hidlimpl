@@ -1446,8 +1446,6 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len, uint8_t* p_c
       0x20, 0x02, 0x05, 0x01, 0xA0, 0x91, 0x01, 0x01};
   static uint8_t swp_switch_timeout_cmd[] = {0x20, 0x02, 0x06, 0x01, 0xA0,
                                              0xF3, 0x02, 0x00, 0x00};
-  uint8_t cmd_get_cfg_dbg_info[] = {0x20, 0x03, 0x0D, 0x06, 0xA0, 0x39, 0xA0,
-          0x1A, 0xA0, 0x1B, 0xA0, 0x1C, 0xA0, 0x27, 0xA1, 0x1F};
 
   config_success = true;
   long bufflen = 260;
@@ -1541,7 +1539,15 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len, uint8_t* p_c
       goto retry_core_init;
     }
   }
-  status = phNxpNciHal_send_ext_cmd(sizeof(cmd_get_cfg_dbg_info), cmd_get_cfg_dbg_info);
+  if (nfcFL.chipType < sn220u) {
+    uint8_t cmd_get_cfg_dbg_info[] = {0x20, 0x03, 0x0D, 0x06, 0xA0, 0x39, 0xA0,
+          0x1A, 0xA0, 0x1B, 0xA0, 0x1C, 0xA0, 0x27, 0xA1, 0x1F};
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_get_cfg_dbg_info), cmd_get_cfg_dbg_info);
+  } else if (nfcFL.chipType >= sn220u) {
+    uint8_t cmd_get_cfg_dbg_info[] = {0x20, 0x03, 0x0B, 0x05, 0xA0, 0x39, 0xA0,
+          0x1A, 0xA0, 0x1B, 0xA0, 0x1C, 0xA0, 0x27};
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_get_cfg_dbg_info), cmd_get_cfg_dbg_info);
+  }
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("Failed to retrieve NFCC debug info");
   }
