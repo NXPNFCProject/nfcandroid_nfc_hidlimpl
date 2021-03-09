@@ -49,7 +49,7 @@ uint8_t phNxpNciHal_updateAutonomousPwrState(uint8_t num) {
  *
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_setAutonomousMode() {
-  if (nfcFL.chipType != sn100u) {
+  if (nfcFL.chipType < sn100u) {
     NXPLOG_NCIHAL_D("%s : Not applicable for chipType %d",
                                   __func__, nfcFL.chipType);
     return NFCSTATUS_SUCCESS;
