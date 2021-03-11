@@ -252,6 +252,7 @@ typedef enum {
   EEPROM_ISODEP_MERGE_SAK,
   EEPROM_ENABLE_VEN_CFG,
   EEPROM_SRD_TIMEOUT,
+  EEPROM_CE_ACT_NTF,
 } phNxpNci_EEPROM_request_type_t;
 
 typedef struct phNxpNci_EEPROM_info {
