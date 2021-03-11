@@ -52,7 +52,7 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 #define FW_MOBILE_ROM_VERSION_PN553 0x11
 #define FW_MOBILE_ROM_VERSION_PN557 0x12
 #define NCI_CMDRESP_MAX_BUFF_SIZE_SNXXX  (0x22AU)
-#define NCI_CMDRESP_MAX_BUFF_SIZE_PN557  (0x100U)
+#define NCI_CMDRESP_MAX_BUFF_SIZE_PN557  (0x102U)
 
 #define FW_DBG_REASON_AVAILABLE     (0xA3)
 

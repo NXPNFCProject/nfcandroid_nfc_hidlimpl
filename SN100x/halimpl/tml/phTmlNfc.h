@@ -52,7 +52,7 @@
  */
 #define PH_TMLNFC_FRGMENT_SIZE_SNXXX (0x22A)
 
-#define PH_TMLNFC_FRGMENT_SIZE_PN557 (0x100)
+#define PH_TMLNFC_FRGMENT_SIZE_PN557 (0x102)
 
 /*
 ***************************Globals,Structure and Enumeration ******************
