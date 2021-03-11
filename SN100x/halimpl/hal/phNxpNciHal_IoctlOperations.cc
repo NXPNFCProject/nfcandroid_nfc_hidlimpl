@@ -59,6 +59,7 @@ extern uint8_t fw_dwnld_flag;
 extern phTmlNfc_Context_t* gpphTmlNfc_Context;
 extern bool nfc_debug_enabled;
 extern NFCSTATUS phNxpLog_EnableDisableLogLevel(uint8_t enable);
+extern phNxpNciClock_t phNxpNciClock;
 
 /*******************************************************************************
  **
@@ -751,4 +752,139 @@ int phNxpNciHal_CheckFwRegFlashRequired(uint8_t *fw_update_req,
                   "wFwUpdateReq=%u, wRfUpdateReq=%u",
                   status, *fw_update_req, *rf_update_req);
   return status;
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_txNfccClockSetCmd
+ *
+ * Description      This function is called after successfull download
+ *                  to apply the clock setting provided in config file
+ *
+ * Returns          void.
+ *
+ ******************************************************************************/
+void phNxpNciHal_txNfccClockSetCmd(void) {
+  NFCSTATUS status = NFCSTATUS_FAILED;
+
+  static uint8_t set_clock_cmd[] = {0x20, 0x02, 0x05, 0x01, 0xA0, 0x03, 0x01, 0x08};
+  uint8_t setClkCmdLen = sizeof(set_clock_cmd);
+  unsigned long  clockSource = 0;
+  unsigned long frequency = 0;
+  uint32_t pllSetRetryCount = 3, dpllSetRetryCount = 3,setClockCmdWriteRetryCnt = 0;
+  uint8_t *pCmd4PllSetting = NULL;
+  uint8_t *pCmd4DpllSetting = NULL;
+  uint32_t pllCmdLen = 0, dpllCmdLen = 0;
+  int srcCfgFound = 0, freqCfgFound = 0;
+
+  srcCfgFound = (GetNxpNumValue(NAME_NXP_SYS_CLK_SRC_SEL, &clockSource, sizeof(clockSource)) > 0);
+
+  freqCfgFound = (GetNxpNumValue(NAME_NXP_SYS_CLK_FREQ_SEL, &frequency, sizeof(frequency)) > 0);
+
+  NXPLOG_NCIHAL_D("%s : clock source = %lu, frequency = %lu", __FUNCTION__, clockSource, frequency);
+
+  if(srcCfgFound && freqCfgFound && (clockSource == CLK_SRC_PLL))
+  {
+       phNxpNciClock.isClockSet = TRUE;
+
+      switch(frequency)
+      {
+          case CLK_FREQ_13MHZ:
+          {
+              NXPLOG_NCIHAL_D("PLL setting for CLK_FREQ_13MHZ");
+              pCmd4PllSetting = (uint8_t*) SET_CONFIG_CMD_PLL_13MHZ;
+              pllCmdLen = sizeof(SET_CONFIG_CMD_PLL_13MHZ);
+              pCmd4DpllSetting = (uint8_t*) SET_CONFIG_CMD_DPLL_13MHZ;
+              dpllCmdLen = sizeof(SET_CONFIG_CMD_DPLL_13MHZ);
+              break;
+          }
+          case CLK_FREQ_19_2MHZ:
+          {
+              NXPLOG_NCIHAL_D("PLL setting for CLK_FREQ_19_2MHZ");
+              pCmd4PllSetting = (uint8_t*)SET_CONFIG_CMD_PLL_19_2MHZ;
+              pllCmdLen = sizeof(SET_CONFIG_CMD_PLL_19_2MHZ);
+              pCmd4DpllSetting = (uint8_t*) SET_CONFIG_CMD_DPLL_19_2MHZ;
+              dpllCmdLen = sizeof(SET_CONFIG_CMD_DPLL_19_2MHZ);
+              break;
+            }
+          case CLK_FREQ_24MHZ:
+          {
+              NXPLOG_NCIHAL_D("PLL setting for CLK_FREQ_24MHZ");
+              pCmd4PllSetting = (uint8_t*)SET_CONFIG_CMD_PLL_24MHZ;
+              pllCmdLen = sizeof(SET_CONFIG_CMD_PLL_24MHZ);
+              pCmd4DpllSetting = (uint8_t*) SET_CONFIG_CMD_DPLL_24MHZ;
+              dpllCmdLen = sizeof(SET_CONFIG_CMD_DPLL_24MHZ);
+              break;
+          }
+          case CLK_FREQ_26MHZ:
+          {
+              NXPLOG_NCIHAL_D("PLL setting for CLK_FREQ_26MHZ");
+              pCmd4PllSetting = (uint8_t*)SET_CONFIG_CMD_PLL_26MHZ;
+              pllCmdLen = sizeof(SET_CONFIG_CMD_PLL_26MHZ);
+              pCmd4DpllSetting = (uint8_t*) SET_CONFIG_CMD_DPLL_26MHZ;
+              dpllCmdLen = sizeof(SET_CONFIG_CMD_DPLL_26MHZ);
+              break;
+          }
+          case CLK_FREQ_32MHZ:
+          {
+              NXPLOG_NCIHAL_D("PLL setting for CLK_FREQ_32MHZ");
+              pCmd4PllSetting = (uint8_t*)SET_CONFIG_CMD_PLL_32MHZ;
+              pllCmdLen = sizeof(SET_CONFIG_CMD_PLL_32MHZ);
+              pCmd4DpllSetting = (uint8_t*) SET_CONFIG_CMD_DPLL_32MHZ;
+              dpllCmdLen = sizeof(SET_CONFIG_CMD_DPLL_32MHZ);
+              break;
+          }
+          case CLK_FREQ_38_4MHZ:
+          {
+              NXPLOG_NCIHAL_D("PLL setting for CLK_FREQ_38_4MHZ");
+              pCmd4PllSetting = (uint8_t*)SET_CONFIG_CMD_PLL_38_4MHZ;
+              pllCmdLen = sizeof(SET_CONFIG_CMD_PLL_38_4MHZ);
+              pCmd4DpllSetting = (uint8_t*) SET_CONFIG_CMD_DPLL_38_4MHZ;
+              dpllCmdLen = sizeof(SET_CONFIG_CMD_DPLL_38_4MHZ);
+              break;
+          }
+          default:
+              phNxpNciClock.isClockSet = FALSE;
+              NXPLOG_NCIHAL_E("ERROR: Invalid clock frequency!!");
+              return;
+      }
+  }
+  switch(clockSource)
+  {
+      case CLK_SRC_PLL:
+      {
+          set_clock_cmd[setClkCmdLen -1] = 0x00;
+          while(status != NFCSTATUS_SUCCESS && setClockCmdWriteRetryCnt++ < MAX_RETRY_COUNT)
+          status = phNxpNciHal_send_ext_cmd(setClkCmdLen, set_clock_cmd);
+
+          status = NFCSTATUS_FAILED;
+
+          while(status != NFCSTATUS_SUCCESS && pllSetRetryCount -- > 0)
+              status = phNxpNciHal_send_ext_cmd(pllCmdLen, pCmd4PllSetting);
+
+          status = NFCSTATUS_FAILED;
+
+          while(status != NFCSTATUS_SUCCESS && dpllSetRetryCount -- > 0)
+              status = phNxpNciHal_send_ext_cmd(dpllCmdLen, pCmd4DpllSetting);
+
+          break;
+      }
+      case CLK_SRC_XTAL:
+      {
+          status = phNxpNciHal_send_ext_cmd(setClkCmdLen, set_clock_cmd);
+          if (status != NFCSTATUS_SUCCESS)
+          {
+              NXPLOG_NCIHAL_E("XTAL clock setting failed !!");
+          }
+          break;
+      }
+      default:
+          NXPLOG_NCIHAL_E("Wrong clock source. Dont apply any modification");
+          return;
+  }
+  phNxpNciClock.isClockSet = FALSE;
+  if(status == NFCSTATUS_SUCCESS && phNxpNciClock.p_rx_data[3] == NFCSTATUS_SUCCESS)
+  {
+      NXPLOG_NCIHAL_D("PLL and DPLL settings applied successfully");
+  }
+  return;
 }

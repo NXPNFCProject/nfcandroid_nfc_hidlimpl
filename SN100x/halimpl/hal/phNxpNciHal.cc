@@ -144,8 +144,6 @@ static void phNxpNciHal_power_cycle_complete(NFCSTATUS status);
 static void phNxpNciHal_kill_client_thread(
     phNxpNciHal_Control_t* p_nxpncihal_ctrl);
 static void* phNxpNciHal_client_thread(void* arg);
-static void phNxpNciHal_get_clk_freq(void);
-static void phNxpNciHal_set_clock(void);
 static void phNxpNciHal_nfccClockCfgRead(void);
 static NFCSTATUS phNxpNciHal_nfccClockCfgApply(void);
 static void phNxpNciHal_hci_network_reset(void);
@@ -595,61 +593,6 @@ NFCSTATUS phNxpNciHal_CheckValidFwVersion(void) {
   }
 
   return status;
-}
-
-static void phNxpNciHal_get_clk_freq(void) {
-  unsigned long num = 0;
-  int isfound = 0;
-
-  nxpprofile_ctrl.bClkSrcVal = 0;
-  nxpprofile_ctrl.bClkFreqVal = 0;
-  nxpprofile_ctrl.bTimeout = 0;
-
-  isfound = GetNxpNumValue(NAME_NXP_SYS_CLK_SRC_SEL, &num, sizeof(num));
-  if (isfound > 0) {
-    nxpprofile_ctrl.bClkSrcVal = num;
-  }
-
-  num = 0;
-  isfound = 0;
-  isfound = GetNxpNumValue(NAME_NXP_SYS_CLK_FREQ_SEL, &num, sizeof(num));
-  if (isfound > 0) {
-    nxpprofile_ctrl.bClkFreqVal = num;
-  }
-
-  num = 0;
-  isfound = 0;
-  isfound = GetNxpNumValue(NAME_NXP_SYS_CLOCK_TO_CFG, &num, sizeof(num));
-  if (isfound > 0) {
-    nxpprofile_ctrl.bTimeout = num;
-  }
-
-  NXPLOG_FWDNLD_D("gphNxpNciHal_fw_IoctlCtx.bClkSrcVal = 0x%x",
-                  nxpprofile_ctrl.bClkSrcVal);
-  NXPLOG_FWDNLD_D("gphNxpNciHal_fw_IoctlCtx.bClkFreqVal = 0x%x",
-                  nxpprofile_ctrl.bClkFreqVal);
-  NXPLOG_FWDNLD_D("gphNxpNciHal_fw_IoctlCtx.bClkFreqVal = 0x%x",
-                  nxpprofile_ctrl.bTimeout);
-
-  if ((nxpprofile_ctrl.bClkSrcVal < CLK_SRC_XTAL) ||
-      (nxpprofile_ctrl.bClkSrcVal > CLK_SRC_PLL)) {
-    NXPLOG_FWDNLD_E(
-        "Clock source value is wrong in config file, setting it as default");
-    nxpprofile_ctrl.bClkSrcVal = NXP_SYS_CLK_SRC_SEL;
-  }
-  if (nxpprofile_ctrl.bClkFreqVal == CLK_SRC_PLL &&
-      (nxpprofile_ctrl.bClkFreqVal < CLK_FREQ_13MHZ ||
-       nxpprofile_ctrl.bClkFreqVal > CLK_FREQ_52MHZ)) {
-    NXPLOG_FWDNLD_E(
-        "Clock frequency value is wrong in config file, setting it as default");
-    nxpprofile_ctrl.bClkFreqVal = NXP_SYS_CLK_FREQ_SEL;
-  }
-  if ((nxpprofile_ctrl.bTimeout < CLK_TO_CFG_DEF) ||
-      (nxpprofile_ctrl.bTimeout > CLK_TO_CFG_MAX)) {
-    NXPLOG_FWDNLD_E(
-        "Clock timeout value is wrong in config file, setting it as default");
-    nxpprofile_ctrl.bTimeout = CLK_TO_CFG_DEF;
-  }
 }
 
 /******************************************************************************
@@ -1603,57 +1546,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len, uint8_t* p_c
       goto retry_core_init;
     }
 
-    //
-    status = phNxpNciHal_check_clock_config();
-    if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("phNxpNciHal_check_clock_config failed");
-      retry_core_init_cnt++;
-      goto retry_core_init;
-    }
 
-#ifdef PN547C2_CLOCK_SETTING
-  if (isNxpRFConfigModified() || (fw_dwnld_flag == true) ||
-      (phNxpNciClock.issetConfig)
-#if (NFC_NXP_HFO_SETTINGS == TRUE)
-      || temp_fix == 1
-#endif
-  ) {
-    // phNxpNciHal_get_clk_freq();
-    phNxpNciHal_set_clock();
-    phNxpNciClock.issetConfig = false;
-#if (NFC_NXP_HFO_SETTINGS == TRUE)
-    if (temp_fix == 1) {
-      NXPLOG_NCIHAL_D(
-          "Applying Default Clock setting and DPLL register at power on");
-      /*
-      # A0, 0D, 06, 06, 83, 55, 2A, 04, 00 RF_CLIF_CFG_TARGET CLIF_DPLL_GEAR_REG
-      # A0, 0D, 06, 06, 82, 33, 14, 17, 00 RF_CLIF_CFG_TARGET CLIF_DPLL_INIT_REG
-      # A0, 0D, 06, 06, 84, AA, 85, 00, 80 RF_CLIF_CFG_TARGET
-      CLIF_DPLL_INIT_FREQ_REG
-      # A0, 0D, 06, 06, 81, 63, 00, 00, 00 RF_CLIF_CFG_TARGET
-      CLIF_DPLL_CONTROL_REG
-      */
-      static uint8_t cmd_dpll_set_reg_nci[] = {
-          0x20, 0x02, 0x25, 0x04, 0xA0, 0x0D, 0x06, 0x06, 0x83, 0x55,
-          0x2A, 0x04, 0x00, 0xA0, 0x0D, 0x06, 0x06, 0x82, 0x33, 0x14,
-          0x17, 0x00, 0xA0, 0x0D, 0x06, 0x06, 0x84, 0xAA, 0x85, 0x00,
-          0x80, 0xA0, 0x0D, 0x06, 0x06, 0x81, 0x63, 0x00, 0x00, 0x00};
-
-      status = phNxpNciHal_send_ext_cmd(sizeof(cmd_dpll_set_reg_nci),
-                                        cmd_dpll_set_reg_nci);
-      if (status != NFCSTATUS_SUCCESS) {
-        NXPLOG_NCIHAL_E("NXP DPLL REG ACT Proprietary Ext failed");
-        retry_core_init_cnt++;
-        goto retry_core_init;
-      }
-      /* reset the NFCC after applying the clock setting and DPLL setting */
-      // phTmlNfc_IoCtl(phTmlNfc_e_ResetDevice);
-      temp_fix = 0;
-      goto retry_core_init;
-    }
-#endif
-  }
-#endif
   }
 
   retlen = 0;
@@ -3064,6 +2957,10 @@ NFCSTATUS phNxpNciHal_nfccClockCfgApply(void) {
 
   if(nfcc_clock_set_needed) {
     NXPLOG_NCIHAL_D ("Setting Clock Source and Frequency");
+    if(nfcFL.chipType < sn100u){
+        phNxpNciHal_txNfccClockSetCmd();
+    }
+    else
     {
         /*Read the preset value from FW*/
         memcpy(&set_clck_cmd[7], &phNxpNciClock.p_rx_data[8], phNxpNciClock.p_rx_data[7]);
@@ -3145,118 +3042,6 @@ retry_send_ext:
   return status;
 }
 
-/******************************************************************************
- * Function         phNxpNciHal_set_clock
- *
- * Description      This function is called after successfull download
- *                  to apply the clock setting provided in config file
- *
- * Returns          void.
- *
- *****************************************************************************/
-static void phNxpNciHal_set_clock(void) {
-  NFCSTATUS status = NFCSTATUS_FAILED;
-  int retryCount = 0;
-
-retrySetclock:
-  phNxpNciClock.isClockSet = true;
-  if (nxpprofile_ctrl.bClkSrcVal == CLK_SRC_PLL) {
-    static uint8_t set_clock_cmd[] = {0x20, 0x02, 0x09, 0x02, 0xA0, 0x03,
-                                      0x01, 0x11, 0xA0, 0x04, 0x01, 0x01};
-    uint8_t param_clock_src = 0x00;
-    if((nfcFL.chipType != pn553)&&(nfcFL.chipType != pn557)) {
-      uint8_t param_clock_src = CLK_SRC_PLL;
-      param_clock_src = param_clock_src << 3;
-    }
-
-    if (nxpprofile_ctrl.bClkFreqVal == CLK_FREQ_13MHZ) {
-      param_clock_src |= 0x00;
-    } else if (nxpprofile_ctrl.bClkFreqVal == CLK_FREQ_19_2MHZ) {
-      param_clock_src |= 0x01;
-    } else if (nxpprofile_ctrl.bClkFreqVal == CLK_FREQ_24MHZ) {
-      param_clock_src |= 0x02;
-    } else if (nxpprofile_ctrl.bClkFreqVal == CLK_FREQ_26MHZ) {
-      param_clock_src |= 0x03;
-    } else if (nxpprofile_ctrl.bClkFreqVal == CLK_FREQ_38_4MHZ) {
-      param_clock_src |= 0x04;
-    } else if (nxpprofile_ctrl.bClkFreqVal == CLK_FREQ_52MHZ) {
-      param_clock_src |= 0x05;
-    } else {
-      NXPLOG_NCIHAL_E("Wrong clock freq, send default PLL@19.2MHz");
-      if((nfcFL.chipType == pn553) || (nfcFL.chipType == pn557)) {
-        param_clock_src = 0x01;
-      } else {
-        param_clock_src = 0x11;
-      }
-    }
-
-    set_clock_cmd[7] = param_clock_src;
-    set_clock_cmd[11] = nxpprofile_ctrl.bTimeout;
-    status = phNxpNciHal_send_ext_cmd(sizeof(set_clock_cmd), set_clock_cmd);
-    if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("PLL colck setting failed !!");
-    }
-  } else if (nxpprofile_ctrl.bClkSrcVal == CLK_SRC_XTAL) {
-    static uint8_t set_clock_cmd[] = {0x20, 0x02, 0x05, 0x01,
-                                      0xA0, 0x03, 0x01, 0x08};
-    status = phNxpNciHal_send_ext_cmd(sizeof(set_clock_cmd), set_clock_cmd);
-    if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("XTAL colck setting failed !!");
-    }
-  } else {
-    NXPLOG_NCIHAL_E("Wrong clock source. Dont apply any modification")
-  }
-
-  // Checking for SET CONFG SUCCESS, re-send the command  if not.
-  phNxpNciClock.isClockSet = false;
-  if (phNxpNciClock.p_rx_data[3] != NFCSTATUS_SUCCESS) {
-    if (retryCount++ < 3) {
-      NXPLOG_NCIHAL_D("Set-clk failed retry again ");
-      goto retrySetclock;
-    } else {
-      NXPLOG_NCIHAL_E("Set clk  failed -  max count = 0x%x exceeded ",
-                      retryCount);
-      //            NXPLOG_NCIHAL_E("Set Config is failed for Clock Due to
-      //            elctrical disturbances, aborting the NFC process");
-      //            abort ();
-    }
-  }
-}
-
-/******************************************************************************
- * Function         phNxpNciHal_check_clock_config
- *
- * Description      This function is called after successfull download
- *                  to check if clock settings in config file and chip
- *                  is same
- *
- * Returns          void.
- *
- ******************************************************************************/
-NFCSTATUS phNxpNciHal_check_clock_config(void) {
-  NFCSTATUS status = NFCSTATUS_SUCCESS;
-  uint8_t param_clock_src;
-  static uint8_t get_clock_cmd[] = {0x20, 0x03, 0x07, 0x03, 0xA0,
-                                    0x02, 0xA0, 0x03, 0xA0, 0x04};
-  phNxpNciClock.isClockSet = true;
-  phNxpNciHal_get_clk_freq();
-  status = phNxpNciHal_send_ext_cmd(sizeof(get_clock_cmd), get_clock_cmd);
-
-  if (status != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("unable to retrieve get_clk_src_sel");
-    return status;
-  }
-  param_clock_src = phNxpNciHal_check_config_parameter();
-  if (phNxpNciClock.p_rx_data[12] == param_clock_src &&
-      phNxpNciClock.p_rx_data[16] == nxpprofile_ctrl.bTimeout) {
-    phNxpNciClock.issetConfig = false;
-  } else {
-    phNxpNciClock.issetConfig = true;
-  }
-  phNxpNciClock.isClockSet = false;
-
-  return status;
-}
 
 /******************************************************************************
  * Function         phNxpNciHal_china_tianjin_rf_setting
