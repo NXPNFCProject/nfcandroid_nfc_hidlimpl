@@ -970,7 +970,7 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
         break;
       }
       case phTmlNfc_e_setFragmentSize: {
-        if(nfcFL.chipType >= sn100u){
+        if(nfcFL.chipType != pn557){
           gpphTmlNfc_Context->fragment_len = PH_TMLNFC_FRGMENT_SIZE_SNXXX;
           NXPLOG_TML_D("phTmlNfc_e_setFragmentSize 0x22A");
         } else {

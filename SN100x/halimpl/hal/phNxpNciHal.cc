@@ -386,6 +386,7 @@ static NFCSTATUS phNxpNciHal_CheckIntegrityRecovery() {
 static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset) {
   NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
   NFCSTATUS status = NFCSTATUS_SUCCESS;
+  uint8_t chipType = 0;
   /*Get FW version from device*/
   for (int retry = 1; retry >= 0; retry--) {
     if (phDnldNfc_InitImgInfo() == NFCSTATUS_SUCCESS) { break;
@@ -399,12 +400,18 @@ static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset) {
   NXPLOG_NCIHAL_D("FW version for FW file = 0x%x", wFwVer);
   NXPLOG_NCIHAL_D("FW version from device = 0x%x", wFwVerRsp);
   if (wFwVerRsp == 0) {
-    nfcFL.chipType = sn100u;
-    tNFC_chipType chipType = sn100u;
-    CONFIGURE_FEATURELIST(chipType);
-    nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_VEN_RESET;
-    fw_maj_ver = SN1XX_FW_MAJOR_VERSION;
-    rom_version = SN1XX_ROM_VERSION;
+    if(GetNxpNumValue(NAME_NXP_NFC_CHIP_TYPE, &chipType, sizeof(chipType))) {
+       nfcFL.chipType = (tNFC_chipType) chipType;
+       nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_VEN_RESET;
+       NXPLOG_NCIHAL_D("from NXP_NFC_CHIP_TYPE nfcFL.chipType = %x", nfcFL.chipType);
+    } else {
+      nfcFL.chipType = sn100u;
+      tNFC_chipType chipType = sn100u;
+      CONFIGURE_FEATURELIST(chipType);
+      nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_VEN_RESET;
+      fw_maj_ver = SN1XX_FW_MAJOR_VERSION;
+      rom_version = SN1XX_ROM_VERSION;
+    }
   }
   if (NFCSTATUS_SUCCESS == phNxpNciHal_CheckValidFwVersion()) {
     NXPLOG_NCIHAL_D("FW update required");
@@ -467,6 +474,9 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset) {
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("%s: NXP Set FW DW Flag failed", __FUNCTION__);
   }
+
+  NXPLOG_NCIHAL_D("nfcFL.nfccFL._NFCC_DWNLD_MODE %x\n",nfcFL.nfccFL._NFCC_DWNLD_MODE);
+
   status = phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadMode);
   if (NFCSTATUS_SUCCESS != status) {
     nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
@@ -474,11 +484,13 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset) {
     return NFCSTATUS_FAILED;
   }
 
-  uint8_t ven_cfg_low_cmd[] = {0x20, 0x02, 0x05, 0x01, 0xA0, 0x07, 0x01, 0x00};
-  status = phNxpNciHal_send_ext_cmd(sizeof(ven_cfg_low_cmd), ven_cfg_low_cmd);
-  if (status != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("Failed to set VEN_CFG to low \n");
-  }
+  if(nfcFL.chipType != pn557) {
+    uint8_t ven_cfg_low_cmd[] = {0x20, 0x02, 0x05, 0x01, 0xA0, 0x07, 0x01, 0x00};
+    status = phNxpNciHal_send_ext_cmd(sizeof(ven_cfg_low_cmd), ven_cfg_low_cmd);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("Failed to set VEN_CFG to low \n");
+    }
+   }
 
   if (nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD) {
     /*NCI_RESET_CMD*/
@@ -554,12 +566,22 @@ NFCSTATUS phNxpNciHal_CheckValidFwVersion(void) {
   NFCSTATUS status = NFCSTATUS_NOT_ALLOWED;
   const unsigned char sfw_infra_major_no = 0x02;
   unsigned char ufw_current_major_no = 0x00;
-  //unsigned long num = 0;
-  //int isfound = 0;
 
   /* extract the firmware's major no */
   ufw_current_major_no = ((0x00FF) & (wFwVer >> 8U));
+
   NXPLOG_NCIHAL_D("%s current_major_no = 0x%x", __func__, ufw_current_major_no);
+  NXPLOG_NCIHAL_D("%s fw_maj_ver = 0x%x", __func__, fw_maj_ver);
+
+  if(nfcFL.chipType == pn557) {
+    if (ufw_current_major_no >= fw_maj_ver){
+    /* if file major version is grater than the one from the
+       Nfc init command allow FW download
+    */
+     status = NFCSTATUS_SUCCESS;
+     }
+     return status;
+  }
 
   if ((ufw_current_major_no == nfcFL._FW_MOBILE_MAJOR_NUMBER) ||
       ((ufw_current_major_no == FW_MOBILE_MAJOR_NUMBER_PN81A) &&
@@ -584,9 +606,11 @@ NFCSTATUS phNxpNciHal_CheckValidFwVersion(void) {
 #endif
   else if (wFwVerRsp == 0) {
     NXPLOG_NCIHAL_E(
-        "FW Version not received by NCI command >>> Force Firmware download");
-    tNFC_chipType chipType = sn100u;
-    CONFIGURE_FEATURELIST(chipType);
+        "FW Version not received by NCI command >>> Force Firmware download %d",nfcFL.chipType);
+    if(nfcFL.chipType == sn100u) {
+      tNFC_chipType chipType = nfcFL.chipType;
+      CONFIGURE_FEATURELIST(chipType);
+    }
     status = NFCSTATUS_SUCCESS;
   } else {
     NXPLOG_NCIHAL_E("Wrong FW Version >>> Firmware download not allowed");
@@ -641,6 +665,7 @@ int phNxpNciHal_MinOpen (){
   NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   uint8_t chipType = 0;
+  int init_retry_cnt = 0;
   NXPLOG_NCIHAL_D("phNxpNci_MinOpen(): enter");
 
   AutoThreadMutex a(sHalFnLock);
@@ -766,7 +791,7 @@ int phNxpNciHal_MinOpen (){
     return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
   }
   /* Timed wait for IRQ to be Low before issuing write */
-  if(nfcFL.chipType >= sn100u)
+  if(nfcFL.chipType != pn557)
   phTmlNfc_WaitForIRQLow();
 
   uint8_t seq_handler_offset = 0x00;
@@ -829,9 +854,15 @@ int phNxpNciHal_MinOpen (){
                       "gsIsFwRecoveryRequired %d",
                       gsIsFwRecoveryRequired);
       fw_update_req = 1;
+      init_retry_cnt++;
     } else {
       break;
     }
+
+    if (init_retry_cnt > 1){
+      break;
+    }
+
   } while (status != NFCSTATUS_SUCCESS || gsIsFwRecoveryRequired);
   /* Call open complete */
   phNxpNciHal_MinOpen_complete(wConfigStatus);
