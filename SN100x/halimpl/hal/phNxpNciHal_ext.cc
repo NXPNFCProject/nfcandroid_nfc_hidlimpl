@@ -31,6 +31,9 @@
 /* Timeout value to wait for response from PN548AD */
 #define HAL_EXTNS_WRITE_RSP_TIMEOUT (1000)
 #define NCI_NFC_DEP_RF_INTF 0x03
+#define NCI_STATUS_OK 0x00
+#define NCI_MODE_HEADER_LEN 3
+
 #undef P2P_PRIO_LOGIC_HAL_IMP
 
 /******************* Global variables *****************************************/
@@ -556,6 +559,13 @@ static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
   NFCSTATUS status = NFCSTATUS_FAILED;
   uint16_t data_written = 0;
 
+  /* Check NCI Command is well formed */
+  if (!phTmlNfc_IsFwDnldModeEnabled() && (cmd_len != (p_cmd[2] + NCI_MODE_HEADER_LEN))) {
+    NXPLOG_NCIHAL_E("NCI command not well formed");
+    return NFCSTATUS_FAILED;
+  }
+
+
   /* Create the local semaphore */
   if (phNxpNciHal_init_cb_data(&nxpncihal_ctrl.ext_cb_data, NULL) !=
       NFCSTATUS_SUCCESS) {
@@ -641,12 +651,16 @@ static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
   NXPLOG_NCIHAL_D("Checking response");
   status = NFCSTATUS_SUCCESS;
 
-  /*Response check for Set config command sent part of HAL_EXT*/
+  /*Response check for Set config, Core Reset & Core init command sent part of HAL_EXT*/
   if (nxpncihal_ctrl.p_rx_data[0] == 0x40 &&
-      nxpncihal_ctrl.p_rx_data[1] == 0x02 &&
+      nxpncihal_ctrl.p_rx_data[1] >= 0x00 &&
+      nxpncihal_ctrl.p_rx_data[1] <= 0x02 &&
       nxpncihal_ctrl.p_rx_data[2] != 0x00) {
+
     status = nxpncihal_ctrl.p_rx_data[3];
-    if (status != 0x00) {
+    if (status != NCI_STATUS_OK) {
+      /*Add 500ms delay for FW to flush circular buffer */
+      usleep(500 * 1000);
       NXPLOG_NCIHAL_D("Status Failed. Status = 0x%02x", status);
     }
   }

@@ -1467,7 +1467,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len, uint8_t* p_c
                                     0x00};  // keep configuration
   static uint8_t cmd_init_nci2_0[] = {0x20, 0x01, 0x02, 0x00, 0x00};
   /* reset config cache */
-  static uint8_t retry_core_init_cnt;
+  uint8_t retry_core_init_cnt = 0;
   if (nxpncihal_ctrl.halStatus != HAL_STATUS_OPEN) {
     return NFCSTATUS_FAILED;
   }
