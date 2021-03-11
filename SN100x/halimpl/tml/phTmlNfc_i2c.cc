@@ -31,6 +31,7 @@
 
 #include <phNfcStatus.h>
 #include <phNxpLog.h>
+#include <phNxpConfig.h>
 #include <phTmlNfc_i2c.h>
 #include <string.h>
 #include "phNxpNciHal_utils.h"
@@ -88,6 +89,7 @@ void phTmlNfc_i2c_close(void* pDevHandle) {
 NFCSTATUS phTmlNfc_i2c_open_and_configure(pphTmlNfc_Config_t pConfig,
                                           void** pLinkHandle) {
   int nHandle;
+  uint8_t chipType = 0;
 
   NXPLOG_TML_D("Opening port=%s\n", pConfig->pDevName);
   /* open port */
@@ -102,6 +104,14 @@ NFCSTATUS phTmlNfc_i2c_open_and_configure(pphTmlNfc_Config_t pConfig,
 #if(NXP_EXTNS == TRUE)
   if (0 != sem_init(&txrxSemaphore, 0, 1)) {
     NXPLOG_TML_E("_i2c_open() Failed: reason sem_init : retval %x", nHandle);
+  }
+  if(GetNxpNumValue(NAME_NXP_NFC_CHIP_TYPE, &chipType, sizeof(chipType))) {
+    NXPLOG_TML_D("NAME_NXP_NFC_CHIP_TYPE nfcFL.chipType = %x", nfcFL.chipType);
+    if(chipType < sn100u) {
+      phTmlNfc_i2c_reset((void*)((intptr_t)nHandle), MODE_POWER_OFF);
+      usleep(10 * 1000);
+      phTmlNfc_i2c_reset((void*)((intptr_t)nHandle), MODE_POWER_ON);
+    }
   }
 #else
   /*Reset PN54X*/
