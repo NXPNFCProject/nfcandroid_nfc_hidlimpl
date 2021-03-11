@@ -1567,17 +1567,22 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len, uint8_t* p_c
     }
   }
 
+  if (nfcFL.chipType == pn557)
+    enable_ven_cfg = 3;
+
   mEEPROM_info.buffer = &enable_ven_cfg;
   mEEPROM_info.bufflen = sizeof(enable_ven_cfg);
   mEEPROM_info.request_type = EEPROM_ENABLE_VEN_CFG;
   mEEPROM_info.request_mode = SET_EEPROM_DATA;
   request_EEPROM(&mEEPROM_info);
 
+  if (nfcFL.chipType >= sn100u) {
   mEEPROM_info.buffer = &enable_ce_in_phone_off;
   mEEPROM_info.bufflen = sizeof(enable_ce_in_phone_off);
   mEEPROM_info.request_type = EEPROM_CE_PHONE_OFF_CFG;
   mEEPROM_info.request_mode = SET_EEPROM_DATA;
   request_EEPROM(&mEEPROM_info);
+  }
 
   config_access = false;
   status = phNxpNciHal_read_fw_dw_status(fw_dwnld_flag);
@@ -1787,9 +1792,13 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len, uint8_t* p_c
     mEEPROM_info.request_type = EEPROM_T4T_NFCEE_ENABLE;
     mEEPROM_info.request_mode = SET_EEPROM_DATA;
     request_EEPROM(&mEEPROM_info);
-    if (phNxpNciHal_configure_merge_sak() != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("Applying iso_dep sak merge settings failed");
+
+    if (nfcFL.chipType >= sn100u) {
+      if (phNxpNciHal_configure_merge_sak() != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("Applying iso_dep sak merge settings failed");
+      }
     }
+
   }
   if ((true == fw_dwnld_flag) || (true == setConfigAlways) ||
      isNxpConfigModified() || (wRfUpdateReq == true)) {
@@ -1928,6 +1937,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len, uint8_t* p_c
       }
     }
 
+    if(nfcFL.chipType >= sn100u) {
     status = phNxpNciHal_china_tianjin_rf_setting();
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("phNxpNciHal_china_tianjin_rf_setting failed");
@@ -1941,6 +1951,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len, uint8_t* p_c
         NXPLOG_NCIHAL_E("NXP Update MW EEPROM Proprietary Ext failed");
       }
     }
+   }
 
   retlen = 0;
   config_access = false;
@@ -1984,30 +1995,33 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len, uint8_t* p_c
     }
   }
 
-  /* Android L AID Matching Platform Setting*/
-  if (GetNxpNumValue(NAME_AID_MATCHING_PLATFORM, (void*)&retlen,
-                     sizeof(retlen))) {
-    if (1 == retlen) {
-      status =
-          phNxpNciHal_send_ext_cmd(sizeof(android_l_aid_matching_mode_on_cmd),
-                                   android_l_aid_matching_mode_on_cmd);
-      if (status != NFCSTATUS_SUCCESS) {
-        NXPLOG_NCIHAL_E("Android L AID Matching Platform Setting Failed");
-        retry_core_init_cnt++;
-        goto retry_core_init;
-      }
-    } else if (2 == retlen) {
-      android_l_aid_matching_mode_on_cmd[7] = 0x00;
-      status =
-          phNxpNciHal_send_ext_cmd(sizeof(android_l_aid_matching_mode_on_cmd),
-                                   android_l_aid_matching_mode_on_cmd);
-      if (status != NFCSTATUS_SUCCESS) {
-        NXPLOG_NCIHAL_E("Android L AID Matching Platform Setting Failed");
-        retry_core_init_cnt++;
-        goto retry_core_init;
+  if(nfcFL.chipType >= sn100u) {
+    /* Android L AID Matching Platform Setting*/
+    if (GetNxpNumValue(NAME_AID_MATCHING_PLATFORM, (void*)&retlen,
+                       sizeof(retlen))) {
+      if (1 == retlen) {
+        status =
+            phNxpNciHal_send_ext_cmd(sizeof(android_l_aid_matching_mode_on_cmd),
+                                     android_l_aid_matching_mode_on_cmd);
+        if (status != NFCSTATUS_SUCCESS) {
+          NXPLOG_NCIHAL_E("Android L AID Matching Platform Setting Failed");
+          retry_core_init_cnt++;
+          goto retry_core_init;
+        }
+      } else if (2 == retlen) {
+        android_l_aid_matching_mode_on_cmd[7] = 0x00;
+        status =
+            phNxpNciHal_send_ext_cmd(sizeof(android_l_aid_matching_mode_on_cmd),
+                                     android_l_aid_matching_mode_on_cmd);
+        if (status != NFCSTATUS_SUCCESS) {
+          NXPLOG_NCIHAL_E("Android L AID Matching Platform Setting Failed");
+          retry_core_init_cnt++;
+          goto retry_core_init;
+        }
       }
     }
   }
+
 #if(NXP_EXTNS == TRUE)
   isfound = GetNxpNumValue(NAME_NXP_NCI_PARSER_LIBRARY, &num, sizeof(num));
   if(isfound > 0 && num == 0x01)
@@ -2231,6 +2245,8 @@ int phNxpNciHal_close(bool bShutdown) {
   uint8_t cmd_reset_nci[] = {0x20, 0x00, 0x01, 0x00};
   uint8_t cmd_ce_in_phone_off[] = {0x20, 0x02, 0x05, 0x01,
           0xA0, 0x8E, 0x01, 0x00};
+  uint8_t cmd_ce_in_phone_off_pn557[] = {0x20, 0x02, 0x05, 0x01,
+          0xA0, 0x07, 0x01, 0x02};
   uint8_t length = 0;
   uint8_t numPrms = 0;
   uint8_t ptr = 4;
@@ -2271,16 +2287,24 @@ int phNxpNciHal_close(bool bShutdown) {
       sem_post(&(nxpncihal_ctrl.syncSpiNfc));
   }
     if(!bShutdown){
-      status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_in_phone_off), cmd_ce_in_phone_off);
-      if(status != NFCSTATUS_SUCCESS) {
-        NXPLOG_NCIHAL_E("CMD_CE_IN_PHONE_OFF: Failed");
+      if(nfcFL.chipType >= sn100u){
+        status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_in_phone_off), cmd_ce_in_phone_off);
+        if(status != NFCSTATUS_SUCCESS) {
+          NXPLOG_NCIHAL_E("CMD_CE_IN_PHONE_OFF: Failed");
+        }
+        config_ext.autonomous_mode = 0x00;
+        status = phNxpNciHal_setAutonomousMode();
+        if (status != NFCSTATUS_SUCCESS) {
+          NXPLOG_NCIHAL_E("Autonomous mode Disable: Failed");
+        }
+      } else {
+        status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_in_phone_off_pn557), cmd_ce_in_phone_off_pn557);
+        if(status != NFCSTATUS_SUCCESS) {
+          NXPLOG_NCIHAL_E("CMD_CE_IN_PHONE_OFF: Failed");
+        }
       }
-      config_ext.autonomous_mode = 0x00;
-      status = phNxpNciHal_setAutonomousMode();
-      if (status != NFCSTATUS_SUCCESS) {
-        NXPLOG_NCIHAL_E("Autonomous mode Disable: Failed");
-      }
-    }
+  }
+
   if (nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT &&
           read_failed_disable_nfc) {
       read_failed_disable_nfc = false;
@@ -3489,9 +3513,11 @@ NFCSTATUS phNxpNciHal_resetDefaultSettings(uint8_t fw_update_req, bool keep_conf
     unsigned long num = 0;
     int ret = 0;
     phNxpNciHal_conf_nfc_forum_mode();
-    ret = GetNxpNumValue(NAME_NXP_RDR_DISABLE_ENABLE_LPCD, &num, sizeof(num));
-    if (!ret || num == 1 || num == 2) {
-      phNxpNciHal_prop_conf_lpcd();
+    if(nfcFL.chipType >= sn100u) {
+      ret = GetNxpNumValue(NAME_NXP_RDR_DISABLE_ENABLE_LPCD, &num, sizeof(num));
+      if (!ret || num == 1 || num == 2) {
+        phNxpNciHal_prop_conf_lpcd();
+      }
     }
   }
   return status;
