@@ -1558,6 +1558,13 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len, uint8_t* p_c
      retry_core_init_cnt++;
      goto retry_core_init;
     }
+  } else {
+    uint8_t cmd_get_cfg_dbg_info[] = {0x20, 0x03, 0x0B, 0x05, 0xA0, 0x39, 0xA0,
+          0x1A, 0xA0, 0x1B, 0xA0, 0x1C, 0xA0, 0x27};
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_get_cfg_dbg_info), cmd_get_cfg_dbg_info);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("Failed to retrieve NFCC debug info");
+    }
   }
 
   mEEPROM_info.buffer = &enable_ven_cfg;
