@@ -1112,7 +1112,8 @@ int phNxpNciHal_write_internal(uint16_t data_len, const uint8_t* p_data) {
                                         nxpncihal_ctrl.p_cmd_data, ORIG_LIBNFC);
   CONCURRENCY_UNLOCK();
 
-  if (nfcFL.chipType != sn100u && icode_send_eof == 1) {
+  if (nfcFL.chipType != sn100u && nfcFL.chipType != pn557 &&
+     icode_send_eof == 1) {
     usleep(10000);
     icode_send_eof = 2;
     status = phNxpNciHal_send_ext_cmd(3, cmd_icode_eof);
