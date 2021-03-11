@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2020 NXP
+ * Copyright (C) 2010-2021 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,8 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 #define FW_MOBILE_ROM_VERSION_PN551 0x10
 #define FW_MOBILE_ROM_VERSION_PN553 0x11
 #define FW_MOBILE_ROM_VERSION_PN557 0x12
+#define NCI_CMDRESP_MAX_BUFF_SIZE_SNXXX  (0x22AU)
+#define NCI_CMDRESP_MAX_BUFF_SIZE_PN557  (0x100U)
 
 #define FW_DBG_REASON_AVAILABLE     (0xA3)
 
@@ -88,6 +90,7 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 #define NXP_CORE_SET_CONFIG_CMD      0x02
 #define NXP_MAX_CONFIG_STRING_LEN 260
 #define NCI_HEADER_SIZE 3
+
 
 typedef struct nci_data {
   uint16_t len;

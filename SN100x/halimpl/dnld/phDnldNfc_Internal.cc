@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2020 NXP
+ * Copyright (C) 2010-2021 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -225,7 +225,7 @@ static void phDnldNfc_ProcessSeqState(void* pContext,
           pDlCtxt->tCurrState = phDnldNfc_StateRecv;
           phTmlNfc_Read(
               pDlCtxt->tCmdRspFrameInfo.aFrameBuff,
-              (uint16_t)PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE,
+              (uint16_t)pDlCtxt->nxp_i2c_fragment_len,
               (pphTmlNfc_TransactCompletionCb_t)&phDnldNfc_ProcessSeqState,
               (void *)pDlCtxt);
           wStatus = phTmlNfc_Write(
@@ -404,7 +404,7 @@ static void phDnldNfc_ProcessRWSeqState(void* pContext,
           /* Call TML_Read function and register the call back function */
           wStatus = phTmlNfc_Read(
               pDlCtxt->tCmdRspFrameInfo.aFrameBuff,
-              (uint16_t)PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE,
+              (uint16_t)pDlCtxt->nxp_i2c_fragment_len,
               (pphTmlNfc_TransactCompletionCb_t)&phDnldNfc_ProcessRWSeqState,
               (void*)pDlCtxt);
 
@@ -559,13 +559,15 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
           wFrameLen = (uint16_t)(pDlContext->tRspBuffInfo.wLen) + PHDNLDNFC_MIN_PLD_LEN;
 
           (pDlContext->tRWInfo.wRWPldSize) =
-              (PHDNLDNFC_CMDRESP_MAX_PLD_SIZE - PHDNLDNFC_MIN_PLD_LEN);
+              (((pDlContext->nxp_i2c_fragment_len) -
+                (PHDNLDNFC_FRAME_HDR_LEN + PHDNLDNFC_FRAME_CRC_LEN)) - PHDNLDNFC_MIN_PLD_LEN);
           (pDlContext->tRWInfo.wRemBytes) = (pDlContext->tRspBuffInfo.wLen);
           (pDlContext->tRWInfo.dwAddr) = (pDlContext->FrameInp.dwAddr);
           (pDlContext->tRWInfo.wOffset) = 0;
           (pDlContext->tRWInfo.wBytesRead) = 0;
 
-          if (PHDNLDNFC_CMDRESP_MAX_PLD_SIZE < wFrameLen) {
+          if (((pDlContext->nxp_i2c_fragment_len) -
+                (PHDNLDNFC_FRAME_HDR_LEN + PHDNLDNFC_FRAME_CRC_LEN)) < wFrameLen) {
             (pDlContext->tRWInfo.bFramesSegmented) = true;
           }
         }
@@ -586,8 +588,8 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
     if (NFCSTATUS_SUCCESS == wStatus) {
       wFrameLen = 0;
       wFrameLen = (pDlContext->tCmdRspFrameInfo.dwSendlength);
-      if (wFrameLen > PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE) {
-        NXPLOG_FWDNLD_D("wFrameLen exceeds the limit");
+      if (wFrameLen > pDlContext->nxp_i2c_fragment_len) {
+        NXPLOG_FWDNLD_E("wFrameLen (%x) exceeds the limit %x",wFrameLen,pDlContext->nxp_i2c_fragment_len);
         return NFCSTATUS_FAILED;
       }
 
@@ -626,7 +628,7 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
           }
         }
         /*Check whether enough space is left for 2 bytes of CRC append*/
-        if (wFrameLen > (PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE - 2)) {
+        if (wFrameLen > (pDlContext->nxp_i2c_fragment_len - 2)) {
           NXPLOG_FWDNLD_D("wFrameLen exceeds the limit");
           return NFCSTATUS_FAILED;
         }
@@ -676,10 +678,11 @@ static NFCSTATUS phDnldNfc_CreateFramePld(pphDnldNfc_DlContext_t pDlContext) {
     wStatus = PHNFCSTVAL(CID_NFC_DNLD, NFCSTATUS_INVALID_PARAMETER);
   } else {
     memset((pDlContext->tCmdRspFrameInfo.aFrameBuff), 0,
-           PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE);
+           pDlContext->nxp_i2c_fragment_len);
     (pDlContext->tCmdRspFrameInfo.dwSendlength) = 0;
 
     if (phDnldNfc_FTNone == (pDlContext->FrameInp.Type)) {
+
       (pDlContext->tCmdRspFrameInfo.dwSendlength) += PHDNLDNFC_MIN_PLD_LEN;
     } else if (phDnldNfc_ChkIntg == (pDlContext->FrameInp.Type)) {
       (pDlContext->tCmdRspFrameInfo.dwSendlength) += PHDNLDNFC_MIN_PLD_LEN;
@@ -712,17 +715,20 @@ static NFCSTATUS phDnldNfc_CreateFramePld(pphDnldNfc_DlContext_t pDlContext) {
         (pDlContext->tRWInfo.wRWPldSize) = wFrameLen;
       }
 
-      if ((pDlContext->tRWInfo.wRWPldSize) > PHDNLDNFC_CMDRESP_MAX_PLD_SIZE) {
+      if ((pDlContext->tRWInfo.wRWPldSize) > ((pDlContext->nxp_i2c_fragment_len) -
+                (PHDNLDNFC_FRAME_HDR_LEN + PHDNLDNFC_FRAME_CRC_LEN))) {
         if ((pDlContext->tRWInfo.bFirstChunkResp) == false) {
           (pDlContext->tRWInfo.wRemChunkBytes) = wFrameLen;
           (pDlContext->tRWInfo.wOffset) += PHDNLDNFC_FRAME_HDR_LEN;
           wBuffIdx = (pDlContext->tRWInfo.wOffset);
         }
 
-        if (PHDNLDNFC_CMDRESP_MAX_PLD_SIZE <
+        if (((pDlContext->nxp_i2c_fragment_len) -
+                (PHDNLDNFC_FRAME_HDR_LEN + PHDNLDNFC_FRAME_CRC_LEN)) <
             (pDlContext->tRWInfo.wRemChunkBytes)) {
           (pDlContext->tRWInfo.wBytesToSendRecv) =
-              PHDNLDNFC_CMDRESP_MAX_PLD_SIZE;
+              ((pDlContext->nxp_i2c_fragment_len) -
+                (PHDNLDNFC_FRAME_HDR_LEN + PHDNLDNFC_FRAME_CRC_LEN));
           (pDlContext->tRWInfo.bFramesSegmented) = true;
         } else {
           (pDlContext->tRWInfo.wBytesToSendRecv) =
@@ -779,7 +785,6 @@ static NFCSTATUS phDnldNfc_CreateFramePld(pphDnldNfc_DlContext_t pDlContext) {
               (uint16_t)(pDlContext->tUserData.wLen);
     } else if (phDnldNfc_FTForce == (pDlContext->FrameInp.Type)) {
       (pDlContext->tCmdRspFrameInfo.dwSendlength) += PHDNLDNFC_MIN_PLD_LEN;
-
       wBuffIdx = PHDNLDNFC_PLD_OFFSET;
 
       memcpy(&(pDlContext->tCmdRspFrameInfo.aFrameBuff[wBuffIdx]),

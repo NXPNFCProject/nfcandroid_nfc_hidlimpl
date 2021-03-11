@@ -499,6 +499,13 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset) {
     phTmlNfc_EnableFwDnldMode(true);
     /* Set the obtained device handle to download module */
     phDnldNfc_SetHwDevHandle();
+
+    if(nfcFL.chipType >= sn100u) {
+      phDnldNfc_SetI2CFragmentLength(NCI_CMDRESP_MAX_BUFF_SIZE_SNXXX);
+    }else {
+      phDnldNfc_SetI2CFragmentLength(NCI_CMDRESP_MAX_BUFF_SIZE_PN557);
+    }
+
     NXPLOG_NCIHAL_D("Calling Seq handler for FW Download \n");
     status = phNxpNciHal_fw_download_seq(nxpprofile_ctrl.bClkSrcVal,
                                          nxpprofile_ctrl.bClkFreqVal,
@@ -690,6 +697,7 @@ int phNxpNciHal_MinOpen (){
   const uint16_t max_len = 260;
   NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
   NFCSTATUS status = NFCSTATUS_SUCCESS;
+  uint8_t chipType = 0;
   NXPLOG_NCIHAL_D("phNxpNci_MinOpen(): enter");
 
   AutoThreadMutex a(sHalFnLock);
@@ -763,6 +771,20 @@ int phNxpNciHal_MinOpen (){
   }
   memset(mGetCfg_info, 0x00, sizeof(phNxpNci_getCfg_info_t));
 
+  /* Get Chip type from config */
+  if(GetNxpNumValue(NAME_NXP_NFC_CHIP_TYPE, &chipType, sizeof(chipType))) {
+    nfcFL.chipType = (tNFC_chipType) chipType;
+    NXPLOG_NCIHAL_D("from NXP_NFC_CHIP_TYPE nfcFL.chipType = %x", nfcFL.chipType);
+  }
+
+  /* fragment length Default value set as 554
+    once chip type detection is completed, fragment len will be updated.*/
+  if (nfcFL.chipType == pn557){
+      tTmlConfig.fragment_len = NCI_CMDRESP_MAX_BUFF_SIZE_PN557;
+  } else {
+      tTmlConfig.fragment_len = NCI_CMDRESP_MAX_BUFF_SIZE_SNXXX;
+  }
+
   /* Initialize TML layer */
   wConfigStatus = phTmlNfc_Init(&tTmlConfig);
   if (wConfigStatus != NFCSTATUS_SUCCESS) {
@@ -799,6 +821,7 @@ int phNxpNciHal_MinOpen (){
     return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
   }
   /* Timed wait for IRQ to be Low before issuing write */
+  if(nfcFL.chipType >= sn100u)
   phTmlNfc_WaitForIRQLow();
 
   uint8_t seq_handler_offset = 0x00;
@@ -838,6 +861,9 @@ int phNxpNciHal_MinOpen (){
     NXPLOG_NCIHAL_E("FW Recovery is required");
     fw_update_req = true;
   }
+
+  /* update fragment len based on the chip type.*/
+  phTmlNfc_IoCtl(phTmlNfc_e_setFragmentSize);
 
   do {
     if (fw_update_req) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2020 NXP
+ * Copyright (C) 2010-2021 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@
 #define FW_DNLD_HEADER_LEN 2
 #define FW_DNLD_LEN_OFFSET 1
 #define NORMAL_MODE_LEN_OFFSET 2
-#define FRAGMENTSIZE_MAX PHNFC_I2C_FRAGMENT_SIZE
+
 static bool_t bFwDnldFlag = false;
 extern phTmlNfc_i2cfragmentation_t fragmentation_enabled;
 bool_t notifyFwrequest;
@@ -304,7 +304,7 @@ int phTmlNfc_i2c_write(void* pDevHandle, uint8_t* pBuffer,
     return -1;
   }
   if (fragmentation_enabled == I2C_FRAGMENATATION_DISABLED &&
-      nNbBytesToWrite > FRAGMENTSIZE_MAX) {
+      nNbBytesToWrite > gpphTmlNfc_Context->fragment_len) {
     NXPLOG_TML_D(
         "i2c_write() data larger than maximum I2C  size,enable I2C "
         "fragmentation");
@@ -312,9 +312,9 @@ int phTmlNfc_i2c_write(void* pDevHandle, uint8_t* pBuffer,
   }
   while (numWrote < nNbBytesToWrite) {
     if (fragmentation_enabled == I2C_FRAGMENTATION_ENABLED &&
-        nNbBytesToWrite > FRAGMENTSIZE_MAX) {
-      if (nNbBytesToWrite - numWrote > FRAGMENTSIZE_MAX) {
-        numBytes = numWrote + FRAGMENTSIZE_MAX;
+        nNbBytesToWrite > gpphTmlNfc_Context->fragment_len) {
+      if (nNbBytesToWrite - numWrote > gpphTmlNfc_Context->fragment_len) {
+        numBytes = numWrote + gpphTmlNfc_Context->fragment_len;
       } else {
         numBytes = nNbBytesToWrite;
       }

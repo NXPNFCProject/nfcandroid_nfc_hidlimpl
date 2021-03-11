@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2020 NXP
+ * Copyright 2010-2021 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -119,7 +119,7 @@ NFCSTATUS phTmlNfc_Init(pphTmlNfc_Config_t pConfig) {
         gpphTmlNfc_Context->tWriteInfo.bEnable = 0;
         gpphTmlNfc_Context->tReadInfo.bThreadBusy = false;
         gpphTmlNfc_Context->tWriteInfo.bThreadBusy = false;
-
+        gpphTmlNfc_Context->fragment_len = pConfig->fragment_len;
         if (0 != sem_init(&gpphTmlNfc_Context->rxSemaphore, 0, 0)) {
           wInitStatus = NFCSTATUS_FAILED;
         } else if (0 != phTmlNfc_WaitReadInit()) {
@@ -967,6 +967,16 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
       }
       case phTmlNfc_e_SetFwDownloadHdrSize: {
         wStatus = phTmlNfc_i2c_reset(gpphTmlNfc_Context->pDevHandle, MODE_FW_DWND_HDR);
+        break;
+      }
+      case phTmlNfc_e_setFragmentSize: {
+        if(nfcFL.chipType >= sn100u){
+          gpphTmlNfc_Context->fragment_len = PH_TMLNFC_FRGMENT_SIZE_SNXXX;
+          NXPLOG_TML_D("phTmlNfc_e_setFragmentSize 0x22A");
+        } else {
+          gpphTmlNfc_Context->fragment_len = PH_TMLNFC_FRGMENT_SIZE_PN557;
+          NXPLOG_TML_D("phTmlNfc_e_setFragmentSize 0x100");
+        }
         break;
       }
       default: {
