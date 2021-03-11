@@ -187,6 +187,7 @@ extern char Fw_Lib_Path[256];
 #define NAME_NXP_PRESENCE_CHECK_TIMEOUT "NXP_PRESENCE_CHECK_TIMEOUT"
 #define NAME_NXP_NFC_CHIP_TYPE "NXP_NFC_CHIP_TYPE"
 #define NAME_NXP_PROP_CE_ACTION_NTF   "NXP_PROP_CE_ACTION_NTF"
+#define NAME_NXP_AGC_DEBUG_ENABLE     "NXP_AGC_DEBUG_ENABLE"
 #endif
 /* default configuration */
 #define default_storage_location "/data/vendor/nfc"
