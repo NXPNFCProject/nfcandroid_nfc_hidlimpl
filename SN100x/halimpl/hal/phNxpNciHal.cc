@@ -724,8 +724,10 @@ int phNxpNciHal_MinOpen (){
     once chip type detection is completed, fragment len will be updated.*/
   if (nfcFL.chipType == pn557){
       tTmlConfig.fragment_len = NCI_CMDRESP_MAX_BUFF_SIZE_PN557;
+        setNxpFwConfigPath("/system/vendor/lib64/libpn557_fw.so");
   } else {
       tTmlConfig.fragment_len = NCI_CMDRESP_MAX_BUFF_SIZE_SNXXX;
+        setNxpFwConfigPath("/system/vendor/lib64/libsn100u_fw.so");
   }
 
   /* Initialize TML layer */
