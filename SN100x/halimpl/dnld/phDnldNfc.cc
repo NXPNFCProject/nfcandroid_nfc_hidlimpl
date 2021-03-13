@@ -843,6 +843,11 @@ NFCSTATUS phDnldNfc_LoadRecInfo(void) {
   /* if memory is not allocated then allocate memory for donwload context
    * structure */
   phDnldNfc_SetHwDevHandle();
+
+  /* gpphDnldContext reset by phDnldNfc_SetHwDevHandle()
+  **  so reassign the Fragment Length 554 (0x22A) for chip sn1xx*/
+  phDnldNfc_SetI2CFragmentLength(PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SNXXX);
+
 #ifdef NXP_DUMMY_FW_DNLD
   if (gRecFWDwnld == true)
       wStatus = phDnldNfc_LoadRecoveryFW(PLATFORM_LIB_PATH, &pImageInfo, &ImageInfoLen);
@@ -864,10 +869,6 @@ NFCSTATUS phDnldNfc_LoadRecInfo(void) {
     /* fetch the PLL recovery image pointer and the image length */
     gpphDnldContext->nxp_nfc_fwp = (uint8_t*)pImageInfo;
     gpphDnldContext->nxp_nfc_fwp_len = ImageInfoLen;
-
-    /* gpphDnldContext reset by phDnldNfc_SetHwDevHandle()
-    so reassign the Fragment Length 554 (0x22A) for chip sn1xx*/
-    phDnldNfc_SetI2CFragmentLength(PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SNXXX);
 
     if ((NULL != gpphDnldContext->nxp_nfc_fwp) &&
         (0 != gpphDnldContext->nxp_nfc_fwp_len)) {
@@ -905,6 +906,10 @@ NFCSTATUS phDnldNfc_LoadPKInfo(void) {
    * structure */
   phDnldNfc_SetHwDevHandle();
 
+  /* gpphDnldContext reset by phDnldNfc_SetHwDevHandle()
+    so reassign the Fragment Length 554 (0x22A) for chip sn1xx*/
+  phDnldNfc_SetI2CFragmentLength(PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SNXXX);
+
 /* load the PKU image library */
 #ifdef NXP_DUMMY_FW_DNLD
   if (gRecFWDwnld == true)
@@ -927,10 +932,6 @@ NFCSTATUS phDnldNfc_LoadPKInfo(void) {
     /* fetch the PKU image pointer and the image length */
     gpphDnldContext->nxp_nfc_fwp = (uint8_t*)pImageInfo;
     gpphDnldContext->nxp_nfc_fwp_len = ImageInfoLen;
-
-    /* gpphDnldContext reset by phDnldNfc_SetHwDevHandle()
-    so reassign the Fragment Length 554 (0x22A) for chip sn1xx*/
-    phDnldNfc_SetI2CFragmentLength(PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SNXXX);
 
     if ((NULL != gpphDnldContext->nxp_nfc_fwp) &&
         (0 != gpphDnldContext->nxp_nfc_fwp_len)) {
