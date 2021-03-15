@@ -3453,29 +3453,31 @@ NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd) {
   }
   phTmlNfc_EnableFwDnldMode(true);
   nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
-get_chip_info_retry:
-  status =
-      phNxpNciHal_send_ext_cmd(sizeof(get_chip_info_cmd), get_chip_info_cmd);
-  if(status == NFCSTATUS_SUCCESS) {
-    /* Check FW getResponse command response status byte */
-    if(nxpncihal_ctrl.p_rx_data[0] == 0x00) {
-      if (nxpncihal_ctrl.p_rx_data[2] != 0x00) {
-        status = NFCSTATUS_FAILED;
-        if (retry_cnt < MAX_RETRY_COUNT) {
-          /*reset NFCC state to avoid any failures
-           *such as DL_PROTOCOL_ERROR
-           */
-          status = phNxpNciHal_dlResetInFwDnldMode();
-          if (status != NFCSTATUS_SUCCESS) {
-            NXPLOG_NCIHAL_E("DL Reset failed in FW DN mode");
+  do {
+    status =
+        phNxpNciHal_send_ext_cmd(sizeof(get_chip_info_cmd), get_chip_info_cmd);
+    if (status == NFCSTATUS_SUCCESS) {
+      /* Check FW getResponse command response status byte */
+      if (nxpncihal_ctrl.p_rx_data[0] == 0x00) {
+        if (nxpncihal_ctrl.p_rx_data[2] != 0x00) {
+          status = NFCSTATUS_FAILED;
+          if (retry_cnt < MAX_RETRY_COUNT) {
+            retry_cnt++;
+            /*reset NFCC state to avoid any failures
+             *such as DL_PROTOCOL_ERROR
+             */
+            status = phNxpNciHal_dlResetInFwDnldMode();
+            if (status != NFCSTATUS_SUCCESS) {
+              NXPLOG_NCIHAL_E("DL Reset failed in FW DN mode");
+            }
           }
-          goto get_chip_info_retry;
         }
+      } else {
+        status = NFCSTATUS_FAILED;
+        break;
       }
-    } else {
-      status = NFCSTATUS_FAILED;
     }
-  }
+  } while ((status != NFCSTATUS_SUCCESS) && (retry_cnt < MAX_RETRY_COUNT));
 
   nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
   phTmlNfc_EnableFwDnldMode(false);
