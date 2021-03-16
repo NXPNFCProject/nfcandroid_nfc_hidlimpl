@@ -653,7 +653,6 @@ static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
 
   /*Response check for Set config, Core Reset & Core init command sent part of HAL_EXT*/
   if (nxpncihal_ctrl.p_rx_data[0] == 0x40 &&
-      nxpncihal_ctrl.p_rx_data[1] >= 0x00 &&
       nxpncihal_ctrl.p_rx_data[1] <= 0x02 &&
       nxpncihal_ctrl.p_rx_data[2] != 0x00) {
 
