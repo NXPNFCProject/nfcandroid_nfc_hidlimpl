@@ -3456,7 +3456,10 @@ NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd) {
   do {
     status =
         phNxpNciHal_send_ext_cmd(sizeof(get_chip_info_cmd), get_chip_info_cmd);
-    if (status == NFCSTATUS_SUCCESS) {
+    if (status != NFCSTATUS_SUCCESS) {
+      /* break the loop if HAL write failed or response Timeout */
+      break;
+    } else {
       /* Check FW getResponse command response status byte */
       if (nxpncihal_ctrl.p_rx_data[0] == 0x00) {
         if (nxpncihal_ctrl.p_rx_data[2] != 0x00) {
