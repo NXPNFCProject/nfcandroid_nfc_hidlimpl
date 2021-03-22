@@ -603,7 +603,12 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
 
       /* Validate version details to confirm if continue with the next sequence
        * of Operations. */
-      memcpy(bCurrVer, &(pRespBuff->pBuff[bExpectedLen - 2]), sizeof(bCurrVer));
+      if (nfcFL.chipType >= sn100u) {
+        memcpy(bCurrVer, &(pRespBuff->pBuff[3]), sizeof(bCurrVer));
+      } else {
+        memcpy(bCurrVer, &(pRespBuff->pBuff[bExpectedLen - 2]),
+               sizeof(bCurrVer));
+      }
       wFwVern = wFwVer;
       wMwVern = wMwVer;
 
@@ -628,7 +633,7 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
       else if ((FALSE == (gphNxpNciHal_fw_IoctlCtx.bDnldInitiated)) &&
                ((bNewVer[0] == bCurrVer[0]) && (bNewVer[1] == bCurrVer[1]))) {
         wStatus = NFCSTATUS_SUCCESS;
-#if (PH_LIBNFC_ENABLE_FORCE_DOWNLOAD == 0)
+#if (NXP_FORCE_FW_DOWNLOAD == 0)
         NXPLOG_FWDNLD_D("Version Already UpToDate!!\n");
         (gphNxpNciHal_fw_IoctlCtx.bSkipSeq) = TRUE;
 #else
@@ -1044,10 +1049,10 @@ static NFCSTATUS phNxpNciHal_fw_dnld_write(void* pContext, NFCSTATUS status,
           (false == (gphNxpNciHal_fw_IoctlCtx.bForceDnld)))
   {
     NXPLOG_FWDNLD_D("phNxpNciHal_fw_dnld_write - Incrementing NumDnldTrig..");
-    (gphNxpNciHal_fw_IoctlCtx.bDnldInitiated) = true;
     (gphNxpNciHal_fw_IoctlCtx.bDnldAttempts)++;
     (gphNxpNciHal_fw_IoctlCtx.tLogParams.wNumDnldTrig) += 1;
   }
+  gphNxpNciHal_fw_IoctlCtx.bDnldInitiated = true;
   wStatus = phDnldNfc_Write(false, NULL,
                             (pphDnldNfc_RspCb_t)&phNxpNciHal_fw_dnld_write_cb,
                             (void*)&cb_data);
