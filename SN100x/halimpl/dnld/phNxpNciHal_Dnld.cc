@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020 NXP
+ * Copyright (C) 2012-2021 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -591,7 +591,13 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
 
       /* Validate version details to confirm if continue with the next sequence
        * of Operations. */
-      memcpy(bCurrVer, &(pRespBuff->pBuff[bExpectedLen - 2]), sizeof(bCurrVer));
+      if (nfcFL.chipType == sn100u) {
+        memcpy(bCurrVer, &(pRespBuff->pBuff[bExpectedLen - 4]),
+               sizeof(bCurrVer));
+      } else {
+        memcpy(bCurrVer, &(pRespBuff->pBuff[bExpectedLen - 2]),
+               sizeof(bCurrVer));
+      }
       wFwVern = wFwVer;
       wMwVern = wMwVer;
 
