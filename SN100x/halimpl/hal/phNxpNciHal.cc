@@ -2331,40 +2331,23 @@ int phNxpNciHal_close(bool bShutdown) {
   }
 #endif
   close_and_return:
-  unsigned long num = 0;
-  /* Sending Core Standby command during phone off added to handle HW limitation
-     in SN220 A0. This Work Around can be removed after SN220 B0 */
-  bool bIsAutonomousModeEnableReqdInPhoneOff = false;
-  int isfound = GetNxpNumValue(NAME_NXP_CORE_PWR_OFF_AUTONOMOUS_ENABLE, &num, sizeof(num));
-  if (isfound)
-    bIsAutonomousModeEnableReqdInPhoneOff = (num == 0x01);
   nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
-  if (bShutdown && bIsAutonomousModeEnableReqdInPhoneOff && (nfcFL.chipType = sn220u)) {
-    NXPLOG_NCIHAL_D("Power shutdown with autonomous mode enable");
-    uint8_t coreStandBy[] = {0x2F, 0x00, 0x01, 0x02};
-    status = phNxpNciHal_send_ext_cmd(sizeof(coreStandBy), coreStandBy);
+  do { /*This is NXP_EXTNS code for retry*/
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
 
-    if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("NXP Standby Proprietary Ext failed");
-    }
-  } else {
-    do { /*This is NXP_EXTNS code for retry*/
-      status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
-
-      if (status == NFCSTATUS_SUCCESS) {
-        break;
-      } else {
-        NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed, perform retry after delay");
-        usleep(1000 * 1000);
-        retry++;
-        if (retry > 3) {
-          NXPLOG_NCIHAL_E(
-              "Maximum retries performed, shall restart HAL to recover");
-          abort();
-        }
+    if (status == NFCSTATUS_SUCCESS) {
+      break;
+    } else {
+      NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed, perform retry after delay");
+      usleep(1000 * 1000);
+      retry++;
+      if (retry > 3) {
+        NXPLOG_NCIHAL_E(
+            "Maximum retries performed, shall restart HAL to recover");
+        abort();
       }
-    } while (retry < 3);
-  }
+    }
+  } while (retry < 3);
 
   sem_destroy(&nxpncihal_ctrl.syncSpiNfc);
 
