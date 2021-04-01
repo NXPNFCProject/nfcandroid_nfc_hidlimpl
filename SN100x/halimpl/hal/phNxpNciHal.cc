@@ -464,6 +464,11 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset, bool bIsNfccDlStat
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("%s: NXP Set FW DW Flag failed", __FUNCTION__);
     }
+    uint8_t ven_cfg_low_cmd[] = {0x20, 0x02, 0x05, 0x01, 0xA0, 0x07, 0x01, 0x00};
+    status = phNxpNciHal_send_ext_cmd(sizeof(ven_cfg_low_cmd), ven_cfg_low_cmd);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("Failed to set VEN_CFG to low \n");
+    }
     /*Getting UICC1 CL params */
     uicc1HciParams.resize(0xFF);
     status = phNxpNciHal_get_uicc_hci_params(
