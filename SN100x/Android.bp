@@ -24,7 +24,8 @@ cc_library_shared {
         "-DNXP_EXTNS=TRUE",
         "-DNXP_HW_SELF_TEST=TRUE",
         "-DNXP_SRD=TRUE",
-        "-DPH_LIBNFC_ENABLE_FORCE_DOWNLOAD=1"
+        "-DPH_LIBNFC_ENABLE_FORCE_DOWNLOAD=1",
+        "-DNXP_QTAG=TRUE"
     ],
 
     srcs: [
