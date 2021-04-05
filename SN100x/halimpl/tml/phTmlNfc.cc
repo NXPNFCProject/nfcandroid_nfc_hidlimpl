@@ -41,8 +41,6 @@ static uint8_t bCurrentRetryCount = (2000 / PHTMLNFC_MAXTIME_RETRANSMIT) + 1;
 /* Indicates a Initial or offset value */
 #define PH_TMLNFC_VALUE_ONE (0x01)
 
-#define PH_TMLNFC_WAIT_FOR_IRQ_LOW_MAX_RETRY_CNT (5)
-
 spTransport gpTransportObj;
 
 /* Initialize Context structure pointer used to access context structure */
@@ -1214,44 +1212,4 @@ NFCSTATUS phTmlNfc_Shutdown_CleanUp() {
   NFCSTATUS wShutdownStatus = phTmlNfc_Shutdown();
   phTmlNfc_CleanUp();
   return wShutdownStatus;
-}
-
-/*******************************************************************************
-**
-** Function         phTmlNfc_WaitForIRQLow()
-**
-** Description      Function to be called after keeping first read pending and
-**                  before issuing first write, to wait if IRQ line is high.
-**                  SUCCESS if wait for IRQ line to be low is performed.
-**                  FAILED if timeout happended and still IRQ_GPIO is high
-**                  or ioctl failure case.
-**
-** Parameters       None
-**
-** Returns          void
-**
-*******************************************************************************/
-void phTmlNfc_WaitForIRQLow() {
-  int irq_state = -1;
-  int retry_cnt = 0;
-
-  if (NULL != gpphTmlNfc_Context) {
-    do {
-      irq_state = gpTransportObj->GetIrqState(gpphTmlNfc_Context->pDevHandle);
-      if (!irq_state) {
-        NXPLOG_NCIHAL_D("%s: No pending data", __func__);
-        break;
-      } else {
-        if (irq_state > 0) {
-          NXPLOG_NCIHAL_D("%s: waiting for IRQ to be Low", __func__);
-          usleep(1000 * 3); /* 3ms delay to Read data on I2C bus */
-        } else {
-          NXPLOG_NCIHAL_E("%s: IOCTL error returned %d", __func__, irq_state);
-        }
-        retry_cnt++;
-      }
-      /* PH_TMLNFC_WAIT_FOR_IRQ_LOW_MAX_RETRY_CNT=5 -->  5*3=15ms timeout */
-    } while (retry_cnt < PH_TMLNFC_WAIT_FOR_IRQ_LOW_MAX_RETRY_CNT);
-  }
-  return;
 }

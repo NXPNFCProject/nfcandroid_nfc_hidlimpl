@@ -238,5 +238,4 @@ phTmlNfc_i2cfragmentation_t phTmlNfc_get_fragmentation_enabled();
 NFCSTATUS phTmlNfc_ConfigTransport();
 void phTmlNfc_EnableFwDnldMode(bool mode);
 bool phTmlNfc_IsFwDnldModeEnabled(void);
-void phTmlNfc_WaitForIRQLow();
 #endif /*  PHTMLNFC_H  */
