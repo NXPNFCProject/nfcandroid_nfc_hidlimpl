@@ -463,26 +463,3 @@ int NfccI2cTransport::SemTimedWait() {
   }
   return status;
 }
-
-/*******************************************************************************
-**
-** Function         GetIrqState
-**
-** Description      Get state of IRQ GPIO
-**
-** Parameters       pDevHandle - valid device handle
-**
-** Returns          The state of IRQ line i.e. +ve if read is pending else Zer0.
-**                  In the case of IOCTL error, it returns -ve value.
-**
-*******************************************************************************/
-int NfccI2cTransport::GetIrqState(void *pDevHandle) {
-  int ret = -1;
-
-  NXPLOG_TML_D("%s Enter",__func__);
-  if (NULL != pDevHandle) {
-    ret = ioctl((intptr_t)pDevHandle, NFC_GET_IRQ_STATE);
-  }
-  NXPLOG_TML_D("%s exit: state = %d", __func__, ret);
-  return ret;
-}
