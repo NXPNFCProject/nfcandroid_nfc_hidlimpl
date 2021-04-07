@@ -2249,7 +2249,7 @@ int phNxpNciHal_close(bool bShutdown) {
   }
 
 #if(NXP_EXTNS == TRUE)
-  if(nfcFL.chipType != sn100u){
+  if((!bShutdown) && nfcFL.chipType != sn100u){
 #endif
   if((uiccListenMask & 0x1) == 0x01 || (eseListenMask & 0x1) == 0x01) {
     NXPLOG_NCIHAL_D("phNxpNciHal_close (): Adding A passive listen");
@@ -2385,8 +2385,6 @@ void phNxpNciHal_close_complete(NFCSTATUS status) {
  ******************************************************************************/
 int phNxpNciHal_configDiscShutdown(void) {
   NFCSTATUS status;
-  /*NCI_RESET_CMD*/
-  uint8_t cmd_reset_nci[] = {0x20, 0x00, 0x01, 0x00};
 
   uint8_t cmd_disable_disc[] = {0x21, 0x06, 0x01, 0x00};
 
@@ -2430,16 +2428,7 @@ int phNxpNciHal_configDiscShutdown(void) {
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("CMD_CE_DISC_NCI: Failed");
   }
-#if(NXP_EXTNS == TRUE)
-  if(nfcFL.chipType != sn100u){
-#endif
-    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
-    if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed");
-    }
-#if(NXP_EXTNS == TRUE)
-  }
-#endif
+
   CONCURRENCY_UNLOCK();
 
   status = phNxpNciHal_close(true);
