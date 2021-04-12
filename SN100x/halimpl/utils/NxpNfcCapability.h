@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright (C) 2015-2018 NXP Semiconductors
+ *  Copyright (C) 2015-2018,2021 NXP Semiconductors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -26,6 +26,9 @@ private:
     static capability* instance;
     const uint16_t offsetHwVersion = 24;
     const uint16_t offsetInitFwVersion = 25;
+    const uint16_t offsetFwRomCodeVersion = 4;
+    const uint16_t offsetFwMajorVersion = 7;
+    const uint16_t offsetFwMajorVersion_pn557 = 11;
     //const uint16_t offsetRstFwVersion = 9;
   /*product[] will be used to print product version and
   should be kept in accordance with tNFC_chipType*/

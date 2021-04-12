@@ -386,7 +386,7 @@ static NFCSTATUS phNxpNciHal_CheckIntegrityRecovery() {
 static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset) {
   NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
   NFCSTATUS status = NFCSTATUS_SUCCESS;
-  uint8_t chipType = 0;
+
   /*Get FW version from device*/
   for (int retry = 1; retry >= 0; retry--) {
     if (phDnldNfc_InitImgInfo() == NFCSTATUS_SUCCESS) { break;
@@ -400,14 +400,10 @@ static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset) {
   NXPLOG_NCIHAL_D("FW version for FW file = 0x%x", wFwVer);
   NXPLOG_NCIHAL_D("FW version from device = 0x%x", wFwVerRsp);
   if (wFwVerRsp == 0) {
-    if(GetNxpNumValue(NAME_NXP_NFC_CHIP_TYPE, &chipType, sizeof(chipType))) {
-       nfcFL.chipType = (tNFC_chipType) chipType;
+    if(nfcFL.chipType == pn557) {
        nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_VEN_RESET;
        NXPLOG_NCIHAL_D("from NXP_NFC_CHIP_TYPE nfcFL.chipType = %x", nfcFL.chipType);
     } else {
-      nfcFL.chipType = sn100u;
-      tNFC_chipType chipType = sn100u;
-      CONFIGURE_FEATURELIST(chipType);
       nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_VEN_RESET;
       fw_maj_ver = SN1XX_FW_MAJOR_VERSION;
       rom_version = SN1XX_ROM_VERSION;
@@ -664,7 +660,6 @@ int phNxpNciHal_MinOpen (){
   const uint16_t max_len = 260;
   NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
   NFCSTATUS status = NFCSTATUS_SUCCESS;
-  uint8_t chipType = 0;
   int init_retry_cnt = 0;
   NXPLOG_NCIHAL_D("phNxpNci_MinOpen(): enter");
 
@@ -739,21 +734,9 @@ int phNxpNciHal_MinOpen (){
   }
   memset(mGetCfg_info, 0x00, sizeof(phNxpNci_getCfg_info_t));
 
-  /* Get Chip type from config */
-  if(GetNxpNumValue(NAME_NXP_NFC_CHIP_TYPE, &chipType, sizeof(chipType))) {
-    nfcFL.chipType = (tNFC_chipType) chipType;
-    NXPLOG_NCIHAL_D("from NXP_NFC_CHIP_TYPE nfcFL.chipType = %x", nfcFL.chipType);
-  }
-
-  /* fragment length Default value set as 554
-    once chip type detection is completed, fragment len will be updated.*/
-  if (nfcFL.chipType == pn557){
-      tTmlConfig.fragment_len = NCI_CMDRESP_MAX_BUFF_SIZE_PN557;
-        setNxpFwConfigPath("/system/vendor/lib64/libpn557_fw.so");
-  } else {
-      tTmlConfig.fragment_len = NCI_CMDRESP_MAX_BUFF_SIZE_SNXXX;
-        setNxpFwConfigPath("/system/vendor/lib64/libsn100u_fw.so");
-  }
+  /* Set Default Fragment Length */
+  tTmlConfig.fragment_len = NCI_CMDRESP_MAX_BUFF_SIZE_PN557;
+  NXPLOG_NCIHAL_D("%s, nfcFL.chipType %d",__func__,nfcFL.chipType);
 
   /* Initialize TML layer */
   wConfigStatus = phTmlNfc_Init(&tTmlConfig);
@@ -825,6 +808,9 @@ int phNxpNciHal_MinOpen (){
         phDnldNfc_ReSetHwDevHandle();
       }
     }
+  } else {
+     NXPLOG_NCIHAL_D("%s, core reset failed sending getversion",__func__);
+     phNxpNciHal_getChipInfoInFwDnldMode(TRUE);
   }
 
   if (gsIsFirstHalMinOpen && gsIsFwRecoveryRequired) {
@@ -1284,6 +1270,9 @@ static void phNxpNciHal_read_complete(void* pContext,
         nxpncihal_ctrl.rx_data_len = pInfo->wLength;
         status = phNxpNciHal_process_ext_rsp(nxpncihal_ctrl.p_rx_data,
                                           &nxpncihal_ctrl.rx_data_len);
+        if (nxpncihal_ctrl.hal_ext_enabled && TRUE == getDownloadFlag()) {
+          SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
+        }
     }
     phNxpNciHal_print_res_status(pInfo->pBuff,
                                     &pInfo->wLength);
@@ -3303,6 +3292,10 @@ retry_core_reset:
       NXPLOG_NCIHAL_E("NCI_CORE_RESET failed!!!\n");
       return status;
   }
+
+  phNxpNciHal_configFeatureList(nxpncihal_ctrl.p_rx_data,
+                                  nxpncihal_ctrl.rx_data_len);
+  setNxpFwConfigPath(nfcFL._FW_LIB_PATH.c_str());
 
   retry_cnt = 0;
   uint8_t cmd_init_nci[] = {0x20, 0x01, 0x00};

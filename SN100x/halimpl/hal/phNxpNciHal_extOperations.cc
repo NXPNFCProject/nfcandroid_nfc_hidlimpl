@@ -13,6 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <phTmlNfc.h>
+#include <phTmlNfc_i2c.h>
+#include <phNxpNciHal.h>
 
 #include "phNxpNciHal_extOperations.h"
 #include "phNfcCommon.h"
@@ -24,6 +27,8 @@
 #define NCI_SE_CMD_LEN  4
 
 nxp_nfc_config_ext_t config_ext;
+
+extern phNxpNciHal_Control_t nxpncihal_ctrl;
 /******************************************************************************
  * Function         phNxpNciHal_updateAutonomousPwrState
  *
@@ -363,6 +368,60 @@ NFCSTATUS phNxpNciHal_setSrdtimeout() {
   if (buffer != NULL) {
     free(buffer);
     buffer = NULL;
+  }
+
+  return status;
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_getChipInfoInFwDnldMode
+ *
+ * Description      Helper function to get the chip info in download mode
+ *
+ * Returns          Status
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd) {
+  uint8_t get_chip_info_cmd[] = {0x00, 0x04, 0xF1, 0x00,
+                                 0x00, 0x00, 0x6E, 0xEF};
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  int retry_cnt = 0;
+  if (bIsVenResetReqd) {
+    nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_VEN_RESET;
+    status = phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadMode);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("Enable Download mode failed");
+      return status;
+    }
+  }
+  phTmlNfc_EnableFwDnldMode(true);
+  nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
+
+  do {
+    status =
+        phNxpNciHal_send_ext_cmd(sizeof(get_chip_info_cmd), get_chip_info_cmd);
+    if(status == NFCSTATUS_SUCCESS) {
+      /* Check FW getResponse command response status byte */
+      if(nxpncihal_ctrl.p_rx_data[0] == 0x00) {
+        if (nxpncihal_ctrl.p_rx_data[2] != 0x00) {
+          status = NFCSTATUS_FAILED;
+          if (retry_cnt < MAX_RETRY_COUNT) {
+            retry_cnt++;
+          }
+        }
+      } else {
+        status = NFCSTATUS_FAILED;
+      }
+    }
+  } while(status != NFCSTATUS_SUCCESS && retry_cnt < MAX_RETRY_COUNT);
+
+  nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
+  phTmlNfc_EnableFwDnldMode(false);
+
+  if (status == NFCSTATUS_SUCCESS) {
+    phNxpNciHal_configFeatureList(nxpncihal_ctrl.p_rx_data,
+                                  nxpncihal_ctrl.rx_data_len);
+    setNxpFwConfigPath(nfcFL._FW_LIB_PATH.c_str());
   }
 
   return status;

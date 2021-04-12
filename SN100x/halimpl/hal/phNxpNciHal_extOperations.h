@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 NXP Semiconductors
+ * Copyright (C) 2019-2021 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ typedef struct {
   uint8_t guard_timer_value;
 } nxp_nfc_config_ext_t;
 extern nxp_nfc_config_ext_t config_ext;
-
 /******************************************************************************
  * Function         phNxpNciHal_updateAutonomousPwrState
  *
@@ -94,3 +93,13 @@ NFCSTATUS phNxpNciHal_configure_merge_sak();
  *
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_setSrdtimeout();
+
+/******************************************************************************
+ * Function         phNxpNciHal_getChipInfoInFwDnldMode
+ *
+ * Description      Helper function to get the chip info in download mode
+ *
+ * Returns          Status
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd);
