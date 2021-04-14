@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2020 NXP
+ * Copyright (C) 2010-2021 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -124,6 +124,7 @@ typedef enum phDnldNfc_FwFormat {
   FW_FORMAT_UNKNOWN = 0x00,
   FW_FORMAT_SO = 0x01,
   FW_FORMAT_BIN = 0x02,
+  FW_FORMAT_ARRAY = 0x03,
 } phDnldNfc_FwFormat_t;
 
 /*

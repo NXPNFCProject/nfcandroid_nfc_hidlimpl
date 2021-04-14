@@ -197,6 +197,12 @@ static NFCSTATUS (*phNxpNciHal_dwnld_seqhandler[])(void* pContext,
     phNxpNciHal_fw_dnld_chk_integrity,
     NULL};
 
+static NFCSTATUS (*phNxpNciHal_minimal_dwnld_seqhandler[])(void* pContext,
+                                                   NFCSTATUS status,
+                                                   void* pInfo) = {
+    phNxpNciHal_fw_dnld_write,
+    NULL};
+
 #ifdef NXP_DUMMY_FW_DNLD
 /* Array of pointers to start dummy fw download seq */
 static NFCSTATUS (*phNxpNciHal_dummy_rec_dwnld_seqhandler[])(void* pContext,
@@ -1757,7 +1763,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
 **
 *******************************************************************************/
 NFCSTATUS phNxpNciHal_fw_download_seq(uint8_t bClkSrcVal, uint8_t bClkFreqVal,
-                                      uint8_t seq_handler_offset) {
+                                      uint8_t seq_handler_offset, bool bMinimalFw) {
   NFCSTATUS status = NFCSTATUS_FAILED;
   phDnldNfc_Buff_t pInfo;
   const char* pContext = "FW-Download";
@@ -1778,7 +1784,7 @@ NFCSTATUS phNxpNciHal_fw_download_seq(uint8_t bClkSrcVal, uint8_t bClkFreqVal,
   (gphNxpNciHal_fw_IoctlCtx.bClkSrcVal) = bClkSrcVal;
   (gphNxpNciHal_fw_IoctlCtx.bClkFreqVal) = bClkFreqVal;
   /* Get firmware version */
-  if (NFCSTATUS_SUCCESS == phDnldNfc_InitImgInfo()) {
+  if (NFCSTATUS_SUCCESS == phDnldNfc_InitImgInfo(bMinimalFw)) {
     NXPLOG_FWDNLD_D("phDnldNfc_InitImgInfo:SUCCESS");
 #ifdef NXP_DUMMY_FW_DNLD
     if (gRecFWDwnld == true) {
@@ -1788,7 +1794,11 @@ NFCSTATUS phNxpNciHal_fw_download_seq(uint8_t bClkSrcVal, uint8_t bClkFreqVal,
       status = phNxpNciHal_fw_seq_handler(phNxpNciHal_dwnld_seqhandler);
     }
 #else
-    status = phNxpNciHal_fw_seq_handler(phNxpNciHal_dwnld_seqhandler + seq_handler_offset);
+    if (bMinimalFw) {
+      status = phNxpNciHal_fw_seq_handler(phNxpNciHal_minimal_dwnld_seqhandler);
+    } else {
+      status = phNxpNciHal_fw_seq_handler(phNxpNciHal_dwnld_seqhandler + seq_handler_offset);
+    }
 #endif
   } else {
     NXPLOG_FWDNLD_E("phDnldNfc_InitImgInfo: FAILED");

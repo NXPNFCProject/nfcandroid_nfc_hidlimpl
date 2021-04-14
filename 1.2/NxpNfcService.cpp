@@ -26,6 +26,10 @@
 #include "NxpNfc.h"
 #include "eSEClientExtns.h"
 
+#if(NXP_NFC_RECOVERY == TRUE)
+#include "phNxpNciHal_Recovery.h"
+#endif
+
 // Generated HIDL files
 using android::hardware::nfc::V1_2::INfc;
 using android::hardware::nfc::V1_2::implementation::Nfc;
@@ -52,6 +56,9 @@ int main() {
       }
 
       configureRpcThreadpool(1, true /*callerWillJoin*/);
+#if(NXP_NFC_RECOVERY == TRUE)
+      phNxpNciHal_RecoverFWTearDown();
+#endif
       initializeEseClient();
       checkEseClientUpdate();
       status = nfc_service->registerAsService();

@@ -42,7 +42,8 @@ cc_library_shared {
         "-Wextra",
         "-DNXP_EXTNS=TRUE",
         "-DNXP_HW_SELF_TEST=TRUE",
-        "-DNXP_SRD=TRUE"
+        "-DNXP_SRD=TRUE",
+        "-DNXP_NFC_RECOVERY=TRUE"
     ],
 
     srcs: [
@@ -71,6 +72,7 @@ cc_library_shared {
         "halimpl/hal/phNxpNciHal_IoctlOperations.cc",
         "halimpl/hal/phNxpNciHal_extOperations.cc",
         "halimpl/mifare/NxpMfcReader.cc",
+        "halimpl/recovery/phNxpNciHal_Recovery.cc",
     ],
 
     local_include_dirs: [
@@ -86,6 +88,7 @@ cc_library_shared {
         "halimpl/eseclients_extns/inc",
         "halimpl/src/include",
         "halimpl/mifare",
+        "halimpl/recovery",
     ],
 
     include_dirs: [

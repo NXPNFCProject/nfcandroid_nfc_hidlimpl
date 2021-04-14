@@ -139,7 +139,7 @@ extern NFCSTATUS phDnldNfc_ReadMem(void* pHwRef, pphDnldNfc_RspCb_t pNotify,
 extern NFCSTATUS phDnldNfc_RawReq(pphDnldNfc_Buff_t pFrameData,
                                   pphDnldNfc_Buff_t pRspData,
                                   pphDnldNfc_RspCb_t pNotify, void* pContext);
-extern NFCSTATUS phDnldNfc_InitImgInfo(void);
+extern NFCSTATUS phDnldNfc_InitImgInfo(bool bMinimalFw = false);
 extern NFCSTATUS phDnldNfc_LoadRecInfo(void);
 extern NFCSTATUS phDnldNfc_LoadPKInfo(void);
 extern void phDnldNfc_CloseFwLibHandle(void);
