@@ -27,7 +27,8 @@ cc_binary {
          "-Werror",
          "-Wextra",
          "-fexceptions",
-         "-DNXP_EXTNS=TRUE"
+         "-DNXP_EXTNS=TRUE",
+         "-DNXP_NFC_RECOVERY=TRUE"
      ],
 
     srcs: [
@@ -67,6 +68,7 @@ cc_binary {
         "SN100x/halimpl/utils",
         "SN100x/halimpl/mifare",
         "SN100x/halimpl/eseclients_extns/inc/",
+        "SN100x/halimpl/recovery",
     ],
 
     include_dirs: [

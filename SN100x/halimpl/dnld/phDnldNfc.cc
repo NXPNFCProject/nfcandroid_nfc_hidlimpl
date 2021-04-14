@@ -25,6 +25,11 @@
 #include <phNxpLog.h>
 #include <phTmlNfc.h>
 #include <string>
+
+#if(NXP_NFC_RECOVERY == TRUE)
+#include <phDnldNfc_UpdateSeq.h>
+#endif
+
 static void*
    pFwHandle;    /* Global firmware handle*/
 uint16_t wMwVer = 0; /* Middleware version no */
@@ -723,12 +728,12 @@ NFCSTATUS phDnldNfc_RawReq(pphDnldNfc_Buff_t pFrameData,
 ** Description      Extracts image information and stores it in respective
 **                  variables, to be used internally for write operation
 **
-** Parameters       None
+** Parameters       bMinimalFw - flag indicates for minimal FW Image
 **
 ** Returns          NFC status
 **
 *******************************************************************************/
-NFCSTATUS phDnldNfc_InitImgInfo(void) {
+NFCSTATUS phDnldNfc_InitImgInfo(bool bMinimalFw) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   uint8_t* pImageInfo = NULL;
   uint32_t ImageInfoLen = 0;
@@ -740,14 +745,23 @@ NFCSTATUS phDnldNfc_InitImgInfo(void) {
 
   gpphDnldContext->FwFormat = FW_FORMAT_UNKNOWN;
   phDnldNfc_SetDlRspTimeout((uint16_t)PHDNLDNFC_RSP_TIMEOUT);
+  if(bMinimalFw) {
+    fwType = FW_FORMAT_ARRAY;
+  } else if (GetNxpNumValue(NAME_NXP_FW_TYPE, &fwType, sizeof(fwType)) == true) {
   /*Read Firmware file name from config file*/
-  if (GetNxpNumValue(NAME_NXP_FW_TYPE, &fwType, sizeof(fwType)) == true) {
     NXPLOG_FWDNLD_D("firmware type from conf file: %lu",fwType);
   } else {
     NXPLOG_FWDNLD_W("firmware type not found. Taking default value: %lu",fwType);
   }
 
-  if(fwType == FW_FORMAT_BIN) {
+  if(fwType == FW_FORMAT_ARRAY) {
+    gpphDnldContext->FwFormat = FW_FORMAT_ARRAY;
+#if(NXP_NFC_RECOVERY == TRUE)
+    pImageInfo = (uint8_t *)gphDnldNfc_DlSequence;
+    ImageInfoLen = gphDnldNfc_DlSeqSz;
+#endif
+    wStatus = NFCSTATUS_SUCCESS;
+  } else if(fwType == FW_FORMAT_BIN) {
     gpphDnldContext->FwFormat = FW_FORMAT_BIN;
     wStatus = phDnldNfc_LoadBinFW(&pImageInfo, &ImageInfoLen);
   } else if(fwType == FW_FORMAT_SO) {
