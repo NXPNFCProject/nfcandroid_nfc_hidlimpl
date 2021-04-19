@@ -3187,6 +3187,7 @@ void phNxpNciHal_CheckAndHandleFwTearDown() {
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("FW Download Sequence Handler Failed.");
   } else {
+    property_set("nfc.fw.force_download", "0");
     fw_download_success = 1;
   }
 
