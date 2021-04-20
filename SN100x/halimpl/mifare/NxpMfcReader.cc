@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2019-2020 NXP
+ *  Copyright 2019-2021 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ int NxpMfcReader::Write(uint16_t mfcDataLen, const uint8_t *pMfcData) {
   mfcTagCmdBuff[2] = mfcTagCmdBuffLen;
   mfcDataLen = mfcTagCmdBuffLen + NCI_HEADER_SIZE;
 
-  if (checkIsMFCIncDecRestore(mfcTagCmdBuff[4])) {
+  if (checkIsMFCIncDecRestore(pMfcData[3])) {
     if (sem_init(&mNacksem, 0, 0) != 0) {
       NXPLOG_NCIHAL_E("%s : sem_init failed", __func__);
       return 0;
@@ -67,7 +67,7 @@ int NxpMfcReader::Write(uint16_t mfcDataLen, const uint8_t *pMfcData) {
   int writtenDataLen = phNxpNciHal_write_internal(mfcDataLen, mfcTagCmdBuff);
 
   /* send TAG_CMD part 2 for Mifare increment ,decrement and restore commands */
-  if (checkIsMFCIncDecRestore(mfcTagCmdBuff[4])) {
+  if (checkIsMFCIncDecRestore(pMfcData[3])) {
     MfcWaitForAck();
     if (isAck) {
       NXPLOG_NCIHAL_D("part 1 command Acked");
