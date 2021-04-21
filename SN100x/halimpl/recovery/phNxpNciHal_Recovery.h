@@ -32,7 +32,7 @@
 // timeout for tml read response
 #define RESPONSE_READ_TIMEOUT_NS                      (200 * 1000 * 1000)
 // timeout for tml write cmd
-#define WRITE_TIMEOUT_NS                              (50 * 1000 * 1000)
+#define WRITE_TIMEOUT_NS                              (200 * 1000 * 1000)
 // Time to wait for first NCI rest response
 #define NCI_RESET_RESP_READ_DELAY_US                  (10000)
 
