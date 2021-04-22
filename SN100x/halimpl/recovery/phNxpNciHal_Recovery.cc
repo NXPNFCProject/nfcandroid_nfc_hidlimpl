@@ -177,16 +177,14 @@ static NFCSTATUS phNxpNciHal_ReadResponse(uint16_t *len, uint8_t **rsp_buffer, l
   status = phTmlNfc_Read(
       nxpncihal_ctrl.p_rsp_data, NCI_MAX_DATA_LEN,
       (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_callback, (void *)context);
-  if(status == NFCSTATUS_PENDING) {
-    if (phNxpNciHal_semWaitTimeout(timeout) == NFCSTATUS_SUCCESS) {
-       if (nxpncihal_ctrl.p_rx_data != NULL && nxpncihal_ctrl.rx_data_len > 0) {
-         *rsp_buffer = nxpncihal_ctrl.p_rx_data;
-         *len = nxpncihal_ctrl.rx_data_len;
-         status = NFCSTATUS_SUCCESS;
-       }
-       else
-         status = NFCSTATUS_FAILED;
-    }
+  if (phNxpNciHal_semWaitTimeout(timeout) == NFCSTATUS_SUCCESS) {
+     if (nxpncihal_ctrl.p_rx_data != NULL && nxpncihal_ctrl.rx_data_len > 0) {
+       *rsp_buffer = nxpncihal_ctrl.p_rx_data;
+       *len = nxpncihal_ctrl.rx_data_len;
+       status = NFCSTATUS_SUCCESS;
+     }
+     else
+       status = NFCSTATUS_FAILED;
   }
   return status;
 }
