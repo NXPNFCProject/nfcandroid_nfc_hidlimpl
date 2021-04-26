@@ -109,6 +109,7 @@ typedef enum {
   phTmlNfc_e_EnableNormalMode, /* Hardware setting for normal mode of operation
                                  */
   phTmlNfc_e_EnableDownloadModeWithVenRst,
+  phTmlNfc_e_EnableVen,         /* Enable Ven for PN557 chip*/
   phTmlNfc_e_PowerReset = 5,
 } phTmlNfc_ControlCode_t;     /* Control code for IOCTL call */
 
