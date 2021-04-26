@@ -361,6 +361,7 @@ void phNxpNciHal_RecoverFWTearDown(void) {
   }
   phTmlNfc_EnableFwDnldMode(true);
   nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
+  bool bEnableNormalMode = true;
   if (!phNxpNciHal_determineChipTypeDlMode()) {
     NXPLOG_NCIHAL_E("Not able to determine chiptype");
   } else if (nfcFL.chipType != sn100u) {
@@ -371,8 +372,13 @@ void phNxpNciHal_RecoverFWTearDown(void) {
                               nxpprofile_ctrl.bClkFreqVal,
                               0, true) != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("Minimal FW Update failed \n");
+  } else {
+    /* In the success case, the phNxpNciHal_fw_download_seq() will enable normal mode */
+    bEnableNormalMode = false;
   }
-  phTmlNfc_IoCtl(phTmlNfc_e_EnableNormalMode);
+  if (bEnableNormalMode) {
+    phTmlNfc_IoCtl(phTmlNfc_e_EnableNormalMode);
+  }
   phTmlNfc_IoCtl(phTmlNfc_e_PowerReset);
   phnxpNciHal_partialClose();
 }
