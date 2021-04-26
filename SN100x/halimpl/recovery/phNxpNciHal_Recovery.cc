@@ -26,6 +26,10 @@
 #include <phNxpNciHal_Dnld.h>
 #include <phNfcTypes.h>
 #include <phOsalNfc_Timer.h>
+#undef  property_set
+#undef PROPERTY_VALUE_MAX
+#undef property_get
+#include <cutils/properties.h>
 
 extern phNxpNciProfile_Control_t nxpprofile_ctrl;
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
@@ -34,6 +38,43 @@ extern void* phNxpNciHal_client_thread(void* arg);
 
 static void phnxpNciHal_partialClose();
 static NFCSTATUS phnxpNciHal_partialOpen();
+
+// property name for storing boot time init status
+const char* halInitProperty = "vendor.nfc.min_firmware";
+
+/******************************************************************************
+ * Function         getHalInitStatus
+ *
+ * Description      Get property whether it is boot init/not
+ *
+ * Parameters       Parameter to return the hal status is boot init/not.
+ *
+ * Returns          None
+ *
+ ******************************************************************************/
+static void getHalInitStatus(char* halInitStatus) {
+  NXPLOG_NCIHAL_D("Enter : %s", __func__);
+  if(property_get(halInitProperty, halInitStatus, "Boot-time") != 0) {
+    NXPLOG_NCIHAL_E("Error in property_get : %s", __func__);
+  }
+}
+
+/******************************************************************************
+ * Function         setHalInitStatus
+ *
+ * Description      To set property as per input whether it is boot init/not
+ *
+ * Parameters       status to be updated in property
+ *
+ * Returns          void
+ *
+ ******************************************************************************/
+static void setHalInitStatus(const char *status) {
+  NXPLOG_NCIHAL_E("Enter : %s", __func__);
+  if(property_set(halInitProperty, status) != 0) {
+    NXPLOG_NCIHAL_E("Error in property_set : %s", __func__);
+  }
+}
 
 /******************************************************************************
  * Function         phNxpNciHal_read_callback
@@ -329,6 +370,9 @@ static bool phNxpNciHal_determineChipTypeDlMode(void) {
  ******************************************************************************/
 void phNxpNciHal_RecoverFWTearDown(void) {
   uint8_t nfcc_recovery_support = 0x00;
+  // status post boot completed
+  const char* status = "Boot-completed";
+  char halInitStatus[PROPERTY_VALUE_MAX] = {0};
 
   NXPLOG_NCIHAL_D("phNxpNciHal_RecoverFWTearDown(): enter \n");
   if(!GetNxpNumValue(NAME_NXP_NFCC_RECOVERY_SUPPORT, &nfcc_recovery_support,
@@ -339,6 +383,16 @@ void phNxpNciHal_RecoverFWTearDown(void) {
     NXPLOG_NCIHAL_D("NFCC Recovery not supported");
     return;
   }
+
+  // If this is not boot time invocation return
+  getHalInitStatus(halInitStatus);
+  if(strncmp(halInitStatus, status, PROPERTY_VALUE_MAX) == 0) {
+    NXPLOG_NCIHAL_D("Not boot time, skip minimal FW download");
+    return;
+  } else {
+    NXPLOG_NCIHAL_D("boot time, check minimal FW download required");
+  }
+
   if(phnxpNciHal_partialOpen() != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("Failed to Initilize Partial HAL for NFCC recovery \n");
     return;
@@ -351,12 +405,14 @@ void phNxpNciHal_RecoverFWTearDown(void) {
   if(phNxpNciHal_determineChipType()) {
     NXPLOG_NCIHAL_D("Recovery not required \n");
     phnxpNciHal_partialClose();
+    setHalInitStatus(status);
     return;
   }
   if(phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadModeWithVenRst)
       != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("Enable Download mode failed");
     phnxpNciHal_partialClose();
+    setHalInitStatus(status);
     return;
   }
   phTmlNfc_EnableFwDnldMode(true);
@@ -381,6 +437,8 @@ void phNxpNciHal_RecoverFWTearDown(void) {
   }
   phTmlNfc_IoCtl(phTmlNfc_e_PowerReset);
   phnxpNciHal_partialClose();
+  // Minimal FW not required in this boot session
+  setHalInitStatus(status);
 }
 
 /*******************************************************************************
@@ -529,4 +587,5 @@ static void phnxpNciHal_partialClose(void) {
   CONCURRENCY_UNLOCK();
   phNxpNciHal_cleanup_monitor();
 }
+
 #endif
