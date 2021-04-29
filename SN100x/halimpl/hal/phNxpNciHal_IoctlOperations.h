@@ -129,6 +129,17 @@ int phNxpNciHal_CheckFwRegFlashRequired(uint8_t *fw_update_req,
                                         uint8_t *rf_update_req,
                                         uint8_t skipEEPROMRead);
 
+/******************************************************************************
+ * Function         phNxpNciHal_txNfccClockSetCmd
+ *
+ * Description      This function is called after successfull download
+ *                  to apply the clock setting provided in config file
+ *
+ * Returns          void.
+ *
+ ******************************************************************************/
+void phNxpNciHal_txNfccClockSetCmd(void);
+
 /*******************************************************************************
  **
  ** Function:        property_get_intf()

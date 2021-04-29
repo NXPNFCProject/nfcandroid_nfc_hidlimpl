@@ -921,10 +921,26 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
     switch (eControlCode) {
        case phTmlNfc_e_PowerReset:
         {
+          if(nfcFL.chipType >= sn100u) {
             /*VEN_RESET*/
             gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_RESET);
-            break;
+          } else {
+             gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_ON);
+             usleep(100 * 1000);
+             gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_OFF);
+             usleep(100 * 1000);
+             gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_ON);
+          }
+          break;
         }
+      case phTmlNfc_e_EnableVen:
+      {
+          if(nfcFL.chipType < sn100u) {
+            gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_ON);
+            usleep(100 * 1000);
+          }
+          break;
+      }
       case phTmlNfc_e_ResetDevice:
 
        {

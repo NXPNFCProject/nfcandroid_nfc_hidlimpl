@@ -223,6 +223,12 @@ void phNxpNciHal_deinitializeRegRfFwDnld();
 #define ATR_REQ_GEN_BYTES_LIS 0x61
 #define LEN_WT 0x60
 
+/*PN557 Ven Pin Configuration*/
+
+#define PN557_VEN_CFG_VALUE 0x01
+#define PN557_VEN_CFG_PULLDOWN 0x02
+#define PN557_VEN_CFG_DEFAULT 0x03
+
 /*Whenever a new get cfg need to be sent,
  * array must be updated with defined config type*/
 static const uint8_t get_cfg_arr[] = {TOTAL_DURATION, ATR_REQ_GEN_BYTES_POLL,
