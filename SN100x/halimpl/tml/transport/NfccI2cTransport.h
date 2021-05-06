@@ -48,29 +48,6 @@ class NfccI2cTransport : public NfccTransport {
  private:
   bool_t bFwDnldFlag = false;
   sem_t mTxRxSemaphore;
-  /*****************************************************************************
-   **
-   ** Function         SemTimedWait
-   **
-   ** Description      Timed sem_wait for avoiding i2c_read & write overlap
-   **
-   ** Parameters       none
-   **
-   ** Returns          Sem_wait return status
-   ****************************************************************************/
-  int SemTimedWait();
-
-  /*****************************************************************************
-   **
-   ** Function         SemPost
-   **
-   ** Description      sem_post 2c_read / write
-   **
-   ** Parameters       none
-   **
-   ** Returns          none
-   ****************************************************************************/
-  void SemPost();
 
   int Flushdata(void* pDevHandle, uint8_t* pBuffer, int numRead);
 

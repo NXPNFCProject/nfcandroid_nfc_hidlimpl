@@ -53,7 +53,6 @@ static void * phTmlNfc_TmlThread(void* pParam);
 static void * phTmlNfc_TmlWriterThread(void* pParam);
 static void phTmlNfc_ReTxTimerCb(uint32_t dwTimerId, void* pContext);
 static NFCSTATUS phTmlNfc_InitiateTimer(void);
-static void phTmlNfc_WaitWriteComplete(void);
 static void phTmlNfc_SignalWriteComplete(void);
 static int phTmlNfc_WaitReadInit(void);
 
@@ -399,10 +398,6 @@ static void * phTmlNfc_TmlThread(void* pParam) {
               gpphTmlNfc_Context->bWriteCbInvoked = false;
             }
           }
-          if (gpphTmlNfc_Context->tWriteInfo.bThreadBusy) {
-            NXPLOG_TML_D("Delay Read if write thread is busy");
-            usleep(2000); /*2ms delay to give prio to write complete */
-          }
           /* Update the actual number of bytes read including header */
           gpphTmlNfc_Context->tReadInfo.wLength = (uint16_t)(dwNoBytesWrRd);
           phNxpNciHal_print_packet("RECV",
@@ -426,16 +421,6 @@ static void * phTmlNfc_TmlThread(void* pParam) {
           tMsg.eMsgType = PH_LIBNFC_DEFERREDCALL_MSG;
           tMsg.pMsgData = &tDeferredInfo;
           tMsg.Size = sizeof(tDeferredInfo);
-          /*Don't wait for posting notifications. Only wait for posting
-           * responses*/
-          /*TML reader writer callback syncronization-- START*/
-          pthread_mutex_lock(&gpphTmlNfc_Context->wait_busy_lock);
-          if ((gpphTmlNfc_Context->gWriterCbflag == false) &&
-              ((gpphTmlNfc_Context->tReadInfo.pBuffer[0] & 0x60) != 0x60)) {
-            phTmlNfc_WaitWriteComplete();
-          }
-          /*TML reader writer callback syncronization-- END*/
-          pthread_mutex_unlock(&gpphTmlNfc_Context->wait_busy_lock);
           NXPLOG_TML_D("PN54X - Posting read message.....\n");
           phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &tMsg);
         }
@@ -1105,36 +1090,6 @@ void phTmlNfc_set_fragmentation_enabled(phTmlNfc_i2cfragmentation_t result) {
 
 phTmlNfc_i2cfragmentation_t phTmlNfc_get_fragmentation_enabled() {
   return fragmentation_enabled;
-}
-
-/*******************************************************************************
-**
-** Function         phTmlNfc_WaitWriteComplete
-**
-** Description      wait function for reader thread
-**
-** Parameters       None
-**
-** Returns          None
-**
-*******************************************************************************/
-static void phTmlNfc_WaitWriteComplete(void) {
-  int ret = -1;
-  struct timespec absTimeout;
-  if (clock_gettime(CLOCK_MONOTONIC, &absTimeout) == -1) {
-    NXPLOG_TML_E("Reader Thread clock_gettime failed");
-  } else {
-    absTimeout.tv_sec += 1; /*1 second timeout*/
-    gpphTmlNfc_Context->wait_busy_flag = true;
-    NXPLOG_TML_D("phTmlNfc_WaitWriteComplete - enter");
-    ret = pthread_cond_timedwait(&gpphTmlNfc_Context->wait_busy_condition,
-                                 &gpphTmlNfc_Context->wait_busy_lock,
-                                 &absTimeout);
-    if ((ret != 0) && (ret != ETIMEDOUT)) {
-      NXPLOG_TML_E("Reader Thread wait failed");
-    }
-    NXPLOG_TML_D("phTmlNfc_WaitWriteComplete - exit");
-  }
 }
 
 /*******************************************************************************
