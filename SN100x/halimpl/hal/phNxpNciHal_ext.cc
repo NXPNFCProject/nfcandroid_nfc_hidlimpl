@@ -287,6 +287,11 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
       case 0x70:
         NXPLOG_NCIHAL_D("NxpNci: Mode = Kovio");
         break;
+#if (NXP_QTAG == TRUE)
+      case 0x71:
+        NXPLOG_NCIHAL_D("NxpNci: Mode = Q Passive Poll");
+        break;
+#endif
       case 0x80:
         NXPLOG_NCIHAL_D("NxpNci: Mode = A Passive Listen");
         break;

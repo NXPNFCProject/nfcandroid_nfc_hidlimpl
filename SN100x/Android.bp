@@ -43,7 +43,8 @@ cc_library_shared {
         "-DNXP_EXTNS=TRUE",
         "-DNXP_HW_SELF_TEST=TRUE",
         "-DNXP_SRD=TRUE",
-        "-DNXP_NFC_RECOVERY=TRUE"
+        "-DNXP_NFC_RECOVERY=TRUE",
+        "-DNXP_QTAG=TRUE"
     ],
 
     srcs: [
