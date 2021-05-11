@@ -1222,7 +1222,8 @@ static void phNxpNciHal_read_complete(void* pContext,
     NXPLOG_NCIHAL_D("read successful status = 0x%x", pInfo->wStatus);
 
     /*Check the Omapi command response and store in dedicated buffer to solve sync issue*/
-    if(pInfo->pBuff[0] == 0x4F && pInfo->pBuff[1] == 0x01 && pInfo->pBuff[2] == 0x01) {
+    if(nfcFL.chipType <= sn100u && pInfo->pBuff[0] == 0x4F && pInfo->pBuff[1] == 0x01 &&
+            pInfo->pBuff[2] == 0x01) {
         nxpncihal_ctrl.p_rx_ese_data = pInfo->pBuff;
         nxpncihal_ctrl.rx_ese_data_len = pInfo->wLength;
         SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
@@ -2111,6 +2112,7 @@ int phNxpNciHal_close(bool bShutdown) {
           0xA0, 0x8E, 0x01, 0x00};
   uint8_t cmd_ce_in_phone_off_pn557[] = {0x20, 0x02, 0x05, 0x01,
           0xA0, 0x07, 0x01, 0x02};
+  uint8_t cmd_system_set_service_status[] = {0x2F, 0x01, 0x01, 0x00};
   uint8_t length = 0;
   uint8_t numPrms = 0;
   uint8_t ptr = 4;
@@ -2220,7 +2222,9 @@ int phNxpNciHal_close(bool bShutdown) {
   }
 #endif
   close_and_return:
-  nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
+  if (nfcFL.chipType < sn220u && bShutdown) {
+    nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
+  }
   do { /*This is NXP_EXTNS code for retry*/
     status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
 
@@ -2237,6 +2241,14 @@ int phNxpNciHal_close(bool bShutdown) {
       }
     }
   } while (retry < 3);
+
+  if (nfcFL.chipType >= sn220u && !bShutdown) {
+    nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_system_set_service_status), cmd_system_set_service_status);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("NCI SYSTEM SET SERVICE STATUS to OFF Failed");
+    }
+  }
 
   sem_destroy(&nxpncihal_ctrl.syncSpiNfc);
 

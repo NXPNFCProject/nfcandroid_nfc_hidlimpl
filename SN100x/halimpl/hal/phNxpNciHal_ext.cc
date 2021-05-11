@@ -664,6 +664,14 @@ static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
     }
   }
 
+  /*Response check for SYSTEM SET SERVICE STATUS command sent as part of HAL_EXT*/
+  if ( nfcFL.chipType >= sn220u &&
+      nxpncihal_ctrl.p_rx_data[0] == 0x4F &&
+      nxpncihal_ctrl.p_rx_data[1] == 0x01 &&
+      nxpncihal_ctrl.p_rx_data[2] != 0x00) {
+    status = nxpncihal_ctrl.p_rx_data[3];
+  }
+
 clean_and_return:
   phNxpNciHal_cleanup_cb_data(&nxpncihal_ctrl.ext_cb_data);
   nxpncihal_ctrl.nci_info.wait_for_ntf = FALSE;
