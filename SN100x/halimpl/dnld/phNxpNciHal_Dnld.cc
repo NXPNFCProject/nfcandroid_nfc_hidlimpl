@@ -169,7 +169,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_recover(void* pContext, NFCSTATUS status,
                                              void* pInfo);
 
 static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
-                                              void* pInfo);
+                                              void* pInfo, bool bMinimalFw = false);
 
 /* Internal function to verify Crc Status byte received during CheckIntegrity */
 static NFCSTATUS phLibNfc_VerifyCrcStatus(uint8_t bCrcStatus);
@@ -1590,7 +1590,7 @@ NFCSTATUS phNxpNciHal_fw_dnld_switch_normal_mode() {
 **
 *******************************************************************************/
 static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
-                                              void* pInfo) {
+                                              void* pInfo, bool bMinimalFw) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   NFCSTATUS fStatus = status;
   UNUSED_PROP(pInfo);
@@ -1599,7 +1599,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
   if (NFCSTATUS_WRITE_FAILED == status) {
     if ((gphNxpNciHal_fw_IoctlCtx.bDnldAttempts) <
         PHLIBNFC_IOCTL_DNLD_MAX_ATTEMPTS) {
-      (gphNxpNciHal_fw_IoctlCtx.bDnldRecovery) = true;
+      (gphNxpNciHal_fw_IoctlCtx.bDnldRecovery) = !bMinimalFw;
     } else {
       NXPLOG_FWDNLD_E("Max Dnld Retry Counts Exceeded!!");
       (gphNxpNciHal_fw_IoctlCtx.bDnldRecovery) = false;
@@ -1608,7 +1608,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
   } else if (NFCSTATUS_REJECTED == status) {
     if ((gphNxpNciHal_fw_IoctlCtx.bDnldAttempts) <
         PHLIBNFC_IOCTL_DNLD_MAX_ATTEMPTS) {
-      (gphNxpNciHal_fw_IoctlCtx.bDnldRecovery) = true;
+      (gphNxpNciHal_fw_IoctlCtx.bDnldRecovery) = !bMinimalFw;
 
       /* in case of signature error we need to try recover sequence directly
        * bypassing the force cmd */
@@ -1637,7 +1637,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
           "command bLastStatus = 0x%x",
           gphNxpNciHal_fw_IoctlCtx.bLastStatus);
     }
-    status = phNxpNciHal_fw_dnld_complete(pContext, wStatus, &pInfo);
+    status = phNxpNciHal_fw_dnld_complete(pContext, wStatus, &pInfo, bMinimalFw);
     if (NFCSTATUS_SUCCESS == status) {
       NXPLOG_FWDNLD_D(" phNxpNciHal_fw_dnld_complete : SUCCESS");
     } else {
@@ -1669,7 +1669,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
     /* Perform the download sequence ... after successful recover attempt */
     wStatus = phNxpNciHal_fw_seq_handler(phNxpNciHal_dwnld_seqhandler);
 
-    status = phNxpNciHal_fw_dnld_complete(pContext, wStatus, &pInfo);
+    status = phNxpNciHal_fw_dnld_complete(pContext, wStatus, &pInfo, bMinimalFw);
     if (NFCSTATUS_SUCCESS == status) {
       NXPLOG_FWDNLD_D(" phNxpNciHal_fw_dnld_complete : SUCCESS");
     } else {
@@ -1805,7 +1805,7 @@ NFCSTATUS phNxpNciHal_fw_download_seq(uint8_t bClkSrcVal, uint8_t bClkFreqVal,
   }
 
   /* Chage to normal mode */
-  status = phNxpNciHal_fw_dnld_complete((void*)pContext, status, &pInfo);
+  status = phNxpNciHal_fw_dnld_complete((void*)pContext, status, &pInfo, bMinimalFw);
   /*if (NFCSTATUS_SUCCESS == status)
   {
       NXPLOG_FWDNLD_D(" phNxpNciHal_fw_dnld_complete : SUCCESS");
