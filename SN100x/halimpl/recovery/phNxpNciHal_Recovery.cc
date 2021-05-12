@@ -30,6 +30,7 @@
 #undef PROPERTY_VALUE_MAX
 #undef property_get
 #include <cutils/properties.h>
+#define MAX_CORE_RESET 3
 
 extern phNxpNciProfile_Control_t nxpprofile_ctrl;
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
@@ -267,34 +268,40 @@ static bool phNxpNciHal_determineChipType(void) {
   const uint8_t cmd_reset_nci[] = {0x20, 0x00, 0x01, 0x00};
   uint8_t *rsp_buffer = NULL;
   uint16_t rsp_len = 0;
+  uint8_t retry = 0;
+  bool status = false;
 
-  if ((phNxpNciHal_writeCmd(sizeof(cmd_reset_nci), cmd_reset_nci,
-          WRITE_TIMEOUT_NS) != NFCSTATUS_SUCCESS)) {
-    NXPLOG_NCIHAL_E("NCI_CORE_RESET Write Failure ");
-    return false;
-  }
-  // 10ms delay  for first core reset response to avoid nfcc standby
-  usleep(NCI_RESET_RESP_READ_DELAY_US);
-  if ((phNxpNciHal_ReadResponse(&rsp_len, &rsp_buffer,
-          RESPONSE_READ_TIMEOUT_NS) != NFCSTATUS_SUCCESS)
-          || (rsp_buffer == NULL)) {
-    NXPLOG_NCIHAL_E("NCI_CORE_RESET read response failed");
-    return false;
-  }
-  if (rsp_buffer[NCI_RSP_IDX] == NCI_MSG_RSP) {
+  do {
+    if ((phNxpNciHal_writeCmd(sizeof(cmd_reset_nci), cmd_reset_nci,
+            WRITE_TIMEOUT_NS) != NFCSTATUS_SUCCESS)) {
+      NXPLOG_NCIHAL_E("NCI_CORE_RESET Write Failure ");
+      break;
+    }
+    // 10ms delay  for first core reset response to avoid nfcc standby
+    usleep(NCI_RESET_RESP_READ_DELAY_US);
     if ((phNxpNciHal_ReadResponse(&rsp_len, &rsp_buffer,
             RESPONSE_READ_TIMEOUT_NS) != NFCSTATUS_SUCCESS)
-            || (rsp_buffer == NULL)) {
-      NXPLOG_NCIHAL_E("NCI_CORE_RESET NTF read failed");
-      return false;
-  }
-    if (rsp_buffer[NCI_RSP_IDX] == NCI_MSG_NTF) {
-      phNxpNciHal_configFeatureList(rsp_buffer, rsp_len);
-      return true;
+        || (rsp_buffer == NULL)) {
+      NXPLOG_NCIHAL_E("NCI_CORE_RESET read response failed");
+      break;
     }
-  }
-  NXPLOG_NCIHAL_E("NCI_CORE_RESET Failure");
-  return false;
+    if (rsp_buffer[NCI_RSP_IDX] == NCI_MSG_RSP) {
+      if ((phNxpNciHal_ReadResponse(&rsp_len, &rsp_buffer,
+              RESPONSE_READ_TIMEOUT_NS) != NFCSTATUS_SUCCESS)
+          || (rsp_buffer == NULL)) {
+        NXPLOG_NCIHAL_E("NCI_CORE_RESET NTF read failed");
+        break;
+      }
+      if (rsp_buffer[NCI_RSP_IDX] == NCI_MSG_NTF) {
+        phNxpNciHal_configFeatureList(rsp_buffer, rsp_len);
+        status = true;
+        break;
+      }
+    } else {
+      NXPLOG_NCIHAL_E("NCI_CORE_RESPONSE Wrong Status");
+    }
+  } while (retry++ < MAX_CORE_RESET);
+  return status;
 }
 
 /******************************************************************************
