@@ -2222,7 +2222,7 @@ int phNxpNciHal_close(bool bShutdown) {
   }
 #endif
   close_and_return:
-  if (nfcFL.chipType < sn220u && bShutdown) {
+  if ((nfcFL.chipType < sn220u) || bShutdown) {
     nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
   }
   do { /*This is NXP_EXTNS code for retry*/
@@ -2242,7 +2242,7 @@ int phNxpNciHal_close(bool bShutdown) {
     }
   } while (retry < 3);
 
-  if (nfcFL.chipType >= sn220u && !bShutdown) {
+  if ((nfcFL.chipType >= sn220u) && !bShutdown) {
     nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
     status = phNxpNciHal_send_ext_cmd(sizeof(cmd_system_set_service_status), cmd_system_set_service_status);
     if (status != NFCSTATUS_SUCCESS) {
