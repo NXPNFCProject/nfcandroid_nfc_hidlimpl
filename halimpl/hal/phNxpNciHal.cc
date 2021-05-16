@@ -470,6 +470,7 @@ retry:
  *
  ******************************************************************************/
 static NFCSTATUS phNxpNciHal_fw_download(void) {
+  NFCSTATUS readRestoreStatus = NFCSTATUS_FAILED;
   if (NFCSTATUS_SUCCESS != phNxpNciHal_CheckValidFwVersion()) {
     return NFCSTATUS_REJECTED;
   }
@@ -520,7 +521,20 @@ static NFCSTATUS phNxpNciHal_fw_download(void) {
                                            nxpprofile_ctrl.bClkFreqVal, false);
     }
     if (status != NFCSTATUS_SUCCESS) {
+      phDnldNfc_ReSetHwDevHandle();
       fw_retry_count++;
+      if (phTmlNfc_ReadAbort() != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("Tml Read Abort failed!!");
+      }
+      /*Keep Read Pending on I2C*/
+      readRestoreStatus = phTmlNfc_Read(
+          nxpncihal_ctrl.p_cmd_data, NCI_MAX_DATA_LEN,
+          (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete, NULL);
+      if (readRestoreStatus != NFCSTATUS_PENDING) {
+        status = NFCSTATUS_FAILED;
+        NXPLOG_NCIHAL_E("TML Read status error status = %x", readRestoreStatus);
+        break;
+      }
       NXPLOG_NCIHAL_D("Retrying: FW download");
     }
   } while ((fw_retry_count < 3) && (status != NFCSTATUS_SUCCESS));
@@ -541,7 +555,6 @@ static NFCSTATUS phNxpNciHal_fw_download(void) {
   }
 
   /*Keep Read Pending on I2C*/
-  NFCSTATUS readRestoreStatus = NFCSTATUS_FAILED;
   readRestoreStatus = phTmlNfc_Read(
       nxpncihal_ctrl.p_cmd_data, NCI_MAX_DATA_LEN,
       (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete, NULL);
@@ -895,7 +908,7 @@ int phNxpNciHal_MinOpen() {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   uint8_t boot_mode = nxpncihal_ctrl.hal_boot_mode;
   nxpncihal_ctrl.bIsForceFwDwnld = false;
-  bool isForceFwDownloadReqd = false;
+  static bool sIsForceFwDownloadReqd = false;
   NXPLOG_NCIHAL_D("phNxpNci_MinOpen(): enter");
   /*NCI_INIT_CMD*/
   static uint8_t cmd_init_nci[] = {0x20, 0x01, 0x00};
@@ -1019,10 +1032,17 @@ init_retry:
   phNxpNciHal_ext_init();
 
   status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
-  isForceFwDownloadReqd = ((init_retry_cnt >= 3) /*No response for reset/init*/ ||
+  if (status == NFCSTATUS_SUCCESS) {
+    sIsForceFwDownloadReqd = false;
+  } else if (sIsForceFwDownloadReqd) {
+    NXPLOG_NCIHAL_E("%s: Failed after Force FW updated. Exit", __func__);
+    return NFCSTATUS_FAILED;
+  }
+
+  sIsForceFwDownloadReqd = ((init_retry_cnt >= 3) /*No response for reset/init*/ ||
          ((status != NFCSTATUS_SUCCESS) &&
          (nxpncihal_ctrl.retry_cnt >= MAX_RETRY_COUNT)) /*write failure*/);
-  if (isForceFwDownloadReqd) {
+  if (sIsForceFwDownloadReqd) {
     NXPLOG_NCIHAL_E("NFCC not coming out from Standby");
     NXPLOG_NCIHAL_E("Trying Force FW download");
     nxpncihal_ctrl.bIsForceFwDwnld = true;
@@ -1074,8 +1094,8 @@ init_retry:
     status = phNxpNciHal_FwDwnld(NFCSTATUS_SUCCESS);
     if (NFCSTATUS_FAILED == status) {
       wConfigStatus = NFCSTATUS_FAILED;
-      goto minCleanAndreturn;
       NXPLOG_NCIHAL_D("FW download Failed");
+      goto minCleanAndreturn;
     } else if (NFCSTATUS_REJECTED == status) {
       wConfigStatus = NFCSTATUS_SUCCESS;
       NXPLOG_NCIHAL_D("FW download Rejected. Continuing Nfc Init");
