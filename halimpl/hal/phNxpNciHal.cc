@@ -118,7 +118,6 @@ EseAdaptation *gpEseAdapt = NULL;
 /* External global variable to get FW version */
 extern uint16_t wFwVer;
 
-extern uint16_t fw_maj_ver;
 extern uint16_t rom_version;
 extern uint8_t
     gRecFWDwnld; /* flag  set to true to  indicate dummy FW download */
@@ -1222,19 +1221,19 @@ clean_and_return:
 static int phNxpNciHal_fw_mw_ver_check() {
     NFCSTATUS status = NFCSTATUS_FAILED;
     if (((nfcFL.chipType == pn557)||(nfcFL.chipType == pn81T)) &&
-           (rom_version == FW_MOBILE_ROM_VERSION_PN557) && (fw_maj_ver == 0x01)) {
+           (rom_version == FW_MOBILE_ROM_VERSION_PN557)) {
       status = NFCSTATUS_SUCCESS;
     } else if (((nfcFL.chipType == pn553)||(nfcFL.chipType == pn80T)) &&
-           (rom_version == FW_MOBILE_ROM_VERSION_PN553) && (fw_maj_ver == 0x01)) {
+           (rom_version == FW_MOBILE_ROM_VERSION_PN553)) {
         status = NFCSTATUS_SUCCESS;
     } else if (((nfcFL.chipType == pn551)||(nfcFL.chipType == pn67T)) &&
-            (rom_version == FW_MOBILE_ROM_VERSION_PN551) && (fw_maj_ver == 0x05)) {
+            (rom_version == FW_MOBILE_ROM_VERSION_PN551)) {
         status = NFCSTATUS_SUCCESS;
     } else if (((nfcFL.chipType == pn548C2)||(nfcFL.chipType == pn66T)) &&
-            (rom_version == FW_MOBILE_ROM_VERSION_PN551) && (fw_maj_ver == 0x01)) {
+            (rom_version == FW_MOBILE_ROM_VERSION_PN551)) {
         status = NFCSTATUS_SUCCESS;
     } else if (((nfcFL.chipType == pn547C2)||(nfcFL.chipType == pn65T)) &&
-            (rom_version == FW_MOBILE_ROM_VERSION_PN547C2) && (fw_maj_ver == 0x01)) {
+            (rom_version == FW_MOBILE_ROM_VERSION_PN547C2)) {
         status = NFCSTATUS_SUCCESS;
     }
     return status;

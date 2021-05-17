@@ -55,7 +55,6 @@ extern uint32_t wFwVerRsp;
 /* External global variable to get FW version from FW file*/
 extern uint16_t wFwVer;
 extern bool_t gParserCreated;
-uint16_t fw_maj_ver;
 uint16_t rom_version;
 /* local buffer to store CORE_INIT response */
 static uint32_t bCoreInitRsp[40];
@@ -450,7 +449,6 @@ if (((nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT) &&
         if (wFwVerRsp == 0) status = NFCSTATUS_FAILED;
         iCoreInitRspLen = *p_len;
         memcpy(bCoreInitRsp, p_ntf, *p_len);
-        fw_maj_ver = p_ntf[len - 1];
         rom_version = p_ntf[len - 2];
     }
 }
@@ -546,7 +544,6 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf, uint16_t* 
           int len = p_ntf[2] + 2; /*include 2 byte header*/
           wFwVerRsp = (((uint32_t)p_ntf[len - 2])<< 16U)|
           (((uint32_t)p_ntf[len - 1])<< 8U)|p_ntf[len];
-          fw_maj_ver = p_ntf[len - 1];
           rom_version = p_ntf[len - 2];
           NXPLOG_NCIHAL_D ("NxpNci> FW Version: %x.%x.%x", p_ntf[len-2], p_ntf[len-1], p_ntf[len]);
           } else {
@@ -580,7 +577,6 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf, uint16_t* 
         memcpy(bCoreInitRsp, p_ntf, *p_len);
         NXPLOG_NCIHAL_D("NxpNci> FW Version: %x.%x.%x", p_ntf[len - 2],
                         p_ntf[len - 1], p_ntf[len]);
-        fw_maj_ver = p_ntf[len - 1];
         rom_version = p_ntf[len - 2];
       }
     }
