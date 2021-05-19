@@ -1323,6 +1323,7 @@ int phNxpNciHal_write_internal(uint16_t data_len, const uint8_t* p_data) {
   CONCURRENCY_LOCK();
 
   if (nxpncihal_ctrl.halStatus != HAL_STATUS_OPEN) {
+    CONCURRENCY_UNLOCK();
     return NFCSTATUS_FAILED;
   }
 
