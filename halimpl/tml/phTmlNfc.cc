@@ -498,7 +498,9 @@ static void* phTmlNfc_TmlWriterThread(void* pParam) {
         dwNoBytesWrRd = PH_TMLNFC_RESET_VALUE;
         /* Write the data in the buffer onto the file */
         NXPLOG_TML_D("PN54X - Invoking I2C Write.....\n");
+        pthread_mutex_lock(&gpphTmlNfc_Context->wait_busy_lock);
         gpphTmlNfc_Context->gWriterCbflag = false;
+        pthread_mutex_unlock(&gpphTmlNfc_Context->wait_busy_lock);
         dwNoBytesWrRd =
             phTmlNfc_i2c_write(gpphTmlNfc_Context->pDevHandle,
                                gpphTmlNfc_Context->tWriteInfo.pBuffer,
