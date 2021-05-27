@@ -15,6 +15,7 @@
  *  limitations under the License.
  *
  ******************************************************************************/
+#include <log/log.h>
 #include "NxpMfcReader.h"
 #include "phNxpNciHal.h"
 #include <phNfcCompId.h>
@@ -43,6 +44,10 @@ int NxpMfcReader::Write(uint16_t mfcDataLen, const uint8_t *pMfcData) {
   uint16_t mfcTagCmdBuffLen = 0;
   uint8_t mfcTagCmdBuff[MAX_MFC_BUFF_SIZE] = {0};
 
+  if (mfcDataLen > MAX_MFC_BUFF_SIZE) {
+    android_errorWriteLog(0x534e4554, "169259605");
+    mfcDataLen = MAX_MFC_BUFF_SIZE;
+  }
   memcpy(mfcTagCmdBuff, pMfcData, mfcDataLen);
   if (mfcDataLen >= 3)
     mfcTagCmdBuffLen = mfcDataLen - NCI_HEADER_SIZE;
