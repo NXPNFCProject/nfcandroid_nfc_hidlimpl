@@ -1030,7 +1030,14 @@ NFCSTATUS phDnldNfc_LoadFW(const char* pathName, uint8_t** pImgInfo,
     return NFCSTATUS_FAILED;
   }
 
-  (*pImgInfoLen) = (uint32_t)(*((uint32_t*)pImageInfoLen));
+  if(nfcFL.chipType >= sn100u) {
+    (*pImgInfoLen) = (uint32_t)(*((uint32_t*)pImageInfoLen));
+     NXPLOG_FWDNLD_D("FW image loded for chipType sn100u (%x)",nfcFL.chipType)
+  } else {
+    (*pImgInfoLen) = (uint16_t)(*((uint16_t*)pImageInfoLen));
+     NXPLOG_FWDNLD_D("FW image loded for chipType pn557 (%x)",nfcFL.chipType)
+  }
+
   return NFCSTATUS_SUCCESS;
 }
 
