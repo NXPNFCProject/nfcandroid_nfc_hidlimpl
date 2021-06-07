@@ -462,10 +462,15 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset, bool bIsNfccDlStat
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("%s: NXP Set FW DW Flag failed", __FUNCTION__);
     }
-    uint8_t ven_cfg_low_cmd[] = {0x20, 0x02, 0x05, 0x01, 0xA0, 0x07, 0x01, 0x00};
-    status = phNxpNciHal_send_ext_cmd(sizeof(ven_cfg_low_cmd), ven_cfg_low_cmd);
-    if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("Failed to set VEN_CFG to low \n");
+
+    NXPLOG_NCIHAL_D("nfcFL.nfccFL._NFCC_DWNLD_MODE %x\n",nfcFL.nfccFL._NFCC_DWNLD_MODE);
+
+    if(nfcFL.chipType >= sn100u) {
+      uint8_t ven_cfg_low_cmd[] = {0x20, 0x02, 0x05, 0x01, 0xA0, 0x07, 0x01, 0x00};
+      status = phNxpNciHal_send_ext_cmd(sizeof(ven_cfg_low_cmd), ven_cfg_low_cmd);
+      if (status != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("Failed to set VEN_CFG to low \n");
+      }
     }
     /*Getting UICC1 CL params */
     uicc1HciParams.resize(0xFF);
@@ -547,10 +552,21 @@ NFCSTATUS phNxpNciHal_CheckValidFwVersion(void) {
   const unsigned char sfw_infra_major_no = 0x02;
   unsigned char ufw_current_major_no = 0x00;
   uint8_t rom_version = 0xFF & (wFwVerRsp  >> 16);
+  uint8_t fw_maj_ver  = 0xFF & (wFwVerRsp >> 8);
 
   /* extract the firmware's major no */
   ufw_current_major_no = ((0x00FF) & (wFwVer >> 8U));
   NXPLOG_NCIHAL_D("%s current_major_no = 0x%x", __func__, ufw_current_major_no);
+  NXPLOG_NCIHAL_D("%s fw_maj_ver = 0x%x", __func__, fw_maj_ver);
+  if(nfcFL.chipType == pn557) {
+    if (ufw_current_major_no >= fw_maj_ver){
+    /* if file major version is grater than the one from the
+       Nfc init command allow FW download
+    */
+     status = NFCSTATUS_SUCCESS;
+     }
+     return status;
+  }
 
   if (wFwVerRsp == 0) {
     NXPLOG_NCIHAL_E(
@@ -629,6 +645,7 @@ int phNxpNciHal_MinOpen (){
   const uint16_t max_len = 260;
   NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
   NFCSTATUS status = NFCSTATUS_SUCCESS;
+  int dnld_retry_cnt = 0;
   NXPLOG_NCIHAL_D("phNxpNci_MinOpen(): enter");
 
   AutoThreadMutex a(sHalFnLock);
@@ -803,9 +820,15 @@ int phNxpNciHal_MinOpen (){
                       "gsIsFwRecoveryRequired %d",
                       gsIsFwRecoveryRequired);
       fw_update_req = 1;
+      dnld_retry_cnt++;
     } else {
       break;
     }
+
+    if (dnld_retry_cnt > 1){
+      break;
+    }
+
   } while (status != NFCSTATUS_SUCCESS || gsIsFwRecoveryRequired);
   /* Call open complete */
   phNxpNciHal_MinOpen_complete(wConfigStatus);
