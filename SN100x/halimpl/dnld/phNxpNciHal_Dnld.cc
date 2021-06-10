@@ -1036,10 +1036,10 @@ static NFCSTATUS phNxpNciHal_fw_dnld_write(void* pContext, NFCSTATUS status,
           (false == (gphNxpNciHal_fw_IoctlCtx.bForceDnld)))
   {
     NXPLOG_FWDNLD_D("phNxpNciHal_fw_dnld_write - Incrementing NumDnldTrig..");
-    (gphNxpNciHal_fw_IoctlCtx.bDnldInitiated) = true;
     (gphNxpNciHal_fw_IoctlCtx.bDnldAttempts)++;
     (gphNxpNciHal_fw_IoctlCtx.tLogParams.wNumDnldTrig) += 1;
   }
+  gphNxpNciHal_fw_IoctlCtx.bDnldInitiated = true;
   wStatus = phDnldNfc_Write(false, NULL,
                             (pphDnldNfc_RspCb_t)&phNxpNciHal_fw_dnld_write_cb,
                             (void*)&cb_data);
