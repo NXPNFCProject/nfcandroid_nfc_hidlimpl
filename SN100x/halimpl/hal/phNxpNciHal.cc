@@ -1914,6 +1914,19 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len, uint8_t* p_c
     NXPLOG_NCIHAL_D("NCI Parser is disabled");
   }
 
+  if(nfcFL.chipType == pn557) {
+    if (GetNxpNumValue(NAME_NXP_PROP_CE_ACTION_NTF, (void*)&retlen,
+                       sizeof(retlen))) {
+       uint8_t value = (uint8_t) retlen;
+       NXPLOG_NCIHAL_D("Prop CE ACT NTF %x",value);
+       mEEPROM_info.buffer = &value;
+       mEEPROM_info.bufflen = sizeof(value);
+       mEEPROM_info.request_type = EEPROM_CE_ACT_NTF;
+       mEEPROM_info.request_mode = SET_EEPROM_DATA;
+       request_EEPROM(&mEEPROM_info);
+    }
+  }
+
 #endif
 
     config_access = false;

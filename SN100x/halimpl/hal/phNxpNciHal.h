@@ -259,6 +259,7 @@ typedef enum {
   EEPROM_SRD_TIMEOUT,
   EEPROM_UICC1_SESSION_ID,
   EEPROM_UICC2_SESSION_ID,
+  EEPROM_CE_ACT_NTF,
 } phNxpNci_EEPROM_request_type_t;
 
 typedef struct phNxpNci_EEPROM_info {
