@@ -202,7 +202,8 @@ std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
                                 "NXP_NFC_CHIP_TYPE",
                                 "NXP_PROP_CE_ACTION_NTF",
                                 "NXP_AGC_DEBUG_ENABLE",
-                                "NXP_EXTENDED_FIELD_DETECT_LX_DEBUG"};
+                                "NXP_EXTENDED_FIELD_DETECT_LX_DEBUG",
+                                "NXP_CORE_PROP_SYSTEM_DEBUG"};
 
 /****************************************************************
  * Local Functions
