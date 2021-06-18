@@ -473,13 +473,6 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset) {
 
   NXPLOG_NCIHAL_D("nfcFL.nfccFL._NFCC_DWNLD_MODE %x\n",nfcFL.nfccFL._NFCC_DWNLD_MODE);
 
-  status = phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadMode);
-  if (NFCSTATUS_SUCCESS != status) {
-    nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
-    phNxpNciHal_UpdateFwStatus(HAL_NFC_FW_UPDATE_FAILED);
-    return NFCSTATUS_FAILED;
-  }
-
   if (nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD) {
 
     if(nfcFL.chipType != pn557) {
@@ -489,6 +482,16 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset) {
         NXPLOG_NCIHAL_E("Failed to set VEN_CFG to low \n");
       }
     }
+  }
+
+  status = phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadMode);
+  if (NFCSTATUS_SUCCESS != status) {
+    nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
+    phNxpNciHal_UpdateFwStatus(HAL_NFC_FW_UPDATE_FAILED);
+    return NFCSTATUS_FAILED;
+  }
+
+  if (nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD) {
     /*NCI_RESET_CMD*/
     static uint8_t cmd_reset_nci_dwnld[] = { 0x20, 0x00, 0x01, 0x80 };
     nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
