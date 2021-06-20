@@ -48,6 +48,12 @@
 #define PH_TMLNFC_RESETDEVICE (0x00008001)
 
 /*
+ * Fragment Length for SNXXX and PN547
+ */
+#define PH_TMLNFC_FRGMENT_SIZE_SNXXX (0x22A)
+#define PH_TMLNFC_FRGMENT_SIZE_PN557 (0x102)
+
+/*
 ***************************Globals,Structure and Enumeration ******************
 */
 
@@ -111,6 +117,7 @@ typedef enum {
   phTmlNfc_e_EnableDownloadModeWithVenRst,
   phTmlNfc_e_EnableVen,         /* Enable Ven for PN557 chip*/
   phTmlNfc_e_PowerReset = 5,
+  phTmlNfc_e_setFragmentSize,
 } phTmlNfc_ControlCode_t;     /* Control code for IOCTL call */
 
 /*
@@ -171,6 +178,7 @@ typedef struct phTmlNfc_Context {
       gWriterCbflag; /* flag to indicate write callback message is pushed to
                         queue*/
   long    nfc_service_pid; /*NFC Service PID to be used by driver to signal*/
+  uint16_t fragment_len;
 } phTmlNfc_Context_t;
 
 /*
@@ -192,6 +200,7 @@ typedef struct phTmlNfc_Config {
    *
    * This is the baudrate of the bus for communication between DH and PN54X */
   uint32_t dwBaudRate;
+  uint16_t fragment_len;
 } phTmlNfc_Config_t, *pphTmlNfc_Config_t; /* pointer to phTmlNfc_Config_t */
 
 /*

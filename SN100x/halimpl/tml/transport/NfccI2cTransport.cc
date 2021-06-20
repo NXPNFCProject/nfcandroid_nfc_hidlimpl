@@ -271,7 +271,7 @@ int NfccI2cTransport::Write(void *pDevHandle, uint8_t *pBuffer,
     return -1;
   }
   if (fragmentation_enabled == I2C_FRAGMENATATION_DISABLED &&
-      nNbBytesToWrite > FRAGMENTSIZE_MAX) {
+      nNbBytesToWrite > gpphTmlNfc_Context->fragment_len) {
     NXPLOG_TML_D(
         "%s data larger than maximum I2C  size,enable I2C fragmentation",
         __func__);
@@ -279,12 +279,12 @@ int NfccI2cTransport::Write(void *pDevHandle, uint8_t *pBuffer,
   }
   while (numWrote < nNbBytesToWrite) {
     if (fragmentation_enabled == I2C_FRAGMENTATION_ENABLED &&
-        nNbBytesToWrite > FRAGMENTSIZE_MAX) {
-      if (nNbBytesToWrite - numWrote > FRAGMENTSIZE_MAX) {
-        numBytes = numWrote + FRAGMENTSIZE_MAX;
-      } else {
-        numBytes = nNbBytesToWrite;
-      }
+       nNbBytesToWrite > gpphTmlNfc_Context->fragment_len) {
+       if (nNbBytesToWrite - numWrote > gpphTmlNfc_Context->fragment_len) {
+          numBytes = numWrote + gpphTmlNfc_Context->fragment_len;
+        } else {
+          numBytes = nNbBytesToWrite;
+        }
     }
     ret = write((intptr_t)pDevHandle, pBuffer + numWrote, numBytes - numWrote);
     if (ret > 0) {

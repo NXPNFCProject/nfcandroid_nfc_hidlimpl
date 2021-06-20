@@ -150,4 +150,5 @@ extern NFCSTATUS phDnldNfc_LoadRecoveryFW(const char* pathName, uint8_t** pImgIn
 extern NFCSTATUS phDnldNfc_LoadBinFW(uint8_t** pImgInfo, uint32_t* pImgInfoLen);
 extern NFCSTATUS phDnldNfc_UnloadFW(void);
 extern void phDnldNfc_SetDlRspTimeout(uint16_t timeout);
+extern void phDnldNfc_SetI2CFragmentLength(uint16_t len);
 #endif /* PHDNLDNFC_H */
