@@ -512,6 +512,13 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset, bool bIsNfccDlStat
     /* Set the obtained device handle to download module */
 
     phDnldNfc_SetHwDevHandle();
+
+    if(nfcFL.chipType >= sn100u) {
+      phDnldNfc_SetI2CFragmentLength(NCI_CMDRESP_MAX_BUFF_SIZE_SNXXX);
+    }else {
+      phDnldNfc_SetI2CFragmentLength(NCI_CMDRESP_MAX_BUFF_SIZE_PN557);
+    }
+
     NXPLOG_NCIHAL_D("Calling Seq handler for FW Download \n");
     status = phNxpNciHal_fw_download_seq(nxpprofile_ctrl.bClkSrcVal,
                                          nxpprofile_ctrl.bClkFreqVal,
@@ -717,6 +724,9 @@ int phNxpNciHal_MinOpen (){
   }
   memset(mGetCfg_info, 0x00, sizeof(phNxpNci_getCfg_info_t));
 
+  /* Set Default Fragment Length */
+  tTmlConfig.fragment_len = NCI_CMDRESP_MAX_BUFF_SIZE_PN557;
+
   /* Initialize TML layer */
   wConfigStatus = phTmlNfc_Init(&tTmlConfig);
   if (wConfigStatus != NFCSTATUS_SUCCESS) {
@@ -794,12 +804,17 @@ int phNxpNciHal_MinOpen (){
         phDnldNfc_ReSetHwDevHandle();
       }
     }
+  } else {
+         phNxpNciHal_getChipInfoInFwDnldMode(true);
   }
 
   if (gsIsFirstHalMinOpen && gsIsFwRecoveryRequired) {
     NXPLOG_NCIHAL_E("FW Recovery is required");
     fw_update_req = true;
   }
+
+  /* update fragment len based on the chip type.*/
+  phTmlNfc_IoCtl(phTmlNfc_e_setFragmentSize);
 
   do {
     if (fw_update_req && !fw_download_success) {
@@ -809,6 +824,11 @@ int phNxpNciHal_MinOpen (){
         return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
       } else if (fw_download_success) {
         wConfigStatus = NFCSTATUS_SUCCESS;
+        /* To Check PN557 Rollback FW flashed */
+        if ((nfcFL.chipType == pn557) &&
+            (NFCSTATUS_SUCCESS != phNxpNciHal_nfcc_core_reset_init(true))) {
+           wConfigStatus = NFCSTATUS_FAILED;
+        }
       }
     }
     status = phNxpNciHal_resetDefaultSettings(fw_update_req,
@@ -3252,6 +3272,7 @@ NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd) {
     status = phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadModeWithVenRst);
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("Enable Download mode failed");
+      return status;
     }
   }
   phTmlNfc_EnableFwDnldMode(true);
@@ -3293,9 +3314,6 @@ NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd) {
   if (status == NFCSTATUS_SUCCESS) {
     phNxpNciHal_configFeatureList(nxpncihal_ctrl.p_rx_data,
                                   nxpncihal_ctrl.rx_data_len);
-    wFwVerRsp = pConfigFL->getFWVersionInfo(nxpncihal_ctrl.p_rx_data,
-                                             nxpncihal_ctrl.rx_data_len);
-
     setNxpFwConfigPath(nfcFL._FW_LIB_PATH.c_str());
   }
   return status;
@@ -3351,6 +3369,13 @@ NFCSTATUS phNxpNciHal_dlResetInFwDnldMode() {
   nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
   NXPLOG_NCIHAL_D("Sending DL Reset for NFCC soft reboot");
   phDnldNfc_SetHwDevHandle();
+
+  if(nfcFL.chipType >= sn100u) {
+    phDnldNfc_SetI2CFragmentLength(NCI_CMDRESP_MAX_BUFF_SIZE_SNXXX);
+  } else {
+    phDnldNfc_SetI2CFragmentLength(NCI_CMDRESP_MAX_BUFF_SIZE_PN557);
+  }
+
   status = phNxpNciHal_fw_dnld_switch_normal_mode();
 
   nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;

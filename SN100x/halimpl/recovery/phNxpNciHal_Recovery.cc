@@ -422,6 +422,9 @@ void phNxpNciHal_RecoverFWTearDown(void) {
     setHalInitStatus(status);
     return;
   }
+  /* update fragment len based on the chip type.*/
+  phTmlNfc_IoCtl(phTmlNfc_e_setFragmentSize);
+
   phTmlNfc_EnableFwDnldMode(true);
   nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
   bool bEnableNormalMode = true;
@@ -532,6 +535,10 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
   tOsalConfig.dwCallbackThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
   tOsalConfig.pLogFile = NULL;
   tTmlConfig.dwGetMsgThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
+
+  /* Set Default Fragment Length */
+  tTmlConfig.fragment_len = NCI_CMDRESP_MAX_BUFF_SIZE_PN557;
+
   /* Initialize TML layer */
   if (phTmlNfc_Init(&tTmlConfig) != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("phTmlNfc_Init Failed");

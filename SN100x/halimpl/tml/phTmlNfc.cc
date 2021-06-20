@@ -119,6 +119,7 @@ NFCSTATUS phTmlNfc_Init(pphTmlNfc_Config_t pConfig) {
         gpphTmlNfc_Context->tWriteInfo.bEnable = 0;
         gpphTmlNfc_Context->tReadInfo.bThreadBusy = false;
         gpphTmlNfc_Context->tWriteInfo.bThreadBusy = false;
+        gpphTmlNfc_Context->fragment_len = pConfig->fragment_len;
 
         if (0 != sem_init(&gpphTmlNfc_Context->rxSemaphore, 0, 0)) {
           wInitStatus = NFCSTATUS_FAILED;
@@ -1000,6 +1001,16 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
         wStatus = gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_FW_DWNLD_WITH_VEN);
         gpphTmlNfc_Context->tReadInfo.bEnable = 1;
         sem_post(&gpphTmlNfc_Context->rxSemaphore);
+        break;
+      }
+      case phTmlNfc_e_setFragmentSize: {
+        if(nfcFL.chipType != pn557){
+          gpphTmlNfc_Context->fragment_len = PH_TMLNFC_FRGMENT_SIZE_SNXXX;
+          NXPLOG_TML_D("phTmlNfc_e_setFragmentSize 0x22A");
+        } else {
+          gpphTmlNfc_Context->fragment_len = PH_TMLNFC_FRGMENT_SIZE_PN557;
+          NXPLOG_TML_D("phTmlNfc_e_setFragmentSize 0x100");
+        }
         break;
       }
       default: {
