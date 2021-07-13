@@ -99,9 +99,6 @@ NFCSTATUS phTmlNfc_Init(pphTmlNfc_Config_t pConfig) {
     if (NULL == gpphTmlNfc_Context) {
       wInitStatus = PHNFCSTVAL(CID_NFC_TML, NFCSTATUS_FAILED);
     } else {
-      /*Configure transport layer for communication*/
-      if (NFCSTATUS_SUCCESS != phTmlNfc_ConfigTransport())
-        return NFCSTATUS_FAILED;
       /* Initialise all the internal TML variables */
       memset(gpphTmlNfc_Context, PH_TMLNFC_RESET_VALUE,
              sizeof(phTmlNfc_Context_t));

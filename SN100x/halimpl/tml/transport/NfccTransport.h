@@ -188,6 +188,19 @@ class NfccTransport {
    ****************************************************************************/
   virtual bool_t IsFwDnldModeEnabled(void);
 
+  /*******************************************************************************
+  **
+  ** Function         Flushdata
+  **
+  ** Description      Reads payload of FW rsp from NFCC device into given buffer
+  **
+  ** Parameters       pConfig     - hardware information
+  **
+  ** Returns          True(Success)/False(Fail)
+  **
+  *******************************************************************************/
+  virtual bool Flushdata(phTmlNfc_Config_t pConfig);
+
   /*****************************************************************************
    **
    ** Function         ~NfccTransport
