@@ -42,7 +42,7 @@
 #define FW_DNLD_HEADER_LEN 2
 #define FW_DNLD_LEN_OFFSET 1
 #define NORMAL_MODE_LEN_OFFSET 2
-#define FRAGMENTSIZE_MAX PHNFC_I2C_FRAGMENT_SIZE
+#define FLUSH_BUFFER_SIZE 0xFF
 extern phTmlNfc_i2cfragmentation_t fragmentation_enabled;
 extern phTmlNfc_Context_t* gpphTmlNfc_Context;
 /*******************************************************************************
@@ -105,31 +105,31 @@ NFCSTATUS NfccI2cTransport::OpenAndConfigure(pphTmlNfc_Config_t pConfig,
 **
 ** Description      Reads payload of FW rsp from NFCC device into given buffer
 **
-** Parameters       pDevHandle - valid device handle
-**                  pBuffer    - buffer for read data
-**                  numRead    - number of bytes read by calling function
+** Parameters       pConfig     - hardware information
 **
-** Returns          always returns -1
+** Returns          True(Success)/False(Fail)
 **
 *******************************************************************************/
-int NfccI2cTransport::Flushdata(void* pDevHandle, uint8_t* pBuffer, int numRead) {
+bool NfccI2cTransport::Flushdata(phTmlNfc_Config_t pConfig) {
   int retRead = 0;
-  uint16_t totalBtyesToRead = pBuffer[FW_DNLD_LEN_OFFSET] + FW_DNLD_HEADER_LEN + CRC_LEN;
-  /* we shall read totalBtyesToRead-1 as one byte is already read by calling function*/
-  retRead = read((intptr_t)pDevHandle, pBuffer + numRead, totalBtyesToRead - 1);
-  if (retRead > 0) {
-    numRead += retRead;
-    phNxpNciHal_print_packet("RECV", pBuffer, numRead);
-  } else if (retRead == 0) {
-    NXPLOG_TML_E("%s _i2c_read() [pyld] EOF", __func__);
-  } else {
-    if (bFwDnldFlag == false) {
-      NXPLOG_TML_D("%s _i2c_read() [hdr] received", __func__);
-      phNxpNciHal_print_packet("RECV", pBuffer - numRead, NORMAL_MODE_HEADER_LEN);
-    }
-    NXPLOG_TML_E("%s _i2c_read() [pyld] errno : %x", __func__, errno);
+  int nHandle;
+  uint8_t pBuffer[FLUSH_BUFFER_SIZE];
+  NXPLOG_TML_D("%s: Enter", __func__);
+  nHandle = open((const char *)pConfig.pDevName, O_RDWR|O_NONBLOCK);
+  if (nHandle < 0) {
+    NXPLOG_TML_E("%s: _i2c_open() Failed: retval %x", __func__, nHandle);
+    return false;
   }
-  return -1;
+  do {
+    retRead = read(nHandle, pBuffer, sizeof(pBuffer));
+    if(retRead > 0) {
+      phNxpNciHal_print_packet("RECV", pBuffer, retRead);
+      usleep(2*1000);
+    }
+  } while(retRead > 0);
+  close(nHandle);
+  NXPLOG_TML_D("%s: Exit", __func__);
+  return true;
 }
 
 /*******************************************************************************
@@ -197,15 +197,12 @@ int NfccI2cTransport::Read(void *pDevHandle, uint8_t *pBuffer,
       return -1;
     }
 
+    if(bFwDnldFlag && (pBuffer[0] != 0x00)) {
+      bFwDnldFlag = false;
+    }
+
     if (bFwDnldFlag == false) {
       totalBtyesToRead = NORMAL_MODE_HEADER_LEN;
-#if(NXP_EXTNS == TRUE)
-      if (gpphTmlNfc_Context->tReadInfo.pContext != NULL &&
-              !memcmp(gpphTmlNfc_Context->tReadInfo.pContext, "MinOpen", 0x07) &&
-              !pBuffer[0] && pBuffer[1]) {
-        return Flushdata(pDevHandle, pBuffer, numRead);
-      }
-#endif
     } else {
       totalBtyesToRead = FW_DNLD_HEADER_LEN;
     }
