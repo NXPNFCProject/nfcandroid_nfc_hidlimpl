@@ -813,9 +813,6 @@ int phNxpNciHal_MinOpen (){
     fw_update_req = true;
   }
 
-  /* update fragment len based on the chip type.*/
-  phTmlNfc_IoCtl(phTmlNfc_e_setFragmentSize);
-
   do {
     if (fw_update_req && !fw_download_success) {
       gsIsFwRecoveryRequired = false;
@@ -3846,7 +3843,8 @@ NFCSTATUS phNxpNciHal_send_get_cfgs() {
 **
 ** Function         phNxpNciHal_configFeatureList
 **
-** Description      Configures the featureList based on chip type
+** Description      Configures the featureList based on chip type &
+**                  Configure fragmentation length based on chip type.
 **                  HW Version information number will provide chipType.
 **                  HW Version can be obtained from CORE_INIT_RESPONSE(NCI 1.0)
 **                  or CORE_RST_NTF(NCI 2.0)
@@ -3860,6 +3858,8 @@ void phNxpNciHal_configFeatureList(uint8_t* init_rsp, uint16_t rsp_len) {
     tNFC_chipType chipType = nxpncihal_ctrl.chipType;
     NXPLOG_NCIHAL_D("phNxpNciHal_configFeatureList ()chipType = %d", chipType);
     CONFIGURE_FEATURELIST(chipType);
+    /* update fragment len based on the chip type.*/
+    phTmlNfc_IoCtl(phTmlNfc_e_setFragmentSize);
 }
 
 /*******************************************************************************
