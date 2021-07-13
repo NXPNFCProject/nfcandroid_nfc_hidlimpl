@@ -422,8 +422,6 @@ void phNxpNciHal_RecoverFWTearDown(void) {
     setHalInitStatus(status);
     return;
   }
-  /* update fragment len based on the chip type.*/
-  phTmlNfc_IoCtl(phTmlNfc_e_setFragmentSize);
 
   phTmlNfc_EnableFwDnldMode(true);
   nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
