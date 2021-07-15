@@ -262,6 +262,7 @@ typedef enum {
   EEPROM_UICC1_SESSION_ID,
   EEPROM_UICC2_SESSION_ID,
   EEPROM_CE_ACT_NTF,
+  EEPROM_UICC_HCI_CE_STATE,
 } phNxpNci_EEPROM_request_type_t;
 
 typedef struct phNxpNci_EEPROM_info {
@@ -395,34 +396,25 @@ NFCSTATUS phNxpNciHal_read_fw_dw_status(uint8_t &value);
 NFCSTATUS phNxpNciHal_write_fw_dw_status(uint8_t value);
 
 /******************************************************************************
- * Function         phNxpNciHal_set_uicc_hci_params
+ * Function         phNxpNciHal_save_uicc_params
  *
- * Description      This will update value of uicc session status to store flag
- *                  to eeprom
- *
- * Parameters       value - this value will be updated to eeprom flag.
- *
- * Returns          status of the write
- *
- ******************************************************************************/
-NFCSTATUS
-phNxpNciHal_set_uicc_hci_params(std::vector<uint8_t> &ptr, uint8_t bufflen,
-                                phNxpNci_EEPROM_request_type_t uiccType);
-
-/******************************************************************************
- * Function         phNxpNciHal_get_uicc_hci_params
- *
- * Description      This will read the value of fw download status flag
- *                  from eeprom
- *
- * Parameters       value - this parameter will be updated with the flag
- *                  value from eeprom.
+ * Description      This will read the UICC HCI param values
+ *                  from eeprom and store in global variable
  *
  * Returns          status of the read
  *
  ******************************************************************************/
-NFCSTATUS
-phNxpNciHal_get_uicc_hci_params(std::vector<uint8_t> &ptr, uint8_t bufflen,
-                                phNxpNci_EEPROM_request_type_t uiccType);
+NFCSTATUS phNxpNciHal_save_uicc_params();
+
+/******************************************************************************
+ * Function         phNxpNciHal_restore_uicc_params
+ *
+ * Description      This will set the UICC HCI param values
+ *                  back to eeprom from global variable
+ *
+ * Returns          status of the read
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_restore_uicc_params();
 
 #endif /* _PHNXPNCIHAL_H_ */

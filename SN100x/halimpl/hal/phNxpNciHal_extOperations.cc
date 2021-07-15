@@ -18,11 +18,14 @@
 #include "phNfcCommon.h"
 #include "phNxpNciHal_IoctlOperations.h"
 #include <phNxpLog.h>
-#include <phNxpNciHal_ext.h>
 
 #define NCI_HEADER_SIZE 3
 #define NCI_SE_CMD_LEN  4
 nxp_nfc_config_ext_t config_ext;
+static std::vector<uint8_t> uicc1HciParams(0);
+static std::vector<uint8_t> uicc2HciParams(0);
+static std::vector<uint8_t> uiccHciCeParams(0);
+
 /******************************************************************************
  * Function         phNxpNciHal_updateAutonomousPwrState
  *
@@ -251,6 +254,95 @@ NFCSTATUS phNxpNciHal_write_fw_dw_status(uint8_t value) {
   mEEPROM_info.request_type = EEPROM_FW_DWNLD;
   mEEPROM_info.request_mode = SET_EEPROM_DATA;
   return request_EEPROM(&mEEPROM_info);
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_save_uicc_params
+ *
+ * Description      This will read the UICC HCI param values
+ *                  from eeprom and store in global variable
+ *
+ * Returns          status of the read
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_save_uicc_params() {
+  if (nfcFL.chipType < sn220u) {
+    NXPLOG_NCIHAL_E("%s Not supported", __func__);
+    return NFCSTATUS_SUCCESS;
+  }
+
+  NFCSTATUS status = NFCSTATUS_FAILED;
+
+  /* Getting UICC2 CL params */
+  uicc1HciParams.resize(0xFF);
+  status = phNxpNciHal_get_uicc_hci_params(
+      uicc1HciParams, uicc1HciParams.size(), EEPROM_UICC1_SESSION_ID);
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("%s: Save UICC1 CLPP failed .", __func__);
+  }
+
+  /* Getting UICC2 CL params */
+  uicc2HciParams.resize(0xFF);
+  status = phNxpNciHal_get_uicc_hci_params(
+      uicc2HciParams, uicc2HciParams.size(), EEPROM_UICC2_SESSION_ID);
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("%s: Save UICC2 CLPP failed .", __func__);
+  }
+
+  /* Get UICC CE HCI State */
+  uiccHciCeParams.resize(0xFF);
+  status = phNxpNciHal_get_uicc_hci_params(
+      uiccHciCeParams, uiccHciCeParams.size(), EEPROM_UICC_HCI_CE_STATE);
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("%s: Save UICC_HCI_CE_STATE failed .", __func__);
+  }
+  return status;
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_restore_uicc_params
+ *
+ * Description      This will set the UICC HCI param values
+ *                  back to eeprom from global variable
+ *
+ * Returns          status of the read
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_restore_uicc_params() {
+  if (nfcFL.chipType < sn220u) {
+    NXPLOG_NCIHAL_E("%s Not supported", __func__);
+    return NFCSTATUS_SUCCESS;
+  }
+
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  if (uicc1HciParams.size() > 0) {
+    status = phNxpNciHal_set_uicc_hci_params(
+        uicc1HciParams, uicc1HciParams.size(), EEPROM_UICC1_SESSION_ID);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("%s: Restore UICC1 CLPP failed .", __func__);
+    } else {
+      uicc1HciParams.resize(0);
+    }
+  }
+  if (uicc2HciParams.size() > 0) {
+    status = phNxpNciHal_set_uicc_hci_params(
+        uicc2HciParams, uicc2HciParams.size(), EEPROM_UICC2_SESSION_ID);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("%s: Restore UICC2 CLPP failed .", __func__);
+    } else {
+      uicc2HciParams.resize(0);
+    }
+  }
+  if (uiccHciCeParams.size() > 0) {
+    status = phNxpNciHal_set_uicc_hci_params(
+        uiccHciCeParams, uiccHciCeParams.size(), EEPROM_UICC_HCI_CE_STATE);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("%s: Restore UICC_HCI_CE_STATE failed .", __func__);
+    } else {
+      uiccHciCeParams.resize(0);
+    }
+  }
+  return status;
 }
 
 /******************************************************************************
