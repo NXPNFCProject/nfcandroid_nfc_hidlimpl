@@ -42,6 +42,7 @@ static uint8_t bCurrentRetryCount = (2000 / PHTMLNFC_MAXTIME_RETRANSMIT) + 1;
 #define PH_TMLNFC_VALUE_ONE (0x01)
 
 spTransport gpTransportObj;
+extern bool_t gsIsFirstHalMinOpen;
 
 /* Initialize Context structure pointer used to access context structure */
 phTmlNfc_Context_t* gpphTmlNfc_Context = NULL;
@@ -99,6 +100,16 @@ NFCSTATUS phTmlNfc_Init(pphTmlNfc_Config_t pConfig) {
     if (NULL == gpphTmlNfc_Context) {
       wInitStatus = PHNFCSTVAL(CID_NFC_TML, NFCSTATUS_FAILED);
     } else {
+      /*Configure transport layer for communication*/
+      if ((gpTransportObj == NULL) &&
+                  (NFCSTATUS_SUCCESS != phTmlNfc_ConfigTransport()))
+        return NFCSTATUS_FAILED;
+
+      if(gsIsFirstHalMinOpen) {
+        if (!gpTransportObj->Flushdata(pConfig)) {
+          NXPLOG_NCIHAL_E("Flushdata Failed");
+        }
+      }
       /* Initialise all the internal TML variables */
       memset(gpphTmlNfc_Context, PH_TMLNFC_RESET_VALUE,
              sizeof(phTmlNfc_Context_t));
