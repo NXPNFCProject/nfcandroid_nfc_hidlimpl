@@ -110,12 +110,12 @@ NFCSTATUS NfccI2cTransport::OpenAndConfigure(pphTmlNfc_Config_t pConfig,
 ** Returns          True(Success)/False(Fail)
 **
 *******************************************************************************/
-bool NfccI2cTransport::Flushdata(phTmlNfc_Config_t pConfig) {
+bool NfccI2cTransport::Flushdata(pphTmlNfc_Config_t pConfig) {
   int retRead = 0;
   int nHandle;
   uint8_t pBuffer[FLUSH_BUFFER_SIZE];
   NXPLOG_TML_D("%s: Enter", __func__);
-  nHandle = open((const char *)pConfig.pDevName, O_RDWR|O_NONBLOCK);
+  nHandle = open((const char *)pConfig->pDevName, O_RDWR|O_NONBLOCK);
   if (nHandle < 0) {
     NXPLOG_TML_E("%s: _i2c_open() Failed: retval %x", __func__, nHandle);
     return false;
