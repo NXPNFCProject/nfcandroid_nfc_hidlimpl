@@ -200,6 +200,10 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
   status = NFCSTATUS_SUCCESS;
 
   if (bDisableLegacyMfcExtns && bEnableMfcExtns && p_ntf[0] == 0) {
+    if (*p_len < NCI_HEADER_SIZE) {
+      android_errorWriteLog(0x534e4554, "169258743");
+      return NFCSTATUS_FAILED;
+    }
     uint16_t extlen;
     extlen = *p_len - NCI_HEADER_SIZE;
     NxpMfcReaderInstance.AnalyzeMfcResp(&p_ntf[3], &extlen);
