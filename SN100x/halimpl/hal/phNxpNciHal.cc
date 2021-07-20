@@ -3551,21 +3551,36 @@ static void phNxpNciHal_print_res_status(uint8_t* p_rx_data, uint16_t* p_len) {
       NXPLOG_NCIHAL_D("%s: response status =%s", __func__, response_buf[11]);
     }
     if (phNxpNciClock.isClockSet) {
-      int i;
-      for (i = 0; i < *p_len; i++) {
+      int i, len = sizeof(phNxpNciClock.p_rx_data);
+      if (*p_len > len) {
+        android_errorWriteLog(0x534e4554, "169257710");
+      } else {
+        len = *p_len;
+      }
+      for (i = 0; i < len; i++) {
         phNxpNciClock.p_rx_data[i] = p_rx_data[i];
       }
     }
 
     else if (phNxpNciRfSet.isGetRfSetting) {
-      int i;
-      for (i = 0; i < *p_len; i++) {
+      int i, len = sizeof(phNxpNciRfSet.p_rx_data);
+      if (*p_len > len) {
+        android_errorWriteLog(0x534e4554, "169258733");
+      } else {
+        len = *p_len;
+      }
+      for (i = 0; i < len; i++) {
         phNxpNciRfSet.p_rx_data[i] = p_rx_data[i];
         // NXPLOG_NCIHAL_D("%s: response status =0x%x",__func__,p_rx_data[i]);
       }
     } else if (phNxpNciMwEepromArea.isGetEepromArea) {
-      int i;
-      for (i = 8; i < *p_len; i++) {
+      int i, len = sizeof(phNxpNciMwEepromArea.p_rx_data) + 8;
+      if (*p_len > len) {
+        android_errorWriteLog(0x534e4554, "169258884");
+      } else {
+        len = *p_len;
+      }
+      for (i = 8; i < len; i++) {
         phNxpNciMwEepromArea.p_rx_data[i - 8] = p_rx_data[i];
       }
     } else if (nxpncihal_ctrl.phNxpNciGpioInfo.state == GPIO_STORE) {
@@ -3577,7 +3592,7 @@ static void phNxpNciHal_print_res_status(uint8_t* p_rx_data, uint16_t* p_len) {
         nxpncihal_ctrl.phNxpNciGpioInfo.values[0] = p_rx_data[9];
         nxpncihal_ctrl.phNxpNciGpioInfo.values[1] = p_rx_data[8];
     }
-}
+  }
 
   if (p_rx_data[2] && (config_access == true)) {
     if (p_rx_data[3] != NFCSTATUS_SUCCESS) {
