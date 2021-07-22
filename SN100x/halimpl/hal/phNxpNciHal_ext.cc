@@ -514,10 +514,6 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf, uint16_t* 
           nxpncihal_ctrl.nci_info.nci_version  = p_ntf[5];
           if(!nxpncihal_ctrl.hal_open_status)
             phNxpNciHal_configFeatureList(p_ntf,*p_len);
-          if (*p_len < 3) {
-            android_errorWriteLog(0x534e4554, "169258455");
-            return NFCSTATUS_FAILED;
-          }
           int len = p_ntf[2] + 2; /*include 2 byte header*/
           if (len != *p_len - 1) {
             NXPLOG_NCIHAL_E("phNxpNciHal_ext_process_nfc_init_rsp invalid NTF length");
@@ -550,6 +546,10 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf, uint16_t* 
         if(!nxpncihal_ctrl.hal_open_status &&
             nxpncihal_ctrl.nci_info.nci_version != NCI_VERSION_2_0) {
            phNxpNciHal_configFeatureList(p_ntf,*p_len);
+        }
+        if (*p_len < 3) {
+          android_errorWriteLog(0x534e4554, "169258455");
+          return NFCSTATUS_FAILED;
         }
         int len = p_ntf[2] + 2; /*include 2 byte header*/
         if (len != *p_len - 1) {
