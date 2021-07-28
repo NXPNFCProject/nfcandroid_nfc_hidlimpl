@@ -227,11 +227,6 @@ static void phDnldNfc_ProcessSeqState(void* pContext,
 
         if (NFCSTATUS_SUCCESS == wStatus) {
           pDlCtxt->tCurrState = phDnldNfc_StateRecv;
-          phTmlNfc_Read(
-              pDlCtxt->tCmdRspFrameInfo.aFrameBuff,
-              (uint16_t)pDlCtxt->nxp_i2c_fragment_len,
-              (pphTmlNfc_TransactCompletionCb_t)&phDnldNfc_ProcessSeqState,
-              (void *)pDlCtxt);
           wStatus = phTmlNfc_Write(
               (pDlCtxt->tCmdRspFrameInfo.aFrameBuff),
               (uint16_t)(pDlCtxt->tCmdRspFrameInfo.dwSendlength),
@@ -256,6 +251,11 @@ static void phDnldNfc_ProcessSeqState(void* pContext,
             NXPLOG_FWDNLD_W("Response timer not started");
             pDlCtxt->tCurrState = phDnldNfc_StateResponse;
           }
+          phTmlNfc_Read(
+              pDlCtxt->tCmdRspFrameInfo.aFrameBuff,
+              (uint16_t)pDlCtxt->nxp_i2c_fragment_len,
+              (pphTmlNfc_TransactCompletionCb_t)&phDnldNfc_ProcessSeqState,
+              (void *)pDlCtxt);
 
           /* set read status to pDlCtxt->wCmdSendStatus to enable callback */
           pDlCtxt->wCmdSendStatus = wStatus;
