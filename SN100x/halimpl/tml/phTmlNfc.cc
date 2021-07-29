@@ -606,23 +606,12 @@ void phTmlNfc_CleanUp(void) {
   if (NULL == gpphTmlNfc_Context) {
     return;
   }
-  if (NULL != gpphTmlNfc_Context->pDevHandle) {
-#if(NXP_EXTNS == TRUE)
-    if(nfcFL.chipType < sn100u){
-#endif
-      (void)gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_OFF);
-#if(NXP_EXTNS == TRUE)
-    }
-#endif
-    gpphTmlNfc_Context->bThreadDone = 0;
-  }
   sem_destroy(&gpphTmlNfc_Context->rxSemaphore);
   sem_destroy(&gpphTmlNfc_Context->txSemaphore);
   sem_destroy(&gpphTmlNfc_Context->postMsgSemaphore);
   pthread_mutex_destroy(&gpphTmlNfc_Context->wait_busy_lock);
   pthread_cond_destroy(&gpphTmlNfc_Context->wait_busy_condition);
   gpTransportObj = NULL;
-  gpphTmlNfc_Context->pDevHandle = NULL;
   /* Clear memory allocated for storing Context variables */
   free((void*)gpphTmlNfc_Context);
   /* Set the pointer to NULL to indicate De-Initialization */
@@ -665,7 +654,13 @@ NFCSTATUS phTmlNfc_Shutdown(void) {
     sem_post(&gpphTmlNfc_Context->postMsgSemaphore);
     usleep(1000);
 
+    if (nfcFL.chipType < sn100u) {
+      (void)gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
+                                      MODE_POWER_OFF);
+    }
+
     gpTransportObj->Close(gpphTmlNfc_Context->pDevHandle);
+    gpphTmlNfc_Context->pDevHandle = NULL;
     if (0 != pthread_join(gpphTmlNfc_Context->readerThread, (void**)NULL)) {
       NXPLOG_TML_E("Fail to kill reader thread!");
     }
