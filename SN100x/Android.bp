@@ -44,7 +44,8 @@ cc_library_shared {
         "-DNXP_HW_SELF_TEST=TRUE",
         "-DNXP_SRD=TRUE",
         "-DNXP_NFC_RECOVERY=TRUE",
-        "-DNXP_QTAG=TRUE"
+        "-DNXP_QTAG=TRUE",
+        "-DNXP_FORCE_FW_DOWNLOAD=1"
     ],
 
     srcs: [
