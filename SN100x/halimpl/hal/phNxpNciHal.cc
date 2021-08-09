@@ -804,15 +804,10 @@ int phNxpNciHal_MinOpen (){
     if (fw_update_req && !fw_download_success) {
       gsIsFwRecoveryRequired = false;
       status = phNxpNciHal_force_fw_download(seq_handler_offset);
-      if (status == NFCSTATUS_CMD_ABORTED ) {
+      if (status == NFCSTATUS_CMD_ABORTED) {
         return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
       } else if (fw_download_success) {
         wConfigStatus = NFCSTATUS_SUCCESS;
-        /* To Check PN557 Rollback FW flashed */
-        if ((nfcFL.chipType == pn557) &&
-            (NFCSTATUS_SUCCESS != phNxpNciHal_nfcc_core_reset_init(true))) {
-           wConfigStatus = NFCSTATUS_FAILED;
-        }
       }
     }
     status = phNxpNciHal_resetDefaultSettings(fw_update_req,
@@ -825,6 +820,8 @@ int phNxpNciHal_MinOpen (){
                       gsIsFwRecoveryRequired);
       fw_update_req = 1;
       dnld_retry_cnt++;
+    } else if (status != NFCSTATUS_SUCCESS) {
+      return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
     } else {
       break;
     }
