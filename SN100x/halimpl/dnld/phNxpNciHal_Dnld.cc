@@ -20,6 +20,7 @@
 #include <phNxpNciHal_Dnld.h>
 #include <phNxpNciHal_utils.h>
 #include <phTmlNfc.h>
+#include "NfccTransportFactory.h"
 
 /* Macro */
 #define PHLIBNFC_IOCTL_DNLD_MAX_ATTEMPTS 3
@@ -38,6 +39,9 @@
 extern uint16_t wFwVer;
 extern uint16_t wMwVer;
 extern uint8_t gRecFWDwnld; /* flag  set to true to  indicate dummy FW download */
+extern spTransport gpTransportObj;
+extern phTmlNfc_Context_t* gpphTmlNfc_Context;
+
 /* RF Configuration structure */
 typedef struct phLibNfc_IoctlSetRfConfig {
   uint8_t bNumOfParams;   /* Number of Rf configurable parameters to be set */
@@ -182,6 +186,8 @@ static void phNxpNciHal_fw_dnld_recover_cb(void* pContext, NFCSTATUS status,
 
 static NFCSTATUS phNxpNciHal_fw_seq_handler(
     NFCSTATUS (*seq_handler[])(void* pContext, NFCSTATUS status, void* pInfo));
+
+static NFCSTATUS phNxpNciHal_releasePendingRead();
 
 /* Array of pointers to start fw download seq */
 static NFCSTATUS (*phNxpNciHal_dwnld_seqhandler[])(void* pContext,
@@ -1550,6 +1556,12 @@ static NFCSTATUS phNxpNciHal_fw_seq_handler(
     return status;
   }
 
+  status = phNxpNciHal_releasePendingRead();
+  if (NFCSTATUS_SUCCESS != status) {
+    NXPLOG_FWDNLD_E("%s: Failed phNxpNciHal_releasePendingRead() !!", __func__);
+    return status;
+  }
+
   while (seq_handler[seq_counter] != NULL) {
     status = NFCSTATUS_FAILED;
     status = (seq_handler[seq_counter])((void*)pContext, status, &pInfo);
@@ -1909,4 +1921,38 @@ static NFCSTATUS phLibNfc_VerifySN100U_CrcStatus(uint8_t* bCrcStatus) {
     }
 
   return wStatus;
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_releasePendingRead
+**
+** Description      Release Pending Read in Kernel
+**
+** Returns          NFCSTATUS_SUCCESS if success
+**
+*******************************************************************************/
+static NFCSTATUS phNxpNciHal_releasePendingRead() {
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  phTmlNfc_Config_t tTmlConfig;
+  const uint16_t max_len = 260;
+  char nfc_dev_node[max_len] = {};
+  if (!GetNxpStrValue(NAME_NXP_NFC_DEV_NODE, nfc_dev_node,
+                             sizeof(nfc_dev_node))) {
+    NXPLOG_FWDNLD_D(
+        "Invalid nfc device node name keeping the default device node "
+        "/dev/pn54x");
+    strlcpy(nfc_dev_node, "/dev/pn54x", (sizeof(nfc_dev_node)));
+  }
+  tTmlConfig.pDevName = (int8_t*) nfc_dev_node;
+  gpTransportObj->Close(gpphTmlNfc_Context->pDevHandle);
+  if (!gpTransportObj->Flushdata(&tTmlConfig)) {
+    NXPLOG_FWDNLD_E("Flushdata Failed");
+  }
+  status = gpTransportObj->OpenAndConfigure(
+          &tTmlConfig, &(gpphTmlNfc_Context->pDevHandle));
+  if (NFCSTATUS_SUCCESS != status) {
+    NXPLOG_FWDNLD_E("OpenAndConfigure failed!!");
+  }
+  return status;
 }

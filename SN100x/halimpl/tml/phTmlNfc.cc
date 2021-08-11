@@ -352,9 +352,9 @@ static void * phTmlNfc_TmlThread(void* pParam) {
   UNUSED_PROP(pParam);
   NXPLOG_TML_D("PN54X - Tml Reader Thread Started................\n");
 
-  /* Writer thread loop shall be running till shutdown is invoked */
+  /* Reader thread loop shall be running till shutdown is invoked */
   while (gpphTmlNfc_Context->bThreadDone) {
-    /* If Tml write is requested */
+    /* If Tml read is requested */
     /* Set the variable to success initially */
     wStatus = NFCSTATUS_SUCCESS;
     if (-1 == sem_wait(&gpphTmlNfc_Context->rxSemaphore)) {
@@ -903,6 +903,7 @@ NFCSTATUS phTmlNfc_WriteAbort(void) {
 *******************************************************************************/
 NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
+  uint8_t read_flag = (gpphTmlNfc_Context->tReadInfo.bEnable > 0);
 
   if (NULL == gpphTmlNfc_Context) {
     wStatus = NFCSTATUS_FAILED;
@@ -949,11 +950,6 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
       }
       case phTmlNfc_e_EnableNormalMode: {
         /*Reset PN54X*/
-        uint8_t read_flag = false;
-        if (gpphTmlNfc_Context->tReadInfo.bEnable) {
-          gpphTmlNfc_Context->tReadInfo.bEnable = 0;
-          read_flag = true;
-        }
         gpphTmlNfc_Context->tReadInfo.bEnable = 0;
         if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_VEN_RESET) {
           NXPLOG_TML_D(" phTmlNfc_e_EnableNormalMode complete with VEN RESET ");
@@ -974,10 +970,6 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
             gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_FW_GPIO_LOW);
           }
         }
-        if (read_flag) {
-          gpphTmlNfc_Context->tReadInfo.bEnable = 1;
-          sem_post(&gpphTmlNfc_Context->rxSemaphore);
-        }
         break;
       }
       case phTmlNfc_e_EnableDownloadMode: {
@@ -993,8 +985,6 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
             wStatus = gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
                                       MODE_FW_DWND_HIGH);
         }
-        gpphTmlNfc_Context->tReadInfo.bEnable = 1;
-        sem_post(&gpphTmlNfc_Context->rxSemaphore);
         break;
       }
       case phTmlNfc_e_EnableDownloadModeWithVenRst: {
@@ -1002,8 +992,6 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
         gpphTmlNfc_Context->tReadInfo.bEnable = 0;
         NXPLOG_TML_D(" phTmlNfc_e_EnableDownloadModewithVenRst complete with VEN RESET ");
         wStatus = gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_FW_DWNLD_WITH_VEN);
-        gpphTmlNfc_Context->tReadInfo.bEnable = 1;
-        sem_post(&gpphTmlNfc_Context->rxSemaphore);
         break;
       }
       case phTmlNfc_e_setFragmentSize: {
@@ -1020,6 +1008,10 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
         wStatus = NFCSTATUS_INVALID_PARAMETER;
         break;
       }
+    }
+    if (read_flag && (gpphTmlNfc_Context->tReadInfo.bEnable == 0x00)) {
+      gpphTmlNfc_Context->tReadInfo.bEnable = 1;
+      sem_post(&gpphTmlNfc_Context->rxSemaphore);
     }
   }
 
