@@ -484,10 +484,10 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset, bool bIsNfccDlStat
     }
   }
 
+  nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
   if (nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD && (!bIsNfccDlState)) {
     /*NCI_RESET_CMD*/
     static uint8_t cmd_reset_nci_dwnld[] = { 0x20, 0x00, 0x01, 0x80 };
-    nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
     status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci_dwnld),
         cmd_reset_nci_dwnld);
     if (status != NFCSTATUS_SUCCESS) {
