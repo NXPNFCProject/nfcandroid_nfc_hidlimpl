@@ -826,7 +826,8 @@ int phNxpNciHal_MinOpen (){
       break;
     }
 
-    if (dnld_retry_cnt > 1){
+    if (dnld_retry_cnt > 1) {
+      wConfigStatus = NFCSTATUS_FAILED;
       break;
     }
 
