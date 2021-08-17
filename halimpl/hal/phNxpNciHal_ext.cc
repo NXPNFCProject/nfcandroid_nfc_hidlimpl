@@ -527,21 +527,37 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf, uint16_t* 
    NFCSTATUS status = NFCSTATUS_SUCCESS;
 
     /* Parsing CORE_RESET_RSP and CORE_RESET_NTF to update NCI version.*/
-    if(p_ntf == NULL || *p_len == 0x00) {
+    if(p_ntf == NULL || *p_len < 2) {
       return NFCSTATUS_FAILED;
     }
     if (p_ntf[0] == NCI_MT_RSP && ((p_ntf[1] & NCI_OID_MASK) == NCI_MSG_CORE_RESET)) {
+      if (*p_len < 4) {
+        android_errorWriteLog(0x534e4554, "169258455");
+        return NFCSTATUS_FAILED;
+      }
       if (p_ntf[2] == 0x01 && p_ntf[3] == 0x00) {
         NXPLOG_NCIHAL_D("CORE_RESET_RSP NCI2.0");
         if(nxpncihal_ctrl.hal_ext_enabled == TRUE) {
           nxpncihal_ctrl.nci_info.wait_for_ntf = TRUE;
         }
       } else if (p_ntf[2] == 0x03 && p_ntf[3] == 0x00) {
+        if (*p_len < 5) {
+          android_errorWriteLog(0x534e4554, "169258455");
+          return NFCSTATUS_FAILED;
+        }
         NXPLOG_NCIHAL_D("CORE_RESET_RSP NCI1.0");
         nxpncihal_ctrl.nci_info.nci_version = p_ntf[4];
       }
     } else if (p_ntf[0] == NCI_MT_NTF && ((p_ntf[1] & NCI_OID_MASK) == NCI_MSG_CORE_RESET)) {
+        if (*p_len < 4) {
+          android_errorWriteLog(0x534e4554, "169258455");
+          return NFCSTATUS_FAILED;
+        }
         if(p_ntf[3] == CORE_RESET_TRIGGER_TYPE_CORE_RESET_CMD_RECEIVED ) {
+          if (*p_len < 6) {
+            android_errorWriteLog(0x534e4554, "169258455");
+            return NFCSTATUS_FAILED;
+          }
           NXPLOG_NCIHAL_D("CORE_RESET_NTF NCI2.0 reason CORE_RESET_CMD received !");
           nxpncihal_ctrl.nci_info.nci_version  = p_ntf[5];
           phNxpNciHal_configFeatureList(p_ntf,*p_len);
@@ -571,6 +587,10 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf, uint16_t* 
       if (nxpncihal_ctrl.nci_info.nci_version == NCI_VERSION_2_0) {
         NXPLOG_NCIHAL_D("CORE_INIT_RSP NCI2.0 received !");
       } else {
+        if (*p_len < 3) {
+          android_errorWriteLog(0x534e4554, "169258455");
+          return NFCSTATUS_FAILED;
+        }
         NXPLOG_NCIHAL_D("CORE_INIT_RSP NCI1.0 received !");
         int len = p_ntf[2] + 2; /*include 2 byte header*/
         wFwVerRsp = (((uint32_t)p_ntf[len - 2]) << 16U) |
