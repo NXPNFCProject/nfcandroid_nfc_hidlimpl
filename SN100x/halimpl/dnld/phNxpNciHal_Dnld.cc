@@ -179,7 +179,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
 static NFCSTATUS phLibNfc_VerifyCrcStatus(uint8_t bCrcStatus);
 
 /* Internal function to verify Venus Crc info  received during CheckIntegrity response*/
-static NFCSTATUS phLibNfc_VerifySN100U_CrcStatus(uint8_t* bCrcStatus);
+static NFCSTATUS phLibNfc_VerifySNxxxU_CrcStatus(uint8_t* bCrcStatus);
 
 static void phNxpNciHal_fw_dnld_recover_cb(void* pContext, NFCSTATUS status,
                                            void* pInfo);
@@ -1116,7 +1116,7 @@ static void phNxpNciHal_fw_dnld_chk_integrity_cb(void* pContext,
     pRespBuff = (pphDnldNfc_Buff_t)pInfo;
     if((nfcFL.chipType >= sn100u) && (NULL != (pRespBuff->pBuff))) {
         NXPLOG_FWDNLD_D("phNxpNciHal_fw_dnld_chk_integrity_cb - Valid Resp Buff!!...\n");
-        wStatus = phLibNfc_VerifySN100U_CrcStatus(&pRespBuff->pBuff[0]);
+        wStatus = phLibNfc_VerifySNxxxU_CrcStatus(&pRespBuff->pBuff[0]);
     } else if ((PHLIBNFC_DNLD_CHECKINTEGRITYLEN == (pRespBuff->wLen)) && (NULL != (pRespBuff->pBuff))) {
       NXPLOG_FWDNLD_D(
           "phNxpNciHal_fw_dnld_chk_integrity_cb - Valid Resp Buff!!...\n");
@@ -1888,7 +1888,7 @@ static NFCSTATUS phLibNfc_VerifyCrcStatus(uint8_t bCrcStatus) {
   return wStatus;
 }
 
-static NFCSTATUS phLibNfc_VerifySN100U_CrcStatus(uint8_t* bCrcStatus) {
+static NFCSTATUS phLibNfc_VerifySNxxxU_CrcStatus(uint8_t* bCrcStatus) {
 
     uint8_t CODEINFO_LEN = 4;
     uint8_t DATAINFO_LEN = 28;
@@ -1896,6 +1896,10 @@ static NFCSTATUS phLibNfc_VerifySN100U_CrcStatus(uint8_t* bCrcStatus) {
     /*acceptable CRC values defined in little indian format
      * Actual CRC values are 0FC03FFF         */
     uint32_t acceptable_crc_values = 0xFF3FC00F;
+    if (nfcFL.chipType >= sn220u) {
+      /* Accepted CRC value according to SN220 integrity bit mapping */
+      acceptable_crc_values = 0xFBFFC00F;
+    }
     NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
     phDnldChkIntegrityRsp_Buff_t chkIntgRspBuf;
 
