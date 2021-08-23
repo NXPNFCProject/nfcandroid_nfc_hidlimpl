@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  *
- *  Copyright (C) 2015-2019 NXP Semiconductors
+ *  Copyright (C) 2015-2019, 2021 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@
  *
  ******************************************************************************/
 #pragma once
-#include <pthread.h>
-
 #include "ese_hal_api.h"
 #include "hal_nxpese.h"
 #include <utils/RefBase.h>
@@ -26,45 +24,8 @@
 #include <android/hardware/secure_element/1.0/ISecureElementHalCallback.h>
 #include <android/hardware/secure_element/1.0/types.h>
 #include <vendor/nxp/nxpese/1.0/INxpEse.h>
+#include <phNxpNciHal_utils.h>
 using vendor::nxp::nxpese::V1_0::INxpEse;
-
-class ThreadMutex {
- public:
-  ThreadMutex();
-  virtual ~ThreadMutex();
-  void lock();
-  void unlock();
-  operator pthread_mutex_t*() { return &mMutex; }
-
- private:
-  pthread_mutex_t mMutex;
-};
-
-class ThreadCondVar : public ThreadMutex {
- public:
-  ThreadCondVar();
-  virtual ~ThreadCondVar();
-  void signal();
-  void wait();
-  operator pthread_cond_t*() { return &mCondVar; }
-  operator pthread_mutex_t*() {
-    return ThreadMutex::operator pthread_mutex_t*();
-  }
-
- private:
-  pthread_cond_t mCondVar;
-};
-
-class AutoThreadMutex {
- public:
-  AutoThreadMutex(ThreadMutex& m);
-  virtual ~AutoThreadMutex();
-  operator ThreadMutex&() { return mm; }
-  operator pthread_mutex_t*() { return (pthread_mutex_t*)mm; }
-
- private:
-  ThreadMutex& mm;
-};
 
 class EseAdaptation {
  public:
