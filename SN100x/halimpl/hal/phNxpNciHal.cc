@@ -484,6 +484,12 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset, bool bIsNfccDlStat
     }
   }
 
+  /* Make sure read thread is pending before updating fwdnld_mode_reqd to true*/
+  status = phNxpNciHal_enableTmlRead();
+  if (status != PHNFCSTVAL(CID_NFC_TML, NFCSTATUS_BUSY)) {
+    NXPLOG_NCIHAL_E("Read Thread is not pending already. status = 0x%x \n", status);
+  }
+
   nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
   if (nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD && (!bIsNfccDlState)) {
     /*NCI_RESET_CMD*/

@@ -72,6 +72,9 @@
 
 #define PH_LIBNFC_VEN_RESET_ON_DOWNLOAD_TIMEOUT (1)
 
+static ThreadMutex sProcessSeqStateLock;
+static ThreadMutex sProcessRwSeqStateLock;
+
 /* Function prototype declarations */
 static void phDnldNfc_ProcessSeqState(void* pContext,
                                       phTmlNfc_TransactInfo_t* pInfo);
@@ -191,6 +194,7 @@ NFCSTATUS phDnldNfc_CmdHandler(void* pContext, phDnldNfc_Event_t TrigEvent) {
 *******************************************************************************/
 static void phDnldNfc_ProcessSeqState(void* pContext,
                                       phTmlNfc_TransactInfo_t* pInfo) {
+  AutoThreadMutex a(sProcessSeqStateLock);
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   NFCSTATUS wIntStatus;
   uint32_t TimerId;
@@ -341,6 +345,7 @@ static void phDnldNfc_ProcessSeqState(void* pContext,
 *******************************************************************************/
 static void phDnldNfc_ProcessRWSeqState(void* pContext,
                                         phTmlNfc_TransactInfo_t* pInfo) {
+  AutoThreadMutex a(sProcessRwSeqStateLock);
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   NFCSTATUS wIntStatus = wStatus;
   uint32_t TimerId;

@@ -491,3 +491,132 @@ void phNxpNciHal_emergency_recovery(uint8_t status) {
     break;
   }
 }
+
+/*******************************************************************************
+**
+** Function:    ThreadMutex::ThreadMutex()
+**
+** Description: class constructor
+**
+** Returns:     none
+**
+*******************************************************************************/
+ThreadMutex::ThreadMutex() {
+  pthread_mutexattr_t mutexAttr;
+
+  pthread_mutexattr_init(&mutexAttr);
+  pthread_mutex_init(&mMutex, &mutexAttr);
+  pthread_mutexattr_destroy(&mutexAttr);
+}
+
+/*******************************************************************************
+**
+** Function:    ThreadMutex::~ThreadMutex()
+**
+** Description: class destructor
+**
+** Returns:     none
+**
+*******************************************************************************/
+ThreadMutex::~ThreadMutex() { pthread_mutex_destroy(&mMutex); }
+
+/*******************************************************************************
+**
+** Function:    ThreadMutex::lock()
+**
+** Description: lock kthe mutex
+**
+** Returns:     none
+**
+*******************************************************************************/
+void ThreadMutex::lock() { pthread_mutex_lock(&mMutex); }
+
+/*******************************************************************************
+**
+** Function:    ThreadMutex::unblock()
+**
+** Description: unlock the mutex
+**
+** Returns:     none
+**
+*******************************************************************************/
+void ThreadMutex::unlock() { pthread_mutex_unlock(&mMutex); }
+
+/*******************************************************************************
+**
+** Function:    ThreadCondVar::ThreadCondVar()
+**
+** Description: class constructor
+**
+** Returns:     none
+**
+*******************************************************************************/
+ThreadCondVar::ThreadCondVar() {
+  pthread_condattr_t CondAttr;
+
+  pthread_condattr_init(&CondAttr);
+  pthread_cond_init(&mCondVar, &CondAttr);
+
+  pthread_condattr_destroy(&CondAttr);
+}
+
+/*******************************************************************************
+**
+** Function:    ThreadCondVar::~ThreadCondVar()
+**
+** Description: class destructor
+**
+** Returns:     none
+**
+*******************************************************************************/
+ThreadCondVar::~ThreadCondVar() { pthread_cond_destroy(&mCondVar); }
+
+/*******************************************************************************
+**
+** Function:    ThreadCondVar::wait()
+**
+** Description: wait on the mCondVar
+**
+** Returns:     none
+**
+*******************************************************************************/
+void ThreadCondVar::wait() {
+  pthread_cond_wait(&mCondVar, *this);
+  pthread_mutex_unlock(*this);
+}
+
+/*******************************************************************************
+**
+** Function:    ThreadCondVar::signal()
+**
+** Description: signal the mCondVar
+**
+** Returns:     none
+**
+*******************************************************************************/
+void ThreadCondVar::signal() {
+  AutoThreadMutex a(*this);
+  pthread_cond_signal(&mCondVar);
+}
+
+/*******************************************************************************
+**
+** Function:    AutoThreadMutex::AutoThreadMutex()
+**
+** Description: class constructor, automatically lock the mutex
+**
+** Returns:     none
+**
+*******************************************************************************/
+AutoThreadMutex::AutoThreadMutex(ThreadMutex& m) : mm(m) { mm.lock(); }
+
+/*******************************************************************************
+**
+** Function:    AutoThreadMutex::~AutoThreadMutex()
+**
+** Description: class destructor, automatically unlock the mutex
+**
+** Returns:     none
+**
+*******************************************************************************/
+AutoThreadMutex::~AutoThreadMutex() { mm.unlock(); }

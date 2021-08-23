@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2013-2018 NXP Semiconductors
+ *  Copyright (C) 2013-2018, 2021 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -107,5 +107,43 @@ void phNxpNciHal_emergency_recovery(uint8_t status);
 #define CONCURRENCY_UNLOCK()     \
   if (phNxpNciHal_get_monitor()) \
   pthread_mutex_unlock(&phNxpNciHal_get_monitor()->concurrency_mutex)
+
+class ThreadMutex {
+ public:
+  ThreadMutex();
+  virtual ~ThreadMutex();
+  void lock();
+  void unlock();
+  operator pthread_mutex_t*() { return &mMutex; }
+
+ private:
+  pthread_mutex_t mMutex;
+};
+
+class ThreadCondVar : public ThreadMutex {
+ public:
+  ThreadCondVar();
+  virtual ~ThreadCondVar();
+  void signal();
+  void wait();
+  operator pthread_cond_t*() { return &mCondVar; }
+  operator pthread_mutex_t*() {
+    return ThreadMutex::operator pthread_mutex_t*();
+  }
+
+ private:
+  pthread_cond_t mCondVar;
+};
+
+class AutoThreadMutex {
+ public:
+  AutoThreadMutex(ThreadMutex& m);
+  virtual ~AutoThreadMutex();
+  operator ThreadMutex&() { return mm; }
+  operator pthread_mutex_t*() { return (pthread_mutex_t*)mm; }
+
+ private:
+  ThreadMutex& mm;
+};
 
 #endif /* _PHNXPNCIHAL_UTILS_H_ */
