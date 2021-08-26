@@ -24,7 +24,7 @@
 #include <android/hardware/secure_element/1.0/ISecureElementHalCallback.h>
 #include <android/hardware/secure_element/1.0/types.h>
 #include <vendor/nxp/nxpese/1.0/INxpEse.h>
-#include <phNxpNciHal_utils.h>
+#include "NxpNfcThreadMutex.h"
 using vendor::nxp::nxpese::V1_0::INxpEse;
 
 class EseAdaptation {
@@ -42,21 +42,21 @@ class EseAdaptation {
   EseAdaptation();
   void signal();
   static EseAdaptation* mpInstance;
-  static ThreadMutex sLock;
-  static ThreadMutex sIoctlLock;
-  ThreadCondVar mCondVar;
+  static NfcHalThreadMutex sLock;
+  static NfcHalThreadMutex sIoctlLock;
+  NfcHalThreadCondVar mCondVar;
   static tHAL_ESE_CBACK* mHalCallback;
   static tHAL_ESE_DATA_CBACK* mHalDataCallback;
-  static ThreadCondVar mHalOpenCompletedEvent;
-  static ThreadCondVar mHalCloseCompletedEvent;
-  static ThreadCondVar mHalIoctlEvent;
+  static NfcHalThreadCondVar mHalOpenCompletedEvent;
+  static NfcHalThreadCondVar mHalCloseCompletedEvent;
+  static NfcHalThreadCondVar mHalIoctlEvent;
   static android::sp<android::hardware::secure_element::V1_0::ISecureElement>
       mHal;
   static android::sp<vendor::nxp::nxpese::V1_0::INxpEse> mHalNxpEse;
 #if (NXP_EXTNS == TRUE)
-  static ThreadCondVar mHalCoreResetCompletedEvent;
-  static ThreadCondVar mHalCoreInitCompletedEvent;
-  static ThreadCondVar mHalInitCompletedEvent;
+  static NfcHalThreadCondVar mHalCoreResetCompletedEvent;
+  static NfcHalThreadCondVar mHalCoreInitCompletedEvent;
+  static NfcHalThreadCondVar mHalInitCompletedEvent;
 #endif
   static uint32_t Thread(uint32_t arg);
   static void HalDeviceContextDataCallback(uint16_t data_len, uint8_t* p_data);

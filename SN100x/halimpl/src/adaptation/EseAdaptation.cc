@@ -41,19 +41,19 @@ extern "C" void verify_stack_non_volatile_store();
 extern "C" void delete_stack_non_volatile_store(bool forceDelete);
 
 EseAdaptation* EseAdaptation::mpInstance = NULL;
-ThreadMutex EseAdaptation::sLock;
-ThreadMutex EseAdaptation::sIoctlLock;
+NfcHalThreadMutex EseAdaptation::sLock;
+NfcHalThreadMutex EseAdaptation::sIoctlLock;
 sp<INxpEse> EseAdaptation::mHalNxpEse;
 sp<ISecureElement> EseAdaptation::mHal;
 tHAL_ESE_CBACK* EseAdaptation::mHalCallback = NULL;
 tHAL_ESE_DATA_CBACK* EseAdaptation::mHalDataCallback = NULL;
-ThreadCondVar EseAdaptation::mHalOpenCompletedEvent;
-ThreadCondVar EseAdaptation::mHalCloseCompletedEvent;
+NfcHalThreadCondVar EseAdaptation::mHalOpenCompletedEvent;
+NfcHalThreadCondVar EseAdaptation::mHalCloseCompletedEvent;
 
 #if(NXP_EXTNS == TRUE)
-ThreadCondVar EseAdaptation::mHalCoreResetCompletedEvent;
-ThreadCondVar EseAdaptation::mHalCoreInitCompletedEvent;
-ThreadCondVar EseAdaptation::mHalInitCompletedEvent;
+NfcHalThreadCondVar EseAdaptation::mHalCoreResetCompletedEvent;
+NfcHalThreadCondVar EseAdaptation::mHalCoreInitCompletedEvent;
+NfcHalThreadCondVar EseAdaptation::mHalInitCompletedEvent;
 #endif
 #define SIGNAL_NONE 0
 #define SIGNAL_SIGNALED 1
@@ -93,7 +93,7 @@ EseAdaptation::~EseAdaptation() { mpInstance = NULL; }
 **
 *******************************************************************************/
 EseAdaptation& EseAdaptation::GetInstance() {
-  AutoThreadMutex a(sLock);
+  NfcHalAutoThreadMutex a(sLock);
 
   if (!mpInstance) mpInstance = new EseAdaptation;
   return *mpInstance;
@@ -142,7 +142,7 @@ uint32_t EseAdaptation::Thread(uint32_t arg) {
   const char* func = "EseAdaptation::Thread";
   ALOGD_IF(nfc_debug_enabled, "%s: enter", func);
   arg = 0;
-  { ThreadCondVar CondVar; }
+  { NfcHalThreadCondVar CondVar; }
 
   EseAdaptation::GetInstance().signal();
 
@@ -246,7 +246,7 @@ void IoctlCallback(hidl_vec<uint8_t> outputData) {
 int EseAdaptation::HalIoctl(long arg, void* p_data) {
   const char* func = "EseAdaptation::HalIoctl";
   hidl_vec<uint8_t> data;
-  AutoThreadMutex a(sIoctlLock);
+  NfcHalAutoThreadMutex a(sIoctlLock);
   ese_nxp_IoctlInOutData_t* pInpOutData = (ese_nxp_IoctlInOutData_t*)p_data;
   ALOGD_IF(nfc_debug_enabled, "%s arg=%ld", func, arg);
 

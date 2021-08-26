@@ -67,6 +67,7 @@ cc_library_shared {
         "halimpl/tml/NfccTransportFactory.cc",
         "halimpl/tml/transport/*.cc",
         "halimpl/utils/NxpNfcCapability.cc",
+        "halimpl/utils/NxpNfcThreadMutex.cc",
         "halimpl/utils/phNxpConfig.cc",
         "halimpl/utils/phNxpNciHal_utils.cc",
         "halimpl/utils/sparse_crc32.cc",

@@ -38,6 +38,7 @@
 
 #include <android-base/stringprintf.h>
 #include "NfccTransportFactory.h"
+#include "NxpNfcThreadMutex.h"
 
 using android::base::StringPrintf;
 using namespace android::hardware::nfc::V1_1;
@@ -68,7 +69,7 @@ static uint8_t read_failed_disable_nfc = false;
 static uint8_t fw_download_success = 0;
 static uint8_t config_access = false;
 static uint8_t config_success = true;
-static ThreadMutex sHalFnLock;
+static NfcHalThreadMutex sHalFnLock;
 
 /* NCI HAL Control structure */
 phNxpNciHal_Control_t nxpncihal_ctrl;
@@ -649,7 +650,7 @@ int phNxpNciHal_MinOpen (){
   int dnld_retry_cnt = 0;
   NXPLOG_NCIHAL_D("phNxpNci_MinOpen(): enter");
 
-  AutoThreadMutex a(sHalFnLock);
+  NfcHalAutoThreadMutex a(sHalFnLock);
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_MIN_OPEN) {
     NXPLOG_NCIHAL_D("phNxpNciHal_MinOpen(): already open");
     return NFCSTATUS_SUCCESS;
@@ -2149,7 +2150,7 @@ int phNxpNciHal_close(bool bShutdown) {
 
 
   phNxpNciHal_deinitializeRegRfFwDnld();
-  AutoThreadMutex a(sHalFnLock);
+  NfcHalAutoThreadMutex a(sHalFnLock);
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
     NXPLOG_NCIHAL_D("phNxpNciHal_close is already closed, ignoring close");
     return NFCSTATUS_FAILED;
