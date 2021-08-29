@@ -31,7 +31,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  Copyright 2018 NXP
+ *  Copyright 2021 NXP
  *
  ******************************************************************************/
 /******************************************************************************
@@ -712,6 +712,9 @@ static void nfa_ee_add_sys_code_route_to_ecb(tNFA_EE_ECB* p_cb, uint8_t* pp,
 static void nfa_ee_conn_cback(uint8_t conn_id, tNFC_CONN_EVT event,
                               tNFC_CONN* p_data) {
   tNFA_EE_NCI_CONN cbk;
+#if (NXP_EXTNS == TRUE)
+  memset(&cbk, 0, sizeof(tNFA_EE_NCI_CONN));
+#endif
 
   DLOG_IF(INFO, nfc_debug_enabled) << StringPrintf(
       "nfa_ee_conn_cback: conn_id: %d, event=0x%02x", conn_id, event);
