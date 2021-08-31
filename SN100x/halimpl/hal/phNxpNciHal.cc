@@ -486,9 +486,9 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset, bool bIsNfccDlStat
   }
 
   /* Make sure read thread is pending before updating fwdnld_mode_reqd to true*/
-  status = phNxpNciHal_enableTmlRead();
-  if (status != PHNFCSTVAL(CID_NFC_TML, NFCSTATUS_BUSY)) {
-    NXPLOG_NCIHAL_E("Read Thread is not pending already. status = 0x%x \n", status);
+  NFCSTATUS readStatus = phNxpNciHal_enableTmlRead();
+  if (readStatus != PHNFCSTVAL(CID_NFC_TML, NFCSTATUS_BUSY)) {
+    NXPLOG_NCIHAL_E("Read Thread is not pending already. status = 0x%x \n", readStatus);
   }
 
   nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
