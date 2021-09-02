@@ -261,9 +261,6 @@ static void phDnldNfc_ProcessSeqState(void* pContext,
               (uint16_t)pDlCtxt->nxp_i2c_fragment_len,
               (pphTmlNfc_TransactCompletionCb_t)&phDnldNfc_ProcessSeqState,
               (void *)pDlCtxt);
-
-          /* set read status to pDlCtxt->wCmdSendStatus to enable callback */
-          pDlCtxt->wCmdSendStatus = wStatus;
           break;
         } else {
           /* Setting TimerExpStatus below to avoid frame processing in response
@@ -412,14 +409,11 @@ static void phDnldNfc_ProcessRWSeqState(void* pContext,
             /* Todo:- diagnostic in this case */
           }
           /* Call TML_Read function and register the call back function */
-          wStatus = phTmlNfc_Read(
+          phTmlNfc_Read(
               pDlCtxt->tCmdRspFrameInfo.aFrameBuff,
               (uint16_t)pDlCtxt->nxp_i2c_fragment_len,
               (pphTmlNfc_TransactCompletionCb_t)&phDnldNfc_ProcessRWSeqState,
               (void*)pDlCtxt);
-
-          /* set read status to pDlCtxt->wCmdSendStatus to enable callback */
-          pDlCtxt->wCmdSendStatus = wStatus;
           break;
         } else {
           /* Setting TimerExpStatus below to avoid frame processing in reponse
