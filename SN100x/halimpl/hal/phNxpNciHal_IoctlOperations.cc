@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 NXP Semiconductors
+ * Copyright 2019-2021 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -201,7 +201,7 @@ std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
                                 "NXP_NFC_CHIP_TYPE",
                                 "NXP_PROP_CE_ACTION_NTF",
                                 "NXP_AGC_DEBUG_ENABLE",
-                                "NXP_EXTENDED_FIELD_DETECT_LX_DEBUG",
+                                "NXP_EXTENDED_FIELD_DETECT_MODE",
                                 "NXP_CORE_PROP_SYSTEM_DEBUG"};
 
 /****************************************************************

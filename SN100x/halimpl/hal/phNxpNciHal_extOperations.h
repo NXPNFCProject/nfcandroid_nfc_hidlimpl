@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 NXP Semiconductors
+ * Copyright 2019-2021 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,3 +103,14 @@ NFCSTATUS phNxpNciHal_setSrdtimeout();
  *
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd);
+
+/******************************************************************************
+ * Function         phNxpNciHal_setExtendedFieldMode
+ *
+ * Description      This function can be used to set nfcc extended field mode
+ *
+ * Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS or
+ *                  NFCSTATUS_FEATURE_NOT_SUPPORTED
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_setExtendedFieldMode();

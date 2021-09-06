@@ -253,6 +253,7 @@ typedef enum {
   EEPROM_ENABLE_VEN_CFG,
   EEPROM_SRD_TIMEOUT,
   EEPROM_CE_ACT_NTF,
+  EEPROM_EXT_FIELD_DETECT_MODE
 } phNxpNci_EEPROM_request_type_t;
 
 typedef struct phNxpNci_EEPROM_info {
