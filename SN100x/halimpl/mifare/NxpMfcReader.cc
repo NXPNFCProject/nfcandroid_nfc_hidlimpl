@@ -220,8 +220,10 @@ bool NxpMfcReader::checkIsMFCIncDecRestore(uint8_t cmdInst) {
 void NxpMfcReader::BuildWrite16Cmd() {
   mMfcTagCmdIntfData.sendBuf[0] = eMfRawDataXchgHdr;
   mMfcTagCmdIntfData.sendBufLen = mMfcTagCmdIntfData.sendBufLen - 1;
-  memcpy(mMfcTagCmdIntfData.sendBuf + 1, mMfcTagCmdIntfData.sendBuf + 2,
-          mMfcTagCmdIntfData.sendBufLen);
+  uint8_t buff[mMfcTagCmdIntfData.sendBufLen];
+  memset(buff, 0, mMfcTagCmdIntfData.sendBufLen);
+  memcpy(buff,mMfcTagCmdIntfData.sendBuf + 2, mMfcTagCmdIntfData.sendBufLen);
+  memcpy(mMfcTagCmdIntfData.sendBuf + 1, buff, mMfcTagCmdIntfData.sendBufLen);
 }
 
 /*******************************************************************************
