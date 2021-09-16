@@ -124,3 +124,14 @@ phNxpNciHal_set_uicc_hci_params(std::vector<uint8_t> &ptr, uint8_t bufflen,
 NFCSTATUS
 phNxpNciHal_get_uicc_hci_params(std::vector<uint8_t> &ptr, uint8_t bufflen,
                                 phNxpNci_EEPROM_request_type_t uiccType);
+
+/******************************************************************************
+ * Function         phNxpNciHal_setExtendedFieldMode
+ *
+ * Description      This function can be used to set nfcc extended field mode
+ *
+ * Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS or
+ *                  NFCSTATUS_FEATURE_NOT_SUPPORTED
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_setExtendedFieldMode();

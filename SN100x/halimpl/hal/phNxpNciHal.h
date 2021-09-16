@@ -263,6 +263,7 @@ typedef enum {
   EEPROM_UICC2_SESSION_ID,
   EEPROM_CE_ACT_NTF,
   EEPROM_UICC_HCI_CE_STATE,
+  EEPROM_EXT_FIELD_DETECT_MODE
 } phNxpNci_EEPROM_request_type_t;
 
 typedef struct phNxpNci_EEPROM_info {
