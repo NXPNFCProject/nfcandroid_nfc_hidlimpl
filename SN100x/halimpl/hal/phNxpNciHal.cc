@@ -1677,13 +1677,19 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len, uint8_t* p_c
       if(retlen > 0)
         phNxpNciHal_enableDefaultUICC2SWPline((uint8_t)retlen);
     }
-    if (nfcFL.chipType >= sn100u) {
-      status = phNxpNciHal_setGuardTimer();
-      if (status != NFCSTATUS_SUCCESS) {
-        NXPLOG_NCIHAL_E("phNxpNciHal_setGuardTimer failed");
-        retry_core_init_cnt++;
-        goto retry_core_init;
-      }
+    status = phNxpNciHal_setExtendedFieldMode();
+    if (status != NFCSTATUS_SUCCESS &&
+        status != NFCSTATUS_FEATURE_NOT_SUPPORTED) {
+      NXPLOG_NCIHAL_E("phNxpNciHal_setExtendedFieldMode failed");
+      retry_core_init_cnt++;
+      goto retry_core_init;
+    }
+    status = phNxpNciHal_setGuardTimer();
+    if (status != NFCSTATUS_SUCCESS &&
+        status != NFCSTATUS_FEATURE_NOT_SUPPORTED) {
+      NXPLOG_NCIHAL_E("phNxpNciHal_setGuardTimer failed");
+      retry_core_init_cnt++;
+      goto retry_core_init;
     }
 #if(NXP_EXTNS == TRUE && NXP_SRD == TRUE)
     status = phNxpNciHal_setSrdtimeout();

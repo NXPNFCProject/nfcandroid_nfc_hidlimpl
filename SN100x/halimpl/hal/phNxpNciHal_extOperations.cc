@@ -80,16 +80,20 @@ NFCSTATUS phNxpNciHal_setAutonomousMode() {
 NFCSTATUS phNxpNciHal_setGuardTimer() {
 
   phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
+  NFCSTATUS status = NFCSTATUS_FEATURE_NOT_SUPPORTED;
 
-  if (config_ext.autonomous_mode != true)
-    config_ext.guard_timer_value = 0x00;
+  if (nfcFL.chipType >= sn100u) {
+    if (config_ext.autonomous_mode != true)
+      config_ext.guard_timer_value = 0x00;
 
-  mEEPROM_info.request_mode = SET_EEPROM_DATA;
-  mEEPROM_info.buffer = &config_ext.guard_timer_value;
-  mEEPROM_info.bufflen = sizeof(config_ext.guard_timer_value);
-  mEEPROM_info.request_type = EEPROM_GUARD_TIMER;
+    mEEPROM_info.request_mode = SET_EEPROM_DATA;
+    mEEPROM_info.buffer = &config_ext.guard_timer_value;
+    mEEPROM_info.bufflen = sizeof(config_ext.guard_timer_value);
+    mEEPROM_info.request_type = EEPROM_GUARD_TIMER;
 
-  return request_EEPROM(&mEEPROM_info);
+    status = request_EEPROM(&mEEPROM_info);
+  }
+  return status;
 }
 
 /******************************************************************************
@@ -523,3 +527,36 @@ NFCSTATUS phNxpNciHal_setSrdtimeout() {
   return status;
 }
 #endif
+
+/******************************************************************************
+ * Function         phNxpNciHal_setExtendedFieldMode
+ *
+ * Description      This function can be used to set nfcc extended field mode
+ *
+ * Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS or
+ *                  NFCSTATUS_FEATURE_NOT_SUPPORTED
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_setExtendedFieldMode() {
+  const uint8_t enable_val = 0x01;
+  const uint8_t disable_val = 0x00;
+  uint8_t extended_field_mode = disable_val;
+  phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
+  NFCSTATUS status = NFCSTATUS_FEATURE_NOT_SUPPORTED;
+
+  if (nfcFL.chipType >= sn100u &&
+      GetNxpNumValue(NAME_NXP_EXTENDED_FIELD_DETECT_MODE, &extended_field_mode,
+        sizeof(extended_field_mode))) {
+    if (extended_field_mode == enable_val ||
+        extended_field_mode == disable_val) {
+      mEEPROM_info.buffer = &extended_field_mode;
+      mEEPROM_info.bufflen = sizeof(extended_field_mode);
+      mEEPROM_info.request_type = EEPROM_EXT_FIELD_DETECT_MODE;
+      mEEPROM_info.request_mode = SET_EEPROM_DATA;
+      status = request_EEPROM(&mEEPROM_info);
+    } else {
+      NXPLOG_NCIHAL_E("Invalid Extended Field Mode in config");
+    }
+  }
+  return status;
+}
