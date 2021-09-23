@@ -24,6 +24,7 @@
 #include <phNxpNciHal.h>
 #include <phNxpNciHal_utils.h>
 
+extern phNxpNciHal_Control_t nxpncihal_ctrl;
 /*********************** Link list functions **********************************/
 
 /*******************************************************************************
@@ -485,6 +486,12 @@ void phNxpNciHal_emergency_recovery(uint8_t status) {
     NXPLOG_NCIHAL_E("abort()");
     abort();
   }
+  case CORE_RESET_TRIGGER_TYPE_POWERED_ON: {
+      if (nxpncihal_ctrl.hal_open_status == true) {
+          NXPLOG_NCIHAL_E("abort()");
+          abort();
+      }
+  } break;
   default:
     NXPLOG_NCIHAL_E("%s: Core reset with Invalid status : %d ", __func__,
                     status);
