@@ -129,7 +129,6 @@ void *RfFwRegionDnld_handle = NULL;
 fpVerInfoStoreInEeprom_t fpVerInfoStoreInEeprom = NULL;
 fpRegRfFwDndl_t fpRegRfFwDndl = NULL;
 fpPropConfCover_t fpPropConfCover =  NULL;
-
 void* phNxpNciHal_client_thread(void* arg);
 /**************** local methods used in this file only ************************/
 static void phNxpNciHal_open_complete(NFCSTATUS status);
@@ -2108,7 +2107,6 @@ static void phNxpNciHal_core_initialized_complete(NFCSTATUS status) {
 
   phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId,
                         (phLibNfc_Message_t*)&msg);
-
   return;
 }
 
@@ -2360,7 +2358,7 @@ void phNxpNciHal_close_complete(NFCSTATUS status) {
   }
   msg.pMsgData = NULL;
   msg.Size = 0;
-
+  nxpncihal_ctrl.hal_open_status = false;
   phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &msg);
 
   return;
