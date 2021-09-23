@@ -20,7 +20,7 @@
  *
  *  The original Work has been changed by NXP Semiconductors.
  *
- *  Copyright 2015-2020 NXP
+ *  Copyright 2015-2021 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -82,6 +82,7 @@ int updateNxpConfigTimestamp();
 #define NAME_NXP_CORE_CONF_EXTN "NXP_CORE_CONF_EXTN"
 #define NAME_NXP_CORE_CONF "NXP_CORE_CONF"
 #define NAME_NXP_CORE_MFCKEY_SETTING "NXP_CORE_MFCKEY_SETTING"
+#define NAME_NXP_NFC_PROFILE_EXTN "NXP_NFC_PROFILE_EXTN"
 #define NAME_NXP_CHINA_TIANJIN_RF_ENABLED "NXP_CHINA_TIANJIN_RF_ENABLED"
 #define NAME_NXP_CHINA_BLK_NUM_CHK_ENABLE "NXP_CN_TRANSIT_BLK_NUM_CHECK_ENABLE"
 #define NAME_NXP_CN_TRANSIT_CMA_BYPASSMODE_ENABLE \
