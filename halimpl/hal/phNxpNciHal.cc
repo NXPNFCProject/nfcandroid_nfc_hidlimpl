@@ -1035,7 +1035,7 @@ init_retry:
     sIsForceFwDownloadReqd = false;
   } else if (sIsForceFwDownloadReqd) {
     NXPLOG_NCIHAL_E("%s: Failed after Force FW updated. Exit", __func__);
-    return NFCSTATUS_FAILED;
+    goto minCleanAndreturn;
   }
 
   sIsForceFwDownloadReqd = ((init_retry_cnt >= 3) /*No response for reset/init*/ ||
@@ -1121,6 +1121,7 @@ force_download:
   goto init_retry;
 
 minCleanAndreturn:
+  phNxpNciHal_Minclose();
   CONCURRENCY_UNLOCK();
   if (nfc_dev_node != NULL) {
     free(nfc_dev_node);
