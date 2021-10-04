@@ -1118,7 +1118,7 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
   uint8_t cur_value = 0, len = 5;
   uint8_t b_position = 0;
   bool_t update_req = false;
-  uint8_t set_cfg_cmd_len = 0;
+  uint16_t set_cfg_cmd_len = 0;
   uint8_t* set_cfg_eeprom, *base_addr;
 
   mEEPROM_info->update_mode = BITWISE;
