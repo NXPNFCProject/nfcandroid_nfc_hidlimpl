@@ -638,6 +638,13 @@ static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
     status = NFCSTATUS_FAILED;
     goto clean_and_return;
   }
+
+  if (cmd_len < 3) {
+    android_errorWriteLog(0x534e4554, "153880630");
+    status = NFCSTATUS_FAILED;
+    goto clean_and_return;
+  }
+
   /* No NTF expected for OMAPI command */
   if(p_cmd[0] == 0x2F && p_cmd[1] == 0x1 &&  p_cmd[2] == 0x01) {
     nxpncihal_ctrl.nci_info.wait_for_ntf = FALSE;
