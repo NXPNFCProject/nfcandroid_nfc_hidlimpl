@@ -3657,6 +3657,12 @@ int phNxpNciHal_check_ncicmd_write_window(uint16_t cmd_len, uint8_t* p_cmd) {
   NFCSTATUS status = NFCSTATUS_FAILED;
   int sem_timedout = 2, s;
   struct timespec ts;
+
+  if (cmd_len < 1) {
+    android_errorWriteLog(0x534e4554, "153880357");
+    return NFCSTATUS_FAILED;
+  }
+
   if ((p_cmd[0] & 0xF0) == 0x20) {
     clock_gettime(CLOCK_REALTIME, &ts);
     ts.tv_sec += sem_timedout;
