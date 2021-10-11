@@ -1902,7 +1902,7 @@ int phNxpNciHal_core_initialized(uint8_t* p_core_init_rsp_params) {
       mEEPROM_info.buffer = resume_timeout_buf;
       mEEPROM_info.bufflen = sizeof(resume_timeout_buf);
       mEEPROM_info.request_type = EEPROM_WIREDMODE_RESUME_TIMEOUT;
-      request_EEPROM(&mEEPROM_info);
+      (void)request_EEPROM(&mEEPROM_info);
   }
 
 #if (NXP_EXTNS == TRUE)
