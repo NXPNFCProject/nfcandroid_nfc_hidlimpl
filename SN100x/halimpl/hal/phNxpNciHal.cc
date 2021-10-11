@@ -88,6 +88,7 @@ extern NFCSTATUS phNxpNciHal_ext_send_sram_config_to_flash();
 extern NFCSTATUS phNxpNciHal_enableDefaultUICC2SWPline(uint8_t uicc2_sel);
 extern void phNxpNciHal_conf_nfc_forum_mode();
 extern void phNxpNciHal_prop_conf_lpcd(bool enableLPCD);
+extern void phNxpNciHal_prop_conf_rssi();
 
 nfc_stack_callback_t* p_nfc_stack_cback_backup;
 phNxpNci_getCfg_info_t* mGetCfg_info = NULL;
@@ -1970,6 +1971,8 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len, uint8_t* p_c
       if (status != NFCSTATUS_SUCCESS) {
         NXPLOG_NCIHAL_E("%s: Restore UICC params failed", __FUNCTION__);
       }
+
+      phNxpNciHal_prop_conf_rssi();
 
       fw_dwnld_flag = false;
       status = phNxpNciHal_write_fw_dw_status(fw_dwnld_flag);

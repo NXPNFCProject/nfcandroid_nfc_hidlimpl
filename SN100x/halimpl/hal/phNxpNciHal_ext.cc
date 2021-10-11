@@ -1484,6 +1484,45 @@ void phNxpNciHal_prop_conf_lpcd(bool enableLPCD) {
 }
 
 /******************************************************************************
+ * Function         phNxpNciHal_prop_conf_rssi
+ *
+ * Description      It resets RSSI param to default value.
+ *
+ * Returns          none
+ *
+ ******************************************************************************/
+void phNxpNciHal_prop_conf_rssi() {
+  if (nfcFL.chipType < sn220u) {
+    NXPLOG_NCIHAL_D("%s: feature is not supported", __func__);
+    return;
+  }
+  vector<uint8_t> cmd_get_rssival = {0x20, 0x03, 0x03, 0x01, 0xA1, 0x55};
+  vector<uint8_t> cmd_set_rssival = {0x20, 0x02, 0x06, 0x01, 0xA1,
+                                  0x55, 0x02, 0x00, 0x00};
+
+  if (NFCSTATUS_SUCCESS !=
+      phNxpNciHal_send_ext_cmd(cmd_get_rssival.size(), &cmd_get_rssival[0])) {
+    NXPLOG_NCIHAL_E("%s: failed!! Line:%d", __func__, __LINE__);
+    return;
+  }
+  if ((nxpncihal_ctrl.rx_data_len <= 9) ||
+      (NFCSTATUS_SUCCESS != nxpncihal_ctrl.p_rx_data[3])) {
+    NXPLOG_NCIHAL_E("%s: failed!! Line:%d", __func__, __LINE__);
+    return;
+  }
+  if ((nxpncihal_ctrl.p_rx_data[8] != 0x00) ||
+      (nxpncihal_ctrl.p_rx_data[9] != 0x00)) {
+    if (NFCSTATUS_SUCCESS !=
+        phNxpNciHal_send_ext_cmd(cmd_set_rssival.size(), &cmd_set_rssival[0])) {
+      NXPLOG_NCIHAL_E("%s: failed!! Line:%d", __func__, __LINE__);
+      return;
+    }
+  }
+
+  return;
+}
+
+/******************************************************************************
  * Function         phNxpNciHal_conf_nfc_forum_mode
  *
  * Description      If NFCC is not in Nfc Forum mode, then this function will
