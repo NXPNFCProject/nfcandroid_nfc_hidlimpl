@@ -773,7 +773,7 @@ int phNxpNciHal_MinOpen (){
   wFwVerRsp = 0x00;
   wFwVer = 0x00;
   if (NFCSTATUS_SUCCESS == phNxpNciHal_nfcc_core_reset_init(true)) {
-    setNxpFwConfigPath(nfcFL._FW_LIB_PATH.c_str());
+    setNxpFwConfigPath();
     if(nfcFL.chipType < sn100u)
       phNxpNciHal_enable_i2c_fragmentation();
 
@@ -3301,7 +3301,7 @@ NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd) {
   if (status == NFCSTATUS_SUCCESS) {
     phNxpNciHal_configFeatureList(nxpncihal_ctrl.p_rx_data,
                                   nxpncihal_ctrl.rx_data_len);
-    setNxpFwConfigPath(nfcFL._FW_LIB_PATH.c_str());
+    setNxpFwConfigPath();
   }
   return status;
 }

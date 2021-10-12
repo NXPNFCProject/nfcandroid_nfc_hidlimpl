@@ -44,10 +44,11 @@
 #include <log/log.h>
 #include <android-base/properties.h>
 
-#include <phNxpConfig.h>
-#include <phNxpLog.h>
 #include "sparse_crc32.h"
 #include <errno.h>
+#include <phDnldNfc_Internal.h>
+#include <phNxpConfig.h>
+#include <phNxpLog.h>
 #if GENERIC_TARGET
 const char alternative_config_path[] = "/data/vendor/nfc/";
 #else
@@ -1052,9 +1053,19 @@ extern "C" void setNxpRfConfigPath(const char* name) {
 ** Returns:     none
 **
 *******************************************************************************/
-extern "C" void setNxpFwConfigPath(const char* name) {
+extern "C" void setNxpFwConfigPath() {
+  unsigned long fwType = FW_FORMAT_SO;
+  if (GetNxpNumValue(NAME_NXP_FW_TYPE, &fwType, sizeof(fwType))) {
+    NXPLOG_FWDNLD_D("firmware type from conf file: %lu", fwType);
+  }
+
   memset(Fw_Lib_Path, 0, sizeof(Fw_Lib_Path));
-  strlcpy(Fw_Lib_Path, name, sizeof(Fw_Lib_Path));
+  if (fwType == FW_FORMAT_BIN) {
+    strlcpy(Fw_Lib_Path, nfcFL._FW_BIN_PATH.c_str(), sizeof(Fw_Lib_Path));
+  } else {
+    strlcpy(Fw_Lib_Path, nfcFL._FW_LIB_PATH.c_str(), sizeof(Fw_Lib_Path));
+  }
+
   ALOGD("Fw_Lib_Path=%s", Fw_Lib_Path);
 }
 

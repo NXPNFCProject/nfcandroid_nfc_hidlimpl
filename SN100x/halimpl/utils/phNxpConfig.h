@@ -53,7 +53,7 @@ int isNxpConfigModified();
 int updateNxpConfigTimestamp();
 int updateNxpRfConfigTimestamp();
 void setNxpRfConfigPath(const char* name);
-void setNxpFwConfigPath(const char* name);
+void setNxpFwConfigPath();
 
 #ifdef __cplusplus
 };
