@@ -58,7 +58,7 @@ extern phTmlNfc_Context_t* gpphTmlNfc_Context;
 *******************************************************************************/
 void NfccI2cTransport::Close(void *pDevHandle) {
   if (NULL != pDevHandle) {
-    close((intptr_t)pDevHandle);
+    close((int)(intptr_t)pDevHandle);
   }
   sem_destroy(&mTxRxSemaphore);
   return;
@@ -171,7 +171,7 @@ int NfccI2cTransport::Read(void *pDevHandle, uint8_t *pBuffer,
      when the NFCC does not respond and we need to switch to FW download
      mode. This should be done via a control socket instead. */
   FD_ZERO(&rfds);
-  FD_SET((intptr_t)pDevHandle, &rfds);
+  FD_SET((int)(intptr_t)pDevHandle, &rfds);
   tv.tv_sec = 2;
   tv.tv_usec = 1;
 
@@ -184,7 +184,7 @@ int NfccI2cTransport::Read(void *pDevHandle, uint8_t *pBuffer,
     NXPLOG_TML_D("%s Timeout", __func__);
     return -1;
   } else {
-    ret_Read = read((intptr_t)pDevHandle, pBuffer, totalBtyesToRead - numRead);
+    ret_Read = read((int)(intptr_t)pDevHandle, pBuffer, totalBtyesToRead - numRead);
     if (ret_Read > 0 && !(pBuffer[0] == 0xFF && pBuffer[1] == 0xFF)) {
       numRead += ret_Read;
     } else if (ret_Read == 0) {
@@ -208,7 +208,7 @@ int NfccI2cTransport::Read(void *pDevHandle, uint8_t *pBuffer,
     }
 
     if (numRead < totalBtyesToRead) {
-      ret_Read = read((intptr_t)pDevHandle, (pBuffer + numRead), totalBtyesToRead - numRead);
+      ret_Read = read((int)(intptr_t)pDevHandle, (pBuffer + numRead), totalBtyesToRead - numRead);
 
       if (ret_Read != totalBtyesToRead - numRead) {
         NXPLOG_TML_E("%s [hdr] errno : %x", __func__, errno);
@@ -223,7 +223,7 @@ int NfccI2cTransport::Read(void *pDevHandle, uint8_t *pBuffer,
       totalBtyesToRead = pBuffer[NORMAL_MODE_LEN_OFFSET] + NORMAL_MODE_HEADER_LEN;
     }
     if ((totalBtyesToRead - numRead) != 0) {
-      ret_Read = read((intptr_t)pDevHandle, (pBuffer + numRead), totalBtyesToRead - numRead);
+      ret_Read = read((int)(intptr_t)pDevHandle, (pBuffer + numRead), totalBtyesToRead - numRead);
       if (ret_Read > 0) {
         numRead += ret_Read;
       } else if (ret_Read == 0) {
@@ -283,7 +283,7 @@ int NfccI2cTransport::Write(void *pDevHandle, uint8_t *pBuffer,
           numBytes = nNbBytesToWrite;
         }
     }
-    ret = write((intptr_t)pDevHandle, pBuffer + numWrote, numBytes - numWrote);
+    ret = write((int)(intptr_t)pDevHandle, pBuffer + numWrote, numBytes - numWrote);
     if (ret > 0) {
       numWrote += ret;
       if (fragmentation_enabled == I2C_FRAGMENTATION_ENABLED &&
@@ -326,7 +326,7 @@ int NfccI2cTransport::NfccReset(void *pDevHandle, NfccResetType eType) {
     return -1;
   }
 
-  ret = ioctl((intptr_t)pDevHandle, NFC_SET_PWR, eType);
+  ret = ioctl((int)(intptr_t)pDevHandle, NFC_SET_PWR, eType);
   if (ret < 0) {
     NXPLOG_TML_E("%s :failed errno = 0x%x", __func__, errno);
   }
@@ -358,7 +358,7 @@ int NfccI2cTransport::EseReset(void *pDevHandle, EseResetType eType) {
   if (NULL == pDevHandle) {
     return -1;
   }
-  ret = ioctl((intptr_t)pDevHandle, ESE_SET_PWR, eType);
+  ret = ioctl((int)(intptr_t)pDevHandle, ESE_SET_PWR, eType);
   if (ret < 0) {
     NXPLOG_TML_E("%s :failed errno = 0x%x", __func__, errno);
   }
@@ -379,7 +379,7 @@ int NfccI2cTransport::EseReset(void *pDevHandle, EseResetType eType) {
 **
 *******************************************************************************/
 int NfccI2cTransport::EseGetPower(void *pDevHandle, long level) {
-  return ioctl((intptr_t)pDevHandle, ESE_GET_PWR, level);
+  return ioctl((int)(intptr_t)pDevHandle, ESE_GET_PWR, level);
 }
 
 /*******************************************************************************
