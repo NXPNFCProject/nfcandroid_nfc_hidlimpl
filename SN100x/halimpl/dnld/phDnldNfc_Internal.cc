@@ -860,6 +860,11 @@ static NFCSTATUS phDnldNfc_ProcessFrame(void* pContext,
           NXPLOG_FWDNLD_E("Cannot update Response buff with received data!!");
         }
       } else {
+        if (pInfo->wLength <= PHDNLDNFC_FRAME_CRC_LEN) {
+          NXPLOG_FWDNLD_E("Invalid frame received");
+          wStatus = PHNFCSTVAL(CID_NFC_DNLD, NFCSTATUS_FAILED);
+          return wStatus;
+        }
         /* calculate CRC16 */
         wCrcVal = phDnldNfc_CalcCrc16(
             (pInfo->pBuff), ((pInfo->wLength) - PHDNLDNFC_FRAME_CRC_LEN));
