@@ -342,18 +342,34 @@ bool phNxpNciHal_setSystemProperty(string key, string value) {
 
   unsigned tmp = 0;
   if (strcmp(key.c_str(), "nfc.debug_enabled") == 0) {
-    ParseUint(value.c_str(), &tmp);
-    if (phNxpLog_EnableDisableLogLevel((uint8_t)tmp) != NFCSTATUS_SUCCESS) {
-      stat = false;
+    if (ParseUint(value.c_str(), &tmp)) {
+      if (phNxpLog_EnableDisableLogLevel((uint8_t)tmp) != NFCSTATUS_SUCCESS) {
+        stat = false;
+      }
+    } else {
+      NXPLOG_NCIHAL_W("%s : Failed to parse the string to uint. "
+                      "nfc.debug_enabled string : %s",
+                      __func__, value.c_str());
     }
   } else if(strcmp(key.c_str(), "nfc.cover.state") == 0){
     unsigned cid,cstate;
     string strtmp;
-    ParseUint(value.c_str(), &cstate);
-    strtmp = phNxpNciHal_getSystemProperty("nfc.cover.cover_id");
-    ParseUint(strtmp.c_str(), &cid);
-    if (fpPropConfCover != NULL) {
-      stat = (fpPropConfCover(cstate, cid) == NFCSTATUS_SUCCESS ) ? true : false;
+    if (ParseUint(value.c_str(), &cstate)) {
+      strtmp = phNxpNciHal_getSystemProperty("nfc.cover.cover_id");
+      if (ParseUint(strtmp.c_str(), &cid)) {
+        if (fpPropConfCover != NULL) {
+          stat = (fpPropConfCover(cstate, cid) == NFCSTATUS_SUCCESS) ? true
+                                                                     : false;
+        }
+      } else {
+        NXPLOG_NCIHAL_W("%s : Failed to parse the string to uint. "
+                        "nfc.cover.cover_id string : %s",
+                        __func__, value.c_str());
+      }
+    } else {
+      NXPLOG_NCIHAL_W("%s : Failed to parse the string to uint. "
+                      "nfc.cover.state string : %s",
+                      __func__, value.c_str());
     }
   } else if(strcmp(key.c_str(), "nfc.cmd_timeout") == 0){
     NXPLOG_NCIHAL_E("%s : nci_timeout, sem post", __func__);
