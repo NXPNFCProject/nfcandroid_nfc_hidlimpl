@@ -1532,6 +1532,17 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len, uint8_t* p_c
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("Failed to retrieve NFCC debug info");
   }
+
+  if (nfcFL.chipType >= sn220u) {
+    uint8_t cmd_get_hard_fault_ctr_info[] = {0x20, 0x03, 0x03,
+                                             0x01, 0xA1, 0x5A};
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_get_hard_fault_ctr_info),
+                                      cmd_get_hard_fault_ctr_info);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("Failed to retrieve NFCC hard fault counter debug info");
+    }
+  }
+
   num = 0;
   if (GetNxpNumValue("NXP_I3C_MODE", &num, sizeof(num))) {
     if (num == 1) {
