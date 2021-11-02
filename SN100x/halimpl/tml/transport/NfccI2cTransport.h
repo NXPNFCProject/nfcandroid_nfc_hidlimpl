@@ -26,7 +26,7 @@
  * NFC_SET_PWR(1): power on
  * NFC_SET_PWR(2): reset and power on with firmware download enabled
  */
-#define NFC_SET_PWR _IOW(NFC_MAGIC, 0x01, long)
+#define NFC_SET_PWR _IOW(NFC_MAGIC, 0x01, uint32_t)
 /*
  * 1. SPI Request NFCC to enable ESE power, only in param
  *   Only for SPI
@@ -34,13 +34,13 @@
  *   level 0 = Disable power
  * 2. NFC Request the eSE cold reset, only with MODE_ESE_COLD_RESET
  */
-#define ESE_SET_PWR _IOW(NFC_MAGIC, 0x02, long)
+#define ESE_SET_PWR _IOW(NFC_MAGIC, 0x02, uint32_t)
 
 /*
  * SPI or DWP can call this ioctl to get the current
  * power state of ESE
  */
-#define ESE_GET_PWR _IOR(NFC_MAGIC, 0x03, long)
+#define ESE_GET_PWR _IOR(NFC_MAGIC, 0x03, uint32_t)
 
 extern phTmlNfc_i2cfragmentation_t fragmentation_enabled;
 
@@ -158,7 +158,7 @@ class NfccI2cTransport : public NfccTransport {
    **                  else - reset operation failure
    **
    ****************************************************************************/
-  int EseGetPower(void *pDevHandle, long level);
+  int EseGetPower(void *pDevHandle, uint32_t level);
 
   /*****************************************************************************
    **

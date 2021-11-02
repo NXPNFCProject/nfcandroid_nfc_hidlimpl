@@ -28,7 +28,7 @@ int NfccTransport::EseReset(__attribute__((unused)) void *pDevHandle,
   return NFCSTATUS_SUCCESS;
 }
 int NfccTransport::EseGetPower(__attribute__((unused)) void *pDevHandle,
-                               __attribute__((unused)) long level) {
+                               __attribute__((unused)) uint32_t level) {
   return NFCSTATUS_SUCCESS;
 }
 
