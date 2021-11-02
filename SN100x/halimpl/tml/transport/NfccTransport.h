@@ -20,7 +20,7 @@
 #include <phNfcTypes.h>
 #include <phTmlNfc.h>
 
-enum NfccResetType : long {
+enum NfccResetType : uint32_t {
   MODE_POWER_OFF = 0x00,
   MODE_POWER_ON,
   MODE_FW_DWNLD_WITH_VEN,
@@ -30,12 +30,12 @@ enum NfccResetType : long {
   MODE_FW_GPIO_LOW
 };
 
-enum EseResetCallSrc: long {
+enum EseResetCallSrc: uint32_t {
   SRC_SPI = 0x0,
   SRC_NFC = 0x10,
 };
 
-enum EseResetType : long {
+enum EseResetType : uint32_t {
   MODE_ESE_POWER_ON = 0,
   MODE_ESE_POWER_OFF,
   MODE_ESE_POWER_STATE,
@@ -162,7 +162,7 @@ class NfccTransport {
    **                  else - reset operation failure
    **
    ****************************************************************************/
-  virtual int EseGetPower(void *pDevHandle, long level);
+  virtual int EseGetPower(void *pDevHandle, uint32_t level);
 
   /*****************************************************************************
    **

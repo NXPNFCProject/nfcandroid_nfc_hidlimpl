@@ -320,7 +320,7 @@ int NfccI2cTransport::Write(void *pDevHandle, uint8_t *pBuffer,
 *******************************************************************************/
 int NfccI2cTransport::NfccReset(void *pDevHandle, NfccResetType eType) {
   int ret = -1;
-  NXPLOG_TML_D("%s, VEN eType %ld", __func__, eType);
+  NXPLOG_TML_D("%s, VEN eType %u", __func__, eType);
 
   if (NULL == pDevHandle) {
     return -1;
@@ -353,7 +353,7 @@ int NfccI2cTransport::NfccReset(void *pDevHandle, NfccResetType eType) {
 *******************************************************************************/
 int NfccI2cTransport::EseReset(void *pDevHandle, EseResetType eType) {
   int ret = -1;
-  NXPLOG_TML_D("%s, eType %ld", __func__, eType);
+  NXPLOG_TML_D("%s, eType %u", __func__, eType);
 
   if (NULL == pDevHandle) {
     return -1;
@@ -378,7 +378,7 @@ int NfccI2cTransport::EseReset(void *pDevHandle, EseResetType eType) {
 **                  else - reset operation failure
 **
 *******************************************************************************/
-int NfccI2cTransport::EseGetPower(void *pDevHandle, long level) {
+int NfccI2cTransport::EseGetPower(void *pDevHandle, uint32_t level) {
   return ioctl((int)(intptr_t)pDevHandle, ESE_GET_PWR, level);
 }
 
