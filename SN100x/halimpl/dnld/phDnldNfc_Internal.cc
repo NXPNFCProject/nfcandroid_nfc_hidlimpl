@@ -1197,19 +1197,23 @@ static NFCSTATUS phDnldNfc_UpdateRsp(pphDnldNfc_DlContext_t pDlContext,
         wStatus = PHNFCSTVAL(CID_NFC_DNLD, NFCSTATUS_FAILED);
       }
     } else {
-      if (PH_DL_STATUS_OK == (pInfo->pBuff[PHDNLDNFC_FRAMESTATUS_OFFSET]) &&
-          ((pDlContext->tRspBuffInfo.wLen) >= wPldLen)) {
-        if ((0 != (pDlContext->tRspBuffInfo.wLen)) &&
-            (NULL != (pDlContext->tRspBuffInfo.pBuff))) {
-          memcpy((pDlContext->tRspBuffInfo.pBuff),
-                 &(pInfo->pBuff[PHDNLDNFC_FRAMESTATUS_OFFSET + 1]), wPldLen);
+      if (PH_DL_STATUS_OK == (pInfo->pBuff[PHDNLDNFC_FRAMESTATUS_OFFSET])) {
+        if ((pDlContext->tRspBuffInfo.wLen) >= wPldLen) {
+          if ((0 != (pDlContext->tRspBuffInfo.wLen)) &&
+              (NULL != (pDlContext->tRspBuffInfo.pBuff))) {
+            memcpy((pDlContext->tRspBuffInfo.pBuff),
+                   &(pInfo->pBuff[PHDNLDNFC_FRAMESTATUS_OFFSET + 1]), wPldLen);
 
-          (pDlContext->tRspBuffInfo.wLen) = wPldLen;
+            (pDlContext->tRspBuffInfo.wLen) = wPldLen;
+          }
+        } else if ((pDlContext->tRspBuffInfo.wLen) == 0) {
+          NXPLOG_FWDNLD_D("Ignore the response");
         }
       } else {
-        NXPLOG_FWDNLD_E("Unsuccessful Status received!! wPldLen = 0x%x "
-                        ",pDlContext->tRspBuffInfo.wLen = 0x%x",
-                        wPldLen, pDlContext->tRspBuffInfo.wLen);
+        NXPLOG_FWDNLD_E(
+            "Unsuccessful Status received!! wPldLen = 0x%x "
+            ",pDlContext->tRspBuffInfo.wLen = 0x%x",
+            wPldLen, pDlContext->tRspBuffInfo.wLen);
         wStatus = PHNFCSTVAL(CID_NFC_DNLD, NFCSTATUS_FAILED);
       }
     }
