@@ -1611,19 +1611,24 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len, uint8_t* p_c
     fw_download_success = 0;
 
     /* EEPROM access variables */
-    uint8_t auth_timeout_buffer[NXP_AUTH_TIMEOUT_BUF_LEN];
     mEEPROM_info.request_mode = GET_EEPROM_DATA;
     retlen = 0;
     memset(buffer, 0x00, bufflen);
     isfound = GetNxpByteArrayValue(NAME_NXP_AUTH_TIMEOUT_CFG, (char *)buffer, bufflen,
                          &retlen);
 
-    if ((isfound > 0) && (retlen == NXP_AUTH_TIMEOUT_BUF_LEN)) {
-      memcpy(&auth_timeout_buffer, buffer, NXP_AUTH_TIMEOUT_BUF_LEN);
+    if ((isfound > 0) && (retlen > 0)) {
+      uint64_t auth_timeout_buffer_length;
+      if (nfcFL.chipType >= sn100u) {
+        auth_timeout_buffer_length = SNXXX_NXP_AUTH_TIMEOUT_BUF_LEN;
+      } else {
+        auth_timeout_buffer_length = PN557_NXP_AUTH_TIMEOUT_BUF_LEN;
+      }
+      uint8_t auth_timeout_buffer[auth_timeout_buffer_length];
+      memcpy(&auth_timeout_buffer, buffer, auth_timeout_buffer_length);
       mEEPROM_info.request_mode = SET_EEPROM_DATA;
-
       mEEPROM_info.buffer = auth_timeout_buffer;
-      mEEPROM_info.bufflen = sizeof(auth_timeout_buffer);
+      mEEPROM_info.bufflen = auth_timeout_buffer_length;
       mEEPROM_info.request_type = EEPROM_AUTH_CMD_TIMEOUT;
       status = request_EEPROM(&mEEPROM_info);
       if (NFCSTATUS_SUCCESS == status) {
