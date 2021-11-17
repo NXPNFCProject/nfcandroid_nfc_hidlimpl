@@ -37,7 +37,8 @@
 #define NCI_VERSION_1_1 0x11
 #define NCI_VERSION_1_0 0x10
 #define NCI_VERSION_UNKNOWN 0x00
-#define NXP_AUTH_TIMEOUT_BUF_LEN 0x04
+#define SNXXX_NXP_AUTH_TIMEOUT_BUF_LEN 0x05
+#define PN557_NXP_AUTH_TIMEOUT_BUF_LEN 0x0C
 #define SN1XX_ROM_VERSION      0x01
 #define SN1XX_FW_MAJOR_VERSION 0x10
 #define SN2XX_ROM_VERSION      0x01
@@ -284,7 +285,7 @@ typedef struct phNxpNci_getCfg_info {
   uint8_t atr_res_gen_bytes_len;
   uint8_t pmid_wt[3];
   uint8_t pmid_wt_len;
-  uint8_t auth_cmd_timeout[NXP_AUTH_TIMEOUT_BUF_LEN];
+  uint8_t auth_cmd_timeout[PN557_NXP_AUTH_TIMEOUT_BUF_LEN];
   uint8_t auth_cmd_timeoutlen;
 } phNxpNci_getCfg_info_t;
 typedef enum {
