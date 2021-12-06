@@ -764,10 +764,14 @@ int phNxpNciHal_MinOpen (){
   uint8_t seq_handler_offset = 0x00;
   uint8_t fw_update_req = 1;
   uint8_t rf_update_req;
+  bool bVenResetRequired = false;
   phNxpNciHal_ext_init();
 
   phTmlNfc_IoCtl(phTmlNfc_e_EnableVen);
 
+  if (wFwVerRsp == 0) {
+    bVenResetRequired = true;
+  }
   /* reset version info new version info will be fetch */
   wFwVerRsp = 0x00;
   wFwVer = 0x00;
@@ -798,8 +802,8 @@ int phNxpNciHal_MinOpen (){
         phDnldNfc_ReSetHwDevHandle();
       }
     }
-  } else {
-         phNxpNciHal_getChipInfoInFwDnldMode(true);
+  } else if (bVenResetRequired) {
+    phNxpNciHal_getChipInfoInFwDnldMode(true);
   }
 
   if (gsIsFirstHalMinOpen && gsIsFwRecoveryRequired) {
@@ -3339,6 +3343,7 @@ NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd) {
   if (status == NFCSTATUS_SUCCESS) {
     phNxpNciHal_configFeatureList(nxpncihal_ctrl.p_rx_data,
                                   nxpncihal_ctrl.rx_data_len);
+    wFwVerRsp = pConfigFL->getFWVersionInfo(nxpncihal_ctrl.p_rx_data, nxpncihal_ctrl.rx_data_len);
     setNxpFwConfigPath();
   }
   return status;
