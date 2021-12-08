@@ -32,7 +32,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  Copyright 2013-2021 NXP
+ *  Copyright 2013-2022 NXP
  *
  ******************************************************************************/
 
@@ -752,7 +752,8 @@ bool CNfcConfig::isAllowed(const char* name) {
       (token.find("NXP_CN_TRANSIT_BLK_NUM_CHECK_ENABLE") !=
        std::string::npos) ||
       (token.find("NXP_FWD_FUNCTIONALITY_ENABLE") != std::string::npos) ||
-      (token.find("NXP_MIFARE_NACK_TO_RATS_ENABLE") != std::string::npos))
+      (token.find("NXP_MIFARE_NACK_TO_RATS_ENABLE") != std::string::npos) ||
+      (token.find("NXP_SHORT_GUARD_TIME_ENABLE") != std::string::npos))
 
   {
     stat = true;

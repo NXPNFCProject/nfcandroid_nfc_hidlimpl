@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 NXP
+ * Copyright 2012-2022 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -167,6 +167,7 @@ static NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd = fals
 static uint8_t phNxpNciHal_getSessionInfoInFwDnldMode();
 static NFCSTATUS phNxpNciHal_dlResetInFwDnldMode();
 static NFCSTATUS phNxpNciHal_enableTmlRead();
+static bool phNxpNciHal_setBit(uint8_t* buff, uint8_t bit, bool setFlag);
 /******************************************************************************
  * Function         phNxpNciHal_initialize_debug_enabled_flag
  *
@@ -3083,13 +3084,15 @@ NFCSTATUS phNxpNciHal_china_tianjin_rf_setting(void) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   int isfound = 0;
   unsigned long config_value = 0;
-  int rf_val = 0;
-  int flag_send_tianjin_config = true;
-  int flag_send_transit_config = true;
-  int flag_send_cmabypass_config = true;
-  int flag_send_mfc_rf_setting_config = true;
+  bool flag_send_tianjin_config = false;
+  bool flag_send_transit_config = false;
+  bool flag_send_cmabypass_config = false;
+  bool flag_send_mfc_rf_setting_config = false;
+  bool flag_send_guard_time_config = false;
   uint8_t retry_cnt = 0;
-  int enable_bit = 0;
+  bool setFlag = false;
+
+  enum { BIT0, BIT1, BIT2, BIT3, BIT4, BIT5, BIT6, BIT7 };
 
   static uint8_t get_rf_cmd[] = {0x20, 0x03, 0x03, 0x01, 0xA0, 0x85};
   NXPLOG_NCIHAL_D("phNxpNciHal_china_tianjin_rf_setting - Enter");
@@ -3114,100 +3117,62 @@ retry_send_ext:
   }
 
   /* check if tianjin_rf_setting is required */
-  rf_val = phNxpNciRfSet.p_rx_data[10];
   isfound = (GetNxpNumValue(NAME_NXP_CHINA_TIANJIN_RF_ENABLED,
                             (void*)&config_value, sizeof(config_value)));
   if (isfound > 0) {
-      enable_bit = rf_val & 0x40;
-      if(nfcFL.nfccFL._NFCC_MIFARE_TIANJIN) {
-          if ((enable_bit != 0x40) && (config_value == 1)) {
-              phNxpNciRfSet.p_rx_data[10] |= 0x40;  // Enable if it is disabled
-          } else if ((enable_bit == 0x40) && (config_value == 0)) {
-              phNxpNciRfSet.p_rx_data[10] &= 0xBF;  // Disable if it is Enabled
-          } else {
-              flag_send_tianjin_config = false;  // No need to change in RF setting
-          }
-      }
-      else {
-          enable_bit = phNxpNciRfSet.p_rx_data[11] & 0x10;
-          if ((config_value == 1) && (enable_bit != 0x10)) {
-              NXPLOG_NCIHAL_E("Setting Non-Mifare reader for china tianjin");
-              phNxpNciRfSet.p_rx_data[11] |= 0x10;
-          } else if ((config_value == 0) && (enable_bit == 0x10)) {
-              NXPLOG_NCIHAL_E("Setting Non-Mifare reader for china tianjin");
-              phNxpNciRfSet.p_rx_data[11] &= 0xEF;
-          } else {
-              flag_send_tianjin_config = false;
-          }
-      }
-  }
-  else {
-    flag_send_tianjin_config = false;
+    setFlag = config_value == 1 ? true : false;
+    if (nfcFL.nfccFL._NFCC_MIFARE_TIANJIN) {
+      flag_send_tianjin_config =
+          phNxpNciHal_setBit(&phNxpNciRfSet.p_rx_data[10], BIT6, setFlag);
+    } else {
+      flag_send_tianjin_config =
+          phNxpNciHal_setBit(&phNxpNciRfSet.p_rx_data[11], BIT4, setFlag);
+    }
   }
 
   config_value = 0;
   /*check MFC NACK settings*/
-  rf_val = phNxpNciRfSet.p_rx_data[9];
   isfound =
       (GetNxpNumValue(NAME_NXP_MIFARE_NACK_TO_RATS_ENABLE,
                       (void*)&config_value, sizeof(config_value)));
   if (isfound > 0) {
-    enable_bit = rf_val & 0x20;
-    if ((enable_bit != 0x20) && (config_value == 1)) {
-      phNxpNciRfSet.p_rx_data[9] |= 0x20;  // Enable if it is disabled
-    } else if ((enable_bit == 0x20) && (config_value == 0)) {
-      phNxpNciRfSet.p_rx_data[9] &= ~0x20;  // Disable if it is Enabled
-    } else {
-      flag_send_mfc_rf_setting_config = false;  // No need to change in RF setting
-    }
+    setFlag = config_value == 1 ? true : false;
+    flag_send_mfc_rf_setting_config =
+        phNxpNciHal_setBit(&phNxpNciRfSet.p_rx_data[9], BIT5, setFlag);
   }
-  else
-    {
-      flag_send_mfc_rf_setting_config = FALSE;  // No need to change in RF setting
-    }
 
   config_value = 0;
   /*check if china block number check is required*/
-  rf_val = phNxpNciRfSet.p_rx_data[8];
   isfound =
       (GetNxpNumValue(NAME_NXP_CHINA_BLK_NUM_CHK_ENABLE,
                       (void*)&config_value, sizeof(config_value)));
   if (isfound > 0) {
-    enable_bit = rf_val & 0x40;
-    if ((enable_bit != 0x40) && (config_value == 1)) {
-      phNxpNciRfSet.p_rx_data[8] |= 0x40;  // Enable if it is disabled
-    } else if ((enable_bit == 0x40) && (config_value == 0)) {
-      phNxpNciRfSet.p_rx_data[8] &= ~0x40;  // Disable if it is Enabled
-    } else {
-      flag_send_transit_config = false;  // No need to change in RF setting
-    }
+    setFlag = config_value == 1 ? true : false;
+    flag_send_transit_config =
+        phNxpNciHal_setBit(&phNxpNciRfSet.p_rx_data[8], BIT6, setFlag);
   }
-  else
-    {
-        flag_send_transit_config = FALSE;  // No need to change in RF setting
-    }
 
-    config_value = 0;
-    isfound = (GetNxpNumValue(NAME_NXP_CN_TRANSIT_CMA_BYPASSMODE_ENABLE, (void *)&config_value, sizeof(config_value)));
-    if(isfound >0) {
-        if(config_value == 0 && ((phNxpNciRfSet.p_rx_data[10] & 0x80) == 0x80)) {
-            NXPLOG_NCIHAL_D("Disable CMA_BYPASSMODE Supports EMVCo PICC Complaincy");
-            phNxpNciRfSet.p_rx_data[10] &=~0x80;        //set 24th bit of RF MISC SETTING to 0 for EMVCo PICC Complaincy support
-        }
-        else if(config_value == 1 && ((phNxpNciRfSet.p_rx_data[10] & 0x80) == 0)) {
-            NXPLOG_NCIHAL_D("Enable CMA_BYPASSMODE bypass the ISO14443-3A state machine from READY to ACTIVE and backward compatibility with MIfrae Reader ");
-            phNxpNciRfSet.p_rx_data[10] |=0x80;        //set 24th bit of RF MISC SETTING to 1 for backward compatibility with MIfrae Reader
-        }
-        else {
-            flag_send_cmabypass_config = FALSE;  // No need to change in RF setting
-        }
-    }
-    else {
-       flag_send_cmabypass_config = FALSE;
-    }
+  config_value = 0;
+  isfound = (GetNxpNumValue(NAME_NXP_CN_TRANSIT_CMA_BYPASSMODE_ENABLE,
+                            (void *)&config_value, sizeof(config_value)));
+  if (isfound > 0) {
+    setFlag = config_value == 1 ? true : false;
+    flag_send_cmabypass_config =
+        phNxpNciHal_setBit(&phNxpNciRfSet.p_rx_data[10], BIT7, setFlag);
+  }
 
-  if (flag_send_tianjin_config || flag_send_transit_config || flag_send_cmabypass_config ||
-      flag_send_mfc_rf_setting_config) {
+  config_value = 0;
+  isfound = (GetNxpNumValue(NAME_NXP_SHORT_GUARD_TIME_ENABLE,
+                            (void *)&config_value, sizeof(config_value)));
+  if (isfound > 0) {
+    setFlag = config_value == 1 ? true : false;
+    flag_send_guard_time_config =
+        phNxpNciHal_setBit(&phNxpNciRfSet.p_rx_data[9], BIT7, setFlag);
+  }
+
+  if (flag_send_tianjin_config || flag_send_transit_config ||
+      flag_send_cmabypass_config || flag_send_mfc_rf_setting_config ||
+      flag_send_guard_time_config) {
     static uint8_t set_rf_cmd[] = {0x20, 0x02, 0x08, 0x01, 0xA0, 0x85,
                                    0x04, 0x50, 0x08, 0x68, 0x00};
     memcpy(&set_rf_cmd[4], &phNxpNciRfSet.p_rx_data[5], 7);
@@ -3218,6 +3183,7 @@ retry_send_ext:
       goto retry_send_ext;
     }
   }
+  NXPLOG_NCIHAL_D("phNxpNciHal_china_tianjin_rf_setting - Exit");
 
   return status;
 }
@@ -3934,6 +3900,37 @@ static void phNxpNciHal_UpdateFwStatus(HalNfcFwUpdateStatus fwStatus) {
   phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId,
                         (phLibNfc_Message_t *)&msg);
   return;
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_setBit
+**
+** Description      Set/Reset bit of RF MISC SETTINGS byte base on set flag.
+**
+** Parameters       buff, bit, setFlag
+**
+** Returns          True if config param is updated. Otherwise False.
+*******************************************************************************/
+static bool phNxpNciHal_setBit(uint8_t* buff, uint8_t bit, bool setFlag) {
+  bool status = true;
+  if (bit < 8) {
+    uint8_t enabledBit = 1 << bit;
+    bool isBitEnabled = *buff & enabledBit;
+
+    if (!isBitEnabled && setFlag) {
+      *buff |= enabledBit; // Enable if it is disabled
+    } else if (isBitEnabled && !setFlag) {
+      *buff &= ~enabledBit; // Disable if it is Enabled
+    } else {
+      status = false;
+    }
+  } else {
+    status = false;
+    NXPLOG_NCIHAL_E("Invalid bit: %d", bit);
+  }
+
+  return status;
 }
 
 #if(NXP_EXTNS == TRUE)

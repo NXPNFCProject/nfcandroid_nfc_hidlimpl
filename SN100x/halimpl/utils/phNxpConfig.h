@@ -20,7 +20,7 @@
  *
  *  The original Work has been changed by NXP.
  *
- *  Copyright (C) 2013-2021 NXP
+ *  Copyright (C) 2013-2022 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -191,6 +191,7 @@ extern char Fw_Lib_Path[256];
 #define NAME_NXP_AGC_DEBUG_ENABLE     "NXP_AGC_DEBUG_ENABLE"
 #define NAME_NXP_EXTENDED_FIELD_DETECT_MODE  "NXP_EXTENDED_FIELD_DETECT_MODE"
 #define NAME_NXP_MIFARE_NACK_TO_RATS_ENABLE  "NXP_MIFARE_NACK_TO_RATS_ENABLE"
+#define NAME_NXP_SHORT_GUARD_TIME_ENABLE "NXP_SHORT_GUARD_TIME_ENABLE"
 #endif
 /* default configuration */
 #define default_storage_location "/data/vendor/nfc"
