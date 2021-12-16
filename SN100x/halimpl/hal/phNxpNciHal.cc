@@ -3988,8 +3988,12 @@ void phNxpNciHal_configNciParser(bool enable)
         if (lx_debug_cfg & LX_DEBUG_CFG_ENABLE_MOD_DETECTED_EVENT ) {
           NXPLOG_NCIHAL_D("Enable Modulation detected event");
         }
+        if (lx_debug_cfg & LX_DEBUG_CFG_ENABLE_CMA_EVENTS ) {
+          NXPLOG_NCIHAL_D("Enable CMA events");
+        }
 
-        cmd_lxdebug[7] = (uint8_t)lx_debug_cfg & LX_DEBUG_CFG_MASK;
+        cmd_lxdebug[7] = (uint8_t)(lx_debug_cfg & LX_DEBUG_CFG_MASK);
+        cmd_lxdebug[8] = (uint8_t)((lx_debug_cfg & LX_DEBUG_CFG_MASK) >> 8);
     }
     status = phNxpNciHal_send_ext_cmd(sizeof(cmd_lxdebug)/sizeof(cmd_lxdebug[0]),cmd_lxdebug);
     if (status != NFCSTATUS_SUCCESS)
