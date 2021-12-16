@@ -1608,6 +1608,7 @@ static void phNxpNciHal_read_complete(void* pContext,
     /* Read successful send the event to higher layer */
     else if ((nxpncihal_ctrl.p_nfc_stack_data_cback != NULL) &&
              (status == NFCSTATUS_SUCCESS)) {
+      NxpMfcReaderInstance.MfcNotifyOnAckReceived(nxpncihal_ctrl.p_rx_data);
       (*nxpncihal_ctrl.p_nfc_stack_data_cback)(nxpncihal_ctrl.rx_data_len,
                                                nxpncihal_ctrl.p_rx_data);
       /* sending NFCEE_RF_DISC NTF to upper layer if eSE DISCT_NTF with
