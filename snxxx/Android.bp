@@ -14,22 +14,8 @@
 // limitations under the License.
 
 //
-//
 //  The original Work has been changed by NXP.
-//
-//  Copyright (C) 2021 NXP
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//  http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
+//  Copyright (C) 2021-2022 NXP
 
 package {
     // See: http://go/android-license-faq
@@ -104,8 +90,8 @@ cc_library_shared {
     ],
 
     include_dirs: [
-        "hardware/nxp/nfc/SN100x/extns/impl/nxpnfc/2.0",
-        "hardware/nxp/secure_element/extns/impl",
+        "hardware/nxp/nfc/snxxx/extns/impl/nxpnfc/2.0",
+        "hardware/nxp/secure_element/snxxx/extns/impl",
         "hardware/nxp/secure_element_extns/inc",
     ],
 
@@ -124,5 +110,70 @@ cc_library_shared {
         "libutils",
         "vendor.nxp.nxpese@1.0",
         "vendor.nxp.nxpnfc@2.0",
+    ],
+}
+
+cc_binary {
+    name: "android.hardware.nfc@1.2-service",
+    defaults: ["hidl_defaults"],
+    proprietary: true,
+    init_rc: ["1.2/android.hardware.nfc@1.2-service.rc"],
+    relative_install_path: "hw",
+    cflags: [
+         "-Wall",
+         "-Werror",
+         "-Wextra",
+         "-fexceptions",
+         "-DNXP_EXTNS=TRUE",
+         "-DNXP_NFC_RECOVERY=TRUE"
+     ],
+
+    srcs: [
+        "1.2/NxpNfcService.cpp",
+        "1.2/Nfc.cpp",
+        "extns/impl/nxpnfc/2.0/NxpNfc.cpp",
+        "halimpl/eseclients_extns/src/eSEClientExtns.cc",
+    ],
+
+    shared_libs: [
+        "nfc_nci_nxp",
+        "libbase",
+        "libcutils",
+        "libdl",
+        "libhardware",
+        "liblog",
+        "libutils",
+        "android.hardware.nfc@1.0",
+        "android.hardware.nfc@1.1",
+        "android.hardware.nfc@1.2",
+        "libhidlbase",
+        "vendor.nxp.nxpese@1.0",
+        "vendor.nxp.nxpnfc@2.0",
+        "ls_client",
+        "se_extn_client",
+        "jcos_client",
+    ],
+
+    local_include_dirs: [
+        "halimpl/common",
+        "halimpl/dnld",
+        "halimpl/hal",
+        "halimpl/inc",
+        "halimpl/log",
+        "halimpl/self-test",
+        "halimpl/tml",
+        "halimpl/utils",
+        "halimpl/mifare",
+        "halimpl/eseclients_extns/inc/",
+        "halimpl/recovery",
+    ],
+
+    include_dirs: [
+        "hardware/nxp/nfc/snxxx/extns/impl/nxpnfc/2.0",
+        "hardware/nxp/secure_element/snxxx/extns/impl",
+        "hardware/nxp/secure_element_extns/inc",
+        "hardware/nxp/secure_element_extns/inc",
+        "hardware/nxp/secure_element_extns/ls_client/inc",
+        "hardware/nxp/secure_element_extns/jcos_client/inc",
     ],
 }
