@@ -13,6 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//
+//  The original Work has been changed by NXP.
+//  Copyright (C) 2022 NXP
+
 package {
     default_applicable_licenses: ["hardware_nxp_nfc_license"],
 }
@@ -29,70 +33,5 @@ license {
 }
 
 subdirs = [
-    "SN100x",
+    "snxxx","intf",
 ]
-
-cc_binary {
-    name: "android.hardware.nfc@1.2-service",
-    defaults: ["hidl_defaults"],
-    proprietary: true,
-    init_rc: ["1.2/android.hardware.nfc@1.2-service.rc"],
-    relative_install_path: "hw",
-    cflags: [
-         "-Wall",
-         "-Werror",
-         "-Wextra",
-         "-fexceptions",
-         "-DNXP_EXTNS=TRUE",
-         "-DNXP_NFC_RECOVERY=TRUE"
-     ],
-
-    srcs: [
-        "1.2/NxpNfcService.cpp",
-        "1.2/Nfc.cpp",
-        "SN100x/extns/impl/nxpnfc/2.0/NxpNfc.cpp",
-        "SN100x/halimpl/eseclients_extns/src/eSEClientExtns.cc",
-    ],
-
-    shared_libs: [
-        "nfc_nci_nxp",
-        "libbase",
-        "libcutils",
-        "libdl",
-        "libhardware",
-        "liblog",
-        "libutils",
-        "android.hardware.nfc@1.0",
-        "android.hardware.nfc@1.1",
-        "android.hardware.nfc@1.2",
-        "libhidlbase",
-        "vendor.nxp.nxpese@1.0",
-        "vendor.nxp.nxpnfc@2.0",
-        "ls_client",
-        "se_extn_client",
-        "jcos_client",
-    ],
-
-    local_include_dirs: [
-        "SN100x/halimpl/common",
-        "SN100x/halimpl/dnld",
-        "SN100x/halimpl/hal",
-        "SN100x/halimpl/inc",
-        "SN100x/halimpl/log",
-        "SN100x/halimpl/self-test",
-        "SN100x/halimpl/tml",
-        "SN100x/halimpl/utils",
-        "SN100x/halimpl/mifare",
-        "SN100x/halimpl/eseclients_extns/inc/",
-        "SN100x/halimpl/recovery",
-    ],
-
-    include_dirs: [
-        "hardware/nxp/nfc/SN100x/extns/impl/nxpnfc/2.0",
-        "hardware/nxp/secure_element/extns/impl",
-        "hardware/nxp/secure_element_extns/inc",
-        "hardware/nxp/secure_element_extns/inc",
-        "hardware/nxp/secure_element_extns/ls_client/inc",
-        "hardware/nxp/secure_element_extns/jcos_client/inc",
-    ],
-}
