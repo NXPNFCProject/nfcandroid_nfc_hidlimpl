@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2018 NXP Semiconductors
+ * Copyright (C) 2017-2018,2022 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@
 
 #include "phOsal_Adaptation.h"
 
+#include <iomanip>
+#include <sstream>
 #include <string>
 
 using namespace std;
@@ -28,6 +30,12 @@ extern "C" {  /* Assume C declarations for C++ */
 #endif  /* __cplusplus */
 
 #define MAX_TLV 15
+#define NUM_RSSI_BYTES 2
+#define NUM_DLMA_BYTES 4
+#define NUM_SYSCODE_BYTES 2
+#define NUM_FELICA_RES_STATUS_BYTES 2
+#define NUM_CMA_EXTRA_BYTES 15
+#define L2_SUB_EVT_OFFSET 5
 
 /*
 typedef struct timeStamp {
@@ -103,6 +111,68 @@ typedef struct {
     uint16_t txVpp;
 } sDecodedInfo_t, *psDecodedInfo_t;
 
+typedef struct sL2RxEvent_t {
+  uint8_t rssi[NUM_RSSI_BYTES];
+  uint8_t clifState;
+  uint8_t extraData;
+  void toString(std::ostringstream &oss);
+} sL2RxEvent_t;
+
+typedef struct {
+  uint8_t dlma[NUM_DLMA_BYTES];
+  uint8_t clifState;
+  uint8_t extraData;
+  void toString(std::ostringstream &oss);
+} sL2TxEvent_t;
+
+typedef struct {
+  uint8_t rssi[NUM_RSSI_BYTES];
+  uint8_t felicaCmd;
+  uint8_t extraData;
+  void toString(std::ostringstream &oss);
+} sL2FelicaCmdEvent_t;
+
+typedef struct {
+  uint8_t felicaCmd[NUM_SYSCODE_BYTES];
+  void toString(std::ostringstream &oss);
+} sL2FelicaSysCodeEvent_t;
+
+typedef struct {
+  uint8_t dlma[NUM_DLMA_BYTES];
+  uint8_t felicaRsp;
+  uint8_t responseStatus[NUM_FELICA_RES_STATUS_BYTES];
+  uint8_t extraData;
+  void toString(std::ostringstream &oss);
+} sL2FelicaRspEvent_t;
+
+typedef struct {
+  uint8_t trigger;
+  uint8_t extraData;
+  void toString(std::ostringstream &oss);
+} sL2FelicaMiscEvent_t;
+
+typedef struct {
+  uint8_t trigger;
+  uint8_t extraData[NUM_CMA_EXTRA_BYTES];
+  void toString(std::ostringstream &oss);
+} sL2CmaEvent_t;
+
+typedef struct {
+  uint8_t tag;
+  uint8_t len;
+  uint16_t timeStampMs;
+  uint16_t timeStampUs;
+  union {
+    sL2RxEvent_t sL2RxEvent;
+    sL2TxEvent_t sL2TxEvent;
+    sL2FelicaCmdEvent_t sL2FelicaCmdEvent;
+    sL2FelicaSysCodeEvent_t sL2FelicaSysCodeEvent;
+    sL2FelicaRspEvent_t sL2FelicaRspEvent;
+    sL2FelicaMiscEvent_t sL2FelicaMiscEvent;
+    sL2CmaEvent_t sL2CmaEvent;
+  } u;
+} sL2DecodedInfo_t, *psL2DecodedInfo_t;
+
 typedef struct {
     uint8_t *pLxNtf;
     uint16_t LxNtfLen;
@@ -133,7 +203,7 @@ typedef struct {
 
 typedef struct {
     uint8_t   tlvCount;
-    sDecodedInfo_t  sTlvInfo[MAX_TLV];
+    sL2DecodedInfo_t sTlvInfo[MAX_TLV];
 } sL2NtfDecoded_t, *psL2NtfDecoded_t;
 
 typedef struct {
@@ -141,6 +211,21 @@ typedef struct {
     psL1NtfDecoded_t psL1NtfDecoded;
     psL2NtfDecoded_t psL2NtfDecoded;
 } sLxNtfDecoded_t, *psLxNtfDecoded_t;
+
+typedef enum {
+  L2_EVT_RX_TAG_ID_LEN                        = 0x07,
+  L2_EVT_RX_TAG_ID_EXTRA_DBG_LEN              = 0x08,
+  L2_EVT_TX_TAG_ID_LEN                        = 0x09,
+  L2_EVT_TX_TAG_ID_EXTRA_DBG_LEN              = 0x0A,
+  L2_EVT_FELICA_CMD_TAG_ID_LEN                = 0x07,
+  L2_EVT_FELICA_CMD_TAG_ID_EXTRA_DBG_LEN      = 0x08,
+  L2_EVT_FELICA_SYS_CODE_TAG_ID_LEN           = 0x06,
+  L2_EVT_FELICA_RSP_CODE_TAG_ID_LEN           = 0x0B,
+  L2_EVT_FELICA_RSP_CODE_TAG_ID_EXTRA_DBG_LEN = 0x0C,
+  L2_EVT_FELICA_MISC_TAG_ID_LEN               = 0x05,
+  L2_EVT_FELICA_MISC_TAG_ID_EXTRA_DBG_LEN     = 0x06,
+  L2_EVT_CMA_TAG_ID_MIN_LEN                   = 0x05
+} L2DebugNtfTLVLength_t;
 
 class NCI_LxDebug_Decoder {
 private:
@@ -187,20 +272,6 @@ private:
                                                 "CLF_L1_EVT_EXTENDED"
                                               };
 
-    uint8_t  mCLF_STAT_L2_TRIG_TYPE[12][31] = { "CLF_L2_EVT_RFU",
-                                                "CLF_L2_EVT_MODULATION_DETECTED",
-                                                "CLF_L2_EVT_DATA_RX",
-                                                "CLF_L2_EVT_TIMEOUT",
-                                                "CLF_L2_EVT_ACTIVE_ISO14443_3",//Internal to card Layer3 activation
-                                                "CLF_L2_EVT_ERROR",
-                                                "CLF_L2_EVT_SENSING",
-                                                "CLF_L2_EVT_ACTIVE_ISO14443_4",//APC, Because Layer4 activation sent to reader as Tx
-                                                "CLF_L2_EVT_RFON",
-                                                "CLF_L2_EVT_RFOFF",
-                                                "CLF_L2_EVT_DATA_TX",
-                                                "CLF_L2_EVT_WUP_IOT_RECONFIG"  //APC
-                                              };
-
     uint8_t mCLF_STAT_RF_TECH_MODE[14][42] = { "CLF_STATE_TECH_RFU",
                                                "CLF_STATE_TECH_CE_A",
                                                "CLF_STATE_TECH_CE_B",
@@ -235,20 +306,6 @@ private:
                                       "L1_RX_NACK_EDD_IOT_STAGE4",
                                       "L1_RX_NACK_EDD_IOT_STAGE5"
                                     };
-
-    uint8_t mEDD_L2_WUP[5][22] = { "L2_EDD_WUP_IOT_STAGE1",
-                                   "L2_EDD_WUP_IOT_STAGE2",
-                                   "L2_EDD_WUP_IOT_STAGE3",
-                                   "L2_EDD_WUP_IOT_STAGE4",
-                                   "L2_EDD_WUP_IOT_STAGE5"
-                                 };
-
-    uint8_t mFELICA_MISC_EVT[5][34] = { "FLC_MISC_EVT_RFU",
-                                        "FLC_MISC_EVT_GENERIC_ERROR",
-                                        "FLC_MISC_EVT_EMPTY_FRAME_FROM_ESE",
-                                        "FLC_MISC_EVT_BUFFER_OVERFLOW",
-                                        "FLC_MISC_EVT_RF_ERROR"
-                                      };
 
     typedef enum {
         CLF_L1_EVT_RFU             = 0x00,
@@ -289,30 +346,20 @@ private:
     } LxDebugNtfType_t;
 
     typedef enum {
-        L1_EVT_LEN                    = 0x07,
-        L1_EVT_EXTRA_DBG_LEN          = 0x08,
-        L1_EVT_7816_RET_CODE_LEN      = 0x0A
+      L1_EVT_LEN = 0x07,
+      L1_EVT_EXTRA_DBG_LEN = 0x08,
+      L1_EVT_7816_RET_CODE_LEN = 0x09,
+      L1_EVT_7816_RET_CODE_EXTRA_DBG_LEN = 0x0A
     } L1DebugNtfLen_t;
 
     typedef enum {
-        L2_EVT_TAG_ID                 = 0x10,
-        L2_EVT_FELICA_CMD_TAG_ID      = 0x20,
-        L2_EVT_FELICA_SYS_CODE_TAG_ID = 0x30,
-        L2_EVT_FELICA_RSP_CODE_TAG_ID = 0x40,
-        L2_EVT_FELICA_MISC_TAG_ID     = 0x50
+      L2_EVT_TAG_ID = 0x10,
+      L2_EVT_FELICA_CMD_TAG_ID = 0x20,
+      L2_EVT_FELICA_SYS_CODE_TAG_ID = 0x30,
+      L2_EVT_FELICA_RSP_CODE_TAG_ID = 0x40,
+      L2_EVT_FELICA_MISC_TAG_ID = 0x50,
+      L2_EVT_CMA_TAG_ID = 0xA0
     } L2DebugNtfTLVTagId_t;
-
-    typedef enum {
-        L2_EVT_TAG_ID_LEN                           = 0x07,
-        L2_EVT_TAG_ID_EXTRA_DBG_LEN                 = 0x08,
-        L2_EVT_FELICA_CMD_TAG_ID_LEN                = 0x07,
-        L2_EVT_FELICA_CMD_TAG_ID_EXTRA_DBG_LEN      = 0x08,
-        L2_EVT_FELICA_SYS_CODE_TAG_ID_LEN           = 0x06,
-        L2_EVT_FELICA_RSP_CODE_TAG_ID_LEN           = 0x09,
-        L2_EVT_FELICA_RSP_CODE_TAG_ID_EXTRA_DBG_LEN = 0x0A,
-        L2_EVT_FELICA_MISC_TAG_ID_LEN               = 0x05,
-        L2_EVT_FELICA_MISC_TAG_ID_EXTRA_DBG_LEN     = 0x06
-    } L2DebugNtfTLVLength_t;
 
     typedef enum {
         FLC_RM_EVT_RFU       = 0x00,
@@ -416,21 +463,28 @@ private:
     void decode78164RetCode(psLxNtfCoded_t        psLxNtfCoded,
                             psLxNtfDecodingInfo_t psLxNtfDecodingInfo,
                             psLxNtfDecoded_t      psLxNtfDecoded);
-    void decodeFelicaCmdCode(psLxNtfCoded_t        psLxNtfCoded,
-                             psLxNtfDecodingInfo_t psLxNtfDecodingInfo,
-                             psLxNtfDecoded_t      psLxNtfDecoded);
-    void decodeFelicaSystemCode(psLxNtfCoded_t        psLxNtfCoded,
-                                psLxNtfDecodingInfo_t psLxNtfDecodingInfo,
-                                psLxNtfDecoded_t      psLxNtfDecoded);
-    void decodeFelicaRspCode(psLxNtfCoded_t        psLxNtfCoded,
-                             psLxNtfDecodingInfo_t psLxNtfDecodingInfo,
-                             psLxNtfDecoded_t      psLxNtfDecoded);
-    void decodeFelicaMiscCode(psLxNtfCoded_t        psLxNtfCoded,
-                             psLxNtfDecodingInfo_t psLxNtfDecodingInfo,
-                             psLxNtfDecoded_t      psLxNtfDecoded);
     void decodeExtraDbgData(psLxNtfCoded_t        psLxNtfCoded,
                             psLxNtfDecodingInfo_t psLxNtfDecodingInfo,
                             psLxNtfDecoded_t      psLxNtfDecoded);
+    void decodeL2Event(psLxNtfCoded_t psLxNtfCoded,
+                       psLxNtfDecodingInfo_t psLxNtfDecodingInfo,
+                       psL2DecodedInfo_t psL2DecodedInfo);
+    void decodeFelicaCmdEvent(psLxNtfCoded_t psLxNtfCoded,
+                              psLxNtfDecodingInfo_t psLxNtfDecodingInfo,
+                              psL2DecodedInfo_t psL2DecodedInfo);
+    void decodeFelicaSysCodeEvent(psLxNtfCoded_t psLxNtfCoded,
+                                  psLxNtfDecodingInfo_t psLxNtfDecodingInfo,
+                                  psL2DecodedInfo_t psL2DecodedInfo);
+    void decodeFelicaRspEvent(psLxNtfCoded_t psLxNtfCoded,
+                              psLxNtfDecodingInfo_t psLxNtfDecodingInfo,
+                              psL2DecodedInfo_t psL2DecodedInfo);
+    void decodeFelicaMiscEvent(psLxNtfCoded_t psLxNtfCoded,
+                               psLxNtfDecodingInfo_t psLxNtfDecodingInfo,
+                               psL2DecodedInfo_t psL2DecodedInfo);
+    void decodeCMAEvent(psLxNtfCoded_t psLxNtfCoded,
+                        psLxNtfDecodingInfo_t psLxNtfDecodingInfo,
+                        psL2DecodedInfo_t psL2DecodedInfo);
+
     void calculateTxVpp(psLxNtfDecoded_t psLxNtfDecoded);
     void printLxDebugInfo(psLxNtfDecoded_t psLxNtfDecoded);
 public:
