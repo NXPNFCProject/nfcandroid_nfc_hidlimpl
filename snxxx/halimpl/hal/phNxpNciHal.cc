@@ -3410,6 +3410,7 @@ NFCSTATUS phNxpNciHal_dlResetInFwDnldMode() {
 
   nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
   phTmlNfc_EnableFwDnldMode(false);
+  phTmlNfc_ReadAbort();
   phDnldNfc_ReSetHwDevHandle();
   if(phNxpNciHal_enableTmlRead() != NFCSTATUS_PENDING) {
     NXPLOG_NCIHAL_E("%s read status error status", __FUNCTION__);
