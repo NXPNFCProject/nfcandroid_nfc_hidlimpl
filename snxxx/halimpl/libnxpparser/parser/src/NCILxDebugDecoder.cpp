@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2018, 2020 NXP
+ * Copyright (C) 2017-2018, 2020,2022 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@
 #include "NCILxDebugDecoder.h"
 #include "phOsal_Posix.h"
 
-#include <netinet/in.h>
 #include <cstdint>
 #include <cstring>
+#include <iomanip>
+#include <netinet/in.h>
+#include <sstream>
 
 using namespace std;
 
@@ -267,33 +269,35 @@ NCI_LxDebug_Decoder::parseL1DbgNtf(psLxNtfCoded_t   psLxNtfCoded,
             }
         }
         decodeExtraDbgData(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-    }
-    else if(psLxNtfCoded->pLxNtf[2] == L1_EVT_7816_RET_CODE_LEN)    // 0xA0 == L1 Event Entry + EDD + 7816-4 SW1SW2
+    } else if (psLxNtfCoded->pLxNtf[2] == L1_EVT_7816_RET_CODE_LEN ||
+               psLxNtfCoded->pLxNtf[2] ==
+                   L1_EVT_7816_RET_CODE_EXTRA_DBG_LEN) // 0xA0 == L1 Event Entry
+                                                       // + EDD + 7816-4 SW1SW2
     {
-        if(mRssiDebugMode)
-        {
-            decodeCLIFFState(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-            decodeRSSIValues(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
+      if (mRssiDebugMode) {
+        decodeCLIFFState(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
+        decodeRSSIValues(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
+      } else {
+        decodeTimeStamp(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
+        decodeCLIFFState(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
+        if ((psLxNtfDecoded->psL1NtfDecoded->sInfo
+                 .pCliffStateTriggerTypeDirection) &&
+            (!strcmp((const char *)psLxNtfDecoded->psL1NtfDecoded->sInfo
+                         .pCliffStateTriggerTypeDirection,
+                     (const char *)"CLF_EVT_RX")))
+          decodeRSSIValues(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
+        else {
+          decodeAPCTable(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
+          calculateTxVpp(psLxNtfDecoded);
         }
-        else
-        {
-            decodeTimeStamp(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-            decodeCLIFFState(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-            if((psLxNtfDecoded->psL1NtfDecoded->sInfo.pCliffStateTriggerTypeDirection) &&
-               (!strcmp((const char*)psLxNtfDecoded->psL1NtfDecoded->sInfo.pCliffStateTriggerTypeDirection, (const char*)"CLF_EVT_RX")))
-                decodeRSSIValues(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-            else
-            {
-                decodeAPCTable(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-                calculateTxVpp(psLxNtfDecoded);
-            }
-        }
+      }
+      if (psLxNtfCoded->pLxNtf[2] == L1_EVT_7816_RET_CODE_EXTRA_DBG_LEN) {
+        psLxNtfDecodingInfo->eddOffset = 9;
         decodeExtraDbgData(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-        decode78164RetCode(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-    }
-    else
-    {
-        phOsal_LogDebug((const uint8_t*)"LxDecoder> Invalid Length !");
+      }
+      decode78164RetCode(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
+    } else {
+      phOsal_LogDebug((const uint8_t *)"LxDecoder> Invalid Length !");
     }
 
     LOG_FUNCTION_EXIT;
@@ -321,141 +325,260 @@ NCI_LxDebug_Decoder::parseL2DbgNtf(psLxNtfCoded_t   psLxNtfCoded,
     psLxNtfDecodingInfo_t psLxNtfDecodingInfo = &sLxNtfDecodingInfo;
 
     memset((uint8_t*)&sLxNtfDecodingInfo, 0, sizeof(sLxNtfDecodingInfo_t));
-    // Set the Decoding Mapping
-    psLxNtfDecodingInfo->milliSecOffset                  = 1;
-    psLxNtfDecodingInfo->microSecOffset                  = 3;
-    psLxNtfDecodingInfo->rawRSSIOffset                   = 1;
-    psLxNtfDecodingInfo->intrpltdRSSIOffset              = 5;
-    psLxNtfDecodingInfo->apcOffset                       = 5;
-    psLxNtfDecodingInfo->felicaCmdOffset                 = 5;
-    psLxNtfDecodingInfo->felicaRspCodeOffset             = 7;
-    psLxNtfDecodingInfo->cliffStateTriggerTypeOffset     = 7;
-    psLxNtfDecodingInfo->cliffStateRFTechModeOffset      = 7;
-    psLxNtfDecodingInfo->felicaCmdOffset                 = 7;
-    psLxNtfDecodingInfo->felicaRspStatusFlagsOffset      = 8;
-    psLxNtfDecodingInfo->eddOffset                       = 8;
-    psLxNtfDecodingInfo->eddFelicaOffset                 = 9;
-
     totalTLVlength = psLxNtfCoded->pLxNtf[2];
-    phOsal_LogDebugU32d((const uint8_t*)"LxDecoder> Total TLV length",totalTLVlength);
 
+    phOsal_LogDebugU32d((const uint8_t *)"LxDecoder> Total TLV length",
+                        totalTLVlength);
     do
     {
-        psLxNtfDecoded->psL2NtfDecoded->tlvCount = tlvCount;
-        psLxNtfDecodingInfo->baseIndex           = tlvIndex;
+      psL2DecodedInfo_t psL2DecodedInfo =
+          &(psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount]);
+      memset(psL2DecodedInfo, 0, sizeof(sL2DecodedInfo_t));
 
-        if(psLxNtfCoded->pLxNtf[tlvIndex] == (L2_EVT_TAG_ID | L2_EVT_TAG_ID_LEN))
-        {
-            totalTLVlength = totalTLVlength - (L2_EVT_TAG_ID_LEN + 1);
-            tlvIndex       = tlvIndex + (L2_EVT_TAG_ID_LEN + 1);
-            if(mRssiDebugMode)
-            {
-                decodeRSSIValues(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-                decodeCLIFFState(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-            }
-            else
-            {
-                decodeTimeStamp(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-                decodeCLIFFState(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-                if((psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection) &&
-                  (!strcmp((const char*)psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection, (const char*)"CLF_EVT_RX")))
-                    decodeRSSIValues(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-                else
-                {
-                    decodeAPCTable(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-                    calculateTxVpp(psLxNtfDecoded);
-                }
-            }
-        }
-        else if(psLxNtfCoded->pLxNtf[tlvIndex] == (L2_EVT_TAG_ID | L2_EVT_TAG_ID_EXTRA_DBG_LEN))    //EDD
-        {
-            totalTLVlength = totalTLVlength - (L2_EVT_TAG_ID_EXTRA_DBG_LEN + 1);
-            tlvIndex       = tlvIndex + L2_EVT_TAG_ID_EXTRA_DBG_LEN + 1;
-            if(mRssiDebugMode)
-            {
-                decodeCLIFFState(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-                decodeRSSIValues(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-            }
-            else
-            {
-                decodeTimeStamp(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-                decodeCLIFFState(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-                if((psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection) &&
-                  (!strcmp((const char*)psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection, (const char*)"CLF_EVT_RX")))
-                    decodeRSSIValues(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-                else
-                {
-                    decodeAPCTable(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-                    calculateTxVpp(psLxNtfDecoded);
-                }
-            }
-            decodeExtraDbgData(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-        }
-        else if(psLxNtfCoded->pLxNtf[tlvIndex] == (L2_EVT_FELICA_CMD_TAG_ID | L2_EVT_FELICA_CMD_TAG_ID_LEN))
-        {
-            totalTLVlength = totalTLVlength - (L2_EVT_FELICA_CMD_TAG_ID_LEN + 1);
-            tlvIndex       = tlvIndex + L2_EVT_FELICA_CMD_TAG_ID_LEN + 1;
-            decodeTimeStamp(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-            decodeRSSIValues(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-            decodeFelicaCmdCode(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-        }
-        else if(psLxNtfCoded->pLxNtf[tlvIndex] == (L2_EVT_FELICA_CMD_TAG_ID | L2_EVT_FELICA_CMD_TAG_ID_EXTRA_DBG_LEN))    //EDD
-        {
-            totalTLVlength = totalTLVlength - (L2_EVT_FELICA_CMD_TAG_ID_EXTRA_DBG_LEN + 1);
-            tlvIndex       = tlvIndex + L2_EVT_FELICA_CMD_TAG_ID_EXTRA_DBG_LEN + 1;
-            decodeTimeStamp(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-            decodeRSSIValues(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-            decodeFelicaCmdCode(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-            decodeExtraDbgData(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-        }
-        else if(psLxNtfCoded->pLxNtf[tlvIndex] == (L2_EVT_FELICA_SYS_CODE_TAG_ID | L2_EVT_FELICA_SYS_CODE_TAG_ID_LEN))
-        {
-            totalTLVlength = totalTLVlength - (L2_EVT_FELICA_SYS_CODE_TAG_ID_LEN + 1);
-            tlvIndex       = tlvIndex + L2_EVT_FELICA_SYS_CODE_TAG_ID_LEN + 1;
-            decodeTimeStamp(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-            decodeFelicaSystemCode(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-        }
-        else if(psLxNtfCoded->pLxNtf[tlvIndex] == (L2_EVT_FELICA_RSP_CODE_TAG_ID | L2_EVT_FELICA_RSP_CODE_TAG_ID_LEN))
-        {
-            totalTLVlength = totalTLVlength - (L2_EVT_FELICA_RSP_CODE_TAG_ID_LEN + 1);
-            tlvIndex       = tlvIndex + L2_EVT_FELICA_RSP_CODE_TAG_ID_LEN + 1;
-            decodeTimeStamp(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-            decodeAPCTable(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-            calculateTxVpp(psLxNtfDecoded);
-            decodeFelicaRspCode(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-        }
-        else if(psLxNtfCoded->pLxNtf[tlvIndex] == (L2_EVT_FELICA_RSP_CODE_TAG_ID | L2_EVT_FELICA_RSP_CODE_TAG_ID_EXTRA_DBG_LEN))
-        {
-            totalTLVlength = totalTLVlength - (L2_EVT_FELICA_RSP_CODE_TAG_ID_EXTRA_DBG_LEN + 1);
-            tlvIndex       = tlvIndex + L2_EVT_FELICA_RSP_CODE_TAG_ID_EXTRA_DBG_LEN + 1;
-            decodeTimeStamp(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-            decodeAPCTable(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-            calculateTxVpp(psLxNtfDecoded);
-            decodeFelicaRspCode(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-            decodeExtraDbgData(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-        }
-        else if(psLxNtfCoded->pLxNtf[tlvIndex] == (L2_EVT_FELICA_MISC_TAG_ID | L2_EVT_FELICA_MISC_TAG_ID_LEN))
-        {
-            totalTLVlength = totalTLVlength - (L2_EVT_FELICA_MISC_TAG_ID_LEN + 1);
-            tlvIndex       = tlvIndex + L2_EVT_FELICA_MISC_TAG_ID_LEN + 1;
-            decodeTimeStamp(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-            decodeFelicaMiscCode(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-        }
-        else if(psLxNtfCoded->pLxNtf[tlvIndex] == (L2_EVT_FELICA_MISC_TAG_ID | L2_EVT_FELICA_MISC_TAG_ID_EXTRA_DBG_LEN))
-        {
-            totalTLVlength = totalTLVlength - (L2_EVT_FELICA_MISC_TAG_ID_EXTRA_DBG_LEN + 1);
-            tlvIndex       = tlvIndex + L2_EVT_FELICA_MISC_TAG_ID_EXTRA_DBG_LEN + 1;
-            decodeTimeStamp(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-            decodeFelicaMiscCode(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-            decodeExtraDbgData(psLxNtfCoded, psLxNtfDecodingInfo, psLxNtfDecoded);
-        }
-        else
-        {
-            phOsal_LogDebug((const uint8_t*)"LxDecoder> Invalid Length !");
-        }
-    } while((totalTLVlength > 0) && (++tlvCount < MAX_TLV));
+      psLxNtfDecodingInfo->baseIndex = tlvIndex;
+      uint8_t baseIndex = psLxNtfDecodingInfo->baseIndex + 1;
+      uint8_t* ptr = psLxNtfCoded->pLxNtf + baseIndex;
+
+      uint8_t tag = psLxNtfCoded->pLxNtf[tlvIndex] & 0xF0;
+      uint8_t len = psLxNtfCoded->pLxNtf[tlvIndex] & 0x0F;
+      uint8_t milliSec[2] = {0};
+      uint8_t microSec[2] = {0};
+
+      milliSec[1] = *ptr++;
+      milliSec[0] = *ptr++;
+      microSec[1] = *ptr++;
+      microSec[0] = *ptr;
+
+      psL2DecodedInfo->tag = tag;
+      psL2DecodedInfo->len = len;
+      psL2DecodedInfo->timeStampMs = ntohs(*((uint16_t *)milliSec));
+      psL2DecodedInfo->timeStampUs = ntohs(*((uint16_t *)microSec));
+      // Decode sub events inside L2 Dbg Ntf
+      switch (tag) {
+      case L2_EVT_TAG_ID:
+        decodeL2Event(psLxNtfCoded, psLxNtfDecodingInfo, psL2DecodedInfo);
+        break;
+      case L2_EVT_FELICA_CMD_TAG_ID:
+        decodeFelicaCmdEvent(psLxNtfCoded, psLxNtfDecodingInfo,
+                             psL2DecodedInfo);
+        break;
+      case L2_EVT_FELICA_SYS_CODE_TAG_ID:
+        decodeFelicaSysCodeEvent(psLxNtfCoded, psLxNtfDecodingInfo,
+                                 psL2DecodedInfo);
+        break;
+      case L2_EVT_FELICA_RSP_CODE_TAG_ID:
+        decodeFelicaRspEvent(psLxNtfCoded, psLxNtfDecodingInfo,
+                             psL2DecodedInfo);
+        break;
+      case L2_EVT_FELICA_MISC_TAG_ID:
+        decodeFelicaMiscEvent(psLxNtfCoded, psLxNtfDecodingInfo,
+                              psL2DecodedInfo);
+        break;
+      case L2_EVT_CMA_TAG_ID:
+        decodeCMAEvent(psLxNtfCoded, psLxNtfDecodingInfo, psL2DecodedInfo);
+        break;
+      default:
+        phOsal_LogDebugU32d((const uint8_t *)"LxDecoder> L2_EVT_UNKNOWN",
+                            __LINE__);
+        break;
+      };
+      totalTLVlength = totalTLVlength - (len + 1);
+      tlvIndex = tlvIndex + (len + 1);
+
+    } while ((++tlvCount < MAX_TLV) && (totalTLVlength > 0));
+
+    psLxNtfDecoded->psL2NtfDecoded->tlvCount = tlvCount;
 
     LOG_FUNCTION_EXIT;
+}
+
+/*******************************************************************************
+ **
+ ** Function:        decodeL2Event(psLxNtfCoded_t psLxNtfCoded,
+ **                                psLxNtfDecodingInfo_t psLxLtfDecodingInfo,
+ **                                psL2DecodedInfo_t psL2DecodedInfo)
+ **
+ ** Description:     Decodes L2 event in L2 Dbg Ntf.
+ **
+ ** Returns:         void
+ **
+ ******************************************************************************/
+
+void NCI_LxDebug_Decoder::decodeL2Event(
+    psLxNtfCoded_t psLxNtfCoded, psLxNtfDecodingInfo_t psLxNtfDecodingInfo,
+    psL2DecodedInfo_t psL2DecodedInfo) {
+
+  int32_t baseIndex = psLxNtfDecodingInfo->baseIndex + L2_SUB_EVT_OFFSET;
+  uint8_t* ptr = psLxNtfCoded->pLxNtf + baseIndex;
+
+  if (psL2DecodedInfo->len == L2_EVT_RX_TAG_ID_LEN ||
+      psL2DecodedInfo->len == L2_EVT_RX_TAG_ID_EXTRA_DBG_LEN) {
+    // Non Tx Event
+    sL2RxEvent_t *l2RxEvt = &(psL2DecodedInfo->u.sL2RxEvent);
+
+    l2RxEvt->rssi[0] = *ptr++;
+    l2RxEvt->rssi[1] = *ptr++;
+    l2RxEvt->clifState = *ptr++;
+
+    if (psL2DecodedInfo->len == L2_EVT_RX_TAG_ID_EXTRA_DBG_LEN) {
+      l2RxEvt->extraData = *ptr;
+    }
+  } else {
+    // Tx Event
+    sL2TxEvent_t *l2TxEvt = &(psL2DecodedInfo->u.sL2TxEvent);
+    l2TxEvt->dlma[0] = *ptr++;
+    l2TxEvt->dlma[1] = *ptr++;
+    l2TxEvt->dlma[2] = *ptr++;
+    l2TxEvt->dlma[3] = *ptr++;
+
+    l2TxEvt->clifState = *ptr++;
+    if (psL2DecodedInfo->len == L2_EVT_TX_TAG_ID_EXTRA_DBG_LEN) {
+      l2TxEvt->extraData = *ptr;
+    }
+  }
+}
+
+/*******************************************************************************
+ **
+ ** Function:        decodeFelicaCmdEvent(psLxNtfCoded_t psLxNtfCoded,
+ **                                       psLxNtfDecodingInfo_t psLxLtfDecodingInfo,
+ **                                       psL2DecodedInfo_t psL2DecodedInfo)
+ **
+ ** Description:     Decodes Felica cmd event in L2 Dbg Ntf.
+ **
+ ** Returns:         void
+ **
+ ******************************************************************************/
+
+void NCI_LxDebug_Decoder::decodeFelicaCmdEvent(
+    psLxNtfCoded_t psLxNtfCoded, psLxNtfDecodingInfo_t psLxNtfDecodingInfo,
+    psL2DecodedInfo_t psL2DecodedInfo) {
+
+  sL2FelicaCmdEvent_t *felicaEvt = &(psL2DecodedInfo->u.sL2FelicaCmdEvent);
+  int32_t baseIndex = psLxNtfDecodingInfo->baseIndex + L2_SUB_EVT_OFFSET;
+  uint8_t* ptr = psLxNtfCoded->pLxNtf + baseIndex;
+
+  felicaEvt->rssi[0] = *ptr++;
+  felicaEvt->rssi[1] = *ptr++;
+  felicaEvt->felicaCmd = *ptr++;
+
+  if (psL2DecodedInfo->len == L2_EVT_FELICA_CMD_TAG_ID_EXTRA_DBG_LEN) {
+    felicaEvt->extraData = *ptr;
+  }
+}
+
+/*******************************************************************************
+ **
+ ** Function:        decodeFelicaSysCodeEvent(psLxNtfCoded_t psLxNtfCoded,
+ **                                           psLxNtfDecodingInfo_t psLxLtfDecodingInfo,
+ **                                           psL2DecodedInfo_t psL2DecodedInfo)
+ **
+ ** Description:     Decodes Felica system code event in L2 Dbg Ntf.
+ **
+ ** Returns:         void
+ **
+ ******************************************************************************/
+
+void NCI_LxDebug_Decoder::decodeFelicaSysCodeEvent(
+    psLxNtfCoded_t psLxNtfCoded, psLxNtfDecodingInfo_t psLxNtfDecodingInfo,
+    psL2DecodedInfo_t psL2DecodedInfo) {
+
+  sL2FelicaSysCodeEvent_t *sysCodeEvt =
+      &(psL2DecodedInfo->u.sL2FelicaSysCodeEvent);
+  int32_t baseIndex = psLxNtfDecodingInfo->baseIndex + L2_SUB_EVT_OFFSET;
+  uint8_t* ptr = psLxNtfCoded->pLxNtf + baseIndex;
+
+  sysCodeEvt->felicaCmd[0] = *ptr++;
+  sysCodeEvt->felicaCmd[1] = *ptr;
+}
+
+/*******************************************************************************
+ **
+ ** Function:        decodeFelicaRspEvent(psLxNtfCoded_t psLxNtfCoded,
+ **                                       psLxNtfDecodingInfo_t psLxLtfDecodingInfo,
+ **                                       psL2DecodedInfo_t psL2DecodedInfo)
+ **
+ ** Description:     Decodes Felica response event in L2 Dbg Ntf.
+ **
+ ** Returns:         void
+ **
+ ******************************************************************************/
+
+void NCI_LxDebug_Decoder::decodeFelicaRspEvent(
+    psLxNtfCoded_t psLxNtfCoded, psLxNtfDecodingInfo_t psLxNtfDecodingInfo,
+    psL2DecodedInfo_t psL2DecodedInfo) {
+
+  sL2FelicaRspEvent_t *felicaRspEvt = &(psL2DecodedInfo->u.sL2FelicaRspEvent);
+  int32_t baseIndex = psLxNtfDecodingInfo->baseIndex + L2_SUB_EVT_OFFSET;
+  uint8_t* ptr = psLxNtfCoded->pLxNtf + baseIndex;
+
+  felicaRspEvt->dlma[0] = *ptr++;
+  felicaRspEvt->dlma[1] = *ptr++;
+  felicaRspEvt->dlma[2] = *ptr++;
+  felicaRspEvt->dlma[3] = *ptr++;
+
+  felicaRspEvt->felicaRsp = *ptr++;
+
+  felicaRspEvt->responseStatus[0] = *ptr++;
+  felicaRspEvt->responseStatus[1] = *ptr++;
+
+  if (psL2DecodedInfo->len == L2_EVT_FELICA_RSP_CODE_TAG_ID_EXTRA_DBG_LEN) {
+    felicaRspEvt->extraData = *ptr;
+  }
+}
+
+/*******************************************************************************
+ **
+ ** Function:        decodeFelicaMiscEvent(psLxNtfCoded_t psLxNtfCoded,
+ **                                        psLxNtfDecodingInfo_t psLxLtfDecodingInfo,
+ **                                        psL2DecodedInfo_t psL2DecodedInfo)
+ **
+ ** Description:     Decodes Felica MISC event in L2 Dbg Ntf.
+ **
+ ** Returns:         void
+ **
+ ******************************************************************************/
+
+void NCI_LxDebug_Decoder::decodeFelicaMiscEvent(
+    psLxNtfCoded_t psLxNtfCoded, psLxNtfDecodingInfo_t psLxNtfDecodingInfo,
+    psL2DecodedInfo_t psL2DecodedInfo) {
+
+  sL2FelicaMiscEvent_t *miscEvt = &(psL2DecodedInfo->u.sL2FelicaMiscEvent);
+  int32_t baseIndex = psLxNtfDecodingInfo->baseIndex + L2_SUB_EVT_OFFSET;
+  uint8_t* ptr = psLxNtfCoded->pLxNtf + baseIndex;
+
+  miscEvt->trigger = *ptr++;
+  if (psL2DecodedInfo->len == L2_EVT_FELICA_MISC_TAG_ID_EXTRA_DBG_LEN) {
+    miscEvt->extraData = *ptr;
+  }
+}
+
+/*******************************************************************************
+ **
+ ** Function:        decodeCMAEvent(psLxNtfCoded_t psLxNtfCoded,
+ **                                 psLxNtfDecodingInfo_t psLxLtfDecodingInfo,
+ **                                 psL2DecodedInfo_t psL2DecodedInfo)
+ **
+ ** Description:     Decodes Card mode access event in L2 Dbg Ntf.
+ **
+ ** Returns:         void
+ **
+ ******************************************************************************/
+
+void NCI_LxDebug_Decoder::decodeCMAEvent(
+    psLxNtfCoded_t psLxNtfCoded, psLxNtfDecodingInfo_t psLxNtfDecodingInfo,
+    psL2DecodedInfo_t psL2DecodedInfo) {
+
+  sL2CmaEvent_t *cmaEvt = &(psL2DecodedInfo->u.sL2CmaEvent);
+  int32_t baseIndex = psLxNtfDecodingInfo->baseIndex + L2_SUB_EVT_OFFSET;
+  uint8_t* ptr = psLxNtfCoded->pLxNtf + baseIndex;
+
+  cmaEvt->trigger = *ptr++;
+
+  if (psL2DecodedInfo->len > L2_EVT_CMA_TAG_ID_MIN_LEN) {
+    memcpy(&(cmaEvt->extraData), ptr,
+        (psL2DecodedInfo->len - L2_EVT_CMA_TAG_ID_MIN_LEN));
+  }
 }
 
 /*******************************************************************************
@@ -506,42 +629,72 @@ NCI_LxDebug_Decoder::printLxDebugInfo(psLxNtfDecoded_t psLxNtfDecoded) {
         {
             uint8_t tlvCount = psLxNtfDecoded->psL2NtfDecoded->tlvCount;
 
+            phOsal_LogInfo((const uint8_t *)"---------------------L2 Debug "
+                                            "Information--------------------");
             for(int tlv=0; tlv < tlvCount; tlv++)
             {
-                phOsal_LogInfo((const uint8_t*)"---------------------L2 Debug Information--------------------");
-                phOsal_LogInfoU32d((const uint8_t*)"TLV Number", tlv);
-                phOsal_LogInfoU32dd((const uint8_t*)"Time Stamp", psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].timeStampMs, psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].timeStampUs);
-                phOsal_LogInfoString((const uint8_t*)"Trigger Type",psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].pCliffStateTriggerType);
-                phOsal_LogInfoString((const uint8_t*)"RF Tech and Mode",psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].pCliffStateRFTechNMode);
-                phOsal_LogInfoString((const uint8_t*)"Event Type",psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].pCliffStateTriggerTypeDirection);
-                if(mRssiDebugMode)
-                {
-                    phOsal_LogInfoU32h((const uint8_t*)"Raw RSSI ADC", psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].rawRSSIADC);
-                    phOsal_LogInfoU32h((const uint8_t*)"Raw RSSI AGC", psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].rawRSSIAGC);
+              std::ostringstream oss;
+              psL2DecodedInfo_t decodedInfo =
+                  &(psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv]);
+              oss << "TLV " << tlv << " {";
+              oss << "TimeStamp = " << decodedInfo->timeStampMs << "."
+                  << decodedInfo->timeStampUs;
+
+              switch (decodedInfo->tag) {
+              case L2_EVT_TAG_ID: {
+                oss << ", TAG = L2 EVENT";
+                if (decodedInfo->len <= L2_EVT_RX_TAG_ID_EXTRA_DBG_LEN) {
+                  sL2RxEvent_t *l2RxEvt = &(decodedInfo->u.sL2RxEvent);
+                  l2RxEvt->toString(oss);
+                } else {
+                  sL2TxEvent_t *l2TxEvt = &(decodedInfo->u.sL2TxEvent);
+                  l2TxEvt->toString(oss);
                 }
-                else
-                    phOsal_LogInfoU32hh((const uint8_t*)"Interpolated RSSI", psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].intrpltdRSSI[0], psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].intrpltdRSSI[1]);
-                phOsal_LogInfoU32hh((const uint8_t*)"Auto Power Control", psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].APC[0], psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].APC[1]);
-                phOsal_LogInfoString((const uint8_t*)"L2 WUP IOT EDD",psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].pEddL2WUP);
-                if(mFelicaRFDebugMode || mFelicaSCDebugMode)
-                {
-                    phOsal_LogInfoU32h((const uint8_t*)"Felica Command Code", psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].felicaCmdCode);
-                    phOsal_LogInfoU32hh((const uint8_t*)"Felica System Code", psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].felicaSysCode[0], psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].felicaSysCode[1]);
-                    phOsal_LogInfoU32h((const uint8_t*)"Felica Response Code", psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].felicaRspCode);
-                    phOsal_LogInfoU32hh((const uint8_t*)"Felica Rsp Code Status Flags", psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].felicaRspCodeStatusFlags[0], psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].felicaRspCodeStatusFlags[1]);
-                    phOsal_LogInfoString((const uint8_t*)"Felica Misc Entry",psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].pFelicaMisc);
-                    phOsal_LogInfoU32h((const uint8_t*)"Felica EDD", psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].eddFelica);
-                }
-                if((psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection) &&
-                  (!strcmp((const char*)psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection, (const char*)"CLF_EVT_TX")))
-                {
-                    phOsal_LogInfoU32d((const uint8_t*)"Residual Carrier", psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].residualCarrier);
-                    phOsal_LogInfoU32d((const uint8_t*)"Number Driver", psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].numDriver);
-                    phOsal_LogInfo32f((const uint8_t*)"Vtx AMP", psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].vtxAmp);
-                    phOsal_LogInfo32f((const uint8_t*)"Vtx LDO", psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].vtxLDO);
-                    phOsal_LogInfoU32d((const uint8_t*)"Tx Vpp", psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlv].txVpp);
-                }
+                break;
+              }
+              case L2_EVT_FELICA_CMD_TAG_ID: {
+                oss << ", TAG = FELICA CMD";
+                sL2FelicaCmdEvent_t *felicaCmdEvt =
+                    &(decodedInfo->u.sL2FelicaCmdEvent);
+                felicaCmdEvt->toString(oss);
+                break;
+              }
+              case L2_EVT_FELICA_SYS_CODE_TAG_ID: {
+                oss << ", TAG = FELICA SYSTEM CODE";
+                sL2FelicaSysCodeEvent_t *sysCodeEvt =
+                    &(decodedInfo->u.sL2FelicaSysCodeEvent);
+                sysCodeEvt->toString(oss);
+                break;
+              }
+              case L2_EVT_FELICA_RSP_CODE_TAG_ID: {
+                oss << ", TAG = FELICA RSP";
+                sL2FelicaRspEvent_t *felicaRspEvt =
+                    &(decodedInfo->u.sL2FelicaRspEvent);
+                felicaRspEvt->toString(oss);
+                break;
+              }
+              case L2_EVT_FELICA_MISC_TAG_ID: {
+                oss << ", TAG = FELICA MISC";
+                sL2FelicaMiscEvent_t *miscEvt =
+                    &(decodedInfo->u.sL2FelicaMiscEvent);
+                miscEvt->toString(oss);
+                break;
+              }
+              case L2_EVT_CMA_TAG_ID: {
+                oss << ", TAG = CMA";
+                sL2CmaEvent_t *cmaEvt = &(decodedInfo->u.sL2CmaEvent);
+                cmaEvt->toString(oss);
+                break;
+              }
+              default:
+                oss << ", TAG = RFU";
+                break;
+              }
+              oss << " }" << std::endl;
+              phOsal_LogInfo((const uint8_t *)oss.str().c_str());
             }
+            phOsal_LogInfo((const uint8_t *)"----------------------------------"
+                                            "---------------------------");
         }
     }
 }
@@ -590,13 +743,6 @@ NCI_LxDebug_Decoder::decodeTimeStamp( psLxNtfCoded_t        psLxNtfCoded,
     {
         psLxNtfDecoded->psL1NtfDecoded->sInfo.timeStampMs = ntohs(*((uint16_t *) milliSec));
         psLxNtfDecoded->psL1NtfDecoded->sInfo.timeStampUs = ntohs(*((uint16_t *) microSec));
-    }
-    else if(psLxNtfCoded->pLxNtf[1] == SYSTEM_DEBUG_STATE_L2_MESSAGE)
-    {
-        uint8_t tlvCount = psLxNtfDecoded->psL2NtfDecoded->tlvCount;
-        phOsal_LogInfoU32d((const uint8_t*)"tlvCount", tlvCount);
-        psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].timeStampMs = ntohs(*((uint16_t *) milliSec));
-        psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].timeStampUs = ntohs(*((uint16_t *) microSec));
     }
 }
 
@@ -649,18 +795,6 @@ NCI_LxDebug_Decoder::decodeRSSIValues(psLxNtfCoded_t        psLxNtfCoded,
         psLxNtfDecoded->psL1NtfDecoded->sInfo.intrpltdRSSI[0] = intrpltdRSSI[0];
         psLxNtfDecoded->psL1NtfDecoded->sInfo.intrpltdRSSI[1] = intrpltdRSSI[1];
     }
-    else if(psLxNtfCoded->pLxNtf[1] == SYSTEM_DEBUG_STATE_L2_MESSAGE)
-    {
-        uint8_t tlvCount = psLxNtfDecoded->psL2NtfDecoded->tlvCount;
-
-        if(mRssiDebugMode)
-        {
-            psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].rawRSSIADC = rawRSSIADC;
-            psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].rawRSSIAGC = rawRSSIAGC;
-        }
-        psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].intrpltdRSSI[0] = intrpltdRSSI[0];
-        psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].intrpltdRSSI[1] = intrpltdRSSI[1];
-    }
 }
 
 /*******************************************************************************
@@ -704,17 +838,6 @@ NCI_LxDebug_Decoder::decodeAPCTable(psLxNtfCoded_t        psLxNtfCoded,
         psLxNtfDecoded->psL1NtfDecoded->sInfo.vtxAmp = mLOOKUP_VTXAMP[(APC[1] & mLOOKUP_VTXAMP_BITMASK)];
         psLxNtfDecoded->psL1NtfDecoded->sInfo.vtxLDO = mLOOKUP_VTXLDO[(APC[0] & mLOOKUP_VTXLDO_BITMASK)];
     }
-    else if(psLxNtfCoded->pLxNtf[1] == SYSTEM_DEBUG_STATE_L2_MESSAGE)
-    {
-        uint8_t tlvCount = psLxNtfDecoded->psL2NtfDecoded->tlvCount;
-
-        psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].APC[0] = APC[0];
-        psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].APC[1] = APC[1];
-        psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].residualCarrier = mLOOKUP_RESCARRIER[(APC[1] & mLOOKUP_RESCARRIER_BITMASK)];
-        psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].numDriver = mLOOKUP_NUMDRIVER[(APC[1] & mLOOKUP_NUMDRIVER_BITMASK)];
-        psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].vtxAmp = mLOOKUP_VTXAMP[(APC[0] & mLOOKUP_VTXAMP_BITMASK)];
-        psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].vtxLDO = mLOOKUP_VTXLDO[(APC[0] & mLOOKUP_VTXLDO_BITMASK)];
-    }
 }
 
 /*******************************************************************************
@@ -735,7 +858,6 @@ NCI_LxDebug_Decoder::calculateTxVpp(psLxNtfDecoded_t psLxNtfDecoded) {
     float          vtxAmp          = 0;
     float          vtxLDO          = 0;
     uint16_t txVpp           = 0;
-    uint8_t  tlvNumber       = 0;
 
     //Vpp = ( (VtxLDO + VtxAmp) * (1 - (ResCarrier*0.00805)) ) * (2 - NumDriver + 1);
 
@@ -747,16 +869,6 @@ NCI_LxDebug_Decoder::calculateTxVpp(psLxNtfDecoded_t psLxNtfDecoded) {
         vtxLDO = psLxNtfDecoded->psL1NtfDecoded->sInfo.vtxLDO;
         txVpp = ( (vtxLDO + vtxAmp) * (1 - (residualCarrier*0.00805)) ) * (2 - numDriver + 1);
         psLxNtfDecoded->psL1NtfDecoded->sInfo.txVpp = txVpp;
-    }
-    else if(psLxNtfDecoded->level == SYSTEM_DEBUG_STATE_L1_MESSAGE)
-    {
-        tlvNumber = psLxNtfDecoded->psL2NtfDecoded->tlvCount;
-        residualCarrier = psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvNumber].residualCarrier;
-        numDriver = psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvNumber].numDriver;
-        vtxAmp = psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvNumber].vtxAmp;
-        vtxLDO = psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvNumber].vtxLDO;
-        txVpp = ( (vtxLDO + vtxAmp) * (1 - (residualCarrier*0.00805)) ) * (2 - numDriver + 1);
-        psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvNumber].txVpp = txVpp;
     }
 }
 
@@ -864,60 +976,6 @@ NCI_LxDebug_Decoder::decodeTriggerType(psLxNtfCoded_t        psLxNtfCoded,
                 break;
         }
     }
-    else if(psLxNtfCoded->pLxNtf[1] == SYSTEM_DEBUG_STATE_L2_MESSAGE)
-    {
-        uint8_t tlvCount = psLxNtfDecoded->psL2NtfDecoded->tlvCount;
-
-        switch((psLxNtfCoded->pLxNtf[base + offsetTriggerType] & 0x0F))
-        {
-            case CLF_L2_EVT_MODULATION_DETECTED:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerType = mCLF_STAT_L2_TRIG_TYPE[1];
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection = mCLF_EVT_DIRECTION[0];
-                break;
-            case CLF_L2_EVT_DATA_RX:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerType = mCLF_STAT_L2_TRIG_TYPE[2];
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection = mCLF_EVT_DIRECTION[0];
-                break;
-            case CLF_L2_EVT_TIMEOUT:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerType = mCLF_STAT_L2_TRIG_TYPE[3];
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection = mCLF_EVT_DIRECTION[0];
-                break;
-            case CLF_L2_EVT_ACTIVE_ISO14443_3:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerType = mCLF_STAT_L2_TRIG_TYPE[4];
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection = mCLF_EVT_DIRECTION[0];
-                break;
-            case CLF_L2_EVT_ERROR:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerType = mCLF_STAT_L2_TRIG_TYPE[5];
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection = mCLF_EVT_DIRECTION[0];
-                break;
-            case CLF_L2_EVT_SENSING:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerType = mCLF_STAT_L2_TRIG_TYPE[6];
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection = mCLF_EVT_DIRECTION[0];
-                break;
-            case CLF_L2_EVT_ACTIVE_ISO14443_4:    //APC
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerType = mCLF_STAT_L2_TRIG_TYPE[7];
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection = mCLF_EVT_DIRECTION[1];
-                break;
-            case CLF_L2_EVT_RFON:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerType = mCLF_STAT_L2_TRIG_TYPE[8];
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection = mCLF_EVT_DIRECTION[0];
-                break;
-            case CLF_L2_EVT_RFOFF:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerType = mCLF_STAT_L2_TRIG_TYPE[9];
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection = mCLF_EVT_DIRECTION[0];
-                break;
-            case CLF_L2_EVT_DATA_TX:            //APC
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerType = mCLF_STAT_L2_TRIG_TYPE[10];
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection = mCLF_EVT_DIRECTION[1];
-                break;
-            case CLF_L2_EVT_WUP_IOT_RECONFIG:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerType = mCLF_STAT_L2_TRIG_TYPE[11];
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateTriggerTypeDirection = mCLF_EVT_DIRECTION[0];
-                break;
-            default:
-                break;
-        }
-    }
 }
 
 /*******************************************************************************
@@ -985,56 +1043,6 @@ NCI_LxDebug_Decoder::decodeRFTechMode(psLxNtfCoded_t        psLxNtfCoded,
                 break;
         }
     }
-    else if(psLxNtfCoded->pLxNtf[1] == SYSTEM_DEBUG_STATE_L2_MESSAGE)
-    {
-        uint8_t tlvCount = psLxNtfDecoded->psL2NtfDecoded->tlvCount;
-
-        switch((psLxNtfCoded->pLxNtf[base + offsetRFTechMode] & 0xF0))
-        {
-            case CLF_STATE_TECH_CE_A:    //APC for Tx Events
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateRFTechNMode = mCLF_STAT_RF_TECH_MODE[1];
-                break;
-            case CLF_STATE_TECH_CE_B:    //APC for Tx Events
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateRFTechNMode = mCLF_STAT_RF_TECH_MODE[2];
-                break;
-            case CLF_STATE_TECH_CE_F:    //APC for Tx Events
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateRFTechNMode = mCLF_STAT_RF_TECH_MODE[3];
-                break;
-            case CLF_STATE_TECH_NFCIP1_TARGET_PASSIVE_A:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateRFTechNMode = mCLF_STAT_RF_TECH_MODE[4];
-                break;
-            case CLF_STATE_TECH_NFCIP1_TARGET_PASSIVE_F:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateRFTechNMode = mCLF_STAT_RF_TECH_MODE[5];
-                break;
-            case CLF_STATE_TECH_NFCIP1_TARGET_ACTIVE_A:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateRFTechNMode = mCLF_STAT_RF_TECH_MODE[6];
-                break;
-            case CLF_STATE_TECH_NFCIP1_TARGET_ACTIVE_F:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateRFTechNMode = mCLF_STAT_RF_TECH_MODE[7];
-                break;
-            case CLF_STATE_TECH_RM_A:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateRFTechNMode = mCLF_STAT_RF_TECH_MODE[8];
-                break;
-            case CLF_STATE_TECH_RM_B:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateRFTechNMode = mCLF_STAT_RF_TECH_MODE[9];
-                break;
-            case CLF_STATE_TECH_RM_F:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateRFTechNMode = mCLF_STAT_RF_TECH_MODE[10];
-                break;
-            case CLF_STATE_TECH_NFCIP1_INITIATOR_PASSIVE_A:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateRFTechNMode = mCLF_STAT_RF_TECH_MODE[11];
-                break;
-            case CLF_STATE_TECH_NFCIP1_INITIATOR_PASSIVE_B:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateRFTechNMode = mCLF_STAT_RF_TECH_MODE[12];
-                break;
-            case CLF_STATE_TECH_NFCIP1_INITIATOR_PASSIVE_F:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateRFTechNMode = mCLF_STAT_RF_TECH_MODE[13];
-                break;
-            default:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pCliffStateRFTechNMode = mCLF_STAT_RF_TECH_MODE[0];
-                break;
-        }
-    }
 }
 
 /*******************************************************************************
@@ -1053,7 +1061,7 @@ NCI_LxDebug_Decoder::decodeExtraDbgData(psLxNtfCoded_t        psLxNtfCoded,
 
     uint8_t base = 0;
     uint8_t offsetEDD = 0;
-    uint8_t offsetEDDFelica = 0;
+    // uint8_t offsetEDDFelica = 0;
 
     if(psLxNtfDecodingInfo != nullptr)
     {
@@ -1114,34 +1122,6 @@ NCI_LxDebug_Decoder::decodeExtraDbgData(psLxNtfCoded_t        psLxNtfCoded,
                 break;
         }
     }
-    else if(psLxNtfCoded->pLxNtf[1] == SYSTEM_DEBUG_STATE_L2_MESSAGE)
-    {
-        uint8_t tlvCount = psLxNtfDecoded->psL2NtfDecoded->tlvCount;
-        offsetEDD = psLxNtfDecodingInfo->eddOffset;
-
-        switch(psLxNtfCoded->pLxNtf[base + offsetEDD])
-        {
-            case L2_EDD_WUP_IOT_STAGE1:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pEddL2WUP = mEDD_L2_WUP[0];
-                break;
-            case L2_EDD_WUP_IOT_STAGE2:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pEddL2WUP = mEDD_L2_WUP[1];
-                break;
-            case L2_EDD_WUP_IOT_STAGE3:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pEddL2WUP = mEDD_L2_WUP[2];
-                break;
-            case L2_EDD_WUP_IOT_STAGE4:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pEddL2WUP = mEDD_L2_WUP[3];
-                break;
-            case L2_EDD_WUP_IOT_STAGE5:
-                psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pEddL2WUP = mEDD_L2_WUP[4];
-                break;
-        }
-
-        offsetEDDFelica = psLxNtfDecodingInfo->eddFelicaOffset;
-
-        psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].eddFelica = psLxNtfCoded->pLxNtf[base + offsetEDDFelica];
-    }
 }
 
 /*******************************************************************************
@@ -1180,152 +1160,176 @@ NCI_LxDebug_Decoder::decode78164RetCode(psLxNtfCoded_t        psLxNtfCoded,
 
 /*******************************************************************************
  **
- ** Function:        decodeFelicaCmdCode(psLxNtfCoded_t, psLxNtfDecodingInfo_t, psLxNtfDecoded_t)
+ ** Function:        toString(std::ostringstream & oss)
  **
- ** Description:     This function decodes the Felica Command
+ ** Description:     Converts this object to ostringstream
  **
- ** Returns:         status
+ ** Returns:         void
  **
  ******************************************************************************/
-void
-NCI_LxDebug_Decoder::decodeFelicaCmdCode(psLxNtfCoded_t        psLxNtfCoded,
-                                         psLxNtfDecodingInfo_t psLxNtfDecodingInfo,
-                                         psLxNtfDecoded_t      psLxNtfDecoded) {
-
-    uint8_t base = 0;
-    uint8_t offsetCmdCode = 0;
-
-    if(psLxNtfDecodingInfo != nullptr)
-    {
-        base = psLxNtfDecodingInfo->baseIndex;
-        offsetCmdCode = psLxNtfDecodingInfo->felicaCmdOffset;
-    }
-    else
-        return;
-
-    uint8_t tlvCount = psLxNtfDecoded->psL2NtfDecoded->tlvCount;
-    psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].felicaCmdCode = psLxNtfCoded->pLxNtf[base + offsetCmdCode];
+void sL2RxEvent_t::toString(std::ostringstream &oss) {
+  // Get pointer to container of this sL2RxEvent object
+  psL2DecodedInfo_t decodedInfo = (psL2DecodedInfo_t)(
+      (char *)this - ((size_t) & ((psL2DecodedInfo_t)0)->u.sL2RxEvent));
+  oss << ", RSSI = 0x";
+  for (size_t i = 0; i < NUM_RSSI_BYTES; i++) {
+    oss << std::setfill('0') << std::setw(2) << std::uppercase << std::hex
+        << (int)this->rssi[i];
+  }
+  oss << ", Trigger Type = 0x" << std::uppercase << std::hex
+      << (int)(this->clifState & 0x0F);
+  oss << ", RF Tech and Mode = 0x" << std::uppercase << std::hex
+      << (int)((this->clifState & 0xF0) >> 4);
+  if (decodedInfo->len == L2_EVT_RX_TAG_ID_EXTRA_DBG_LEN) {
+    oss << ", Error Info = 0x" << std::setfill('0') << std::setw(2)
+        << std::uppercase << std::hex << (int)this->extraData;
+  }
 }
 
 /*******************************************************************************
  **
- ** Function:        decodeFelicaSystemCode(psLxNtfCoded_t, psLxNtfDecodingInfo_t, psLxNtfDecoded_t)
+ ** Function:        toString(std::ostringstream & oss)
  **
- ** Description:     This function decodes the Felica System Code
+ ** Description:     Converts this object to ostringstream
  **
- ** Returns:         status
+ ** Returns:         void
  **
  ******************************************************************************/
-void
-NCI_LxDebug_Decoder::decodeFelicaSystemCode(psLxNtfCoded_t        psLxNtfCoded,
-                                            psLxNtfDecodingInfo_t psLxNtfDecodingInfo,
-                                            psLxNtfDecoded_t      psLxNtfDecoded) {
-
-    uint8_t base = 0;
-    uint8_t offsetSystemCode = 0;
-    uint8_t systemCode[2]    = {0};
-
-    if(psLxNtfDecodingInfo != nullptr)
-    {
-        base = psLxNtfDecodingInfo->baseIndex;
-        offsetSystemCode = psLxNtfDecodingInfo->felicaSysCodeOffset;
-    }
-    else
-        return;
-
-    uint8_t tlvCount = psLxNtfDecoded->psL2NtfDecoded->tlvCount;
-
-    systemCode[1] = psLxNtfCoded->pLxNtf[base + offsetSystemCode];
-    offsetSystemCode++;
-    systemCode[0] = psLxNtfCoded->pLxNtf[base + offsetSystemCode];
-
-    psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].felicaSysCode[0] = systemCode[0];
-    psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].felicaSysCode[1] = systemCode[1];
+void sL2TxEvent_t::toString(std::ostringstream &oss) {
+  // Get pointer to container of this sL2TxEvent object
+  psL2DecodedInfo_t decodedInfo = (psL2DecodedInfo_t)(
+      (char *)this - ((size_t) & ((psL2DecodedInfo_t)0)->u.sL2TxEvent));
+  oss << ", DLMA = 0x";
+  for (size_t i = 0; i < NUM_DLMA_BYTES; i++) {
+    oss << std::setfill('0') << std::setw(2) << std::uppercase << std::hex
+        << (int)this->dlma[i];
+  }
+  oss << ", Trigger Type = 0x" << std::uppercase << std::hex
+      << (int)(this->clifState & 0x0F);
+  oss << ", RF Tech and Mode = 0x" << std::uppercase << std::hex
+      << (int)((this->clifState & 0xF0) >> 4);
+  if (decodedInfo->len == L2_EVT_TX_TAG_ID_EXTRA_DBG_LEN) {
+    oss << ", Error Info = 0x" << std::setfill('0') << std::setw(2)
+        << std::uppercase << std::hex << (int)this->extraData;
+  }
 }
 
 /*******************************************************************************
  **
- ** Function:        phNxpNciHal_ext_parseLxdebugNtf(psLxNtfCoded_t, psLxNtfDecodingInfo_t, psLxNtfDecoded_t)
+ ** Function:        toString(std::ostringstream & oss)
  **
- ** Description:     This function decodes the Felica Response Code
+ ** Description:     Converts this object to ostringstream
  **
- ** Returns:         status
+ ** Returns:         void
  **
  ******************************************************************************/
-void
-NCI_LxDebug_Decoder::decodeFelicaRspCode(psLxNtfCoded_t        psLxNtfCoded,
-                                         psLxNtfDecodingInfo_t psLxNtfDecodingInfo,
-                                         psLxNtfDecoded_t      psLxNtfDecoded) {
-
-    uint8_t base = 0;
-    uint8_t offsetFelicaRspCode = 0;
-    uint8_t offsetFelicaRspCodeStatusFlags = 0;
-    uint8_t felicaRspCodeStatusFlags[2]    = {0};
-
-    if(psLxNtfDecodingInfo != nullptr)
-    {
-        base = psLxNtfDecodingInfo->baseIndex;
-        offsetFelicaRspCode = psLxNtfDecodingInfo->felicaRspCodeOffset;
-        offsetFelicaRspCodeStatusFlags = psLxNtfDecodingInfo->felicaRspStatusFlagsOffset;
-    }
-    else
-        return;
-
-    uint8_t tlvCount = psLxNtfDecoded->psL2NtfDecoded->tlvCount;
-    psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].felicaRspCode = psLxNtfCoded->pLxNtf[base + offsetFelicaRspCode];
-
-    felicaRspCodeStatusFlags[1] = psLxNtfCoded->pLxNtf[base + offsetFelicaRspCodeStatusFlags];
-    offsetFelicaRspCodeStatusFlags++;
-    felicaRspCodeStatusFlags[0] = psLxNtfCoded->pLxNtf[base + offsetFelicaRspCodeStatusFlags];
-
-    psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].felicaRspCodeStatusFlags[0] = felicaRspCodeStatusFlags[0];
-    psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].felicaRspCodeStatusFlags[1] = felicaRspCodeStatusFlags[1];
+void sL2FelicaCmdEvent_t::toString(std::ostringstream &oss) {
+  // Get pointer to container of this sL2FelicaCmdEvent object
+  psL2DecodedInfo_t decodedInfo = (psL2DecodedInfo_t)(
+      (char *)this - ((size_t) & ((psL2DecodedInfo_t)0)->u.sL2FelicaCmdEvent));
+  oss << ", RSSI = 0x";
+  for (size_t i = 0; i < NUM_RSSI_BYTES; i++) {
+    oss << std::setfill('0') << std::setw(2) << std::uppercase << std::hex
+        << (int)this->rssi[i];
+  }
+  oss << ", Felica Cmd = 0x" << std::setfill('0') << std::setw(2)
+      << std::uppercase << std::hex << (int)this->felicaCmd;
+  if (decodedInfo->len == L2_EVT_FELICA_CMD_TAG_ID_EXTRA_DBG_LEN) {
+    oss << ", Extra Info = 0x" << std::setfill('0') << std::setw(2)
+        << std::uppercase << std::hex << (int)this->extraData;
+  }
 }
 
 /*******************************************************************************
  **
- ** Function:        decodeFelicaMiscCode(psLxNtfCoded_t, psLxNtfDecodingInfo_t, psLxNtfDecoded_t)
+ ** Function:        toString(std::ostringstream & oss)
  **
- ** Description:     This function decodes the Felica Misc Code.
+ ** Description:     Converts this object to ostringstream
  **
- ** Returns:         status
+ ** Returns:         void
  **
  ******************************************************************************/
-void
-NCI_LxDebug_Decoder::decodeFelicaMiscCode(psLxNtfCoded_t        psLxNtfCoded,
-                                          psLxNtfDecodingInfo_t psLxNtfDecodingInfo,
-                                          psLxNtfDecoded_t      psLxNtfDecoded) {
-
-    uint8_t base = 0;
-    uint8_t offsetfelicaMisc = 0;
-
-    if(psLxNtfDecodingInfo != nullptr)
-    {
-        base = psLxNtfDecodingInfo->baseIndex;
-        offsetfelicaMisc = psLxNtfDecodingInfo->felicaMiscOffset;
-    }
-    else
-        return;
-
-    uint8_t tlvCount = psLxNtfDecoded->psL2NtfDecoded->tlvCount;
-
-    switch(psLxNtfCoded->pLxNtf[base + offsetfelicaMisc])
-    {
-        case FLC_MISC_EVT_GENERIC_ERROR:
-            psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pFelicaMisc = mFELICA_MISC_EVT[1];
-            break;
-        case FLC_MISC_EVT_EMPTY_FRAME_FROM_ESE:
-            psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pFelicaMisc = mFELICA_MISC_EVT[2];
-            break;
-        case FLC_MISC_EVT_BUFFER_OVERFLOW:
-            psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pFelicaMisc = mFELICA_MISC_EVT[3];
-            break;
-        case FLC_MISC_EVT_RF_ERROR:
-            psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pFelicaMisc = mFELICA_MISC_EVT[4];
-            break;
-        default:
-            psLxNtfDecoded->psL2NtfDecoded->sTlvInfo[tlvCount].pFelicaMisc = mFELICA_MISC_EVT[0];
-            break;
-    }
+void sL2FelicaSysCodeEvent_t::toString(std::ostringstream &oss) {
+  oss << ", System Code = 0x";
+  for (size_t i = 0; i < NUM_SYSCODE_BYTES; i++) {
+    oss << std::setfill('0') << std::setw(2) << std::uppercase << std::hex
+        << (int)this->felicaCmd[i];
+  }
 }
 
+/*******************************************************************************
+ **
+ ** Function:        toString(std::ostringstream & oss)
+ **
+ ** Description:     Converts this object to ostringstream
+ **
+ ** Returns:         void
+ **
+ ******************************************************************************/
+void sL2FelicaRspEvent_t::toString(std::ostringstream &oss) {
+  // Get pointer to container of this sL2FelicaRspEvent object
+  psL2DecodedInfo_t decodedInfo = (psL2DecodedInfo_t)(
+      (char *)this - ((size_t) & ((psL2DecodedInfo_t)0)->u.sL2FelicaRspEvent));
+  oss << ", DLMA = 0x";
+  for (size_t i = 0; i < NUM_DLMA_BYTES; i++) {
+    oss << std::setfill('0') << std::setw(2) << std::uppercase << std::hex
+        << (int)this->dlma[i];
+  }
+  oss << ", Felica response = 0x" << std::setfill('0') << std::setw(2)
+      << std::uppercase << std::hex << (int)this->felicaRsp;
+
+  oss << ", Response status flag = 0x";
+  for (size_t i = 0; i < NUM_FELICA_RES_STATUS_BYTES; i++) {
+    oss << std::setfill('0') << std::setw(2) << std::uppercase << std::hex
+        << (int)this->responseStatus[i];
+  }
+  if (decodedInfo->len == L2_EVT_FELICA_RSP_CODE_TAG_ID_EXTRA_DBG_LEN) {
+    oss << ", Extra data = 0x" << std::setfill('0') << std::setw(2)
+        << std::uppercase << std::hex << (int)this->extraData;
+  }
+}
+
+/*******************************************************************************
+ **
+ ** Function:        toString(std::ostringstream & oss)
+ **
+ ** Description:     Converts this object to ostringstream
+ **
+ ** Returns:         void
+ **
+ ******************************************************************************/
+void sL2FelicaMiscEvent_t::toString(std::ostringstream &oss) {
+  // Get pointer to container of this sL2FelicaMiscEvent object
+  psL2DecodedInfo_t decodedInfo = (psL2DecodedInfo_t)(
+      (char *)this - ((size_t) & ((psL2DecodedInfo_t)0)->u.sL2FelicaMiscEvent));
+  oss << ", Event trigger = 0x" << std::setfill('0') << std::setw(2)
+      << std::uppercase << std::hex << (int)this->trigger;
+  if (decodedInfo->len == L2_EVT_FELICA_MISC_TAG_ID_EXTRA_DBG_LEN) {
+    oss << ", Error = 0x" << std::setfill('0') << std::setw(2) << std::uppercase
+        << std::hex << (int)this->extraData;
+  }
+}
+
+/*******************************************************************************
+ **
+ ** Function:        toString(std::ostringstream & oss)
+ **
+ ** Description:     Converts this object to ostringstream
+ **
+ ** Returns:         void
+ **
+ ******************************************************************************/
+void sL2CmaEvent_t::toString(std::ostringstream &oss) {
+  // Get pointer to container of this sL2CmaEvent object
+  psL2DecodedInfo_t decodedInfo = (psL2DecodedInfo_t)(
+      (char *)this - ((size_t) & ((psL2DecodedInfo_t)0)->u.sL2CmaEvent));
+  oss << ", Event trigger = 0x" << std::setfill('0') << std::setw(2)
+      << std::uppercase << std::hex << (int)this->trigger;
+  if (decodedInfo->len > L2_EVT_CMA_TAG_ID_MIN_LEN) {
+    oss << ", Extra data = 0x";
+    for (size_t i = 0; i < (decodedInfo->len - L2_EVT_CMA_TAG_ID_MIN_LEN); i++) {
+      oss << std::setfill('0') << std::setw(2) << std::uppercase << std::hex
+          << (int)this->extraData[i];
+    }
+  }
+}
