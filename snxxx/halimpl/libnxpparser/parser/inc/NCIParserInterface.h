@@ -18,25 +18,25 @@
 #define NCIPARSERINTERFACE_H_
 
 #ifdef __cplusplus
-extern "C" {  /* Assume C declarations for C++ */
-#endif  /* __cplusplus */
+extern "C" { /* Assume C declarations for C++ */
+#endif       /* __cplusplus */
 class NCI_Parser_Interface {
-public:
-    NCI_Parser_Interface();
-    virtual ~NCI_Parser_Interface();
-    virtual void initParser() = 0;
-    virtual void deinitParser() = 0;
-    virtual void parseNciPacket(unsigned char *msg, unsigned short len) = 0;
+ public:
+  NCI_Parser_Interface();
+  virtual ~NCI_Parser_Interface();
+  virtual void initParser() = 0;
+  virtual void deinitParser() = 0;
+  virtual void parseNciPacket(unsigned char* msg, unsigned short len) = 0;
 };
 
 void* native_createParser();
-void  native_destroyParser(void *psNNP);
-void  native_initParser(void *psNNP);
-void  native_deinitParser(void *psNNP);
-void  native_parseNciMsg(void *psNNP, unsigned char *msg, unsigned short len);
+void native_destroyParser(void* psNNP);
+void native_initParser(void* psNNP);
+void native_deinitParser(void* psNNP);
+void native_parseNciMsg(void* psNNP, unsigned char* msg, unsigned short len);
 
 #ifdef __cplusplus
-}  /* Assume C declarations for C++ */
-#endif  /* __cplusplus */
+} /* Assume C declarations for C++ */
+#endif /* __cplusplus */
 
 #endif /* NCIPARSERINTERFACE_H_ */

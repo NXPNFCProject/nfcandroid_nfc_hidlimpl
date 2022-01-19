@@ -39,7 +39,7 @@ class NfccTransportFactory {
    ****************************************************************************/
   NfccTransportFactory();
 
-public:
+ public:
   /*****************************************************************************
    **
    ** Function         getInstance
@@ -50,7 +50,7 @@ public:
    **
    ** Returns          TransportFactory instance
    ****************************************************************************/
-  static NfccTransportFactory &getInstance();
+  static NfccTransportFactory& getInstance();
 
   /*****************************************************************************
   **

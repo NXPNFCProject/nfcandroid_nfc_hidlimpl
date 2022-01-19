@@ -20,8 +20,8 @@
 #include "phNxpConfig.h"
 #include "phNxpLog.h"
 #endif
-#include "phNxpNciHal_IoctlOperations.h"
 #include <log/log.h>
+#include "phNxpNciHal_IoctlOperations.h"
 
 const char* NXPLOG_ITEM_EXTNS = "NxpExtns";
 const char* NXPLOG_ITEM_NCIHAL = "NxpHal";
@@ -250,13 +250,13 @@ void phNxpLog_InitializeLogLevel(void) {
   phNxpLog_SetNciTxLogLevel(level);
 
   ALOGD_IF(nfc_debug_enabled,
-      "%s: global =%u, Fwdnld =%u, extns =%u, \
+           "%s: global =%u, Fwdnld =%u, extns =%u, \
                 hal =%u, tml =%u, ncir =%u, \
                 ncix =%u",
-      __func__, gLog_level.global_log_level, gLog_level.dnld_log_level,
-      gLog_level.extns_log_level, gLog_level.hal_log_level,
-      gLog_level.tml_log_level, gLog_level.ncir_log_level,
-      gLog_level.ncix_log_level);
+           __func__, gLog_level.global_log_level, gLog_level.dnld_log_level,
+           gLog_level.extns_log_level, gLog_level.hal_log_level,
+           gLog_level.tml_log_level, gLog_level.ncir_log_level,
+           gLog_level.ncix_log_level);
 }
 /******************************************************************************
  * Function         phNxpLog_EnableDisableLogLevel

@@ -30,95 +30,86 @@ namespace nxpnfc {
 namespace V2_0 {
 namespace implementation {
 
-Return<void>
-NxpNfc::getVendorParam(const ::android::hardware::hidl_string &key,
-                          getVendorParam_cb _hidl_cb) {
+Return<void> NxpNfc::getVendorParam(const ::android::hardware::hidl_string& key,
+                                    getVendorParam_cb _hidl_cb) {
   string val = phNxpNciHal_getSystemProperty(key);
   _hidl_cb(val);
   return Void();
 }
 
-Return<bool>
-NxpNfc::setVendorParam(const ::android::hardware::hidl_string &key,
-                          const ::android::hardware::hidl_string &value) {
+Return<bool> NxpNfc::setVendorParam(
+    const ::android::hardware::hidl_string& key,
+    const ::android::hardware::hidl_string& value) {
   return phNxpNciHal_setSystemProperty(key, value);
 }
 
-Return<bool>
-NxpNfc::resetEse(uint64_t resetType) {
+Return<bool> NxpNfc::resetEse(uint64_t resetType) {
   NFCSTATUS status = NFCSTATUS_FAILED;
   bool ret = false;
   ALOGD("NxpNfc::resetEse Entry");
 
   status = phNxpNciHal_resetEse(resetType);
-  if(NFCSTATUS_SUCCESS == status) {
+  if (NFCSTATUS_SUCCESS == status) {
     ret = true;
     status = NFCSTATUS_SUCCESS;
     ALOGD("Reset request (%02x) completed", (uint8_t)resetType);
-    } else {
-        ALOGE("Reset request (%02x) failed", (uint8_t)resetType);
-    }
+  } else {
+    ALOGE("Reset request (%02x) failed", (uint8_t)resetType);
+  }
 
   ALOGD("NxpNfc::resetEse Exit");
   return ret;
 }
 
-Return<bool>
-NxpNfc::setEseUpdateState(NxpNfcHalEseState eSEState) {
+Return<bool> NxpNfc::setEseUpdateState(NxpNfcHalEseState eSEState) {
   bool status = false;
 
   ALOGD("NxpNfc::setEseUpdateState Entry");
 
-  if(eSEState == NxpNfcHalEseState::HAL_NFC_ESE_JCOP_UPDATE_COMPLETED
-  || eSEState == NxpNfcHalEseState::HAL_NFC_ESE_LS_UPDATE_COMPLETED)
-  {
-    ALOGD("NxpNfc::setEseUpdateState state == HAL_NFC_ESE_JCOP_UPDATE_COMPLETED");
+  if (eSEState == NxpNfcHalEseState::HAL_NFC_ESE_JCOP_UPDATE_COMPLETED ||
+      eSEState == NxpNfcHalEseState::HAL_NFC_ESE_LS_UPDATE_COMPLETED) {
+    ALOGD(
+        "NxpNfc::setEseUpdateState state == HAL_NFC_ESE_JCOP_UPDATE_COMPLETED");
     seteSEClientState((uint8_t)eSEState);
     eSEClientUpdate_NFC_Thread();
   }
   if (eSEState == NxpNfcHalEseState::HAL_NFC_ESE_UPDATE_COMPLETED) {
-        status = phNxpNciHal_Abort();
+    status = phNxpNciHal_Abort();
   }
 
   ALOGD("NxpNfc::setEseUpdateState Exit");
   return status;
 }
 
-Return<bool>
-NxpNfc::setNxpTransitConfig(const ::android::hardware::hidl_string &strval)
-{
+Return<bool> NxpNfc::setNxpTransitConfig(
+    const ::android::hardware::hidl_string& strval) {
   bool status = true;
   ALOGD("NxpNfc::setNxpTransitConfig Entry");
 
-  status = phNxpNciHal_setNxpTransitConfig((char *)strval.c_str());
+  status = phNxpNciHal_setNxpTransitConfig((char*)strval.c_str());
 
   ALOGD("NxpNfc::setNxpTransitConfig Exit");
   return status;
 }
 
-Return<bool>
-NxpNfc::isJcopUpdateRequired()
-{
-    bool status = 0;
-    ALOGD("NxpNfc::isJcopUpdateRequired Entry");
+Return<bool> NxpNfc::isJcopUpdateRequired() {
+  bool status = 0;
+  ALOGD("NxpNfc::isJcopUpdateRequired Entry");
 
-    status = getJcopUpdateRequired();
+  status = getJcopUpdateRequired();
 
-    ALOGD("NxpNfc::isJcopUpdateRequired Exit");
-    return status;
-
+  ALOGD("NxpNfc::isJcopUpdateRequired Exit");
+  return status;
 }
 
-Return<bool>
-NxpNfc::isLsUpdateRequired()
-{
-    bool status = 0;
-    ALOGD("NxpNfc::isLsUpdateRequired Entry");
+Return<bool> NxpNfc::isLsUpdateRequired() {
+  bool status = 0;
+  ALOGD("NxpNfc::isLsUpdateRequired Entry");
 
-    status = getLsUpdateRequired();
+  status = getLsUpdateRequired();
 
-    ALOGD("NxpNfc::isLsUpdateRequired Exit");
-    return status;
+  ALOGD("NxpNfc::isLsUpdateRequired Exit");
+  return status;
 }
 
 }  // namespace implementation

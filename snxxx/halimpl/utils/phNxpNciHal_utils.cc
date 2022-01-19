@@ -16,13 +16,13 @@
  *
  ******************************************************************************/
 #include <errno.h>
-#include <pthread.h>
 #include <log/log.h>
+#include <pthread.h>
 
-#include "phNxpNciHal_extOperations.h"
 #include <phNxpLog.h>
 #include <phNxpNciHal.h>
 #include <phNxpNciHal_utils.h>
+#include "phNxpNciHal_extOperations.h"
 
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 /*********************** Link list functions **********************************/
@@ -434,27 +434,25 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
                               uint16_t len) {
   uint32_t i;
 #if (NXP_EXTNS == TRUE)
-  char* print_buffer = (char* )calloc((len * 3 + 1), sizeof(char));
+  char* print_buffer = (char*)calloc((len * 3 + 1), sizeof(char));
   if (NULL != print_buffer) {
 #else
   char print_buffer[len * 3 + 1];
 
   memset(print_buffer, 0, sizeof(print_buffer));
 #endif
-      for (i = 0; i < len; i++) {
-          snprintf(&print_buffer[i * 2], 3, "%02X", p_data[i]);
-      }
-      if (0 == memcmp(pString, "SEND", 0x04)) {
-          NXPLOG_NCIX_D("len = %3d > %s", len, print_buffer);
-      }
-      else if (0 == memcmp(pString, "RECV", 0x04)) {
-          NXPLOG_NCIR_D("len = %3d > %s", len, print_buffer);
-      }
-      else if (0 ==  memcmp(pString, "DEBUG", 0x05)) {
-          NXPLOG_NCIHAL_D(" Debug Info > len = %3d > %s", len, print_buffer);
-      }
+    for (i = 0; i < len; i++) {
+      snprintf(&print_buffer[i * 2], 3, "%02X", p_data[i]);
+    }
+    if (0 == memcmp(pString, "SEND", 0x04)) {
+      NXPLOG_NCIX_D("len = %3d > %s", len, print_buffer);
+    } else if (0 == memcmp(pString, "RECV", 0x04)) {
+      NXPLOG_NCIR_D("len = %3d > %s", len, print_buffer);
+    } else if (0 == memcmp(pString, "DEBUG", 0x05)) {
+      NXPLOG_NCIHAL_D(" Debug Info > len = %3d > %s", len, print_buffer);
+    }
 #if (NXP_EXTNS == TRUE)
-      free(print_buffer);
+    free(print_buffer);
   } else {
     NXPLOG_NCIX_E("\nphNxpNciHal_print_packet:Failed to Allocate memory\n");
   }
@@ -466,8 +464,8 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
 **
 ** Function         phNxpNciHal_emergency_recovery
 **
-** Description      Abort the process in case of ESE_OVER_TEMP_ERROR, FW Assert, Watchdog Reset,
-**                  Input Clock lost and unrecoverable error.
+** Description      Abort the process in case of ESE_OVER_TEMP_ERROR, FW Assert,
+**                  Watchdog Reset, Input Clock lost and unrecoverable error.
 **                  Ignore the other status.
 **
 ** Returns          None
@@ -478,23 +476,23 @@ void phNxpNciHal_emergency_recovery(uint8_t status) {
   NXPLOG_NCIHAL_D("%s: %d", __func__, status);
 
   switch (status) {
-  case NCI2_0_CORE_RESET_TRIGGER_TYPE_OVER_TEMPERATURE:
-  case CORE_RESET_TRIGGER_TYPE_FW_ASSERT:
-  case CORE_RESET_TRIGGER_TYPE_WATCHDOG_RESET:
-  case CORE_RESET_TRIGGER_TYPE_INPUT_CLOCK_LOST:
-  case CORE_RESET_TRIGGER_TYPE_UNRECOVERABLE_ERROR: {
-    NXPLOG_NCIHAL_E("abort()");
-    abort();
-  }
-  case CORE_RESET_TRIGGER_TYPE_POWERED_ON: {
+    case NCI2_0_CORE_RESET_TRIGGER_TYPE_OVER_TEMPERATURE:
+    case CORE_RESET_TRIGGER_TYPE_FW_ASSERT:
+    case CORE_RESET_TRIGGER_TYPE_WATCHDOG_RESET:
+    case CORE_RESET_TRIGGER_TYPE_INPUT_CLOCK_LOST:
+    case CORE_RESET_TRIGGER_TYPE_UNRECOVERABLE_ERROR: {
+      NXPLOG_NCIHAL_E("abort()");
+      abort();
+    }
+    case CORE_RESET_TRIGGER_TYPE_POWERED_ON: {
       if (nxpncihal_ctrl.hal_open_status == true) {
-          NXPLOG_NCIHAL_E("abort()");
-          abort();
+        NXPLOG_NCIHAL_E("abort()");
+        abort();
       }
-  } break;
-  default:
-    NXPLOG_NCIHAL_E("%s: Core reset with Invalid status : %d ", __func__,
-                    status);
-    break;
+    } break;
+    default:
+      NXPLOG_NCIHAL_E("%s: Core reset with Invalid status : %d ", __func__,
+                      status);
+      break;
   }
 }

@@ -17,9 +17,9 @@
 #include "NCIDecoderStandard.h"
 
 NCI_Decoder_Standard::NCI_Decoder_Standard() {
-    // TODO Auto-generated constructor stub
+  // TODO Auto-generated constructor stub
 }
 
 NCI_Decoder_Standard::~NCI_Decoder_Standard() {
-    // TODO Auto-generated destructor stub
+  // TODO Auto-generated destructor stub
 }

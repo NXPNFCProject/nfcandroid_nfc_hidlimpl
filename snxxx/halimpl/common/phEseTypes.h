@@ -17,9 +17,9 @@
 #ifndef PHESETYPES_H
 #define PHESETYPES_H
 #include <stdint.h>
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #if (NXP_EXTNS == FALSE)
 #include <unistd.h>
 #endif

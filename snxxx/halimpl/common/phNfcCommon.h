@@ -83,14 +83,14 @@
  * If Clk_Src is set to PLL, make sure to set the Clk_Freq also*
  *****************************************************************
  */
-#define CLK_FREQ_UNDEF         0
-#define CLK_FREQ_13MHZ         1
-#define CLK_FREQ_19_2MHZ       2
-#define CLK_FREQ_24MHZ         3
-#define CLK_FREQ_26MHZ         4
-#define CLK_FREQ_38_4MHZ       5
-#define CLK_FREQ_52MHZ         6
-#define CLK_FREQ_32MHZ         7
+#define CLK_FREQ_UNDEF 0
+#define CLK_FREQ_13MHZ 1
+#define CLK_FREQ_19_2MHZ 2
+#define CLK_FREQ_24MHZ 3
+#define CLK_FREQ_26MHZ 4
+#define CLK_FREQ_38_4MHZ 5
+#define CLK_FREQ_52MHZ 6
+#define CLK_FREQ_32MHZ 7
 
 static const uint8_t PN557_SET_CONFIG_CMD_PLL_13MHZ[] = {
     0x20, 0x02, 0x0C, 0x01, 0xA0, 0x20, 0x08, 0x08,

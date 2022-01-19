@@ -18,23 +18,21 @@
 #ifndef __CAP_H__
 #define __CAP_H__
 #include "Nxp_Features.h"
-#define pConfigFL       (capability::getInstance())
-
+#define pConfigFL (capability::getInstance())
 
 class capability {
-private:
-    static capability* instance;
-    const uint16_t offsetHwVersion = 24;
-    const uint16_t offsetFwRomCodeVersion = 4;
-    const uint16_t offsetFwMinorVersion = 6;
-    const uint16_t offsetFwMajorVersion = 7;
-    const uint16_t offsetFwMajorVersion_pn557 = 11;
+ private:
+  static capability* instance;
+  const uint16_t offsetHwVersion = 24;
+  const uint16_t offsetFwRomCodeVersion = 4;
+  const uint16_t offsetFwMinorVersion = 6;
+  const uint16_t offsetFwMajorVersion = 7;
+  const uint16_t offsetFwMajorVersion_pn557 = 11;
   /*product[] will be used to print product version and
   should be kept in accordance with tNFC_chipType*/
-  const char* product[13] = {"UNKNOWN", "PN547C2", "PN65T", "PN548C2",
-                             "PN66T",   "PN551",   "PN67T", "PN553",
-                             "PN80T",   "PN557",   "PN81T",  "sn100u",
-                             "sn220u"};
+  const char* product[13] = {"UNKNOWN", "PN547C2", "PN65T", "PN548C2", "PN66T",
+                             "PN551",   "PN67T",   "PN553", "PN80T",   "PN557",
+                             "PN81T",   "sn100u",  "sn220u"};
   capability();
 
  public:

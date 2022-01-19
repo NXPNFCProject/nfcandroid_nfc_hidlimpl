@@ -36,19 +36,20 @@
  *
  ******************************************************************************/
 
-#include <stdio.h>
-#include <sys/stat.h>
-#include <list>
-#include <string>
-#include <vector>
-#include <log/log.h>
 #include <android-base/properties.h>
-
-#include "sparse_crc32.h"
 #include <errno.h>
+#include <log/log.h>
 #include <phDnldNfc_Internal.h>
 #include <phNxpConfig.h>
 #include <phNxpLog.h>
+#include <stdio.h>
+#include <sys/stat.h>
+
+#include <list>
+#include <string>
+#include <vector>
+
+#include "sparse_crc32.h"
 #if GENERIC_TARGET
 const char alternative_config_path[] = "/data/vendor/nfc/";
 #else
@@ -72,24 +73,21 @@ typedef enum {
   CONF_FILE_NXP = 0x00,
   CONF_FILE_NXP_RF,
   CONF_FILE_NXP_TRANSIT
-}tNXP_CONF_FILE;
+} tNXP_CONF_FILE;
 
 const char rf_config_timestamp_path[] =
-        "/data/vendor/nfc/libnfc-nxpRFConfigState.bin";
+    "/data/vendor/nfc/libnfc-nxpRFConfigState.bin";
 const char tr_config_timestamp_path[] =
     "/data/vendor/nfc/libnfc-nxpTransitConfigState.bin";
 const char config_timestamp_path[] =
-        "/data/vendor/nfc/libnfc-nxpConfigState.bin";
+    "/data/vendor/nfc/libnfc-nxpConfigState.bin";
 /*const char default_nxp_config_path[] =
         "/vendor/etc/libnfc-nxp.conf";*/
-char nxp_rf_config_path[256] =
-        "/system/vendor/libnfc-nxp_RF.conf";
+char nxp_rf_config_path[256] = "/system/vendor/libnfc-nxp_RF.conf";
 #if (defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64))
-char Fw_Lib_Path[256] =
-        "/vendor/lib64/libsn100u_fw.so";
+char Fw_Lib_Path[256] = "/vendor/lib64/libsn100u_fw.so";
 #else
-char Fw_Lib_Path[256] =
-        "/vendor/lib/libsn100u_fw.so";
+char Fw_Lib_Path[256] = "/vendor/lib/libsn100u_fw.so";
 #endif
 
 const char transit_config_path[] = "/data/vendor/nfc/libnfc-nxpTransit.conf";
@@ -102,8 +100,8 @@ size_t readConfigFile(const char* fileName, uint8_t** p_data) {
   fseek(fd, 0L, SEEK_END);
   const size_t file_size = ftell(fd);
   rewind(fd);
-  if((long)file_size < 0) {
-    ALOGE("%s Invalid file size file_size = %zu\n",__func__,file_size);
+  if ((long)file_size < 0) {
+    ALOGE("%s Invalid file size file_size = %zu\n", __func__, file_size);
     fclose(fd);
     return 0;
   }
@@ -118,12 +116,11 @@ size_t readConfigFile(const char* fileName, uint8_t** p_data) {
   if (read == 1) {
     buffer[file_size] = '\n';
     *p_data = buffer;
-    return file_size+1;
+    return file_size + 1;
   }
   delete[] buffer;
   return 0;
 }
-
 
 using namespace ::std;
 
@@ -300,7 +297,7 @@ bool CNfcConfig::readConfig(const char* name, bool bResetContent) {
   state = BEGIN_LINE;
 
   ALOGD("readConfig; filename is %s", name);
-  if(strcmp(name, nxp_rf_config_path) == 0) {
+  if (strcmp(name, nxp_rf_config_path) == 0) {
     config_rf_crc32_ = sparse_crc32(0, (const void*)p_config, (int)config_size);
   } else if (strcmp(name, transit_config_path) == 0) {
     config_tr_crc32_ = sparse_crc32(0, (const void*)p_config, (int)config_size);
@@ -499,14 +496,17 @@ CNfcConfig& CNfcConfig::GetInstance() {
     }
 
     if (findConfigFilePathFromTransportConfigPaths(
-        android::base::GetProperty("persist.vendor.nfc.config_file_name", ""),
-        strPath)) {
-      NXPLOG_EXTNS_D("%s load %s\n", __func__,  strPath.c_str());
+            android::base::GetProperty("persist.vendor.nfc.config_file_name",
+                                       ""),
+            strPath)) {
+      NXPLOG_EXTNS_D("%s load %s\n", __func__, strPath.c_str());
     } else if (findConfigFilePathFromTransportConfigPaths(
-        extra_config_base +
-        android::base::GetProperty("ro.boot.product.hardware.sku", "") +
-        + extra_config_ext, strPath)) {
-      NXPLOG_EXTNS_D("%s load %s\n", __func__,  strPath.c_str());
+                   extra_config_base +
+                       android::base::GetProperty(
+                           "ro.boot.product.hardware.sku", "") +
+                       +extra_config_ext,
+                   strPath)) {
+      NXPLOG_EXTNS_D("%s load %s\n", __func__, strPath.c_str());
     } else {
       findConfigFilePathFromTransportConfigPaths(config_name, strPath);
     }
@@ -771,8 +771,8 @@ bool CNfcConfig::isAllowed(const char* name) {
 void CNfcConfig::moveFromList() {
   if (m_list.size() == 0) return;
 
-  for (list<const CNfcParam *>::iterator it = m_list.begin(),
-                                         itEnd = m_list.end();
+  for (list<const CNfcParam*>::iterator it = m_list.begin(),
+                                        itEnd = m_list.end();
        it != itEnd; ++it)
     push_back(*it);
   m_list.clear();
@@ -800,18 +800,18 @@ bool CNfcConfig::isModified(tNXP_CONF_FILE aType) {
 
   ALOGD("isModified enter; conf file type %d", aType);
   switch (aType) {
-  case CONF_FILE_NXP:
-    fd = fopen(config_timestamp_path, "r+");
-    break;
-  case CONF_FILE_NXP_RF:
-    fd = fopen(rf_config_timestamp_path, "r+");
-    break;
-  case CONF_FILE_NXP_TRANSIT:
-    fd = fopen(tr_config_timestamp_path, "r+");
-    break;
-  default:
-    ALOGD("Invalid conf file type");
-    return false;
+    case CONF_FILE_NXP:
+      fd = fopen(config_timestamp_path, "r+");
+      break;
+    case CONF_FILE_NXP_RF:
+      fd = fopen(rf_config_timestamp_path, "r+");
+      break;
+    case CONF_FILE_NXP_TRANSIT:
+      fd = fopen(tr_config_timestamp_path, "r+");
+      break;
+    default:
+      ALOGD("Invalid conf file type");
+      return false;
   }
   if (fd == nullptr) {
     ALOGE("%s Unable to open file assume modified", __func__);
@@ -845,18 +845,18 @@ void CNfcConfig::resetModified(tNXP_CONF_FILE aType) {
 
   ALOGD("resetModified enter; conf file type is %d", aType);
   switch (aType) {
-  case CONF_FILE_NXP:
-    fd = fopen(config_timestamp_path, "w+");
-    break;
-  case CONF_FILE_NXP_RF:
-    fd = fopen(rf_config_timestamp_path, "w+");
-    break;
-  case CONF_FILE_NXP_TRANSIT:
-    fd = fopen(tr_config_timestamp_path, "w+");
-    break;
-  default:
-    ALOGD("Invalid conf file type");
-    return;
+    case CONF_FILE_NXP:
+      fd = fopen(config_timestamp_path, "w+");
+      break;
+    case CONF_FILE_NXP_RF:
+      fd = fopen(rf_config_timestamp_path, "w+");
+      break;
+    case CONF_FILE_NXP_TRANSIT:
+      fd = fopen(tr_config_timestamp_path, "w+");
+      break;
+    default:
+      ALOGD("Invalid conf file type");
+      return;
   }
 
   if (fd == nullptr) {
@@ -1114,8 +1114,7 @@ extern "C" int isNxpRFConfigModified() {
   int retRF = 0, rettransit = 0, ret = 0;
   CNfcConfig& rConfig = CNfcConfig::GetInstance();
   retRF = rConfig.isModified(CONF_FILE_NXP_RF);
-  rettransit =
-      rConfig.isModified(CONF_FILE_NXP_TRANSIT);
+  rettransit = rConfig.isModified(CONF_FILE_NXP_TRANSIT);
   ret = retRF | rettransit;
   ALOGD("ret RF or Transit value %d", ret);
   return ret;
@@ -1148,5 +1147,5 @@ extern "C" int updateNxpRfConfigTimestamp() {
   CNfcConfig& rConfig = CNfcConfig::GetInstance();
   rConfig.resetModified(CONF_FILE_NXP_RF);
   rConfig.resetModified(CONF_FILE_NXP_TRANSIT);
-   return 0;
- }
+  return 0;
+}

@@ -28,28 +28,22 @@
 #include "phOsal_Posix.h"
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
+typedef enum _PHOSAL_LIST_POSITION {
+  PHOSAL_LIST_POS_HEAD,
+  PHOSAL_LIST_POS_TAIL,
+  PHOSAL_LIST_POS_CUR,
+  PHOSAL_LIST_POS_NEXT,
+  PHOSAL_LIST_POS_PREV
+} PHOSAL_LIST_POSITION_T;
 
-typedef enum _PHOSAL_LIST_POSITION
-{
-    PHOSAL_LIST_POS_HEAD,
-    PHOSAL_LIST_POS_TAIL,
-    PHOSAL_LIST_POS_CUR,
-    PHOSAL_LIST_POS_NEXT,
-    PHOSAL_LIST_POS_PREV
-}PHOSAL_LIST_POSITION_T;
-
-typedef struct phOsal_ListCreateParams
-{
-    void*                memHdl;
-    void*                (*MemAllocCb)(void* memHdl,
-                                     uint32_t Size);
-    int                  (*MemFreeCb)(void* memHdl,
-                                      void* ptrToMem);
-}phOsal_ListCreateParams_t;
+typedef struct phOsal_ListCreateParams {
+  void* memHdl;
+  void* (*MemAllocCb)(void* memHdl, uint32_t Size);
+  int (*MemFreeCb)(void* memHdl, void* ptrToMem);
+} phOsal_ListCreateParams_t;
 
 /**
  * \ingroup grp_osal_lib
@@ -57,13 +51,14 @@ typedef struct phOsal_ListCreateParams
  *
  * This function creates resources for handling linkedlist
  * \param[out] phListHandle       LinkedList Handle
- * \param[in]  psCreateParams     structure contatinng params to create linkedlist
- * \retval #OSALSTATUS_SUCCESS    OSAL LIB Linkedlist created successfully
- * \retval #OSALSTATUS_FAILED     OSAL LIB failed to create linkedlist
+ * \param[in]  psCreateParams     structure contatinng params to create
+ * linkedlist \retval #OSALSTATUS_SUCCESS    OSAL LIB Linkedlist created
+ * successfully \retval #OSALSTATUS_FAILED     OSAL LIB failed to create
+ * linkedlist
  *
  */
-OSALSTATUS phOsal_ListCreate(void**                        phListHandle,
-                             phOsal_ListCreateParams_t*    psCreateParams);
+OSALSTATUS phOsal_ListCreate(void** phListHandle,
+                             phOsal_ListCreateParams_t* psCreateParams);
 
 /**
  * \ingroup grp_osal_lib
@@ -77,9 +72,8 @@ OSALSTATUS phOsal_ListCreate(void**                        phListHandle,
  * \retval #OSALSTATUS_FAILED     node insertion in  Linkedlist failed
  *
  */
-OSALSTATUS phOsal_ListInsertNode(void*                     pvListHandle,
-                                 PHOSAL_LIST_POSITION_T    eListPos,
-                                 void*                     pvData );
+OSALSTATUS phOsal_ListInsertNode(void* pvListHandle,
+                                 PHOSAL_LIST_POSITION_T eListPos, void* pvData);
 
 /**
  * \ingroup grp_osal_lib
@@ -93,9 +87,9 @@ OSALSTATUS phOsal_ListInsertNode(void*                     pvListHandle,
  * \retval #OSALSTATUS_FAILED     node removal in  Linkedlist failed
  *
  */
-OSALSTATUS phOsal_ListRemoveNode(void*                     pvListHandle,
-                                      PHOSAL_LIST_POSITION_T    eListPos,
-                                      void**                     ppvData );
+OSALSTATUS phOsal_ListRemoveNode(void* pvListHandle,
+                                 PHOSAL_LIST_POSITION_T eListPos,
+                                 void** ppvData);
 
 /**
  * \ingroup grp_osal_lib
@@ -119,11 +113,10 @@ OSALSTATUS phOsal_ListFlush(void* pvListHandle);
  * \retval #OSALSTATUS_FAILED     node removal in  Linkedlist failed
  *
  */
-OSALSTATUS phOsal_ListDestroy ( void* pvListHandle);
-
+OSALSTATUS phOsal_ListDestroy(void* pvListHandle);
 
 #ifdef __cplusplus
 } /* End of extern "C" { */
-#endif  /* __cplusplus */
+#endif /* __cplusplus */
 
 #endif

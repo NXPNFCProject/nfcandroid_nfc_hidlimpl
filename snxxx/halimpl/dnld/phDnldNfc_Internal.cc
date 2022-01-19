@@ -24,6 +24,7 @@
 #include <phNxpLog.h>
 #include <phNxpNciHal_utils.h>
 #include <phTmlNfc.h>
+
 #include "NxpNfcThreadMutex.h"
 
 /* Minimum length of payload including 1 byte CmdId */
@@ -226,7 +227,7 @@ static void phDnldNfc_ProcessSeqState(void* pContext,
         }
         pDlCtxt->tCurrState = phDnldNfc_StateSend;
       }
-      [[fallthrough]];
+        [[fallthrough]];
       case phDnldNfc_StateSend: {
         wStatus = phDnldNfc_BuildFramePkt(pDlCtxt);
 
@@ -260,7 +261,7 @@ static void phDnldNfc_ProcessSeqState(void* pContext,
               pDlCtxt->tCmdRspFrameInfo.aFrameBuff,
               (uint16_t)pDlCtxt->nxp_i2c_fragment_len,
               (pphTmlNfc_TransactCompletionCb_t)&phDnldNfc_ProcessSeqState,
-              (void *)pDlCtxt);
+              (void*)pDlCtxt);
           break;
         } else {
           /* Setting TimerExpStatus below to avoid frame processing in response
@@ -269,7 +270,7 @@ static void phDnldNfc_ProcessSeqState(void* pContext,
           pDlCtxt->tCurrState = phDnldNfc_StateResponse;
         }
       }
-      [[fallthrough]];
+        [[fallthrough]];
       case phDnldNfc_StateTimer: {
         if (1 == (pDlCtxt->TimerInfo.TimerStatus)) /*Is Timer Running*/
         {
@@ -279,7 +280,7 @@ static void phDnldNfc_ProcessSeqState(void* pContext,
         }
         pDlCtxt->tCurrState = phDnldNfc_StateResponse;
       }
-      [[fallthrough]];
+        [[fallthrough]];
       case phDnldNfc_StateResponse: {
         if (NFCSTATUS_RF_TIMEOUT != (pDlCtxt->TimerInfo.wTimerExpStatus)) {
           /* Process response */
@@ -370,7 +371,7 @@ static void phDnldNfc_ProcessRWSeqState(void* pContext,
         }
         pDlCtxt->tCurrState = phDnldNfc_StateSend;
       }
-      [[fallthrough]];
+        [[fallthrough]];
       case phDnldNfc_StateSend: {
         if (pDlCtxt->bResendLastFrame == false) {
           wStatus = phDnldNfc_BuildFramePkt(pDlCtxt);
@@ -422,7 +423,7 @@ static void phDnldNfc_ProcessRWSeqState(void* pContext,
           pDlCtxt->tCurrState = phDnldNfc_StateResponse;
         }
       }
-      [[fallthrough]];
+        [[fallthrough]];
       case phDnldNfc_StateTimer: {
         if (1 == (pDlCtxt->TimerInfo.TimerStatus)) /*Is Timer Running*/
         {
@@ -432,7 +433,7 @@ static void phDnldNfc_ProcessRWSeqState(void* pContext,
         }
         pDlCtxt->tCurrState = phDnldNfc_StateResponse;
       }
-      [[fallthrough]];
+        [[fallthrough]];
       case phDnldNfc_StateResponse: {
         if (NFCSTATUS_RF_TIMEOUT != (pDlCtxt->TimerInfo.wTimerExpStatus)) {
           /* Process response */
@@ -560,18 +561,21 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
       } else {
         if ((pDlContext->tRWInfo.bFramesSegmented) == false) {
           NXPLOG_FWDNLD_D("Verifying RspBuffInfo for Read Request..");
-          wFrameLen = (uint16_t)(pDlContext->tRspBuffInfo.wLen) + PHDNLDNFC_MIN_PLD_LEN;
+          wFrameLen =
+              (uint16_t)(pDlContext->tRspBuffInfo.wLen) + PHDNLDNFC_MIN_PLD_LEN;
 
           (pDlContext->tRWInfo.wRWPldSize) =
               (((pDlContext->nxp_i2c_fragment_len) -
-                (PHDNLDNFC_FRAME_HDR_LEN + PHDNLDNFC_FRAME_CRC_LEN)) - PHDNLDNFC_MIN_PLD_LEN);
+                (PHDNLDNFC_FRAME_HDR_LEN + PHDNLDNFC_FRAME_CRC_LEN)) -
+               PHDNLDNFC_MIN_PLD_LEN);
           (pDlContext->tRWInfo.wRemBytes) = (pDlContext->tRspBuffInfo.wLen);
           (pDlContext->tRWInfo.dwAddr) = (pDlContext->FrameInp.dwAddr);
           (pDlContext->tRWInfo.wOffset) = 0;
           (pDlContext->tRWInfo.wBytesRead) = 0;
 
           if (((pDlContext->nxp_i2c_fragment_len) -
-                (PHDNLDNFC_FRAME_HDR_LEN + PHDNLDNFC_FRAME_CRC_LEN)) < wFrameLen) {
+               (PHDNLDNFC_FRAME_HDR_LEN + PHDNLDNFC_FRAME_CRC_LEN)) <
+              wFrameLen) {
             (pDlContext->tRWInfo.bFramesSegmented) = true;
           }
         }
@@ -593,7 +597,8 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
       wFrameLen = 0;
       wFrameLen = (pDlContext->tCmdRspFrameInfo.dwSendlength);
       if (wFrameLen > pDlContext->nxp_i2c_fragment_len) {
-        NXPLOG_FWDNLD_E("wFrameLen (%x) exceeds the limit %x",wFrameLen,pDlContext->nxp_i2c_fragment_len);
+        NXPLOG_FWDNLD_E("wFrameLen (%x) exceeds the limit %x", wFrameLen,
+                        pDlContext->nxp_i2c_fragment_len);
         return NFCSTATUS_FAILED;
       }
 
@@ -617,7 +622,7 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
               /* Turning ON the Fragmentation bit in FrameLen */
               if (nfcFL.chipType == sn220u) {
                 wFrameLen = PHDNLDNFC_SET_HDR_FRAGBIT_SN220(wFrameLen);
-              }else {
+              } else {
                 wFrameLen = PHDNLDNFC_SET_HDR_FRAGBIT(wFrameLen);
               }
             }
@@ -632,7 +637,7 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
             /* To ensure we have no frag bit set for crc calculation */
             if (nfcFL.chipType == sn220u) {
               wFrameLen = PHDNLDNFC_CLR_HDR_FRAGBIT_SN220(wFrameLen);
-            }else {
+            } else {
               wFrameLen = PHDNLDNFC_CLR_HDR_FRAGBIT(wFrameLen);
             }
 
@@ -690,30 +695,30 @@ static NFCSTATUS phDnldNfc_CreateFramePld(pphDnldNfc_DlContext_t pDlContext) {
     wStatus = PHNFCSTVAL(CID_NFC_DNLD, NFCSTATUS_INVALID_PARAMETER);
   } else {
     memset((pDlContext->tCmdRspFrameInfo.aFrameBuff), 0,
-            pDlContext->nxp_i2c_fragment_len);
+           pDlContext->nxp_i2c_fragment_len);
     (pDlContext->tCmdRspFrameInfo.dwSendlength) = 0;
 
     if (phDnldNfc_FTNone == (pDlContext->FrameInp.Type)) {
       (pDlContext->tCmdRspFrameInfo.dwSendlength) += PHDNLDNFC_MIN_PLD_LEN;
     } else if (phDnldNfc_ChkIntg == (pDlContext->FrameInp.Type)) {
       (pDlContext->tCmdRspFrameInfo.dwSendlength) += PHDNLDNFC_MIN_PLD_LEN;
-    if (nfcFL.chipType < sn100u) {
-      wChkIntgVal = nfcFL._PHDNLDNFC_USERDATA_EEPROM_OFFSET;
+      if (nfcFL.chipType < sn100u) {
+        wChkIntgVal = nfcFL._PHDNLDNFC_USERDATA_EEPROM_OFFSET;
 
-      memcpy(&(pDlContext->tCmdRspFrameInfo
-                   .aFrameBuff[PHDNLDNFC_FRAME_RDDATA_OFFSET]),
-             &wChkIntgVal, sizeof(wChkIntgVal));
+        memcpy(&(pDlContext->tCmdRspFrameInfo
+                     .aFrameBuff[PHDNLDNFC_FRAME_RDDATA_OFFSET]),
+               &wChkIntgVal, sizeof(wChkIntgVal));
 
-      wChkIntgVal = nfcFL._PHDNLDNFC_USERDATA_EEPROM_LEN;
-      memcpy(&(pDlContext->tCmdRspFrameInfo
-                   .aFrameBuff[PHDNLDNFC_FRAME_RDDATA_OFFSET +
-                               PHDNLDNFC_USERDATA_EEPROM_OFFSIZE]),
-             &wChkIntgVal, sizeof(wChkIntgVal));
+        wChkIntgVal = nfcFL._PHDNLDNFC_USERDATA_EEPROM_LEN;
+        memcpy(&(pDlContext->tCmdRspFrameInfo
+                     .aFrameBuff[PHDNLDNFC_FRAME_RDDATA_OFFSET +
+                                 PHDNLDNFC_USERDATA_EEPROM_OFFSIZE]),
+               &wChkIntgVal, sizeof(wChkIntgVal));
 
-      (pDlContext->tCmdRspFrameInfo.dwSendlength) +=
-          PHDNLDNFC_USERDATA_EEPROM_LENSIZE;
-      (pDlContext->tCmdRspFrameInfo.dwSendlength) +=
-          PHDNLDNFC_USERDATA_EEPROM_OFFSIZE;
+        (pDlContext->tCmdRspFrameInfo.dwSendlength) +=
+            PHDNLDNFC_USERDATA_EEPROM_LENSIZE;
+        (pDlContext->tCmdRspFrameInfo.dwSendlength) +=
+            PHDNLDNFC_USERDATA_EEPROM_OFFSIZE;
       }
     } else if (phDnldNfc_FTWrite == (pDlContext->FrameInp.Type)) {
       wBuffIdx = (pDlContext->tRWInfo.wOffset);
@@ -726,8 +731,9 @@ static NFCSTATUS phDnldNfc_CreateFramePld(pphDnldNfc_DlContext_t pDlContext) {
         (pDlContext->tRWInfo.wRWPldSize) = wFrameLen;
       }
 
-      if ((pDlContext->tRWInfo.wRWPldSize) > ((pDlContext->nxp_i2c_fragment_len) -
-                (PHDNLDNFC_FRAME_HDR_LEN + PHDNLDNFC_FRAME_CRC_LEN))) {
+      if ((pDlContext->tRWInfo.wRWPldSize) >
+          ((pDlContext->nxp_i2c_fragment_len) -
+           (PHDNLDNFC_FRAME_HDR_LEN + PHDNLDNFC_FRAME_CRC_LEN))) {
         if ((pDlContext->tRWInfo.bFirstChunkResp) == false) {
           (pDlContext->tRWInfo.wRemChunkBytes) = wFrameLen;
           (pDlContext->tRWInfo.wOffset) += PHDNLDNFC_FRAME_HDR_LEN;
@@ -735,11 +741,11 @@ static NFCSTATUS phDnldNfc_CreateFramePld(pphDnldNfc_DlContext_t pDlContext) {
         }
 
         if (((pDlContext->nxp_i2c_fragment_len) -
-                (PHDNLDNFC_FRAME_HDR_LEN + PHDNLDNFC_FRAME_CRC_LEN)) <
+             (PHDNLDNFC_FRAME_HDR_LEN + PHDNLDNFC_FRAME_CRC_LEN)) <
             (pDlContext->tRWInfo.wRemChunkBytes)) {
           (pDlContext->tRWInfo.wBytesToSendRecv) =
-             ((pDlContext->nxp_i2c_fragment_len) -
-                (PHDNLDNFC_FRAME_HDR_LEN + PHDNLDNFC_FRAME_CRC_LEN));
+              ((pDlContext->nxp_i2c_fragment_len) -
+               (PHDNLDNFC_FRAME_HDR_LEN + PHDNLDNFC_FRAME_CRC_LEN));
           (pDlContext->tRWInfo.bFramesSegmented) = true;
         } else {
           (pDlContext->tRWInfo.wBytesToSendRecv) =
@@ -793,7 +799,7 @@ static NFCSTATUS phDnldNfc_CreateFramePld(pphDnldNfc_DlContext_t pDlContext) {
              (pDlContext->tUserData.pBuff), (pDlContext->tUserData.wLen));
 
       (pDlContext->tCmdRspFrameInfo.dwSendlength) +=
-              (uint16_t)(pDlContext->tUserData.wLen);
+          (uint16_t)(pDlContext->tUserData.wLen);
     } else if (phDnldNfc_FTForce == (pDlContext->FrameInp.Type)) {
       (pDlContext->tCmdRspFrameInfo.dwSendlength) += PHDNLDNFC_MIN_PLD_LEN;
 
@@ -811,7 +817,7 @@ static NFCSTATUS phDnldNfc_CreateFramePld(pphDnldNfc_DlContext_t pDlContext) {
                (pDlContext->tUserData.pBuff), (pDlContext->tUserData.wLen));
 
         (pDlContext->tCmdRspFrameInfo.dwSendlength) +=
-                (uint16_t)(pDlContext->tUserData.wLen);
+            (uint16_t)(pDlContext->tUserData.wLen);
       }
     } else {
     }

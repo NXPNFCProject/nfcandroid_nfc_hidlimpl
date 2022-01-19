@@ -17,15 +17,13 @@
 #include "NCIDecoderProp.h"
 
 NCI_Decoder_Prop::NCI_Decoder_Prop() {
-    // TODO Auto-generated constructor stub
+  // TODO Auto-generated constructor stub
 }
 
 NCI_Decoder_Prop::~NCI_Decoder_Prop() {
-    // TODO Auto-generated destructor stub
+  // TODO Auto-generated destructor stub
 }
 
-NCI_LxDebug_Decoder&
-NCI_Decoder_Prop::getLxDebugDecoder() {
-    return NCI_LxDebug_Decoder::getInstance();
+NCI_LxDebug_Decoder& NCI_Decoder_Prop::getLxDebugDecoder() {
+  return NCI_LxDebug_Decoder::getInstance();
 }
-

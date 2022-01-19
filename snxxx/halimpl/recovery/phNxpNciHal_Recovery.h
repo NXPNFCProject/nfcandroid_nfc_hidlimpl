@@ -14,27 +14,27 @@
  * limitations under the License.
  */
 
-#if(NXP_NFC_RECOVERY == TRUE)
+#if (NXP_NFC_RECOVERY == TRUE)
 
 #ifndef __PHNXPNCIHAL_RECOVERY_H_
 #define __PHNXPNCIHAL_RECOVERY_H_
 
-#define NCI_MSG_RSP           0x40
-#define NCI_MSG_NTF           0x60
-#define NCI_RSP_IDX           (0)
-#define DL_RSP_IDX            (0)
-#define DL_RSP_STAT_IDX       (2)
-#define DL_RSP_SESS_IDX       (3)
-#define DL_MSG_RSP            0x00
-#define DL_MSG_STAT_RSP       0x00
-#define DL_SESSION_CLOSE_TAG  0x00
+#define NCI_MSG_RSP 0x40
+#define NCI_MSG_NTF 0x60
+#define NCI_RSP_IDX (0)
+#define DL_RSP_IDX (0)
+#define DL_RSP_STAT_IDX (2)
+#define DL_RSP_SESS_IDX (3)
+#define DL_MSG_RSP 0x00
+#define DL_MSG_STAT_RSP 0x00
+#define DL_SESSION_CLOSE_TAG 0x00
 
 // timeout for tml read response
-#define RESPONSE_READ_TIMEOUT_NS                      (200 * 1000 * 1000)
+#define RESPONSE_READ_TIMEOUT_NS (200 * 1000 * 1000)
 // timeout for tml write cmd
-#define WRITE_TIMEOUT_NS                              (200 * 1000 * 1000)
+#define WRITE_TIMEOUT_NS (200 * 1000 * 1000)
 // Time to wait for first NCI rest response
-#define NCI_RESET_RESP_READ_DELAY_US                  (10000)
+#define NCI_RESET_RESP_READ_DELAY_US (10000)
 
 void phNxpNciHal_RecoverFWTearDown();
 #endif

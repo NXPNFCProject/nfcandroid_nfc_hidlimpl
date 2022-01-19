@@ -35,18 +35,18 @@
 #define MFC_EXTN_STATUS_SIZE (0x01U) /* Size of Mfc Resp Status Byte */
 
 #define MFC_AUTHKEYLEN 0x06 /* Authentication key length */
-#define MFC_AUTHENTICATION_KEY                                                 \
-  (0x00U) /* Authentication key passed in extension                            \
+#define MFC_AUTHENTICATION_KEY                      \
+  (0x00U) /* Authentication key passed in extension \
              command header of authentication command */
 #define MFC_ENABLE_KEY_B (0x80U)
 #define MFC_EMBEDDED_KEY (0x10)
 #define MFC_NUM_OF_KEYS (0x03U)
 #define MFC_KEY_SIZE (0x06U)
-#define MFC_KEYS                                                               \
-  {                                                                            \
-    {0xA0, 0XA1, 0xA2, 0XA3, 0xA4, 0XA5},                                      \
-        {0xD3, 0XF7, 0xD3, 0XF7, 0xD3, 0XF7},                                  \
-        {0xFF, 0XFF, 0xFF, 0XFF, 0xFF, 0XFF},                                  \
+#define MFC_KEYS                              \
+  {                                           \
+    {0xA0, 0XA1, 0xA2, 0XA3, 0xA4, 0XA5},     \
+        {0xD3, 0XF7, 0xD3, 0XF7, 0xD3, 0XF7}, \
+        {0xFF, 0XFF, 0xFF, 0XFF, 0xFF, 0XFF}, \
   } /* Key used during NDEF format */
 
 typedef enum MifareCmdList {
@@ -100,11 +100,11 @@ typedef struct MfcTagCmdIntfData {
 } MfcTagCmdIntfData_t;
 
 class NxpMfcReader {
-private:
+ private:
   MfcTagCmdIntfData_t mMfcTagCmdIntfData;
   sem_t mNacksem;
   bool isAck;
-  void BuildMfcCmd(uint8_t *pData, uint16_t *pLength);
+  void BuildMfcCmd(uint8_t* pData, uint16_t* pLength);
   void BuildAuthCmd();
   void BuildReadCmd();
   void BuildWrite16Cmd();
@@ -112,15 +112,15 @@ private:
   void BuildIncDecCmd();
   void CalcSectorAddress();
   void AuthForWrite();
-  void SendIncDecRestoreCmdPart2(const uint8_t *mfcData);
+  void SendIncDecRestoreCmdPart2(const uint8_t* mfcData);
 
-public:
-  int Write(uint16_t mfcDataLen, const uint8_t *pMfcData);
-  NFCSTATUS AnalyzeMfcResp(uint8_t *pBuff, uint16_t *pBufflen);
-  NFCSTATUS CheckMfcResponse(uint8_t *pTransceiveData,
+ public:
+  int Write(uint16_t mfcDataLen, const uint8_t* pMfcData);
+  NFCSTATUS AnalyzeMfcResp(uint8_t* pBuff, uint16_t* pBufflen);
+  NFCSTATUS CheckMfcResponse(uint8_t* pTransceiveData,
                              uint16_t transceiveDataLen);
-  void MfcNotifyOnAckReceived(uint8_t *buff);
+  void MfcNotifyOnAckReceived(uint8_t* buff);
   NFCSTATUS MfcWaitForAck();
-  static NxpMfcReader &getInstance();
+  static NxpMfcReader& getInstance();
   bool checkIsMFCIncDecRestore(uint8_t cmd);
 };

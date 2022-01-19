@@ -17,23 +17,23 @@
  ******************************************************************************/
 
 #define LOG_TAG "android.hardware.nfc@1.2-impl"
-#include <log/log.h>
 #include "Nfc.h"
+#include <log/log.h>
 #include "halimpl/inc/phNxpNciHal_Adaptation.h"
 #include "phNfcStatus.h"
 
-#define CHK_STATUS(x) ((x) == NFCSTATUS_SUCCESS) \
-      ? (V1_0::NfcStatus::OK) : (V1_0::NfcStatus::FAILED)
+#define CHK_STATUS(x) \
+  ((x) == NFCSTATUS_SUCCESS) ? (V1_0::NfcStatus::OK) : (V1_0::NfcStatus::FAILED)
 
-#define NXP_EN_SN110U    1
-#define NXP_EN_SN100U    1
-#define NXP_EN_SN220U    1
-#define NXP_EN_PN557     1
+#define NXP_EN_SN110U 1
+#define NXP_EN_SN100U 1
+#define NXP_EN_SN220U 1
+#define NXP_EN_PN557 1
 #define NFC_NXP_MW_ANDROID_VER (13U)  /* Android version used by NFC MW */
 #define NFC_NXP_MW_VERSION_MAJ (0x01) /* MW Major Version */
 #define NFC_NXP_MW_VERSION_MIN (0x00) /* MW Minor Version */
 #define NFC_NXP_MW_CUSTOMER_ID (0x00) /* MW Customer Id */
-#define NFC_NXP_MW_RC_VERSION  (0x00) /* MW RC Version */
+#define NFC_NXP_MW_RC_VERSION (0x00)  /* MW RC Version */
 
 extern bool nfc_debug_enabled;
 
@@ -47,17 +47,14 @@ sp<V1_1::INfcClientCallback> Nfc::mCallbackV1_1 = nullptr;
 sp<V1_0::INfcClientCallback> Nfc::mCallbackV1_0 = nullptr;
 
 static void printNfcMwVersion() {
-
   uint32_t validation = (NXP_EN_SN100U << 13);
   validation |= (NXP_EN_SN110U << 14);
   validation |= (NXP_EN_SN220U << 15);
   validation |= (NXP_EN_PN557 << 11);
 
   ALOGE("MW-HAL Version: NFC_AR_%02X_%04X_%02d.%02x.%02x",
-         NFC_NXP_MW_CUSTOMER_ID, validation,
-         NFC_NXP_MW_ANDROID_VER,
-         NFC_NXP_MW_VERSION_MAJ,
-         NFC_NXP_MW_VERSION_MIN);
+        NFC_NXP_MW_CUSTOMER_ID, validation, NFC_NXP_MW_ANDROID_VER,
+        NFC_NXP_MW_VERSION_MAJ, NFC_NXP_MW_VERSION_MIN);
 }
 
 Return<V1_0::NfcStatus> Nfc::open_1_1(
@@ -169,7 +166,7 @@ Return<void> Nfc::getConfig_1_2(getConfig_1_2_cb hidl_cb) {
   return Void();
 }
 
-void Nfc::serviceDied(uint64_t /*cookie*/, const wp<IBase>& /*who*/)  {
+void Nfc::serviceDied(uint64_t /*cookie*/, const wp<IBase>& /*who*/) {
   if (mCallbackV1_1 == nullptr && mCallbackV1_0 == nullptr) {
     return;
   }

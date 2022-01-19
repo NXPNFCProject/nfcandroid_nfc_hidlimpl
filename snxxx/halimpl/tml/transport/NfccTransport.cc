@@ -18,16 +18,16 @@
 
 #include <NfccTransport.h>
 
-int NfccTransport::NfccReset(__attribute__((unused)) void *pDevHandle,
+int NfccTransport::NfccReset(__attribute__((unused)) void* pDevHandle,
                              __attribute__((unused)) NfccResetType eType) {
   return NFCSTATUS_SUCCESS;
 }
 
-int NfccTransport::EseReset(__attribute__((unused)) void *pDevHandle,
+int NfccTransport::EseReset(__attribute__((unused)) void* pDevHandle,
                             __attribute__((unused)) EseResetType eType) {
   return NFCSTATUS_SUCCESS;
 }
-int NfccTransport::EseGetPower(__attribute__((unused)) void *pDevHandle,
+int NfccTransport::EseGetPower(__attribute__((unused)) void* pDevHandle,
                                __attribute__((unused)) uint32_t level) {
   return NFCSTATUS_SUCCESS;
 }
@@ -38,6 +38,7 @@ void NfccTransport::EnableFwDnldMode(__attribute__((unused)) bool mode) {
 
 bool_t NfccTransport::IsFwDnldModeEnabled(void) { return false; }
 
-bool NfccTransport::Flushdata(__attribute__((unused)) pphTmlNfc_Config_t pConfig) {
-    return true;
+bool NfccTransport::Flushdata(__attribute__((unused))
+                              pphTmlNfc_Config_t pConfig) {
+  return true;
 }

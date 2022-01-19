@@ -18,13 +18,13 @@
  * TML Implementation.
  */
 
-#include "NfccTransportFactory.h"
 #include <phDal4Nfc_messageQueueLib.h>
 #include <phNxpConfig.h>
 #include <phNxpLog.h>
 #include <phNxpNciHal_utils.h>
 #include <phOsalNfc_Timer.h>
 #include <phTmlNfc.h>
+#include "NfccTransportFactory.h"
 
 /*
  * Duration of Timer to wait after sending an Nci packet
@@ -50,8 +50,8 @@ phTmlNfc_Context_t* gpphTmlNfc_Context = NULL;
 static NFCSTATUS phTmlNfc_StartThread(void);
 static void phTmlNfc_ReadDeferredCb(void* pParams);
 static void phTmlNfc_WriteDeferredCb(void* pParams);
-static void * phTmlNfc_TmlThread(void* pParam);
-static void * phTmlNfc_TmlWriterThread(void* pParam);
+static void* phTmlNfc_TmlThread(void* pParam);
+static void* phTmlNfc_TmlWriterThread(void* pParam);
 static void phTmlNfc_ReTxTimerCb(uint32_t dwTimerId, void* pContext);
 static NFCSTATUS phTmlNfc_InitiateTimer(void);
 static void phTmlNfc_SignalWriteComplete(void);
@@ -95,17 +95,18 @@ NFCSTATUS phTmlNfc_Init(pphTmlNfc_Config_t pConfig) {
     wInitStatus = PHNFCSTVAL(CID_NFC_TML, NFCSTATUS_INVALID_PARAMETER);
   } else {
     /* Allocate memory for TML context */
-    gpphTmlNfc_Context = (phTmlNfc_Context_t *)malloc(sizeof(phTmlNfc_Context_t));
+    gpphTmlNfc_Context =
+        (phTmlNfc_Context_t*)malloc(sizeof(phTmlNfc_Context_t));
 
     if (NULL == gpphTmlNfc_Context) {
       wInitStatus = PHNFCSTVAL(CID_NFC_TML, NFCSTATUS_FAILED);
     } else {
       /*Configure transport layer for communication*/
       if ((gpTransportObj == NULL) &&
-                  (NFCSTATUS_SUCCESS != phTmlNfc_ConfigTransport()))
+          (NFCSTATUS_SUCCESS != phTmlNfc_ConfigTransport()))
         return NFCSTATUS_FAILED;
 
-      if(gsIsFirstHalMinOpen) {
+      if (gsIsFirstHalMinOpen) {
         if (!gpTransportObj->Flushdata(pConfig)) {
           NXPLOG_NCIHAL_E("Flushdata Failed");
         }
@@ -190,7 +191,7 @@ NFCSTATUS phTmlNfc_ConfigTransport() {
   unsigned long value = 0;
   int isfound = GetNxpNumValue(NAME_NXP_TRANSPORT, &value, sizeof(value));
   if (isfound > 0) {
-      transportType = value;
+    transportType = value;
   }
   gpTransportObj = transportFactory.getTransport((transportIntf)transportType);
   if (gpTransportObj == nullptr) {
@@ -337,7 +338,7 @@ static NFCSTATUS phTmlNfc_InitiateTimer(void) {
 ** Returns          None
 **
 *******************************************************************************/
-static void * phTmlNfc_TmlThread(void* pParam) {
+static void* phTmlNfc_TmlThread(void* pParam) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   int32_t dwNoBytesWrRd = PH_TMLNFC_RESET_VALUE;
   uint8_t temp[260];
@@ -379,8 +380,9 @@ static void * phTmlNfc_TmlThread(void* pParam) {
         if (-1 == dwNoBytesWrRd) {
           NXPLOG_TML_E("PN54X - Error in I2C Read.....\n");
           if (readRetryDelay < MAX_READ_RETRY_DELAY_IN_MILLISEC) {
-            /*sleep for 30/60/90/120/150 msec between each read trial incase of read error*/
-            readRetryDelay += 30 ;
+            /*sleep for 30/60/90/120/150 msec between each read trial incase of
+             * read error*/
+            readRetryDelay += 30;
           }
           usleep(readRetryDelay * 1000);
           sem_post(&gpphTmlNfc_Context->rxSemaphore);
@@ -390,7 +392,7 @@ static void * phTmlNfc_TmlThread(void* pParam) {
           sem_post(&gpphTmlNfc_Context->rxSemaphore);
         } else {
           memcpy(gpphTmlNfc_Context->tReadInfo.pBuffer, temp, dwNoBytesWrRd);
-          readRetryDelay =0;
+          readRetryDelay = 0;
 
           NXPLOG_TML_D("PN54X - I2C Read successful.....\n");
           /* This has to be reset only after a successful read */
@@ -456,7 +458,7 @@ static void * phTmlNfc_TmlThread(void* pParam) {
 ** Returns          None
 **
 *******************************************************************************/
-static void * phTmlNfc_TmlWriterThread(void* pParam) {
+static void* phTmlNfc_TmlWriterThread(void* pParam) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   int32_t dwNoBytesWrRd = PH_TMLNFC_RESET_VALUE;
   /* Transaction info buffer to be passed to Callback Thread */
@@ -492,9 +494,10 @@ static void * phTmlNfc_TmlWriterThread(void* pParam) {
         /* TML reader writer callback synchronization mutex lock --- START */
         pthread_mutex_lock(&gpphTmlNfc_Context->wait_busy_lock);
         gpphTmlNfc_Context->gWriterCbflag = false;
-        dwNoBytesWrRd = gpTransportObj->Write(gpphTmlNfc_Context->pDevHandle,
-                                        gpphTmlNfc_Context->tWriteInfo.pBuffer,
-                                        gpphTmlNfc_Context->tWriteInfo.wLength);
+        dwNoBytesWrRd =
+            gpTransportObj->Write(gpphTmlNfc_Context->pDevHandle,
+                                  gpphTmlNfc_Context->tWriteInfo.pBuffer,
+                                  gpphTmlNfc_Context->tWriteInfo.wLength);
         /* TML reader writer callback synchronization mutex lock --- END */
         pthread_mutex_unlock(&gpphTmlNfc_Context->wait_busy_lock);
 
@@ -503,7 +506,7 @@ static void * phTmlNfc_TmlWriterThread(void* pParam) {
           if (gpTransportObj->IsFwDnldModeEnabled()) {
             if (retry_cnt++ < MAX_WRITE_RETRY_COUNT) {
               NXPLOG_TML_D("PN54X - Error in I2C Write  - Retry 0x%x",
-                              retry_cnt);
+                           retry_cnt);
               // Add a 10 ms delay to ensure NFCC is not still in stand by mode.
               usleep(10 * 1000);
               goto retry;
@@ -804,12 +807,14 @@ NFCSTATUS phTmlNfc_Read(uint8_t* pBuffer, uint16_t wLength,
         /* Set event to invoke Reader Thread */
         gpphTmlNfc_Context->tReadInfo.bEnable = 1;
         ret = sem_getvalue(&gpphTmlNfc_Context->rxSemaphore, &rxSemVal);
-        /* Post rxSemaphore either if sem_getvalue() is failed or rxSemVal is 0 */
+        /* Post rxSemaphore either if sem_getvalue() is failed or rxSemVal is 0
+         */
         if (ret || !rxSemVal) {
           sem_post(&gpphTmlNfc_Context->rxSemaphore);
         } else {
-          NXPLOG_TML_D("%s: skip reader thread scheduling, ret=%x, rxSemaVal=%x",
-                  __func__, ret, rxSemVal);
+          NXPLOG_TML_D(
+              "%s: skip reader thread scheduling, ret=%x, rxSemaVal=%x",
+              __func__, ret, rxSemVal);
         }
       } else {
         wReadStatus = PHNFCSTVAL(CID_NFC_TML, NFCSTATUS_BUSY);
@@ -909,41 +914,47 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
     wStatus = NFCSTATUS_FAILED;
   } else {
     switch (eControlCode) {
-       case phTmlNfc_e_PowerReset:
-        {
-          if(nfcFL.chipType >= sn100u) {
-            /*VEN_RESET*/
-            gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_RESET);
-          } else {
-             gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_ON);
-             usleep(100 * 1000);
-             gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_OFF);
-             usleep(100 * 1000);
-             gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_ON);
-          }
-          break;
+      case phTmlNfc_e_PowerReset: {
+        if (nfcFL.chipType >= sn100u) {
+          /*VEN_RESET*/
+          gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
+                                    MODE_POWER_RESET);
+        } else {
+          gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
+                                    MODE_POWER_ON);
+          usleep(100 * 1000);
+          gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
+                                    MODE_POWER_OFF);
+          usleep(100 * 1000);
+          gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
+                                    MODE_POWER_ON);
         }
-      case phTmlNfc_e_EnableVen:
-      {
-          if(nfcFL.chipType < sn100u) {
-            gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_ON);
-            usleep(100 * 1000);
-          }
-          break;
+        break;
+      }
+      case phTmlNfc_e_EnableVen: {
+        if (nfcFL.chipType < sn100u) {
+          gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
+                                    MODE_POWER_ON);
+          usleep(100 * 1000);
+        }
+        break;
       }
       case phTmlNfc_e_ResetDevice:
 
-       {
-#if(NXP_EXTNS == TRUE)
-        if(nfcFL.chipType < sn100u) {
+      {
+#if (NXP_EXTNS == TRUE)
+        if (nfcFL.chipType < sn100u) {
 #endif
-           /*Reset PN54X*/
-           gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_ON);
-           usleep(100 * 1000);
-           gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_OFF);
-           usleep(100 * 1000);
-           gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_ON);
-#if(NXP_EXTNS == TRUE)
+          /*Reset PN54X*/
+          gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
+                                    MODE_POWER_ON);
+          usleep(100 * 1000);
+          gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
+                                    MODE_POWER_OFF);
+          usleep(100 * 1000);
+          gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
+                                    MODE_POWER_ON);
+#if (NXP_EXTNS == TRUE)
         }
 #endif
         break;
@@ -951,23 +962,27 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
       case phTmlNfc_e_EnableNormalMode: {
         /*Reset PN54X*/
         gpphTmlNfc_Context->tReadInfo.bEnable = 0;
-        if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_VEN_RESET) {
+        if (nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_VEN_RESET) {
           NXPLOG_TML_D(" phTmlNfc_e_EnableNormalMode complete with VEN RESET ");
-          if(nfcFL.chipType < sn100u ){
-            gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_OFF);
+          if (nfcFL.chipType < sn100u) {
+            gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
+                                      MODE_POWER_OFF);
             usleep(10 * 1000);
-            gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_ON);
+            gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
+                                      MODE_POWER_ON);
             usleep(100 * 1000);
-          }else{
-            gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_FW_GPIO_LOW);
+          } else {
+            gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
+                                      MODE_FW_GPIO_LOW);
           }
-        }
-        else if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD) {
+        } else if (nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD) {
           NXPLOG_TML_D(" phTmlNfc_e_EnableNormalMode complete with NCI CMD ");
-          if(nfcFL.chipType < sn100u){
-            gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_POWER_ON);
-          }else{
-            gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_FW_GPIO_LOW);
+          if (nfcFL.chipType < sn100u) {
+            gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
+                                      MODE_POWER_ON);
+          } else {
+            gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
+                                      MODE_FW_GPIO_LOW);
           }
         }
         break;
@@ -975,27 +990,30 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
       case phTmlNfc_e_EnableDownloadMode: {
         phTmlNfc_ConfigNciPktReTx(phTmlNfc_e_DisableRetrans, 0);
         gpphTmlNfc_Context->tReadInfo.bEnable = 0;
-        if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_VEN_RESET) {
-            NXPLOG_TML_D(" phTmlNfc_e_EnableDownloadMode complete with VEN RESET ");
-            wStatus = gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
-                                      MODE_FW_DWNLD_WITH_VEN);
-        }
-        else if(nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD) {
-            NXPLOG_TML_D(" phTmlNfc_e_EnableDownloadMode complete with NCI CMD ");
-            wStatus = gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
-                                      MODE_FW_DWND_HIGH);
+        if (nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_VEN_RESET) {
+          NXPLOG_TML_D(
+              " phTmlNfc_e_EnableDownloadMode complete with VEN RESET ");
+          wStatus = gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
+                                              MODE_FW_DWNLD_WITH_VEN);
+        } else if (nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD) {
+          NXPLOG_TML_D(" phTmlNfc_e_EnableDownloadMode complete with NCI CMD ");
+          wStatus = gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
+                                              MODE_FW_DWND_HIGH);
         }
         break;
       }
       case phTmlNfc_e_EnableDownloadModeWithVenRst: {
         phTmlNfc_ConfigNciPktReTx(phTmlNfc_e_DisableRetrans, 0);
         gpphTmlNfc_Context->tReadInfo.bEnable = 0;
-        NXPLOG_TML_D(" phTmlNfc_e_EnableDownloadModewithVenRst complete with VEN RESET ");
-        wStatus = gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle, MODE_FW_DWNLD_WITH_VEN);
+        NXPLOG_TML_D(
+            " phTmlNfc_e_EnableDownloadModewithVenRst complete with VEN "
+            "RESET ");
+        wStatus = gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
+                                            MODE_FW_DWNLD_WITH_VEN);
         break;
       }
       case phTmlNfc_e_setFragmentSize: {
-        if(nfcFL.chipType != pn557){
+        if (nfcFL.chipType != pn557) {
           gpphTmlNfc_Context->fragment_len = PH_TMLNFC_FRGMENT_SIZE_SNXXX;
           NXPLOG_TML_D("phTmlNfc_e_setFragmentSize 0x22A");
         } else {
@@ -1160,7 +1178,9 @@ static int phTmlNfc_WaitReadInit(void) {
 ** Returns          NFCSTATUS
 **
 *******************************************************************************/
-void phTmlNfc_EnableFwDnldMode(bool mode) { gpTransportObj->EnableFwDnldMode(mode); }
+void phTmlNfc_EnableFwDnldMode(bool mode) {
+  gpTransportObj->EnableFwDnldMode(mode);
+}
 
 /*******************************************************************************
 **
@@ -1173,7 +1193,9 @@ void phTmlNfc_EnableFwDnldMode(bool mode) { gpTransportObj->EnableFwDnldMode(mod
 ** Returns          True/False status of FW download flag
 **
 *******************************************************************************/
-bool phTmlNfc_IsFwDnldModeEnabled(void) { return gpTransportObj->IsFwDnldModeEnabled(); }
+bool phTmlNfc_IsFwDnldModeEnabled(void) {
+  return gpTransportObj->IsFwDnldModeEnabled();
+}
 
 /*******************************************************************************
 **

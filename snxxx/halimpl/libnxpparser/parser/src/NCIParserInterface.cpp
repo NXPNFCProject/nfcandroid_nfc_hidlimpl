@@ -24,29 +24,21 @@ using namespace std;
 #define CPP_TO_C(cpp2c) (reinterpret_cast<void*>(cpp2c))
 
 NCI_Parser_Interface::NCI_Parser_Interface() {
-    //TODO
+  // TODO
 }
 
 NCI_Parser_Interface::~NCI_Parser_Interface() {
-    //TODO
+  // TODO
 }
 
-void *native_createParser() {
-    return CPP_TO_C(NCI_Parser::getInstance());
-}
+void* native_createParser() { return CPP_TO_C(NCI_Parser::getInstance()); }
 
-void native_destroyParser(void *psNNP) {
-    C_TO_CPP(psNNP)->resetInstance();
-}
+void native_destroyParser(void* psNNP) { C_TO_CPP(psNNP)->resetInstance(); }
 
-void native_initParser(void *psNNP) {
-    C_TO_CPP(psNNP)->initParser();
-}
+void native_initParser(void* psNNP) { C_TO_CPP(psNNP)->initParser(); }
 
-void native_deinitParser(void *psNNP) {
-    C_TO_CPP(psNNP)->deinitParser();
-}
+void native_deinitParser(void* psNNP) { C_TO_CPP(psNNP)->deinitParser(); }
 
-void native_parseNciMsg(void *psNNP, unsigned char *msg, unsigned short len) {
-    C_TO_CPP(psNNP)->parseNciPacket(msg,len);
+void native_parseNciMsg(void* psNNP, unsigned char* msg, unsigned short len) {
+  C_TO_CPP(psNNP)->parseNciPacket(msg, len);
 }

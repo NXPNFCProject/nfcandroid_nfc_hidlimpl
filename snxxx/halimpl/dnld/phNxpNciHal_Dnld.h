@@ -23,13 +23,14 @@
 
 NFCSTATUS phNxpNciHal_fw_dnld_switch_normal_mode();
 NFCSTATUS phNxpNciHal_fw_download_seq(uint8_t bClkSrcVal, uint8_t bClkFreqVal,
-        uint8_t seq_handler_offset = 0, bool bMinimalFw = false);
+                                      uint8_t seq_handler_offset = 0,
+                                      bool bMinimalFw = false);
 #define STREAM_TO_UINT32(u32, p)                                      \
-{                                                                   \
-  (u32) = (((uint32_t)(*(p))) + ((((uint32_t)(*((p) + 1)))) << 8) + \
-           ((((uint32_t)(*((p) + 2)))) << 16) +                     \
-           ((((uint32_t)(*((p) + 3)))) << 24));                     \
-  (p) += 4;                                                         \
-}
+  {                                                                   \
+    (u32) = (((uint32_t)(*(p))) + ((((uint32_t)(*((p) + 1)))) << 8) + \
+             ((((uint32_t)(*((p) + 2)))) << 16) +                     \
+             ((((uint32_t)(*((p) + 3)))) << 24));                     \
+    (p) += 4;                                                         \
+  }
 
 #endif /* _PHNXPNCIHAL_DNLD_H_ */

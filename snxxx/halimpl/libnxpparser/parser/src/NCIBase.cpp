@@ -17,9 +17,9 @@
 #include "NCIBase.h"
 
 NCI_Base::NCI_Base() {
-    // TODO Auto-generated constructor stub
+  // TODO Auto-generated constructor stub
 }
 
 NCI_Base::~NCI_Base() {
-    // TODO Auto-generated destructor stub
+  // TODO Auto-generated destructor stub
 }

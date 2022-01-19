@@ -17,19 +17,19 @@
  *
  ******************************************************************************/
 #define LOG_TAG "EseAdaptation"
+#include "EseAdaptation.h"
 #include <android/hardware/secure_element/1.0/ISecureElement.h>
 #include <android/hardware/secure_element/1.0/ISecureElementHalCallback.h>
 #include <android/hardware/secure_element/1.0/types.h>
 #include <hwbinder/ProcessState.h>
-#include "EseAdaptation.h"
 #include <log/log.h>
 
+using android::sp;
+using android::hardware::hidl_vec;
 using android::hardware::Return;
 using android::hardware::Void;
 using android::hardware::secure_element::V1_0::ISecureElement;
 using android::hardware::secure_element::V1_0::ISecureElementHalCallback;
-using android::hardware::hidl_vec;
-using android::sp;
 
 using vendor::nxp::nxpese::V1_0::INxpEse;
 
@@ -50,7 +50,7 @@ tHAL_ESE_DATA_CBACK* EseAdaptation::mHalDataCallback = NULL;
 NfcHalThreadCondVar EseAdaptation::mHalOpenCompletedEvent;
 NfcHalThreadCondVar EseAdaptation::mHalCloseCompletedEvent;
 
-#if(NXP_EXTNS == TRUE)
+#if (NXP_EXTNS == TRUE)
 NfcHalThreadCondVar EseAdaptation::mHalCoreResetCompletedEvent;
 NfcHalThreadCondVar EseAdaptation::mHalCoreInitCompletedEvent;
 NfcHalThreadCondVar EseAdaptation::mHalInitCompletedEvent;
@@ -179,8 +179,9 @@ void EseAdaptation::InitializeHalDeviceContext() {
   ALOGD_IF(nfc_debug_enabled, "%s: enter", func);
   ALOGD_IF(nfc_debug_enabled, "%s: INxpEse::tryGetService()", func);
   mHalNxpEse = INxpEse::tryGetService();
-  ALOGD_IF(mHalNxpEse == nullptr, "%s: Failed to retrieve the NXP ESE HAL!", func);
-  if(mHalNxpEse != nullptr) {
+  ALOGD_IF(mHalNxpEse == nullptr, "%s: Failed to retrieve the NXP ESE HAL!",
+           func);
+  if (mHalNxpEse != nullptr) {
     ALOGD_IF(nfc_debug_enabled, "%s: INxpEse::getService() returned %p (%s)",
              func, mHalNxpEse.get(),
              (mHalNxpEse->isRemote() ? "remote" : "local"));
@@ -221,7 +222,7 @@ void IoctlCallback(hidl_vec<uint8_t> outputData) {
       (ese_nxp_ExtnOutputData_t*)&outputData[0];
   ALOGD_IF(nfc_debug_enabled, "%s Ioctl Type=%lu", func,
            (unsigned long)pOutData->ioctlType);
-  EseAdaptation* pAdaptation =  &EseAdaptation::GetInstance();
+  EseAdaptation* pAdaptation = &EseAdaptation::GetInstance();
   /*Output Data from stub->Proxy is copied back to output data
    * This data will be sent back to libese*/
   memcpy(&pAdaptation->mCurrentIoctlData->out, &outputData[0],
