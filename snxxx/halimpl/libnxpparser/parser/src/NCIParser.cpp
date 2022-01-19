@@ -15,107 +15,93 @@
  */
 
 #include "NCIParser.h"
-#include "phOsal_Posix.h"
 #include "NCILxDebugDecoder.h"
+#include "phOsal_Posix.h"
 
 #include <stdlib.h>
 #include <cstring>
 
 using namespace std;
 
-NCI_Parser*
-NCI_Parser::mpNciParser = nullptr;
+NCI_Parser* NCI_Parser::mpNciParser = nullptr;
 
 NCI_Parser::NCI_Parser() {
-    mTaskRunning = false;
-    if(mpNciPropDecoder == nullptr)
-        mpNciPropDecoder = new NCI_Decoder_Prop();
-    //mpNciStandardDecoder = new NCI_Decoder_Standard();
+  mTaskRunning = false;
+  if (mpNciPropDecoder == nullptr) mpNciPropDecoder = new NCI_Decoder_Prop();
+  // mpNciStandardDecoder = new NCI_Decoder_Standard();
 }
 
 NCI_Parser::~NCI_Parser() {
-    mpNciParser = nullptr;
-    delete mpNciPropDecoder;
-    //delete mpNciStandardDecoder;
+  mpNciParser = nullptr;
+  delete mpNciPropDecoder;
+  // delete mpNciStandardDecoder;
 }
 
-NCI_Parser*
-NCI_Parser::getInstance() {
-    if(mpNciParser == nullptr)
-    {
-        mpNciParser = new NCI_Parser();
-        return (mpNciParser);
-    }
-    else
-        return (mpNciParser);
+NCI_Parser* NCI_Parser::getInstance() {
+  if (mpNciParser == nullptr) {
+    mpNciParser = new NCI_Parser();
+    return (mpNciParser);
+  } else
+    return (mpNciParser);
 }
 
-void
-NCI_Parser::resetInstance() {
-    if(mpNciParser != nullptr)
-        delete mpNciParser;
+void NCI_Parser::resetInstance() {
+  if (mpNciParser != nullptr) delete mpNciParser;
 }
 
-void *parsingTask(__attribute__((unused)) void *pvParams) {
+void* parsingTask(__attribute__((unused)) void* pvParams) {
   while (1) {
     if (!NCI_Parser::getInstance()->mTaskRunning) {
       phOsal_LogDebug(
-          (const unsigned char *)"<<<<<<<<<<Stopping Parser Task>>>>>>>>>>");
+          (const unsigned char*)"<<<<<<<<<<Stopping Parser Task>>>>>>>>>>");
       break;
     }
     phOsal_LogDebug(
-        (const unsigned char *)"<<<<<<<<<<Running Parser Task>>>>>>>>>>");
+        (const unsigned char*)"<<<<<<<<<<Running Parser Task>>>>>>>>>>");
     NCI_Parser::getInstance()->decodeNciPacket(phOsalAdapt_GetData());
   }
   return nullptr;
 }
 
-void
-NCI_Parser::initParser() {
-    void *pvParserContext = nullptr;
-    ADAPTSTATUS dwAdaptStatus = ADAPTSTATUS_FAILED;
+void NCI_Parser::initParser() {
+  void* pvParserContext = nullptr;
+  ADAPTSTATUS dwAdaptStatus = ADAPTSTATUS_FAILED;
 
-    dwAdaptStatus = phOsalAdapt_InitOsal(pvParserContext);
-    if(dwAdaptStatus == ADAPTSTATUS_SUCCESS)
-    {
-        mTaskRunning = true;
-        phOsalAdapt_StartTask((void*)parsingTask, this);
-    }
+  dwAdaptStatus = phOsalAdapt_InitOsal(pvParserContext);
+  if (dwAdaptStatus == ADAPTSTATUS_SUCCESS) {
+    mTaskRunning = true;
+    phOsalAdapt_StartTask((void*)parsingTask, this);
+  }
 }
 
-void
-NCI_Parser::deinitParser() {
-    void *pvTaskHandle = nullptr;
-    ADAPTSTATUS dwAdaptStatus = ADAPTSTATUS_FAILED;
+void NCI_Parser::deinitParser() {
+  void* pvTaskHandle = nullptr;
+  ADAPTSTATUS dwAdaptStatus = ADAPTSTATUS_FAILED;
 
-    mTaskRunning = false;
-    dwAdaptStatus = phOsalAdapt_StopTask(pvTaskHandle);
-    if(dwAdaptStatus == ADAPTSTATUS_SUCCESS)
-    {
-        phOsalAdapt_DeinitOsal();
-    }
+  mTaskRunning = false;
+  dwAdaptStatus = phOsalAdapt_StopTask(pvTaskHandle);
+  if (dwAdaptStatus == ADAPTSTATUS_SUCCESS) {
+    phOsalAdapt_DeinitOsal();
+  }
 }
 
-void
-NCI_Parser::parseNciPacket(unsigned char *pMsg,
-                           unsigned short len) {
-    sQueueData_t *psQueueData = nullptr;
+void NCI_Parser::parseNciPacket(unsigned char* pMsg, unsigned short len) {
+  sQueueData_t* psQueueData = nullptr;
 
-    if(pMsg != nullptr)
-    {
-        psQueueData = (sQueueData_t*)malloc(sizeof(sQueueData_t));
-        memset(psQueueData,0,sizeof(sQueueData_t));
-        memcpy(psQueueData->buffer,pMsg,len);
-        psQueueData->len = len;
-    }
+  if (pMsg != nullptr) {
+    psQueueData = (sQueueData_t*)malloc(sizeof(sQueueData_t));
+    memset(psQueueData, 0, sizeof(sQueueData_t));
+    memcpy(psQueueData->buffer, pMsg, len);
+    psQueueData->len = len;
+  }
 
-    phOsalAdapt_SendData(psQueueData);
+  phOsalAdapt_SendData(psQueueData);
 }
 
-void
-NCI_Parser::decodeNciPacket(psQueueData_t nciPacket) {
-    if(mpNciPropDecoder != nullptr) {
-        mpNciPropDecoder->getLxDebugDecoder().processLxDbgNciPkt(nciPacket->buffer,nciPacket->len);
-        free(nciPacket);
-    }
+void NCI_Parser::decodeNciPacket(psQueueData_t nciPacket) {
+  if (mpNciPropDecoder != nullptr) {
+    mpNciPropDecoder->getLxDebugDecoder().processLxDbgNciPkt(nciPacket->buffer,
+                                                             nciPacket->len);
+    free(nciPacket);
+  }
 }

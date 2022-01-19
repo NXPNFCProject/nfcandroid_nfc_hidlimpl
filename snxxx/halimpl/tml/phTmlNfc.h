@@ -113,12 +113,12 @@ typedef enum {
   phTmlNfc_e_EnableDownloadMode, /* Do the hardware setting to enter into
                                     download mode */
   phTmlNfc_e_EnableNormalMode, /* Hardware setting for normal mode of operation
-                                 */
+                                */
   phTmlNfc_e_EnableDownloadModeWithVenRst,
-  phTmlNfc_e_EnableVen,         /* Enable Ven for PN557 chip*/
+  phTmlNfc_e_EnableVen, /* Enable Ven for PN557 chip*/
   phTmlNfc_e_PowerReset = 5,
   phTmlNfc_e_setFragmentSize,
-} phTmlNfc_ControlCode_t;     /* Control code for IOCTL call */
+} phTmlNfc_ControlCode_t; /* Control code for IOCTL call */
 
 /*
  * Enable / Disable Re-Transmission of Packets
@@ -174,10 +174,9 @@ typedef struct phTmlNfc_Context {
   pthread_cond_t wait_busy_condition; /*Condition to wait reader thread*/
   pthread_mutex_t wait_busy_lock;     /*Condition lock to wait reader thread*/
   volatile uint8_t wait_busy_flag;    /*Condition flag to wait reader thread*/
-  volatile uint8_t
-      gWriterCbflag; /* flag to indicate write callback message is pushed to
-                        queue*/
-  long    nfc_service_pid; /*NFC Service PID to be used by driver to signal*/
+  volatile uint8_t gWriterCbflag; /* flag to indicate write callback message is
+                                     pushed to queue*/
+  long nfc_service_pid; /*NFC Service PID to be used by driver to signal*/
   uint16_t fragment_len;
 } phTmlNfc_Context_t;
 

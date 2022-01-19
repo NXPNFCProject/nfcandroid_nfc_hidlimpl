@@ -18,15 +18,15 @@
 #define NCIDECODERSTANDARD_H_
 
 #ifdef __cplusplus
-extern "C" {  /* Assume C declarations for C++ */
-#endif  /* __cplusplus */
+extern "C" { /* Assume C declarations for C++ */
+#endif       /* __cplusplus */
 class NCI_Decoder_Standard {
-public:
-    NCI_Decoder_Standard();
-    ~NCI_Decoder_Standard();
+ public:
+  NCI_Decoder_Standard();
+  ~NCI_Decoder_Standard();
 };
 #ifdef __cplusplus
-}  /* Assume C declarations for C++ */
-#endif  /* __cplusplus */
+} /* Assume C declarations for C++ */
+#endif /* __cplusplus */
 
 #endif /* NCIDECODERSTANDARD_H_ */

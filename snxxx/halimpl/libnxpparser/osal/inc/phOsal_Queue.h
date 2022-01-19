@@ -20,28 +20,23 @@
 #include "phOsal_Posix.h"
 
 #ifdef __cplusplus
-extern "C" {  /* Assume C declarations for C++ */
-#endif  /* __cplusplus */
+extern "C" { /* Assume C declarations for C++ */
+#endif       /* __cplusplus */
 
-typedef enum  phOsal_eQueueOverwriteMode
-{
-    PHOSAL_QUEUE_NO_OVERWRITE,
-    PHOSAL_QUEUE_OVERWRITE_OLDEST,
-    PHOSAL_QUEUE_OVERWRITE_NEWEST
-}phOsal_eQueueOverwriteMode_t;
+typedef enum phOsal_eQueueOverwriteMode {
+  PHOSAL_QUEUE_NO_OVERWRITE,
+  PHOSAL_QUEUE_OVERWRITE_OLDEST,
+  PHOSAL_QUEUE_OVERWRITE_NEWEST
+} phOsal_eQueueOverwriteMode_t;
 
-typedef struct phOsal_QueueCreateParams_tag
-{
-    void*    memHdl;
-    void*                (*MemAllocCb)(void* memHdl,
-                                     uint32_t Size);
-    int                (*MemFreeCb)(void* memHdl,
-                                      void* ptrToMem);
-    uint32_t wQLength;
-    phOsal_eQueueOverwriteMode_t eOverwriteMode;
+typedef struct phOsal_QueueCreateParams_tag {
+  void* memHdl;
+  void* (*MemAllocCb)(void* memHdl, uint32_t Size);
+  int (*MemFreeCb)(void* memHdl, void* ptrToMem);
+  uint32_t wQLength;
+  phOsal_eQueueOverwriteMode_t eOverwriteMode;
 
-}phOsal_QueueCreateParams_t;
-
+} phOsal_QueueCreateParams_t;
 
 /**
  * \ingroup grp_osal_lib
@@ -49,13 +44,13 @@ typedef struct phOsal_QueueCreateParams_tag
  *
  * This function creates resources for handling queue
  * \param[out] pvQueueHandle       Queue Handle to be filled
- * \param[in]  psQueueCreatePrms  structure contatinng params to create linkedlist
- * \retval #OSALSTATUS_SUCCESS    OSAL LIB Queue created successfully
+ * \param[in]  psQueueCreatePrms  structure contatinng params to create
+ * linkedlist \retval #OSALSTATUS_SUCCESS    OSAL LIB Queue created successfully
  * \retval #OSALSTATUS_FAILED     OSAL LIB failed to create queue
  *
  */
-extern OSALSTATUS phOsal_QueueCreate(void**                        pvQueueHandle,
-                                     phOsal_QueueCreateParams_t* psQueueCreatePrms);
+extern OSALSTATUS phOsal_QueueCreate(
+    void** pvQueueHandle, phOsal_QueueCreateParams_t* psQueueCreatePrms);
 /**
  * \ingroup grp_osal_lib
  * \brief Destroys queue
@@ -80,9 +75,8 @@ extern OSALSTATUS phOsal_QueueDestroy(void* pvQueueHandle);
  * \retval #OSALSTATUS_FAILED     OSAL LIB failed to create queue
  *
  */
-extern OSALSTATUS phOsal_QueuePush(void*    pvQueueHandle,
-                                         void     *pvQueueObj,
-                                         uint32_t u4_time_out_ms);
+extern OSALSTATUS phOsal_QueuePush(void* pvQueueHandle, void* pvQueueObj,
+                                   uint32_t u4_time_out_ms);
 
 /**
  * \ingroup grp_osal_lib
@@ -96,9 +90,8 @@ extern OSALSTATUS phOsal_QueuePush(void*    pvQueueHandle,
  * \retval #OSALSTATUS_FAILED     OSAL LIB failed to Pull object from queue
  * \retval #OSALSTATUS_Q_UNDERFLOW  No objects in Q even after timeout
  */
-extern OSALSTATUS phOsal_QueuePull(void*    pvQueueHandle,
-                                        void    **ppvQueueObj,
-                                        uint32_t u4_time_out_ms);
+extern OSALSTATUS phOsal_QueuePull(void* pvQueueHandle, void** ppvQueueObj,
+                                   uint32_t u4_time_out_ms);
 
 /**
  * \ingroup grp_osal_lib
@@ -113,7 +106,7 @@ extern OSALSTATUS phOsal_QueuePull(void*    pvQueueHandle,
 extern OSALSTATUS phOsal_QueueFlush(void* pvQueueHandle);
 
 #ifdef __cplusplus
-}  /* Assume C declarations for C++ */
-#endif  /* __cplusplus */
+} /* Assume C declarations for C++ */
+#endif /* __cplusplus */
 
 #endif /* __PH_OSAL_QUEUE_H__ */

@@ -17,34 +17,34 @@
 #ifndef NCIPARSER_H_
 #define NCIPARSER_H_
 
-#include "NCIParserInterface.h"
 #include "NCIDecoderProp.h"
 #include "NCIDecoderStandard.h"
+#include "NCIParserInterface.h"
 #include "phOsal_Adaptation.h"
 
 #ifdef __cplusplus
-extern "C" {  /* Assume C declarations for C++ */
-#endif  /* __cplusplus */
-class NCI_Parser: public NCI_Parser_Interface
-{
-private:
-    NCI_Parser();
-    volatile bool         mTaskRunning;
-    static NCI_Parser    *mpNciParser;
-    NCI_Decoder_Prop     *mpNciPropDecoder = nullptr;
-    //NCI_Decoder_Standard *mpNciStandardDecoder;
-    void decodeNciPacket(psQueueData_t nciPacket);
-public:
-    ~NCI_Parser();
-    void initParser();
-    void deinitParser();
-    static NCI_Parser* getInstance();
-    static void resetInstance();
-    friend void* parsingTask(void *);
-    void parseNciPacket(unsigned char *pMsg, unsigned short len);
+extern "C" { /* Assume C declarations for C++ */
+#endif       /* __cplusplus */
+class NCI_Parser : public NCI_Parser_Interface {
+ private:
+  NCI_Parser();
+  volatile bool mTaskRunning;
+  static NCI_Parser* mpNciParser;
+  NCI_Decoder_Prop* mpNciPropDecoder = nullptr;
+  // NCI_Decoder_Standard *mpNciStandardDecoder;
+  void decodeNciPacket(psQueueData_t nciPacket);
+
+ public:
+  ~NCI_Parser();
+  void initParser();
+  void deinitParser();
+  static NCI_Parser* getInstance();
+  static void resetInstance();
+  friend void* parsingTask(void*);
+  void parseNciPacket(unsigned char* pMsg, unsigned short len);
 };
 #ifdef __cplusplus
-}  /* Assume C declarations for C++ */
-#endif  /* __cplusplus */
+} /* Assume C declarations for C++ */
+#endif /* __cplusplus */
 
 #endif /* NCIPARSER_H_ */

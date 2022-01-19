@@ -16,11 +16,10 @@
 #ifndef _PHNXPNCIHAL_H_
 #define _PHNXPNCIHAL_H_
 
-#include "NxpMfcReader.h"
-#include "NxpNfcCapability.h"
 #include <hardware/nfc.h>
 #include <phNxpNciHal_utils.h>
-#include "eSEClientIntf.h"
+#include "NxpMfcReader.h"
+#include "NxpNfcCapability.h"
 #include "eSEClientExtns.h"
 #include "eSEClientIntf.h"
 #include "phNxpNciHal_IoctlOperations.h"
@@ -39,9 +38,9 @@
 #define NCI_VERSION_UNKNOWN 0x00
 #define SNXXX_NXP_AUTH_TIMEOUT_BUF_LEN 0x05
 #define PN557_NXP_AUTH_TIMEOUT_BUF_LEN 0x0C
-#define SN1XX_ROM_VERSION      0x01
+#define SN1XX_ROM_VERSION 0x01
 #define SN1XX_FW_MAJOR_VERSION 0x10
-#define SN2XX_ROM_VERSION      0x01
+#define SN2XX_ROM_VERSION 0x01
 #define SN2XX_FW_MAJOR_VERSION 0x01
 
 /*Mem alloc with 8 byte alignment*/
@@ -54,13 +53,13 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 #define FW_MOBILE_ROM_VERSION_PN551 0x10
 #define FW_MOBILE_ROM_VERSION_PN553 0x11
 #define FW_MOBILE_ROM_VERSION_PN557 0x12
-#define NCI_CMDRESP_MAX_BUFF_SIZE_SNXXX  (0x22AU)
-#define NCI_CMDRESP_MAX_BUFF_SIZE_PN557  (0x102U)
+#define NCI_CMDRESP_MAX_BUFF_SIZE_SNXXX (0x22AU)
+#define NCI_CMDRESP_MAX_BUFF_SIZE_PN557 (0x102U)
 
-#define FW_DBG_REASON_AVAILABLE     (0xA3)
+#define FW_DBG_REASON_AVAILABLE (0xA3)
 
-#define HOST_ID  0x00
-#define ESE_ID   0x01
+#define HOST_ID 0x00
+#define ESE_ID 0x01
 #define UICC1_ID 0x02
 #define UICC2_ID 0x04
 #define UICC3_ID 0x08
@@ -71,7 +70,7 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 //#define NCI_MT_NTF 0x60
 
 #define CORE_RESET_TRIGGER_TYPE_CORE_RESET_CMD_RECEIVED 0x02
-#define CORE_RESET_TRIGGER_TYPE_POWERED_ON              0x01
+#define CORE_RESET_TRIGGER_TYPE_POWERED_ON 0x01
 #define NCI2_0_CORE_RESET_TRIGGER_TYPE_OVER_TEMPERATURE ((uint8_t)0xA1)
 #define CORE_RESET_TRIGGER_TYPE_UNRECOVERABLE_ERROR 0x00
 #define CORE_RESET_TRIGGER_TYPE_FW_ASSERT ((uint8_t)0xA0)
@@ -79,18 +78,18 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 #define CORE_RESET_TRIGGER_TYPE_INPUT_CLOCK_LOST ((uint8_t)0xA4)
 //#define NCI_MSG_CORE_RESET           0x00
 //#define NCI_MSG_CORE_INIT            0x01
-#define NCI_MT_MASK                  0xE0
-#define NCI_OID_MASK                 0x3F
+#define NCI_MT_MASK 0xE0
+#define NCI_OID_MASK 0x3F
 #if (NXP_EXTNS == TRUE)
 /* GID: Group Identifier (byte 0) */
-#define NCI_GID_MASK                 0x0F
+#define NCI_GID_MASK 0x0F
 #define ORIG_NXPHAL 0x01
 #define ORIG_LIBNFC 0x02
 #endif
-#define NXP_PROPCMD_GID              0x2F
-#define NXP_FLUSH_SRAM_AO_TO_FLASH   0x21
-#define NXP_CORE_GET_CONFIG_CMD      0x03
-#define NXP_CORE_SET_CONFIG_CMD      0x02
+#define NXP_PROPCMD_GID 0x2F
+#define NXP_FLUSH_SRAM_AO_TO_FLASH 0x21
+#define NXP_CORE_GET_CONFIG_CMD 0x03
+#define NXP_CORE_SET_CONFIG_CMD 0x02
 #define NXP_MAX_CONFIG_STRING_LEN 260
 #define NCI_HEADER_SIZE 3
 
@@ -106,11 +105,11 @@ typedef enum {
 } phNxpNci_HalStatus;
 
 typedef enum {
-    HAL_NFC_FW_UPDATE_INVALID = 0x00,
-    HAL_NFC_FW_UPDATE_START,
-    HAL_NFC_FW_UPDATE_SCUCCESS,
-    HAL_NFC_FW_UPDATE_FAILED,
-}HalNfcFwUpdateStatus;
+  HAL_NFC_FW_UPDATE_INVALID = 0x00,
+  HAL_NFC_FW_UPDATE_START,
+  HAL_NFC_FW_UPDATE_SCUCCESS,
+  HAL_NFC_FW_UPDATE_FAILED,
+} HalNfcFwUpdateStatus;
 
 typedef enum {
   GPIO_UNKNOWN = 0x00,
@@ -130,10 +129,10 @@ typedef struct phNxpNciGpioInfo {
 #define HAL_ENABLE_EXT() (nxpncihal_ctrl.hal_ext_enabled = 1)
 #define HAL_DISABLE_EXT() (nxpncihal_ctrl.hal_ext_enabled = 0)
 typedef struct phNxpNciInfo {
-  uint8_t   nci_version;
-  bool_t    wait_for_ntf;
-  uint8_t   lastResetNtfReason;
-}phNxpNciInfo_t;
+  uint8_t nci_version;
+  bool_t wait_for_ntf;
+  uint8_t lastResetNtfReason;
+} phNxpNciInfo_t;
 /* NCI Control structure */
 typedef struct phNxpNciHal_Control {
   phNxpNci_HalStatus halStatus; /* Indicate if hal is open or closed */
@@ -176,7 +175,7 @@ typedef struct phNxpNciHal_Control {
   uint8_t read_retry_cnt;
   phNxpNciInfo_t nci_info;
   uint8_t hal_boot_mode;
-  bool_t    fwdnld_mode_reqd;
+  bool_t fwdnld_mode_reqd;
   /* to store and restore gpio values */
   phNxpNciGpioInfo_t phNxpNciGpioInfo;
   tNFC_chipType chipType;
@@ -203,19 +202,13 @@ typedef struct phNxpNciMwEepromArea {
   uint8_t p_rx_data[32];
 } phNxpNciMwEepromArea_t;
 
-enum {
-  SE_TYPE_ESE,
-  SE_TYPE_UICC,
-  SE_TYPE_UICC2,
-  NUM_SE_TYPES
-};
+enum { SE_TYPE_ESE, SE_TYPE_UICC, SE_TYPE_UICC2, NUM_SE_TYPES };
 
 typedef void (*fpVerInfoStoreInEeprom_t)();
 typedef int (*fpVerifyCscEfsTest_t)(char* nfcc_csc, char* rffilepath,
-                              char* fwfilepath);
-typedef int (*fpRegRfFwDndl_t)(uint8_t* fw_update_req,
-                   uint8_t* rf_update_req,
-                   uint8_t skipEEPROMRead);
+                                    char* fwfilepath);
+typedef int (*fpRegRfFwDndl_t)(uint8_t* fw_update_req, uint8_t* rf_update_req,
+                               uint8_t skipEEPROMRead);
 typedef int (*fpPropConfCover_t)(bool attached, int type);
 void phNxpNciHal_initializeRegRfFwDnld();
 void phNxpNciHal_deinitializeRegRfFwDnld();
@@ -322,11 +315,12 @@ int phNxpNciHal_check_ncicmd_write_window(uint16_t cmd_len, uint8_t* p_cmd);
 void phNxpNciHal_request_control(void);
 void phNxpNciHal_release_control(void);
 NFCSTATUS phNxpNciHal_send_get_cfgs();
-int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t *p_data,
+int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t* p_data,
                                int origin);
 NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info);
 int phNxpNciHal_check_config_parameter();
-NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset = 0, bool bIsNfccDlState = false);
+NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset = 0,
+                                  bool bIsNfccDlState = false);
 NFCSTATUS phNxpNciHal_nfcc_core_reset_init(bool keep_config = false);
 int phNxpNciHal_fw_mw_ver_check();
 NFCSTATUS phNxpNciHal_check_clock_config(void);
@@ -382,7 +376,7 @@ extern bool phNxpNciHal_Abort();
  * Returns          status of the read
  *
  ******************************************************************************/
-NFCSTATUS phNxpNciHal_read_fw_dw_status(uint8_t &value);
+NFCSTATUS phNxpNciHal_read_fw_dw_status(uint8_t& value);
 
 /******************************************************************************
  * Function         phNxpNciHal_write_fw_dw_status

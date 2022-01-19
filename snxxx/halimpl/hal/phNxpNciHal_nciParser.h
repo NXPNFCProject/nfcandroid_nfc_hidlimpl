@@ -36,18 +36,18 @@
 #define LX_DEBUG_CFG_MASK 0x20FF
 
 typedef void* (*tHAL_API_NATIVE_CREATE_PARSER)();
-typedef void  (*tHAL_API_NATIVE_DESTROY_PARSER)(void*);
-typedef void  (*tHAL_API_NATIVE_INIT_PARSER)(void*);
-typedef void  (*tHAL_API_NATIVE_DEINIT_PARSER)(void*);
-typedef void  (*tHAL_API_NATIVE_PARSE_PACKET)(void*,unsigned char *, unsigned short);
+typedef void (*tHAL_API_NATIVE_DESTROY_PARSER)(void*);
+typedef void (*tHAL_API_NATIVE_INIT_PARSER)(void*);
+typedef void (*tHAL_API_NATIVE_DEINIT_PARSER)(void*);
+typedef void (*tHAL_API_NATIVE_PARSE_PACKET)(void*, unsigned char*,
+                                             unsigned short);
 
-typedef struct
-{
-    tHAL_API_NATIVE_CREATE_PARSER  createParser;
-    tHAL_API_NATIVE_DESTROY_PARSER destroyParser;
-    tHAL_API_NATIVE_INIT_PARSER    initParser;
-    tHAL_API_NATIVE_DEINIT_PARSER  deinitParser;
-    tHAL_API_NATIVE_PARSE_PACKET   parsePacket;
+typedef struct {
+  tHAL_API_NATIVE_CREATE_PARSER createParser;
+  tHAL_API_NATIVE_DESTROY_PARSER destroyParser;
+  tHAL_API_NATIVE_INIT_PARSER initParser;
+  tHAL_API_NATIVE_DEINIT_PARSER deinitParser;
+  tHAL_API_NATIVE_PARSE_PACKET parsePacket;
 } tNCI_PARSER_FUNCTIONS;
 
 unsigned char phNxpNciHal_initParser();

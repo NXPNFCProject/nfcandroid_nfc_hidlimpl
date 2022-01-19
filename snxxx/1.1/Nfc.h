@@ -31,15 +31,15 @@ namespace nfc {
 namespace V1_1 {
 namespace implementation {
 
-using ::android::hidl::base::V1_0::IBase;
-using ::android::hardware::nfc::V1_1::INfc;
+using ::android::sp;
 using ::android::hardware::hidl_array;
 using ::android::hardware::hidl_memory;
 using ::android::hardware::hidl_string;
 using ::android::hardware::hidl_vec;
 using ::android::hardware::Return;
 using ::android::hardware::Void;
-using ::android::sp;
+using ::android::hardware::nfc::V1_1::INfc;
+using ::android::hidl::base::V1_0::IBase;
 struct Nfc : public V1_1::INfc, public hidl_death_recipient {
  public:
   // Methods from ::android::hardware::nfc::V1_0::INfc follow.

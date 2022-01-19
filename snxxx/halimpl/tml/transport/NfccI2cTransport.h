@@ -49,7 +49,6 @@ class NfccI2cTransport : public NfccTransport {
   bool_t bFwDnldFlag = false;
   sem_t mTxRxSemaphore;
 
-
  public:
   /*****************************************************************************
   **
@@ -62,7 +61,7 @@ class NfccI2cTransport : public NfccTransport {
   ** Returns          None
   **
   *****************************************************************************/
-  void Close(void *pDevHandle);
+  void Close(void* pDevHandle);
 
   /*****************************************************************************
    **
@@ -78,7 +77,7 @@ class NfccI2cTransport : public NfccTransport {
    **                  NFCSTATUS_INVALID_DEVICE - device open operation failure
    **
    ****************************************************************************/
-  NFCSTATUS OpenAndConfigure(pphTmlNfc_Config_t pConfig, void **pLinkHandle);
+  NFCSTATUS OpenAndConfigure(pphTmlNfc_Config_t pConfig, void** pLinkHandle);
 
   /*****************************************************************************
    **
@@ -96,7 +95,7 @@ class NfccI2cTransport : public NfccTransport {
    **                  -1        - read operation failure
    **
    ****************************************************************************/
-  int Read(void *pDevHandle, uint8_t *pBuffer, int nNbBytesToRead);
+  int Read(void* pDevHandle, uint8_t* pBuffer, int nNbBytesToRead);
 
   /*****************************************************************************
   **
@@ -113,7 +112,7 @@ class NfccI2cTransport : public NfccTransport {
   **                  -1         - write operation failure
   **
   *****************************************************************************/
-  int Write(void *pDevHandle, uint8_t *pBuffer, int nNbBytesToWrite);
+  int Write(void* pDevHandle, uint8_t* pBuffer, int nNbBytesToWrite);
 
   /*****************************************************************************
    **
@@ -128,7 +127,7 @@ class NfccI2cTransport : public NfccTransport {
    **                  -1   - reset operation failure
    **
    ****************************************************************************/
-  int NfccReset(void *pDevHandle, NfccResetType eType);
+  int NfccReset(void* pDevHandle, NfccResetType eType);
 
   /*****************************************************************************
    **
@@ -143,7 +142,7 @@ class NfccI2cTransport : public NfccTransport {
    **                  else - reset operation failure
    **
    ****************************************************************************/
-  int EseReset(void *pDevHandle, EseResetType eType);
+  int EseReset(void* pDevHandle, EseResetType eType);
 
   /*****************************************************************************
    **
@@ -158,7 +157,7 @@ class NfccI2cTransport : public NfccTransport {
    **                  else - reset operation failure
    **
    ****************************************************************************/
-  int EseGetPower(void *pDevHandle, uint32_t level);
+  int EseGetPower(void* pDevHandle, uint32_t level);
 
   /*****************************************************************************
    **

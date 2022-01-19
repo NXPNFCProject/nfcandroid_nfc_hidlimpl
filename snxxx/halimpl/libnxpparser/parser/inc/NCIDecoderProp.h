@@ -20,15 +20,15 @@
 #include "NCILxDebugDecoder.h"
 
 #ifdef __cplusplus
-extern "C" {  /* Assume C declarations for C++ */
-#endif  /* __cplusplus */
+extern "C" { /* Assume C declarations for C++ */
+#endif       /* __cplusplus */
 class NCI_Decoder_Prop {
-public:
-    NCI_Decoder_Prop();
-    ~NCI_Decoder_Prop();
-    NCI_LxDebug_Decoder& getLxDebugDecoder();
+ public:
+  NCI_Decoder_Prop();
+  ~NCI_Decoder_Prop();
+  NCI_LxDebug_Decoder& getLxDebugDecoder();
 };
 #ifdef __cplusplus
-}  /* Assume C declarations for C++ */
-#endif  /* __cplusplus */
+} /* Assume C declarations for C++ */
+#endif /* __cplusplus */
 #endif /* NCIDECODERPROP_H_ */

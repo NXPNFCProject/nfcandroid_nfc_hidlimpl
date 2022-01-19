@@ -15,12 +15,13 @@
  *  limitations under the License.
  *
  ******************************************************************************/
-#include <unistd.h>
 #include "eSEClientExtns.h"
+
 #include <dlfcn.h>
 #include <hidl/LegacySupport.h>
+#include <unistd.h>
 
-void *HalLibnfc_handle = NULL;
+void* HalLibnfc_handle = NULL;
 
 /*******************************************************************************
 **
@@ -33,7 +34,6 @@ void *HalLibnfc_handle = NULL;
 ** Returns          void
 *******************************************************************************/
 void initializeEseClient() {
-
   // Getting pointer to Ese Client  module
   HalLibnfc_handle = dlopen("/system/vendor/lib64/hal_libnfc.so", RTLD_NOW);
 
@@ -55,9 +55,7 @@ void initializeEseClient() {
 ** Returns          void
 *******************************************************************************/
 void checkEseClientUpdate() {
-
-  if (HalLibnfc_handle == NULL)
-    return;
+  if (HalLibnfc_handle == NULL) return;
 
   fpCheckEseClientUpdate_t fpCheckEseClientUpdate = NULL;
 
@@ -85,9 +83,7 @@ void checkEseClientUpdate() {
 ** Returns          void
 *******************************************************************************/
 void perform_eSEClientUpdate() {
-
-  if (HalLibnfc_handle == NULL)
-    return;
+  if (HalLibnfc_handle == NULL) return;
 
   fpPerformEseClientUpdate_t fpPerformEseClientUpdate = NULL;
 
@@ -106,17 +102,15 @@ void perform_eSEClientUpdate() {
 **
 ** Function         eSEClientUpdate_NFC_Thread
 **
-** Description      Interface API to dynamically invoke  eSEClientUpdate_NFC_Thread
-**                  method.
+** Description      Interface API to dynamically invoke
+**                  eSEClientUpdate_NFC_Thread method.
 **
 ** Parameters       none
 **
 ** Returns          void
 *******************************************************************************/
 void eSEClientUpdate_NFC_Thread() {
-
-  if (HalLibnfc_handle == NULL)
-    return;
+  if (HalLibnfc_handle == NULL) return;
 
   fpEseClientUpdate_Nfc_Thread_t fpEseClientUpdate_Nfc_Thread = NULL;
 
@@ -144,9 +138,7 @@ void eSEClientUpdate_NFC_Thread() {
 ** Returns          none
 *******************************************************************************/
 void seteSEClientState(uint8_t state) {
-
-  if (HalLibnfc_handle == NULL)
-    return;
+  if (HalLibnfc_handle == NULL) return;
 
   fpSeteSEClientState_t fpSeteSEClientState = NULL;
 

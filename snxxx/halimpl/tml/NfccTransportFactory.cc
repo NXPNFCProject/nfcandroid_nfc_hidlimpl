@@ -44,7 +44,7 @@ NfccTransportFactory::NfccTransportFactory() {}
 **
 ** Returns          Selected transport channel
 ******************************************************************************/
-NfccTransportFactory &NfccTransportFactory::getInstance() {
+NfccTransportFactory& NfccTransportFactory::getInstance() {
   static NfccTransportFactory mTransprtFactoryInstance;
   return mTransprtFactoryInstance;
 }

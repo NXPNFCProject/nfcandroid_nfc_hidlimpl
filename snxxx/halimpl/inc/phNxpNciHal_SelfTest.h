@@ -118,10 +118,9 @@ extern "C" NFCSTATUS phNxpNciHal_SwpTest(uint8_t swp_line);
  **                  otherwise NFCSTATUS_FAILED.
  **
  ******************************************************************************/
-extern "C" NFCSTATUS phNxpNciHal_PrbsTestStart(phNxpNfc_PrbsType_t prbs_type,
-                                    phNxpNfc_PrbsHwType_t hw_prbs_type,
-                                    phNxpNfc_Tech_t tech,
-                                    phNxpNfc_Bitrate_t bitrate);
+extern "C" NFCSTATUS phNxpNciHal_PrbsTestStart(
+    phNxpNfc_PrbsType_t prbs_type, phNxpNfc_PrbsHwType_t hw_prbs_type,
+    phNxpNfc_Tech_t tech, phNxpNfc_Bitrate_t bitrate);
 /*******************************************************************************
  **
  ** Function         phNxpNciHal_PrbsTestStop
@@ -147,7 +146,8 @@ extern "C" NFCSTATUS phNxpNciHal_PrbsTestStop();
 **
 *******************************************************************************/
 
-extern "C" NFCSTATUS phNxpNciHal_AntennaSelfTest(phAntenna_St_Resp_t* phAntenna_St_Resp);
+extern "C" NFCSTATUS phNxpNciHal_AntennaSelfTest(
+    phAntenna_St_Resp_t* phAntenna_St_Resp);
 
 /*******************************************************************************
 **

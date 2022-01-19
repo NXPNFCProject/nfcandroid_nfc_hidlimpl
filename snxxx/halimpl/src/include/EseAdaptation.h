@@ -17,14 +17,15 @@
  *
  ******************************************************************************/
 #pragma once
-#include "ese_hal_api.h"
-#include "hal_nxpese.h"
-#include <utils/RefBase.h>
 #include <android/hardware/secure_element/1.0/ISecureElement.h>
 #include <android/hardware/secure_element/1.0/ISecureElementHalCallback.h>
 #include <android/hardware/secure_element/1.0/types.h>
+#include <utils/RefBase.h>
 #include <vendor/nxp/nxpese/1.0/INxpEse.h>
+
 #include "NxpNfcThreadMutex.h"
+#include "ese_hal_api.h"
+#include "hal_nxpese.h"
 using vendor::nxp::nxpese::V1_0::INxpEse;
 
 class EseAdaptation {

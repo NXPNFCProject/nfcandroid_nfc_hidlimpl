@@ -48,7 +48,6 @@ typedef void (*pphDnldNfc_RspCb_t)(void* pContext, NFCSTATUS wStatus,
 #define PHDNLDNFC_HWVER_MRA2_1 (0x04U) /* ChipVersion MRA2.1 */
 #define PHDNLDNFC_HWVER_MRA2_2 (0x05U) /* ChipVersion MRA2.2 */
 
-
 /* PN551 ChipVersion MRA1.0 */
 #define PHDNLDNFC_HWVER_PN551_MRA1_0 (0x08U)
 /* PN553-NCI1.0 ChipVersion MRA1.0 */
@@ -101,11 +100,13 @@ typedef struct phDnldNfc_Buff {
 } phDnldNfc_Buff_t, *pphDnldNfc_Buff_t; /* pointer to #phDnldNfc_Buff_t */
 
 typedef struct phDnldChkIntegrityRsp_Buff {
-  uint8_t* pBuff;        /* pointer to the buffer where chk integrity rsp is stored*/
-  uint32_t wLen;         /* check integrity rsp Buffer length*/
-  uint8_t  data_len;     /* length of data area whose CRC is checked, maximum 28 bits*/
-  uint8_t  code_len;     /* length of code area whose CRC is checked, maximum 4 bits*/
-  uint32_t crc_status;   /* crc info of all the sections*/
+  uint8_t* pBuff; /* pointer to the buffer where chk integrity rsp is stored*/
+  uint32_t wLen;  /* check integrity rsp Buffer length*/
+  uint8_t
+      data_len; /* length of data area whose CRC is checked, maximum 28 bits*/
+  uint8_t
+      code_len; /* length of code area whose CRC is checked, maximum 4 bits*/
+  uint32_t crc_status; /* crc info of all the sections*/
 } phDnldChkIntegrityRsp_Buff_t;
 /*
 *********************** Function Prototype Declaration *************************
@@ -145,7 +146,8 @@ extern NFCSTATUS phDnldNfc_LoadPKInfo(void);
 extern void phDnldNfc_CloseFwLibHandle(void);
 extern NFCSTATUS phDnldNfc_LoadFW(const char* pathName, uint8_t** pImgInfo,
                                   uint32_t* pImgInfoLen);
-extern NFCSTATUS phDnldNfc_LoadRecoveryFW(const char* pathName, uint8_t** pImgInfo,
+extern NFCSTATUS phDnldNfc_LoadRecoveryFW(const char* pathName,
+                                          uint8_t** pImgInfo,
                                           uint32_t* pImgInfoLen);
 extern NFCSTATUS phDnldNfc_LoadBinFW(uint8_t** pImgInfo, uint32_t* pImgInfoLen);
 extern NFCSTATUS phDnldNfc_UnloadFW(void);

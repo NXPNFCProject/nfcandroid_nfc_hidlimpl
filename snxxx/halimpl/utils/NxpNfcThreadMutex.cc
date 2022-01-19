@@ -133,7 +133,9 @@ void NfcHalThreadCondVar::signal() {
 ** Returns:     none
 **
 *******************************************************************************/
-NfcHalAutoThreadMutex::NfcHalAutoThreadMutex(NfcHalThreadMutex& m) : mm(m) { mm.lock(); }
+NfcHalAutoThreadMutex::NfcHalAutoThreadMutex(NfcHalThreadMutex& m) : mm(m) {
+  mm.lock();
+}
 
 /*******************************************************************************
 **
