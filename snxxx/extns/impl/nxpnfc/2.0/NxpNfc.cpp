@@ -96,7 +96,9 @@ Return<bool> NxpNfc::isJcopUpdateRequired() {
   bool status = 0;
   ALOGD("NxpNfc::isJcopUpdateRequired Entry");
 
+#ifdef NXP_BOOTTIME_UPDATE
   status = getJcopUpdateRequired();
+#endif
 
   ALOGD("NxpNfc::isJcopUpdateRequired Exit");
   return status;
@@ -106,7 +108,9 @@ Return<bool> NxpNfc::isLsUpdateRequired() {
   bool status = 0;
   ALOGD("NxpNfc::isLsUpdateRequired Entry");
 
+#ifdef NXP_BOOTTIME_UPDATE
   status = getLsUpdateRequired();
+#endif
 
   ALOGD("NxpNfc::isLsUpdateRequired Exit");
   return status;
