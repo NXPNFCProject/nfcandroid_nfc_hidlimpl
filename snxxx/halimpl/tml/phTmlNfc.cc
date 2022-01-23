@@ -908,11 +908,12 @@ NFCSTATUS phTmlNfc_WriteAbort(void) {
 *******************************************************************************/
 NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
-  uint8_t read_flag = (gpphTmlNfc_Context->tReadInfo.bEnable > 0);
 
   if (NULL == gpphTmlNfc_Context) {
     wStatus = NFCSTATUS_FAILED;
   } else {
+    uint8_t read_flag = (gpphTmlNfc_Context->tReadInfo.bEnable > 0);
+
     switch (eControlCode) {
       case phTmlNfc_e_PowerReset: {
         if (nfcFL.chipType >= sn100u) {
