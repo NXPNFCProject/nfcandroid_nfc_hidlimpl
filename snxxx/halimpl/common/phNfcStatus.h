@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2018, 2020 NXP
+ * Copyright 2010-2018, 2020-2021 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -157,13 +157,12 @@
 #define NFCSTATUS_FEATURE_NOT_SUPPORTED (0x0033)
 
 /*  The Unregistration command has failed because the user wants to unregister
- * on
- * an element for which he was not registered
+ * on an element for which user was not registered
  */
 #define NFCSTATUS_NOT_REGISTERED (0x0034)
 
 /* The Registration command has failed because the user wants to register on
- * an element for which he is already registered
+ * an element for which user is already registered
  */
 #define NFCSTATUS_ALREADY_REGISTERED (0x0035)
 

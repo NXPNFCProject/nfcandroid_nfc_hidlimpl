@@ -33,7 +33,7 @@
 static void* pFwHandle; /* Global firmware handle*/
 uint16_t wMwVer = 0;    /* Middleware version no */
 uint16_t wFwVer = 0;    /* Firmware version no */
-uint8_t gRecFWDwnld;    /* flag set to true to indicate dummy FW download */
+uint8_t gRecFWDwnld;    /* flag set to true to indicate recovery FW download */
 phTmlNfc_i2cfragmentation_t fragmentation_enabled = I2C_FRAGMENATATION_DISABLED;
 static pphDnldNfc_DlContext_t gpphDnldContext = NULL; /* Download contex */
 #undef EEPROM_Read_Mem_IMP
@@ -1155,7 +1155,7 @@ NFCSTATUS phDnldNfc_LoadBinFW(uint8_t** pImgInfo, uint32_t* pImgInfoLen) {
 **
 ** Function         phDnldNfc_LoadRecoveryFW
 **
-** Description      Load the dummy firmware version form firmware lib for
+** Description      Load the recovery firmware version form firmware lib for
 **                  recovery. This will change the FW version of the NFCC
 **                  firmware and enable flashing of firmware of same version.
 **

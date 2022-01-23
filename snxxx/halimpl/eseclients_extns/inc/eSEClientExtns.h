@@ -18,6 +18,7 @@
 
 #ifndef ESE_UPDATE_3_H_
 #define ESE_UPDATE_3_H_
+#include <unistd.h>
 
 extern bool nfc_debug_enabled;
 

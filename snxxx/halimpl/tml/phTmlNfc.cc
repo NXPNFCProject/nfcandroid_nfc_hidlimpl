@@ -560,11 +560,11 @@ static void* phTmlNfc_TmlWriterThread(void* pParam) {
           NXPLOG_TML_D("PN54X - Posting Fresh Write message.....\n");
           phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &tMsg);
           if (NFCSTATUS_SUCCESS == wStatus) {
-            /*TML reader writer thread callback syncronization---START*/
+            /*TML reader writer thread callback synchronization---START*/
             pthread_mutex_lock(&gpphTmlNfc_Context->wait_busy_lock);
             gpphTmlNfc_Context->gWriterCbflag = true;
             phTmlNfc_SignalWriteComplete();
-            /*TML reader writer thread callback syncronization---END*/
+            /*TML reader writer thread callback synchronization---END*/
             pthread_mutex_unlock(&gpphTmlNfc_Context->wait_busy_lock);
           }
         }
@@ -1006,8 +1006,8 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
         phTmlNfc_ConfigNciPktReTx(phTmlNfc_e_DisableRetrans, 0);
         gpphTmlNfc_Context->tReadInfo.bEnable = 0;
         NXPLOG_TML_D(
-            " phTmlNfc_e_EnableDownloadModewithVenRst complete with VEN "
-            "RESET ");
+            " phTmlNfc_e_EnableDownloadModewithVenRst complete with "
+            "VEN RESET ");
         wStatus = gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
                                             MODE_FW_DWNLD_WITH_VEN);
         break;

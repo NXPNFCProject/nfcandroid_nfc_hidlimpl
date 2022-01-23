@@ -242,7 +242,7 @@ int NfccI2cTransport::Read(void* pDevHandle, uint8_t* pBuffer,
         return -1;
       }
     } else {
-      NXPLOG_TML_E("%s _>>>>> Empty packet recieved !!", __func__);
+      NXPLOG_TML_E("%s _>>>>> Empty packet received !!", __func__);
     }
   }
   return numRead;

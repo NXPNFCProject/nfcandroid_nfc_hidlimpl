@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  *
- *  Copyright (C) 2015-2020, 2021 NXP
+ *  Copyright 2015-2021 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -234,9 +234,9 @@ void IoctlCallback(hidl_vec<uint8_t> outputData) {
 **
 ** Description: Calls ioctl to the Ese driver.
 **              If called with a arg value of 0x01 than wired access requested,
-**              status of the requst would be updated to p_data.
+**              status of the request would be updated to p_data.
 **              If called with a arg value of 0x00 than wired access will be
-**              released, status of the requst would be updated to p_data.
+**              released, status of the request would be updated to p_data.
 **              If called with a arg value of 0x02 than current p61 state would
 *be
 **              updated to p_data.

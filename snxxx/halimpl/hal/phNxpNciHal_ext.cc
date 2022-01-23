@@ -754,7 +754,7 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
     NXPLOG_NCIHAL_D("Received proprietary command to set Felica Reader mode:%d",
                     p_cmd_data[3]);
     gFelicaReaderMode = p_cmd_data[3];
-    /* frame the dummy response */
+    /* frame the fake response */
     *rsp_len = 4;
     p_rsp_data[0] = 0x00;
     p_rsp_data[1] = 0x00;
@@ -1107,7 +1107,7 @@ static void hal_extns_write_rsp_timeout_cb(uint32_t timerId, void* pContext) {
  **                     (Example - EEPROM_RF_CFG)
  **
  ** Returns:         Returns NFCSTATUS_SUCCESS if sending cmd is successful and
- **                  status failed if not succesful
+ **                  status failed if not successful
  **
  *******************************************************************************/
 NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
