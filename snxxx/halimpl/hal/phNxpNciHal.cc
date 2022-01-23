@@ -98,7 +98,9 @@ bool_t gParserCreated = FALSE;
  * response*/
 uint32_t wFwVerRsp;
 EseAdaptation* gpEseAdapt = NULL;
+#ifdef NXP_BOOTTIME_UPDATE
 ese_update_state_t ese_update = ESE_UPDATE_COMPLETED;
+#endif
 /* External global variable to get FW version */
 extern uint16_t wFwVer;
 extern uint8_t gRecFWDwnld;
@@ -879,6 +881,7 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
   NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   NXPLOG_NCIHAL_E("phNxpNciHal_open NFC HAL OPEN");
+#ifdef NXP_BOOTTIME_UPDATE
   if (ese_update != ESE_UPDATE_COMPLETED) {
     ALOGD("BLOCK NFC HAL OPEN");
     if (p_cback != NULL) {
@@ -887,6 +890,7 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
     }
     return NFCSTATUS_FAILED;
   }
+#endif
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_OPEN) {
     NXPLOG_NCIHAL_D("phNxpNciHal_open already open");
     return NFCSTATUS_SUCCESS;
