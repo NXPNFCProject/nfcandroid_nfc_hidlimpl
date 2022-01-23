@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2018 NXP Semiconductors
+ * Copyright 2017-2018,2021 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,7 +133,7 @@ phOsalAdapt_StopTask(__attribute__((unused)) void* pvTaskHandle) {
   sQueueData_t* psQueueData = nullptr;
   psQueueData = (sQueueData_t*)malloc(sizeof(sQueueData_t));
   memset(psQueueData, 0, sizeof(sQueueData_t));
-  // send dummy packet
+  // send fake packet
   // psQueueData->buffer = 0;
   psQueueData->len = 0;
   return phOsalAdapt_SendData(psQueueData);

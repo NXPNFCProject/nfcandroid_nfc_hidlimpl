@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2018 NXP Semiconductors
+ * Copyright 2017-2018,2021 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ class NCI_Base {
     NCI_STATUS_NFCEE_INTERFACE_ACTIVATION_FAILED = 0xC0,
     NCI_STATUS_NFCEE_TRANSMISSION_ERROR,
     NCI_STATUS_NFCEE_PROTOCOL_ERROR,
-    NCI_STATUS_NFCEE_TIMEOUT_ERRROR,
+    NCI_STATUS_NFCEE_TIMEOUT_ERROR,
     NCI_STATUS_DO_NOT_REPLY = 0xE0,  // Status to not reply on wrong packet
     NCI_STATUS_BOOT_TRIM_CORRUPTED,
     NCI_STATUS_PMU_TXLDO_OVERCURRENT = 0xE3,

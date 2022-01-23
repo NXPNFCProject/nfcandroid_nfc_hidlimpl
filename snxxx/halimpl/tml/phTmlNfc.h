@@ -168,7 +168,7 @@ typedef struct phTmlNfc_Context {
   uintptr_t dwCallbackThreadId; /* Thread ID to which message to be posted */
   uint8_t bEnableCrc;           /*Flag to validate/not CRC for input buffer */
   sem_t rxSemaphore;
-  sem_t txSemaphore;      /* Lock/Aquire txRx Semaphore */
+  sem_t txSemaphore;      /* Lock/Acquire txRx Semaphore */
   sem_t postMsgSemaphore; /* Semaphore to post message atomically by Reader &
                              writer thread */
   pthread_cond_t wait_busy_condition; /*Condition to wait reader thread*/

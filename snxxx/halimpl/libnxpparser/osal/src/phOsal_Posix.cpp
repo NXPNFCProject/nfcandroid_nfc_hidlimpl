@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2018 NXP Semiconductors
+ * Copyright 2017-2018,2021 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@
 #include <string.h>
 #include <sys/time.h>
 #include <unistd.h>
-
 #include <cstdlib>
 #include <ctime>
 
@@ -53,7 +52,7 @@ OSALSTATUS phOsal_ThreadCreate(void** hThread,
     return OSALSTATUS_INVALID_PARAMS;
   }
 
-  /* Check for successfull creation of thread */
+  /* Check for successful creation of thread */
   status = pthread_create((pthread_t*)hThread, NULL, pThreadFunction, pParam);
   if (0 != status) {
     phOsal_LogError((const uint8_t*)"Osal>Unable to create Thread");

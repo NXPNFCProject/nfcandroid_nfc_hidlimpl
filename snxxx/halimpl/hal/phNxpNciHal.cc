@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 NXP
+ * Copyright 2012-2021 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@ ese_update_state_t ese_update = ESE_UPDATE_COMPLETED;
 /* External global variable to get FW version */
 extern uint16_t wFwVer;
 extern uint8_t gRecFWDwnld;
-static uint8_t gRecFwRetryCount;  // variable to hold dummy FW recovery count
+static uint8_t gRecFwRetryCount;  // variable to hold recovery FW retry count
 static uint8_t write_unlocked_status = NFCSTATUS_SUCCESS;
 uint8_t wFwUpdateReq = false;
 uint8_t wRfUpdateReq = false;
@@ -414,7 +414,6 @@ static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset) {
     fw_download_success = 0;
     /*We are expecting NFC to be either in NFC or in the FW Download state*/
     status = phNxpNciHal_fw_download(seq_handler_offset, bIsNfccDlState);
-
     if (status == NFCSTATUS_FW_CHECK_INTEGRITY_FAILED) {
       status = phNxpNciHal_CheckIntegrityRecovery();
     }
@@ -645,8 +644,8 @@ static int phNxpNciHal_MinOpen_Clean(char* nfc_dev_node) {
  *                  NFCC when NFC service is not available.
  *
  *
- * Returns          This function return NFCSTATUS_SUCCES (0) in case of success
- *                  In case of failure returns other failure value.
+ * Returns          This function return NFCSTATUS_SUCCESS (0) in case of
+ *                  success In case of failure returns other failure value.
  *
  ******************************************************************************/
 int phNxpNciHal_MinOpen() {
@@ -871,8 +870,8 @@ int phNxpNciHal_MinOpen() {
  *                  After open is complete, status is informed to libnfc-nci
  *                  through callback function.
  *
- * Returns          This function return NFCSTATUS_SUCCES (0) in case of success
- *                  In case of failure returns other failure value.
+ * Returns          This function return NFCSTATUS_SUCCESS (0) in case of
+ *                  success In case of failure returns other failure value.
  *
  ******************************************************************************/
 int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
@@ -1448,7 +1447,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   int temp_fix = 1;
 #endif
   unsigned long num = 0;
-  /*initialize dummy FW recovery variables*/
+  /*initialize recovery FW variables*/
   gRecFwRetryCount = 0;
   gRecFWDwnld = 0;
   // recovery --start
@@ -2013,7 +2012,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
     free(buffer);
     buffer = NULL;
   }
-  // initialize dummy FW recovery variables
+  // initialize recovery FW variables
   gRecFWDwnld = 0;
   gRecFwRetryCount = 0;
 
@@ -2052,17 +2051,13 @@ NFCSTATUS phNxpNciHal_CheckRFCmdRespStatus() {
 /******************************************************************************
  * Function         phNxpNciHalRFConfigCmdRecSequence
  *
- * Description      This function is called to handle dummy FW recovery sequence
+ * Description      This function is called to handle recovery FW sequence
  *                  Whenever RF settings are failed to apply with invalid param
- *                  response, recovery mechanism includes dummy firmware
- *download
- *                  followed by firmware download and then config settings. The
- *dummy
- *                  firmware changes the major number of the firmware inside
- *NFCC.
- *                  Then actual firmware dowenload will be successful. This can
- *be
- *                  retried maximum three times.
+ *                  response, recovery mechanism includes recovery firmware
+ *                  download followed by firmware download and then config
+ *                  settings. The recovery firmware changes the major number of
+ *                  the firmware inside NFCC.Then actual firmware dowenload will
+ *                  be successful. This can be retried maximum three times.
  *
  * Returns          Always returns NFCSTATUS_SUCCESS
  *
@@ -2693,7 +2688,7 @@ static void phNxpNciHal_power_cycle_complete(NFCSTATUS status) {
  * Function         phNxpNciHal_check_ncicmd_write_window
  *
  * Description      This function is called to check the write synchroniztion
- *                  status if write already aquired then wait for corresponding
+ *                  status if write already acquired then wait for corresponding
                     read to complete.
  *
  * Returns          return 0 on success and -1 on fail.
@@ -2847,7 +2842,7 @@ int phNxpNciHal_determineConfiguredClockSrc() {
     param_clock_src = 0x08;
 
   } else {
-    NXPLOG_NCIHAL_E("Wrong clock source. Dont apply any modification");
+    NXPLOG_NCIHAL_E("Wrong clock source. Don't apply any modification");
   }
   return param_clock_src;
 }
@@ -2874,8 +2869,8 @@ int phNxpNciHal_determineClockDelayRequest(uint8_t nfcc_cfg_clock_src) {
   if ((nxpprofile_ctrl.clkReqDelay < CLK_REQ_DELAY_MIN) ||
       (nxpprofile_ctrl.clkReqDelay > CLK_REQ_DELAY_MAX)) {
     NXPLOG_FWDNLD_E(
-        "default delay to start clock value is wrong in config file, setting "
-        "it as default");
+        "default delay to start clock value is wrong in config "
+        "file, setting it as default");
     nxpprofile_ctrl.clkReqDelay = CLK_REQ_DELAY_DEF;
     return nfcc_clock_set_needed;
   }
@@ -2911,7 +2906,7 @@ int phNxpNciHal_determineClockDelayRequest(uint8_t nfcc_cfg_clock_src) {
 /******************************************************************************
  * Function         phNxpNciHal_nfccClockCfgApply
  *
- * Description      This function is called after successfull download
+ * Description      This function is called after successful download
  *                  to check if clock settings in config file and chip
  *                  is same
  *
@@ -2991,7 +2986,7 @@ NFCSTATUS phNxpNciHal_nfccClockCfgApply(void) {
 /******************************************************************************
  * Function         phNxpNciHal_get_mw_eeprom
  *
- * Description      This function is called to retreive data in mw eeprom area
+ * Description      This function is called to retrieve data in mw eeprom area
  *
  * Returns          NFCSTATUS.
  *
@@ -3574,7 +3569,7 @@ int phNxpNciHal_check_config_parameter() {
     param_clock_src = 0x08;
 
   } else {
-    NXPLOG_NCIHAL_E("Wrong clock source. Dont apply any modification");
+    NXPLOG_NCIHAL_E("Wrong clock source. Don't apply any modification");
   }
   return param_clock_src;
 }
@@ -3684,7 +3679,7 @@ static NFCSTATUS phNxpNciHal_do_swp_session_reset(void) {
  * Function         phNxpNciHal_do_factory_reset
  *
  * Description      This function is called during factory reset to clear/reset
- *                  nfc sub-system persistant data.
+ *                  nfc sub-system persistent data.
  *
  * Returns          void.
  *

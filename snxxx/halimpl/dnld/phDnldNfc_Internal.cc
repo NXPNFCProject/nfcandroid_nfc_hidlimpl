@@ -417,7 +417,7 @@ static void phDnldNfc_ProcessRWSeqState(void* pContext,
               (void*)pDlCtxt);
           break;
         } else {
-          /* Setting TimerExpStatus below to avoid frame processing in reponse
+          /* Setting TimerExpStatus below to avoid frame processing in response
            * state */
           (pDlCtxt->TimerInfo.wTimerExpStatus) = NFCSTATUS_RF_TIMEOUT;
           pDlCtxt->tCurrState = phDnldNfc_StateResponse;

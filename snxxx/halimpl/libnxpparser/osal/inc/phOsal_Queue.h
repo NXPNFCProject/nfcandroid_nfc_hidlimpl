@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2018 NXP Semiconductors
+ * Copyright 2017-2018,2021 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@ extern OSALSTATUS phOsal_QueuePush(void* pvQueueHandle, void* pvQueueObj,
 
 /**
  * \ingroup grp_osal_lib
- * \brief retreive objects from queue
+ * \brief retrieve objects from queue
  *
  * This function retrieves objects from queue
  * \param[in] pvQueueHandle       Queue Handle to be filled
@@ -95,7 +95,7 @@ extern OSALSTATUS phOsal_QueuePull(void* pvQueueHandle, void** ppvQueueObj,
 
 /**
  * \ingroup grp_osal_lib
- * \brief retreive objects from queue
+ * \brief retrieve objects from queue
  *
  * This function retrieves objects from queue
  * \param[in] pvQueueHandle       Queue Handle to be filled

@@ -126,7 +126,7 @@ typedef struct {
   uint8_t _NFCC_ESE_UICC_CONCURRENT_ACCESS_PROTECTION : 1;
   uint8_t _ESE_JCOP_DWNLD_PROTECTION : 1;
   uint8_t _UICC_HANDLE_CLEAR_ALL_PIPES : 1;
-  uint8_t _GP_CONTINOUS_PROCESSING : 1;
+  uint8_t _GP_CONTINUOUS_PROCESSING : 1;
   uint8_t _ESE_DWP_SPI_SYNC_ENABLE : 1;
   uint8_t _ESE_ETSI12_PROP_INIT : 1;
   uint8_t _ESE_WIRED_MODE_PRIO : 1;
@@ -229,7 +229,7 @@ extern tNfc_featureList nfcFL;
       nfcFL.eseFL._ESE_SVDD_SYNC = false;                             \
       nfcFL.eseFL._ESE_JCOP_DWNLD_PROTECTION = true;                  \
       nfcFL.eseFL._UICC_HANDLE_CLEAR_ALL_PIPES = true;                \
-      nfcFL.eseFL._GP_CONTINOUS_PROCESSING = false;                   \
+      nfcFL.eseFL._GP_CONTINUOUS_PROCESSING = false;                  \
       nfcFL.eseFL._ESE_DWP_SPI_SYNC_ENABLE = false;                   \
       nfcFL.eseFL._ESE_ETSI12_PROP_INIT = false;                      \
       nfcFL.eseFL._BLOCK_PROPRIETARY_APDU_GATE = false;               \
@@ -253,7 +253,7 @@ extern tNfc_featureList nfcFL;
       nfcFL.eseFL._ESE_SVDD_SYNC = false;                             \
       nfcFL.eseFL._ESE_JCOP_DWNLD_PROTECTION = true;                  \
       nfcFL.eseFL._UICC_HANDLE_CLEAR_ALL_PIPES = true;                \
-      nfcFL.eseFL._GP_CONTINOUS_PROCESSING = false;                   \
+      nfcFL.eseFL._GP_CONTINUOUS_PROCESSING = false;                  \
       nfcFL.eseFL._ESE_DWP_SPI_SYNC_ENABLE = false;                   \
       nfcFL.eseFL._ESE_ETSI12_PROP_INIT = false;                      \
       nfcFL.eseFL._BLOCK_PROPRIETARY_APDU_GATE = false;               \
@@ -275,7 +275,7 @@ extern tNfc_featureList nfcFL;
       nfcFL.eseFL._ESE_SVDD_SYNC = true;                              \
       nfcFL.eseFL._ESE_JCOP_DWNLD_PROTECTION = true;                  \
       nfcFL.eseFL._UICC_HANDLE_CLEAR_ALL_PIPES = true;                \
-      nfcFL.eseFL._GP_CONTINOUS_PROCESSING = false;                   \
+      nfcFL.eseFL._GP_CONTINUOUS_PROCESSING = false;                  \
       nfcFL.eseFL._ESE_DWP_SPI_SYNC_ENABLE = true;                    \
       nfcFL.eseFL._ESE_ETSI12_PROP_INIT = true;                       \
     }                                                                 \
@@ -351,7 +351,7 @@ extern tNfc_featureList nfcFL;
     nfcFL.eseFL._NFCC_ESE_UICC_CONCURRENT_ACCESS_PROTECTION = false;         \
     nfcFL.eseFL._ESE_JCOP_DWNLD_PROTECTION = false;                          \
     nfcFL.eseFL._UICC_HANDLE_CLEAR_ALL_PIPES = false;                        \
-    nfcFL.eseFL._GP_CONTINOUS_PROCESSING = false;                            \
+    nfcFL.eseFL._GP_CONTINUOUS_PROCESSING = false;                           \
     nfcFL.eseFL._ESE_DWP_SPI_SYNC_ENABLE = false;                            \
     nfcFL.eseFL._ESE_ETSI12_PROP_INIT = false;                               \
     nfcFL.eseFL._ESE_WIRED_MODE_PRIO = false;                                \

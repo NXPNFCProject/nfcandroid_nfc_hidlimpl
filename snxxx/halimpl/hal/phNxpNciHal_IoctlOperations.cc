@@ -162,7 +162,7 @@ std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
                                 "DEFAULT_FELICA_CLT_PWR_STATE",
                                 "HOST_LISTEN_TECH_MASK",
                                 "FORWARD_FUNCTIONALITY_ENABLE",
-                                "DEFUALT_GSMA_PWR_STATE",
+                                "DEFAULT_GSMA_PWR_STATE",
                                 "NXP_DEFAULT_UICC2_SELECT",
                                 "NXP_SMB_TRANSCEIVE_TIMEOUT",
                                 "NXP_SMB_ERROR_RETRY",
@@ -252,48 +252,6 @@ int phNxpNciHal_ioctlIf(long arg, void* p_data) {
   return ret;
 }
 
-/*******************************************************************************
- **
- ** Function         phNxpNciHal_savePersistLog
- **
- ** Description      Save persist log with “reason” at available index.
- **
- ** Parameters       uint8_t reason
- **
- ** Returns          returns the  index of saved reason/Log.
- *******************************************************************************/
-uint8_t phNxpNciHal_savePersistLog(uint8_t reason) {
-  /* This is dummy API */
-  (void)reason;
-  uint8_t index = 1;
-  NXPLOG_NCIHAL_D(" %s returning index %d", __func__, index);
-  return index;
-}
-
-/*******************************************************************************
- **
- ** Function         phNxpNciHal_loadPersistLog
- **
- ** Description      If given index is valid, return a log at the given index.
- **
- ** Parameters       uint8_t index
- **
- ** Returns          If index found, return a log as string else
- **                  return a "" string
- *******************************************************************************/
-string phNxpNciHal_loadPersistLog(uint8_t index) {
-  /* This is dummy API */
-  string reason;
-  switch (index) {
-    case 1:
-      NXPLOG_NCIHAL_D("index found");
-      reason = "Reason";
-      break;
-    default:
-      NXPLOG_NCIHAL_E("index not found");
-  }
-  return reason;
-}
 /*******************************************************************************
  **
  ** Function         phNxpNciHal_getSystemProperty
@@ -778,7 +736,7 @@ int phNxpNciHal_CheckFwRegFlashRequired(uint8_t* fw_update_req,
 /******************************************************************************
  * Function         phNxpNciHal_txNfccClockSetCmd
  *
- * Description      This function is called after successfull download
+ * Description      This function is called after successful download
  *                  to apply the clock setting provided in config file
  *
  * Returns          void.
@@ -892,7 +850,7 @@ void phNxpNciHal_txNfccClockSetCmd(void) {
       break;
     }
     default:
-      NXPLOG_NCIHAL_E("Wrong clock source. Dont apply any modification");
+      NXPLOG_NCIHAL_E("Wrong clock source. Don't apply any modification");
       return;
   }
   phNxpNciClock.isClockSet = FALSE;

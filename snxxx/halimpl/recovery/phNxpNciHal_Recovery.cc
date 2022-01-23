@@ -202,7 +202,7 @@ static NFCSTATUS phNxpNciHal_writeCmd(uint16_t data_len, const uint8_t* p_data,
 /******************************************************************************
  * Function         phNxpNciHal_ReadResponse
  *
- * Description      Helper function to read respone from NFCC
+ * Description      Helper function to read response from NFCC
  *
  * Parameters       len - response buffer len
  *                  rsp_buffer - Ptr to the response buffer
@@ -406,7 +406,7 @@ void phNxpNciHal_RecoverFWTearDown(void) {
   }
 
   if (phnxpNciHal_partialOpen() != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("Failed to Initilize Partial HAL for NFCC recovery \n");
+    NXPLOG_NCIHAL_E("Failed to Initialize Partial HAL for NFCC recovery \n");
     return;
   }
   if (phTmlNfc_IoCtl(phTmlNfc_e_PowerReset) != NFCSTATUS_SUCCESS) {
@@ -459,7 +459,7 @@ void phNxpNciHal_RecoverFWTearDown(void) {
  *
  * Function         phnxpNciHal_partialOpenCleanUp
  *
- * Description      Helper funtion to cleanUp the Memory and flags from
+ * Description      Helper function to cleanUp the Memory and flags from
  *                  phnxpNciHal_partialOpen
  *
  * Parameters       nfc_dev_node - dev node to be freed
@@ -481,7 +481,7 @@ static int phnxpNciHal_partialOpenCleanUp(char* nfc_dev_node) {
  *
  * Function         phnxpNciHal_partialOpen
  *
- * Description      Initilize the Minimal HAL
+ * Description      Initialize the Minimal HAL
  *
  * Parameters       none
  *

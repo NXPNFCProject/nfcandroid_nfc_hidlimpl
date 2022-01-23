@@ -820,7 +820,7 @@ bool CNfcConfig::isModified(tNXP_CONF_FILE aType) {
 
   uint32_t stored_crc32 = 0;
   if (fread(&stored_crc32, sizeof(uint32_t), 1, fd) != 1) {
-    ALOGE("%s File read is not successfull errno = %d", __func__, errno);
+    ALOGE("%s File read is not successful errno = %d", __func__, errno);
   }
 
   fclose(fd);

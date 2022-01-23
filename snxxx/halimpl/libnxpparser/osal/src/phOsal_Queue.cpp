@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020 NXP Semiconductors
+ * Copyright 2017-2021 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,7 +105,7 @@ OSALSTATUS phOsal_QueueCreate(void** pvQueueHandle,
     return OSALSTATUS_FAILED;
   }
 
-  /*Allocate data structure for maintaining the queue- i.e, a linked list*/
+  /*Allocate data structure for maintaining the queue- i.e., a linked list*/
   sListCreatePrms.memHdl = psQCtxt->memHdl;
   sListCreatePrms.MemAllocCb = psQCtxt->MemAllocCb;
   sListCreatePrms.MemFreeCb = psQCtxt->MemFreeCb;
@@ -186,7 +186,7 @@ OSALSTATUS phOsal_QueuePush(void* pvQueueHandle, void* pvQueueObj,
 
   // phOsal_LogDebugU32h((const uint8_t*)"Osal>Waiting for
   // Mutex",(size_t)&psQCtxt->qMutex);
-  /*Either timeout has occured or an empty slot exists*/
+  /*Either timeout has occurred or an empty slot exists*/
   phOsal_MutexLock(psQCtxt->qMutex);
   // phOsal_LogDebugU32h((const uint8_t*)"Osal>Got Mutex
   // Lock",(size_t)&psQCtxt->qMutex);
@@ -232,8 +232,8 @@ OSALSTATUS phOsal_QueuePush(void* pvQueueHandle, void* pvQueueObj,
         break;
       }
       case PHOSAL_QUEUE_OVERWRITE_NEWEST: { /*The newest buffer will be at the
-                                               tail end Overwrite  the data at
-                                               the tail*/
+                                               tail end
+                                               Overwrite  the data at the tail*/
         {                                   /*Delete object at tail*/
           void* pvData = NULL;
           dwStatus = phOsal_ListRemoveNode(psQCtxt->linkListHdl,
@@ -284,7 +284,7 @@ OSALSTATUS phOsal_QueuePull(void* pvQueueHandle, void** pvQueueObj,
     return OSALSTATUS_FAILED;
   }
 
-  /*Either timeout has occured or queue is empty*/
+  /*Either timeout has occurred or queue is empty*/
   phOsal_MutexLock(psQCtxt->qMutex);
 
   /*Check for underflow-Check Pushed Not Pulled objects exist in the queue*/

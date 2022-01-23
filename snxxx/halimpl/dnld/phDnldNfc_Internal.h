@@ -197,7 +197,7 @@ typedef struct phDnldNfc_DlContext {
       FrameInp; /* input value required for current cmd in process */
   phDnldNfc_RspTimerInfo_t
       TimerInfo;              /* Timer context handled into download context*/
-  phDnldNfc_Buff_t tTKey;     /* Defualt Transport Key provided by caller */
+  phDnldNfc_Buff_t tTKey;     /* Default Transport Key provided by caller */
   phDnldNfc_RWInfo_t tRWInfo; /* Read/Write segmented frame info */
   phDnldNfc_Status_t tLastStatus; /* saved status to distinguish signature or
                                      pltform recovery */

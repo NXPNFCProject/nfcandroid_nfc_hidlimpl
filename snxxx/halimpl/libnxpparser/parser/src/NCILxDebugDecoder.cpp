@@ -622,8 +622,8 @@ void NCI_LxDebug_Decoder::printLxDebugInfo(psLxNtfDecoded_t psLxNtfDecoded) {
                            psLxNtfDecoded->psL1NtfDecoded->sInfo.txVpp);
       }
       phOsal_LogInfo((
-          const uint8_t*)"-----------------------------------------------------"
-                         "--------");
+          const uint8_t*)"----------------------------------------"
+                         "---------------------");
     } else if (psLxNtfDecoded->level == SYSTEM_DEBUG_STATE_L2_MESSAGE) {
       uint8_t tlvCount = psLxNtfDecoded->psL2NtfDecoded->tlvCount;
 

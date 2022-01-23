@@ -41,7 +41,7 @@
 extern uint16_t wFwVer;
 extern uint16_t wMwVer;
 extern uint8_t
-    gRecFWDwnld; /* flag  set to true to  indicate dummy FW download */
+    gRecFWDwnld; /* flag  set to true to  indicate recovery FW download */
 extern spTransport gpTransportObj;
 extern phTmlNfc_Context_t* gpphTmlNfc_Context;
 
@@ -49,7 +49,7 @@ extern phTmlNfc_Context_t* gpphTmlNfc_Context;
 typedef struct phLibNfc_IoctlSetRfConfig {
   uint8_t bNumOfParams;   /* Number of Rf configurable parameters to be set */
   uint8_t* pInputBuffer;  /* Buffer containing Rf configurable parameters */
-  uint8_t bSetSysPmuFlag; /* Flag to decide wether to set SystemPmu or no from
+  uint8_t bSetSysPmuFlag; /* Flag to decide whether to set SystemPmu or no from
                              the first byte */
 } phLibNfc_IoctlSetRfConfig;
 
@@ -213,7 +213,7 @@ static NFCSTATUS (*phNxpNciHal_minimal_dwnld_seqhandler[])(void* pContext,
     phNxpNciHal_fw_dnld_write, NULL};
 
 #ifdef NXP_DUMMY_FW_DNLD
-/* Array of pointers to start dummy fw download seq */
+/* Array of pointers to start recovery fw download seq */
 static NFCSTATUS (*phNxpNciHal_dummy_rec_dwnld_seqhandler[])(void* pContext,
                                                              NFCSTATUS status,
                                                              void* pInfo) = {

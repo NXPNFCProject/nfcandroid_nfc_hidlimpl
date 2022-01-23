@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020 NXP
+ * Copyright 2012-2021 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1317,7 +1317,7 @@ NFCSTATUS phNxpNciHal_SwpTest(uint8_t swp_line) {
   }
 
   if (status == NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_D("phNxpNciHal_SwpTest - SUCCESSS\n");
+    NXPLOG_NCIHAL_D("phNxpNciHal_SwpTest - SUCCESS\n");
   } else {
     NXPLOG_NCIHAL_D("phNxpNciHal_SwpTest - FAILED\n");
   }
@@ -1389,7 +1389,7 @@ NFCSTATUS phNxpNciHal_PrbsTestStart(phNxpNfc_PrbsType_t prbs_type,
 clean_and_return:
 
   if (status == NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_D("phNxpNciHal_PrbsTestStart - SUCCESSS\n");
+    NXPLOG_NCIHAL_D("phNxpNciHal_PrbsTestStart - SUCCESS\n");
   } else {
     NXPLOG_NCIHAL_D("phNxpNciHal_PrbsTestStart - FAILED\n");
   }
@@ -1554,7 +1554,7 @@ NFCSTATUS phNxpNciHal_RfFieldTest(uint8_t on) {
   }
 
   if (status == NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_D("phNxpNciHal_RfFieldTest - SUCCESSS\n");
+    NXPLOG_NCIHAL_D("phNxpNciHal_RfFieldTest - SUCCESS\n");
   } else {
     NXPLOG_NCIHAL_D("phNxpNciHal_RfFieldTest - FAILED\n");
   }
@@ -1627,7 +1627,7 @@ NFCSTATUS phNxpNciHal_DownloadPinTest(void) {
   }
 
   if (status == NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_D("phNxpNciHal_DownloadPinTest - SUCCESSS\n");
+    NXPLOG_NCIHAL_D("phNxpNciHal_DownloadPinTest - SUCCESS\n");
   } else {
     NXPLOG_NCIHAL_D("phNxpNciHal_DownloadPinTest - FAILED\n");
   }
@@ -1660,7 +1660,7 @@ NFCSTATUS phNxpNciHal_AntennaSelfTest(phAntenna_St_Resp_t* phAntenna_St_Resp) {
     status = phNxpNciHal_performTest(&(antenna_self_test_data[cnt]));
     if (status == NFCSTATUS_RESPONSE_TIMEOUT || status == NFCSTATUS_FAILED) {
       NXPLOG_NCIHAL_E(
-          "phNxpNciHal_AntennaSelfTest: commnad execution - FAILED\n");
+          "phNxpNciHal_AntennaSelfTest: command execution - FAILED\n");
       break;
     }
   }
@@ -1671,7 +1671,7 @@ NFCSTATUS phNxpNciHal_AntennaSelfTest(phAntenna_St_Resp_t* phAntenna_St_Resp) {
         (gagc_nfcld_status == NFCSTATUS_SUCCESS) &&
         (gagc_differential_status == NFCSTATUS_SUCCESS)) {
       antenna_st_status = NFCSTATUS_SUCCESS;
-      NXPLOG_NCIHAL_D("phNxpNciHal_AntennaSelfTest - SUCESS\n");
+      NXPLOG_NCIHAL_D("phNxpNciHal_AntennaSelfTest - SUCCESS\n");
     } else {
       NXPLOG_NCIHAL_E("phNxpNciHal_AntennaSelfTest - FAILED\n");
     }
