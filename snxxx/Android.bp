@@ -27,7 +27,7 @@ package {
 }
 
 cc_library_shared {
-    name: "nfc_nci_nxp",
+    name: "nfc_nci_nxp_snxxx",
     defaults: ["hidl_defaults"],
     proprietary: true,
 
@@ -86,11 +86,11 @@ cc_library_shared {
         "halimpl/eseclients_extns/inc",
         "halimpl/src/include",
         "halimpl/mifare",
+        "extns/impl/nxpnfc/2.0",
         "halimpl/recovery",
     ],
 
     include_dirs: [
-        "hardware/nxp/nfc/snxxx/extns/impl/nxpnfc/2.0",
         "hardware/nxp/secure_element/snxxx/extns/impl",
         "hardware/nxp/secure_element_extns/inc",
     ],
@@ -114,10 +114,10 @@ cc_library_shared {
 }
 
 cc_binary {
-    name: "android.hardware.nfc@1.2-service",
+    name: "android.hardware.nfc_snxxx@1.2-service",
     defaults: ["hidl_defaults"],
     proprietary: true,
-    init_rc: ["1.2/android.hardware.nfc@1.2-service.rc"],
+    init_rc: ["1.2/android.hardware.nfc_snxxx@1.2-service.rc"],
     relative_install_path: "hw",
     cflags: [
          "-Wall",
@@ -136,7 +136,7 @@ cc_binary {
     ],
 
     shared_libs: [
-        "nfc_nci_nxp",
+        "nfc_nci_nxp_snxxx",
         "libbase",
         "libcutils",
         "libdl",
@@ -165,11 +165,11 @@ cc_binary {
         "halimpl/utils",
         "halimpl/mifare",
         "halimpl/eseclients_extns/inc/",
+        "extns/impl/nxpnfc/2.0",
         "halimpl/recovery",
     ],
 
     include_dirs: [
-        "hardware/nxp/nfc/snxxx/extns/impl/nxpnfc/2.0",
         "hardware/nxp/secure_element/snxxx/extns/impl",
         "hardware/nxp/secure_element_extns/inc",
         "hardware/nxp/secure_element_extns/inc",
