@@ -41,7 +41,7 @@ cc_library_shared {
         "-DNXP_NFC_RECOVERY=TRUE",
         "-DNXP_QTAG=TRUE",
         "-DNXP_FORCE_FW_DOWNLOAD=1",
-        "-DNXP_BOOTTIME_UPDATE=1",
+        "-DNXP_BOOTTIME_UPDATE",
     ],
 
     srcs: [
@@ -127,7 +127,7 @@ cc_binary {
          "-fexceptions",
          "-DNXP_EXTNS=TRUE",
          "-DNXP_NFC_RECOVERY=TRUE",
-         "-DNXP_BOOTTIME_UPDATE=1",
+         "-DNXP_BOOTTIME_UPDATE",
      ],
 
     srcs: [
