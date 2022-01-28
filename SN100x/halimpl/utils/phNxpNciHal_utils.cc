@@ -432,6 +432,9 @@ void phNxpNciHal_releaseall_cb_data(void) {
 *******************************************************************************/
 void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
                               uint16_t len) {
+  if(!nfc_debug_enabled)
+    return; //logging is disabled
+
   uint32_t i;
 #if (NXP_EXTNS == TRUE)
   char* print_buffer = (char* )calloc((len * 3 + 1), sizeof(char));
