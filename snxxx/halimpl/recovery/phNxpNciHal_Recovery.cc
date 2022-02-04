@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021-2022 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -581,7 +581,6 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
  * Returns          void
  *******************************************************************************/
 static void phnxpNciHal_partialClose(void) {
-  NFCSTATUS status = NFCSTATUS_SUCCESS;
   phLibNfc_Message_t msg;
   nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
 
@@ -591,9 +590,9 @@ static void phnxpNciHal_partialClose(void) {
     msg.Size = 0;
     phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &msg);
     /* Abort any pending read and write */
-    status = phTmlNfc_ReadAbort();
-    status = phTmlNfc_WriteAbort();
-    status = phTmlNfc_Shutdown();
+    phTmlNfc_ReadAbort();
+    phTmlNfc_WriteAbort();
+    phTmlNfc_Shutdown();
     if (0 != pthread_join(nxpncihal_ctrl.client_thread, (void**)NULL)) {
       NXPLOG_TML_E("Fail to kill client thread!");
     }
