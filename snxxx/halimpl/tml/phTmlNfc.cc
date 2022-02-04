@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2021 NXP
+ * Copyright 2010-2022 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1052,14 +1052,12 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
 *******************************************************************************/
 void phTmlNfc_DeferredCall(uintptr_t dwThreadId,
                            phLibNfc_Message_t* ptWorkerMsg) {
-  intptr_t bPostStatus;
   UNUSED_PROP(dwThreadId);
   /* Post message on the user thread to invoke the callback function */
   if (-1 == sem_wait(&gpphTmlNfc_Context->postMsgSemaphore)) {
     NXPLOG_TML_E("sem_wait didn't return success \n");
   }
-  bPostStatus =
-      phDal4Nfc_msgsnd(gpphTmlNfc_Context->dwCallbackThreadId, ptWorkerMsg, 0);
+  phDal4Nfc_msgsnd(gpphTmlNfc_Context->dwCallbackThreadId, ptWorkerMsg, 0);
   sem_post(&gpphTmlNfc_Context->postMsgSemaphore);
 }
 
