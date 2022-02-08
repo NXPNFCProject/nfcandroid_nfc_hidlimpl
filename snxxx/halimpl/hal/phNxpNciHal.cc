@@ -770,8 +770,16 @@ int phNxpNciHal_MinOpen() {
     return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
   }
 
+  /* Get the chiptype to know if it is PN557
+   Then don't send the Get version command */
+  unsigned long chipInfo = 0;
+  if (GetNxpNumValue(NAME_NXP_NFC_CHIP, &chipInfo, sizeof(chipInfo))) {
+    NXPLOG_NCIHAL_D("The chip type is %lx", chipInfo);
+  }
+
   if (gsIsFirstHalMinOpen) {
-    phNxpNciHal_CheckAndHandleFwTearDown();
+    /*Skip get version command for pn557*/
+    if (chipInfo != pn557) phNxpNciHal_CheckAndHandleFwTearDown();
   }
 
   uint8_t seq_handler_offset = 0x00;
