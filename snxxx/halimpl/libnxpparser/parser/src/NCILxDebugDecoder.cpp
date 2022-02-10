@@ -566,41 +566,41 @@ void NCI_LxDebug_Decoder::decodeCMAEvent(
 void NCI_LxDebug_Decoder::printLxDebugInfo(psLxNtfDecoded_t psLxNtfDecoded) {
   if (psLxNtfDecoded != nullptr) {
     if (psLxNtfDecoded->level == SYSTEM_DEBUG_STATE_L1_MESSAGE) {
-      phOsal_LogInfo((
+      phOsal_LogDebug((
           const uint8_t*)"---------------------L1 Debug "
                          "Information--------------------");
-      phOsal_LogInfoU32dd((const uint8_t*)"Time Stamp",
+      phOsal_LogDebugU32dd((const uint8_t*)"Time Stamp",
                           psLxNtfDecoded->psL1NtfDecoded->sInfo.timeStampMs,
                           psLxNtfDecoded->psL1NtfDecoded->sInfo.timeStampUs);
-      phOsal_LogInfoString(
+      phOsal_LogDebugString(
           (const uint8_t*)"Trigger Type",
           psLxNtfDecoded->psL1NtfDecoded->sInfo.pCliffStateTriggerType);
-      phOsal_LogInfoString(
+      phOsal_LogDebugString(
           (const uint8_t*)"RF Tech and Mode",
           psLxNtfDecoded->psL1NtfDecoded->sInfo.pCliffStateRFTechNMode);
-      phOsal_LogInfoString((const uint8_t*)"Event Type",
+      phOsal_LogDebugString((const uint8_t*)"Event Type",
                            psLxNtfDecoded->psL1NtfDecoded->sInfo
                                .pCliffStateTriggerTypeDirection);
       if (mRssiDebugMode) {
-        phOsal_LogInfoU32h((const uint8_t*)"Raw RSSI ADC",
+        phOsal_LogDebugU32h((const uint8_t*)"Raw RSSI ADC",
                            psLxNtfDecoded->psL1NtfDecoded->sInfo.rawRSSIADC);
-        phOsal_LogInfoU32h((const uint8_t*)"Raw RSSI AGC",
+        phOsal_LogDebugU32h((const uint8_t*)"Raw RSSI AGC",
                            psLxNtfDecoded->psL1NtfDecoded->sInfo.rawRSSIAGC);
       } else
-        phOsal_LogInfoU32hh(
+        phOsal_LogDebugU32hh(
             (const uint8_t*)"Interpolated RSSI",
             psLxNtfDecoded->psL1NtfDecoded->sInfo.intrpltdRSSI[0],
             psLxNtfDecoded->psL1NtfDecoded->sInfo.intrpltdRSSI[1]);
-      phOsal_LogInfoU32hh((const uint8_t*)"Auto Power Control",
+      phOsal_LogDebugU32hh((const uint8_t*)"Auto Power Control",
                           psLxNtfDecoded->psL1NtfDecoded->sInfo.APC[0],
                           psLxNtfDecoded->psL1NtfDecoded->sInfo.APC[1]);
-      phOsal_LogInfoString((const uint8_t*)"L1 Error EDD",
+      phOsal_LogDebugString((const uint8_t*)"L1 Error EDD",
                            psLxNtfDecoded->psL1NtfDecoded->sInfo.pEddL1Error);
-      phOsal_LogInfoString((const uint8_t*)"L1 RxNak EDD",
+      phOsal_LogDebugString((const uint8_t*)"L1 RxNak EDD",
                            psLxNtfDecoded->psL1NtfDecoded->sInfo.pEddL1RxNak);
-      phOsal_LogInfoString((const uint8_t*)"L1 TxErr EDD",
+      phOsal_LogDebugString((const uint8_t*)"L1 TxErr EDD",
                            psLxNtfDecoded->psL1NtfDecoded->sInfo.pEddL1TxErr);
-      phOsal_LogInfoU32hh(
+      phOsal_LogDebugU32hh(
           (const uint8_t*)"L1 7816-4 Ret Code",
           psLxNtfDecoded->psL1NtfDecoded->sInfo.eddL178164RetCode[0],
           psLxNtfDecoded->psL1NtfDecoded->sInfo.eddL178164RetCode[1]);
@@ -609,25 +609,25 @@ void NCI_LxDebug_Decoder::printLxDebugInfo(psLxNtfDecoded_t psLxNtfDecoded) {
           (!strcmp((const char*)psLxNtfDecoded->psL1NtfDecoded->sInfo
                        .pCliffStateTriggerTypeDirection,
                    (const char*)"CLF_EVT_TX"))) {
-        phOsal_LogInfoU32d(
+        phOsal_LogDebugU32d(
             (const uint8_t*)"Residual Carrier",
             psLxNtfDecoded->psL1NtfDecoded->sInfo.residualCarrier);
-        phOsal_LogInfoU32d((const uint8_t*)"Number Driver",
+        phOsal_LogDebugU32d((const uint8_t*)"Number Driver",
                            psLxNtfDecoded->psL1NtfDecoded->sInfo.numDriver);
         phOsal_LogInfo32f((const uint8_t*)"Vtx AMP",
                           psLxNtfDecoded->psL1NtfDecoded->sInfo.vtxAmp);
         phOsal_LogInfo32f((const uint8_t*)"Vtx LDO",
                           psLxNtfDecoded->psL1NtfDecoded->sInfo.vtxLDO);
-        phOsal_LogInfoU32d((const uint8_t*)"Tx Vpp",
+        phOsal_LogDebugU32d((const uint8_t*)"Tx Vpp",
                            psLxNtfDecoded->psL1NtfDecoded->sInfo.txVpp);
       }
-      phOsal_LogInfo((
+      phOsal_LogDebug((
           const uint8_t*)"----------------------------------------"
                          "---------------------");
     } else if (psLxNtfDecoded->level == SYSTEM_DEBUG_STATE_L2_MESSAGE) {
       uint8_t tlvCount = psLxNtfDecoded->psL2NtfDecoded->tlvCount;
 
-      phOsal_LogInfo((
+      phOsal_LogDebug((
           const uint8_t*)"---------------------L2 Debug "
                          "Information--------------------");
       for (int tlv = 0; tlv < tlvCount; tlv++) {
@@ -689,9 +689,9 @@ void NCI_LxDebug_Decoder::printLxDebugInfo(psLxNtfDecoded_t psLxNtfDecoded) {
             break;
         }
         oss << " }" << std::endl;
-        phOsal_LogInfo((const uint8_t*)oss.str().c_str());
+        phOsal_LogDebug((const uint8_t*)oss.str().c_str());
       }
-      phOsal_LogInfo((
+      phOsal_LogDebug((
           const uint8_t*)"----------------------------------"
                          "---------------------------");
     }
