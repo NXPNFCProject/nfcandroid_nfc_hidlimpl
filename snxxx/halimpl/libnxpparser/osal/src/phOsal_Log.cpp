@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 NXP Semiconductors
+ * Copyright (C) 2017-2019, 2022 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -199,6 +199,20 @@ void phOsal_LogDebug(const uint8_t* pbMsg) {
 
 /**
  * Log Debug Information
+ * This function prints the Debug log specified along with 32bit
+ * value in float appropriate log level for info needs to be enabled from
+ * phOsal_SetLogLevel
+ *
+ * \param[in] pbMsg  defines log message to be printed
+ * \param[in] wValue defines value to be printed
+ *
+ */
+void phOsal_LogDebug32f(const uint8_t* pbMsg, float wValue) {
+  if (geLogLevel >= PHOSAL_LOGLEVEL_DEBUG) ALOGD("%s:%f", pbMsg, wValue);
+}
+
+/**
+ * Log Debug Information
  * This function prints the Debug log message specified along with 32bit value
  * in hex appropriate log level for debug needs to be enabled from
  * phOsal_SetLogLevel
@@ -214,6 +228,23 @@ void phOsal_LogDebugU32h(const uint8_t* pbMsg, uint32_t wValue) {
 /**
  * Log Debug Information
  * This function prints the Debug log message specified along with 32bit value
+ * in hex appropriate log level for debug needs to be enabled from
+ * phOsal_SetLogLevel
+ *
+ * \param[in] pbMsg   defines log message to be printed
+ * \param[in] wValue1 defines value to be printed
+ * \param[in] wValue2 defines value to be printed
+ *
+ */
+void phOsal_LogDebugU32hh(const uint8_t* pbMsg, uint32_t wValue1,
+                         uint32_t wValue2) {
+  if (geLogLevel >= PHOSAL_LOGLEVEL_DEBUG)
+    ALOGD("%s:0x%x 0x%x", pbMsg, wValue1, wValue2);
+}
+
+/**
+ * Log Debug Information
+ * This function prints the Debug log message specified along with 32bit value
  * in decimal appropriate log level for debug needs to be enabled from
  * phOsal_SetLogLevel
  *
@@ -223,6 +254,23 @@ void phOsal_LogDebugU32h(const uint8_t* pbMsg, uint32_t wValue) {
  */
 void phOsal_LogDebugU32d(const uint8_t* pbMsg, uint32_t wValue) {
   if (geLogLevel >= PHOSAL_LOGLEVEL_DEBUG) ALOGD("%s:%d", pbMsg, wValue);
+}
+
+/**
+ * Log Debug Information
+ * This function prints the Debug log message specified along with 32bit
+ * value in decimal appropriate log level for debug needs to be enabled from
+ * phOsal_SetLogLevel
+ *
+ * \param[in] pbMsg   defines log message to be printed
+ * \param[in] wValue1 defines value to be printed
+ * \param[in] wValue2 defines value to be printed
+ *
+ */
+void phOsal_LogDebugU32dd(const uint8_t* pbMsg, uint32_t wValue1,
+                         uint32_t wValue2) {
+  if (geLogLevel >= PHOSAL_LOGLEVEL_DEBUG)
+    ALOGD("%s:%d.%d", pbMsg, wValue1, wValue2);
 }
 
 /**
