@@ -489,22 +489,23 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset,
 
     status = phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadMode);
     if (NFCSTATUS_SUCCESS != status) {
-      nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
+      phTmlNfc_EnableFwDnldMode(false);
       phNxpNciHal_UpdateFwStatus(HAL_NFC_FW_UPDATE_FAILED);
       return NFCSTATUS_FAILED;
     }
   }
 
-  /* Make sure read thread is pending before updating fwdnld_mode_reqd to true*/
+  /* Make sure read thread is pending before updating phTmlNfc_EnableFwDnldMode
+   * to true*/
   NFCSTATUS readStatus = phNxpNciHal_enableTmlRead();
   if (readStatus != PHNFCSTVAL(CID_NFC_TML, NFCSTATUS_BUSY)) {
     NXPLOG_NCIHAL_E("Read Thread is not pending already. status = 0x%x \n",
                     readStatus);
   }
 
-  nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
   if (nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD &&
       (!bIsNfccDlState)) {
+    nxpncihal_ctrl.isCoreRstForFwDnld = TRUE;
     /*NCI_RESET_CMD*/
     static uint8_t cmd_reset_nci_dwnld[] = {0x20, 0x00, 0x01, 0x80};
     status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci_dwnld),
@@ -512,8 +513,8 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset,
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("Core reset FW download command failed \n");
     }
+    nxpncihal_ctrl.isCoreRstForFwDnld = FALSE;
   }
-
   if (NFCSTATUS_SUCCESS == status) {
     phTmlNfc_EnableFwDnldMode(true);
     /* Set the obtained device handle to download module */
@@ -539,7 +540,7 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset,
      * change the state to NFCSTATUS_SUCCESS*/
     write_unlocked_status = NFCSTATUS_SUCCESS;
   } else {
-    nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
+    phTmlNfc_EnableFwDnldMode(false);
     status = NFCSTATUS_FAILED;
   }
   if (NFCSTATUS_SUCCESS == status) {
@@ -1377,7 +1378,7 @@ static void phNxpNciHal_read_complete(void* pContext,
     return;
   }
   /* Read again because read must be pending always except FWDNLD.*/
-  if (TRUE != nxpncihal_ctrl.fwdnld_mode_reqd) {
+  if (!phTmlNfc_IsFwDnldModeEnabled()) {
     status = phTmlNfc_Read(
         nxpncihal_ctrl.p_rsp_data, NCI_MAX_DATA_LEN,
         (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete, NULL);
@@ -3260,7 +3261,6 @@ void phNxpNciHal_CheckAndHandleFwTearDown() {
     }
   }
   phTmlNfc_EnableFwDnldMode(true);
-  nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
 
   /* Set the obtained device handle to download module */
   phDnldNfc_SetHwDevHandle();
@@ -3301,7 +3301,6 @@ NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd) {
     }
   }
   phTmlNfc_EnableFwDnldMode(true);
-  nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
   do {
     status =
         phNxpNciHal_send_ext_cmd(sizeof(get_chip_info_cmd), get_chip_info_cmd);
@@ -3331,7 +3330,6 @@ NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd) {
     }
   } while ((status != NFCSTATUS_SUCCESS) && (retry_cnt < MAX_RETRY_COUNT));
 
-  nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
   phTmlNfc_EnableFwDnldMode(false);
   if (phNxpNciHal_enableTmlRead() != NFCSTATUS_PENDING) {
     NXPLOG_NCIHAL_E("%s read status error status", __FUNCTION__);
@@ -3359,7 +3357,6 @@ uint8_t phNxpNciHal_getSessionInfoInFwDnldMode() {
   uint8_t get_session_info_cmd[] = {0x00, 0x04, 0xF2, 0x00,
                                     0x00, 0x00, 0xF5, 0x33};
   phTmlNfc_EnableFwDnldMode(true);
-  nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
   NFCSTATUS status = phNxpNciHal_send_ext_cmd(sizeof(get_session_info_cmd),
                                               get_session_info_cmd);
   if (status == NFCSTATUS_SUCCESS) {
@@ -3392,7 +3389,6 @@ uint8_t phNxpNciHal_getSessionInfoInFwDnldMode() {
 NFCSTATUS phNxpNciHal_dlResetInFwDnldMode() {
   NFCSTATUS status = NFCSTATUS_FAILED;
   phTmlNfc_EnableFwDnldMode(true);
-  nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
   NXPLOG_NCIHAL_D("Sending DL Reset for NFCC soft reboot");
   phDnldNfc_SetHwDevHandle();
 
@@ -3404,7 +3400,6 @@ NFCSTATUS phNxpNciHal_dlResetInFwDnldMode() {
 
   status = phNxpNciHal_fw_dnld_switch_normal_mode();
 
-  nxpncihal_ctrl.fwdnld_mode_reqd = FALSE;
   phTmlNfc_EnableFwDnldMode(false);
   phTmlNfc_ReadAbort();
   phDnldNfc_ReSetHwDevHandle();

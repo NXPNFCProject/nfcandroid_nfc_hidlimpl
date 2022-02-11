@@ -497,7 +497,7 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
     if (p_ntf[2] == 0x01 && p_ntf[3] == 0x00) {
       NXPLOG_NCIHAL_D("CORE_RESET_RSP NCI2.0");
       if (nxpncihal_ctrl.hal_ext_enabled == TRUE &&
-          nxpncihal_ctrl.fwdnld_mode_reqd != TRUE) {
+          nxpncihal_ctrl.isCoreRstForFwDnld != TRUE) {
         nxpncihal_ctrl.nci_info.wait_for_ntf = TRUE;
       }
     } else if (p_ntf[2] == 0x03 && p_ntf[3] == 0x00) {

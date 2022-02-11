@@ -429,7 +429,6 @@ void phNxpNciHal_RecoverFWTearDown(void) {
   }
 
   phTmlNfc_EnableFwDnldMode(true);
-  nxpncihal_ctrl.fwdnld_mode_reqd = TRUE;
   bool bEnableNormalMode = true;
   if (!phNxpNciHal_determineChipTypeDlMode()) {
     NXPLOG_NCIHAL_E("Not able to determine chiptype");
