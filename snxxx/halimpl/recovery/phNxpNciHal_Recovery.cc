@@ -146,11 +146,11 @@ static NFCSTATUS phNxpNciHal_semWaitTimeout(long timeout) {
   NFCSTATUS status = NFCSTATUS_FAILED;
   int retVal = 0;
   struct timespec ts;
-  clock_gettime(CLOCK_REALTIME, &ts);
+  clock_gettime(CLOCK_MONOTONIC, &ts);
   ts.tv_nsec += timeout;
   ts.tv_sec += ts.tv_nsec / 1000000000;
   ts.tv_nsec %= 1000000000;
-  while ((retVal = sem_timedwait(&nxpncihal_ctrl.ext_cb_data.sem, &ts)) == -1 &&
+  while ((retVal = sem_timedwait_monotonic_np(&nxpncihal_ctrl.ext_cb_data.sem, &ts)) == -1 &&
          errno == EINTR) {
     continue; /* Restart if interrupted by handler */
   }
