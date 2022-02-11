@@ -100,6 +100,12 @@ typedef struct {
 } tNfc_featureList;
 
 extern tNfc_featureList nfcFL;
+#define IS_CHIP_TYPE_GE(cType) (nfcFL.chipType >= cType)
+#define IS_CHIP_TYPE_EQ(cType) (nfcFL.chipType == cType)
+#define IS_CHIP_TYPE_LE(cType) (nfcFL.chipType <= cType)
+#define IS_CHIP_TYPE_L(cType) (nfcFL.chipType < cType)
+#define IS_CHIP_TYPE_NE(cType) (nfcFL.chipType != cType)
+
 #define CONFIGURE_FEATURELIST(chipType)                                        \
   {                                                                            \
     nfcFL.chipType = chipType;                                                 \

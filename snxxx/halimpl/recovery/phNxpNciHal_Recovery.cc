@@ -433,7 +433,7 @@ void phNxpNciHal_RecoverFWTearDown(void) {
   bool bEnableNormalMode = true;
   if (!phNxpNciHal_determineChipTypeDlMode()) {
     NXPLOG_NCIHAL_E("Not able to determine chiptype");
-  } else if (nfcFL.chipType != sn100u) {
+  } else if (IS_CHIP_TYPE_NE(sn100u)) {
     NXPLOG_NCIHAL_E("Recovery not supported for chiptype (%d)", nfcFL.chipType);
   } else if (phNxpNciHal_isSessionClosed()) {
     NXPLOG_NCIHAL_D("FW Dnld session is closed");

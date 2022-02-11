@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 NXP
+ * Copyright 2019-2022 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ uint8_t phNxpNciHal_updateAutonomousPwrState(uint8_t num) {
  *
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_setAutonomousMode() {
-  if (nfcFL.chipType < sn100u) {
+  if (IS_CHIP_TYPE_L(sn100u)) {
     NXPLOG_NCIHAL_D("%s : Not applicable for chipType %d", __func__,
                     nfcFL.chipType);
     return NFCSTATUS_SUCCESS;
@@ -80,7 +80,7 @@ NFCSTATUS phNxpNciHal_setGuardTimer() {
   phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
   NFCSTATUS status = NFCSTATUS_FEATURE_NOT_SUPPORTED;
 
-  if (nfcFL.chipType >= sn100u) {
+  if (IS_CHIP_TYPE_GE(sn100u)) {
     if (config_ext.autonomous_mode != true) config_ext.guard_timer_value = 0x00;
 
     mEEPROM_info.request_mode = SET_EEPROM_DATA;
@@ -265,7 +265,7 @@ NFCSTATUS phNxpNciHal_write_fw_dw_status(uint8_t value) {
  *
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_save_uicc_params() {
-  if (nfcFL.chipType < sn220u) {
+  if (IS_CHIP_TYPE_L(sn220u)) {
     NXPLOG_NCIHAL_E("%s Not supported", __func__);
     return NFCSTATUS_SUCCESS;
   }
@@ -308,7 +308,7 @@ NFCSTATUS phNxpNciHal_save_uicc_params() {
  *
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_restore_uicc_params() {
-  if (nfcFL.chipType < sn220u) {
+  if (IS_CHIP_TYPE_L(sn220u)) {
     NXPLOG_NCIHAL_E("%s Not supported", __func__);
     return NFCSTATUS_SUCCESS;
   }
@@ -359,7 +359,7 @@ NFCSTATUS phNxpNciHal_restore_uicc_params() {
 NFCSTATUS
 phNxpNciHal_get_uicc_hci_params(std::vector<uint8_t>& ptr, uint8_t bufflen,
                                 phNxpNci_EEPROM_request_type_t uiccType) {
-  if (nfcFL.chipType < sn220u) {
+  if (IS_CHIP_TYPE_L(sn220u)) {
     NXPLOG_NCIHAL_E("%s Not supported", __func__);
     return NFCSTATUS_SUCCESS;
   }
@@ -387,7 +387,7 @@ phNxpNciHal_get_uicc_hci_params(std::vector<uint8_t>& ptr, uint8_t bufflen,
 NFCSTATUS
 phNxpNciHal_set_uicc_hci_params(std::vector<uint8_t>& ptr, uint8_t bufflen,
                                 phNxpNci_EEPROM_request_type_t uiccType) {
-  if (nfcFL.chipType < sn220u) {
+  if (IS_CHIP_TYPE_L(sn220u)) {
     NXPLOG_NCIHAL_E("%s Not supported", __func__);
     return NFCSTATUS_SUCCESS;
   }
@@ -442,7 +442,7 @@ NFCSTATUS phNxpNciHal_send_get_cfg(const uint8_t* cmd_get_cfg, long cmd_len) {
  *
  *****************************************************************************/
 NFCSTATUS phNxpNciHal_configure_merge_sak() {
-  if (nfcFL.chipType < sn100u) {
+  if (IS_CHIP_TYPE_L(sn100u)) {
     NXPLOG_NCIHAL_D("%s : Not applicable for chipType %d", __func__,
                     nfcFL.chipType);
     return NFCSTATUS_SUCCESS;
@@ -539,7 +539,7 @@ NFCSTATUS phNxpNciHal_setExtendedFieldMode() {
   phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
   NFCSTATUS status = NFCSTATUS_FEATURE_NOT_SUPPORTED;
 
-  if (nfcFL.chipType >= sn100u &&
+  if (IS_CHIP_TYPE_GE(sn100u) &&
       GetNxpNumValue(NAME_NXP_EXTENDED_FIELD_DETECT_MODE, &extended_field_mode,
                      sizeof(extended_field_mode))) {
     if (extended_field_mode == enable_val ||
