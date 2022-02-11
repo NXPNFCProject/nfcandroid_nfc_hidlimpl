@@ -487,9 +487,9 @@ NFCSTATUS NxpMfcReader::MfcWaitForAck() {
   int sem_timedout = 2, s;
   struct timespec ts;
   isAck = false;
-  clock_gettime(CLOCK_REALTIME, &ts);
+  clock_gettime(CLOCK_MONOTONIC, &ts);
   ts.tv_sec += sem_timedout;
-  while ((s = sem_timedwait(&mNacksem, &ts)) == -1 && errno == EINTR) {
+  while ((s = sem_timedwait_monotonic_np(&mNacksem, &ts)) == -1 && errno == EINTR) {
     continue; /* Restart if interrupted by handler */
   }
   if (s != -1) {
