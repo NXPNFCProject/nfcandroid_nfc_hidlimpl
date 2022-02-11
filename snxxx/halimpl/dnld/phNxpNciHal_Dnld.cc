@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 NXP
+ * Copyright 2012-2022 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -561,20 +561,20 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
       bool isChipTypeMatchedWithHwVersion =
           ((PHDNLDNFC_HWVER_MRA2_1 == bHwVer) ||
            (PHDNLDNFC_HWVER_MRA2_2 == bHwVer) ||
-           ((nfcFL.chipType == pn551) &&
+           (IS_CHIP_TYPE_EQ(pn551) &&
             ((PHDNLDNFC_HWVER_PN551_MRA1_0 == bHwVer))) ||
-           (((nfcFL.chipType == pn553) || (nfcFL.chipType == pn557)) &&
+           ((IS_CHIP_TYPE_EQ(pn553) || IS_CHIP_TYPE_EQ(pn557)) &&
             ((PHDNLDNFC_HWVER_PN553_MRA1_0 == bHwVer ||
               (PHDNLDNFC_HWVER_PN553_MRA1_0_UPDATED & pRespBuff->pBuff[0])))) ||
-           ((nfcFL.chipType == sn100u) &&
+           (IS_CHIP_TYPE_EQ(sn100u) &&
             (PHDNLDNFC_HWVER_VENUS_MRA1_0 & pRespBuff->pBuff[0])) ||
-           ((nfcFL.chipType == sn220u) &&
+           (IS_CHIP_TYPE_EQ(sn220u) &&
             (PHDNLDNFC_HWVER_VULCAN_MRA1_0 & pRespBuff->pBuff[0])));
 
       if (isChipTypeMatchedWithHwVersion) {
         bExpectedLen = PHLIBNFC_IOCTL_DNLD_GETVERLEN_MRA2_1;
         (gphNxpNciHal_fw_IoctlCtx.bChipVer) = bHwVer;
-        if (((nfcFL.chipType == pn553) &&
+        if ((IS_CHIP_TYPE_EQ(pn553) &&
              (PHDNLDNFC_HWVER_PN553_MRA1_0_UPDATED & pRespBuff->pBuff[0]))) {
           (gphNxpNciHal_fw_IoctlCtx.bChipVer) = pRespBuff->pBuff[0];
         } else if ((PHDNLDNFC_HWVER_VENUS_MRA1_0 & pRespBuff->pBuff[0])) {
@@ -612,7 +612,7 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
 
       /* Validate version details to confirm if continue with the next sequence
        * of Operations. */
-      if (nfcFL.chipType >= sn100u) {
+      if (IS_CHIP_TYPE_GE(sn100u)) {
         memcpy(bCurrVer, &(pRespBuff->pBuff[3]), sizeof(bCurrVer));
       } else {
         memcpy(bCurrVer, &(pRespBuff->pBuff[bExpectedLen - 2]),
@@ -773,7 +773,7 @@ static void phNxpNciHal_fw_dnld_get_sessn_state_cb(void* pContext,
         if (PHLIBNFC_FWDNLD_SESSNOPEN == pRespBuff->pBuff[0]) {
           NXPLOG_FWDNLD_E("Prev Fw Upgrade Session still Open..");
           (gphNxpNciHal_fw_IoctlCtx.bPrevSessnOpen) = true;
-          if (nfcFL.chipType == sn100u)
+          if (IS_CHIP_TYPE_EQ(sn100u))
             gphNxpNciHal_fw_IoctlCtx.bVenReset = true;
           if ((gphNxpNciHal_fw_IoctlCtx.bDnldInitiated) == true) {
             NXPLOG_FWDNLD_D(
@@ -924,7 +924,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_log_read(void* pContext, NFCSTATUS status,
         ((gphNxpNciHal_fw_IoctlCtx.bPrevSessnOpen) == false)) ||
        ((((gphNxpNciHal_fw_IoctlCtx.bPrevSessnOpen) == true)) &&
         ((gphNxpNciHal_fw_IoctlCtx.bRetryDnld) == true))) ||
-      (nfcFL.chipType == sn100u) || (nfcFL.chipType == sn220u))
+      IS_CHIP_TYPE_EQ(sn100u) || IS_CHIP_TYPE_EQ(sn220u))
 
   {
     return NFCSTATUS_SUCCESS;
@@ -1117,7 +1117,7 @@ static void phNxpNciHal_fw_dnld_chk_integrity_cb(void* pContext,
     NXPLOG_FWDNLD_D(
         "phNxpNciHal_fw_dnld_chk_integrity_cb - Request Successful");
     pRespBuff = (pphDnldNfc_Buff_t)pInfo;
-    if ((nfcFL.chipType >= sn100u) && (NULL != (pRespBuff->pBuff))) {
+    if (IS_CHIP_TYPE_GE(sn100u) && (NULL != (pRespBuff->pBuff))) {
       NXPLOG_FWDNLD_D(
           "phNxpNciHal_fw_dnld_chk_integrity_cb - Valid Resp Buff!!...\n");
       wStatus = phLibNfc_VerifySNxxxU_CrcStatus(&pRespBuff->pBuff[0]);
@@ -1491,7 +1491,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_log(void* pContext, NFCSTATUS status,
   UNUSED_PROP(status);
   UNUSED_PROP(pContext);
 
-  if (nfcFL.chipType >= sn100u) {
+  if (IS_CHIP_TYPE_GE(sn100u)) {
     return wStatus;
   }
   if ((((gphNxpNciHal_fw_IoctlCtx.bSkipSeq) == true) ||
@@ -1906,7 +1906,7 @@ static NFCSTATUS phLibNfc_VerifySNxxxU_CrcStatus(uint8_t* bCrcStatus) {
   /*acceptable CRC values defined in little indian format
    * Actual CRC values are 0FC03FFF         */
   uint32_t acceptable_crc_values = 0xFF3FC00F;
-  if (nfcFL.chipType >= sn220u) {
+  if (IS_CHIP_TYPE_GE(sn220u)) {
     /* Accepted CRC value according to SN220 integrity bit mapping */
     acceptable_crc_values = 0xFBFFC00F;
   }
