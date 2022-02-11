@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2021 NXP
+ * Copyright 2010-2022 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -179,7 +179,7 @@ typedef struct phNxpNciHal_Control {
   uint8_t read_retry_cnt;
   phNxpNciInfo_t nci_info;
   uint8_t hal_boot_mode;
-  bool_t fwdnld_mode_reqd;
+  bool_t isCoreRstForFwDnld;
   /* to store and restore gpio values */
   phNxpNciGpioInfo_t phNxpNciGpioInfo;
   tNFC_chipType chipType;
