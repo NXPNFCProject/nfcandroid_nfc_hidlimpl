@@ -160,7 +160,8 @@ static NFCSTATUS phNxpNciHalRFConfigCmdRecSequence();
 static NFCSTATUS phNxpNciHal_CheckRFCmdRespStatus();
 static void phNxpNciHal_UpdateFwStatus(HalNfcFwUpdateStatus fwStatus);
 static NFCSTATUS phNxpNciHal_resetDefaultSettings(uint8_t fw_update_req, bool keep_config);
-static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset = 0);
+static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset = 0,
+                                               bool bIsNfccDlState = false);
 static int phNxpNciHal_MinOpen_Clean (char *nfc_dev_node);
 static void phNxpNciHal_CheckAndHandleFwTearDown(void);
 static NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd = false);
@@ -378,11 +379,14 @@ static NFCSTATUS phNxpNciHal_CheckIntegrityRecovery() {
  * Parameters      Offset by which the FW dnld Seq handler shall be triggered.
  *                 e.g. if we want to send only the Check Integrity command,
  *                 then the offset shall be 7.
+ *                 bIsNfccDlState : Indicates if current FW State is FW
+ *                 Download/NCI.
  *
  * Returns         SUCCESS if FW download is successful else FAIL.
  *
  ******************************************************************************/
-static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset) {
+static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset,
+                                               bool bIsNfccDlState) {
   NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   /*Get FW version from device*/
@@ -397,7 +401,6 @@ static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset) {
 
   NXPLOG_NCIHAL_D("FW version for FW file = 0x%x", wFwVer);
   NXPLOG_NCIHAL_D("FW version from device = 0x%x", wFwVerRsp);
-  bool bIsNfccDlState = false;
   if (wFwVerRsp == 0) {
       status = phNxpNciHal_getChipInfoInFwDnldMode(true);
       if (status != NFCSTATUS_SUCCESS) {
@@ -774,6 +777,7 @@ int phNxpNciHal_MinOpen (){
   uint8_t fw_update_req = 1;
   uint8_t rf_update_req;
   bool bVenResetRequired = false;
+  bool bIsNfccDlState = false;
   phNxpNciHal_ext_init();
 
   phTmlNfc_IoCtl(phTmlNfc_e_EnableVen);
@@ -812,7 +816,8 @@ int phNxpNciHal_MinOpen (){
       }
     }
   } else if (bVenResetRequired) {
-    phNxpNciHal_getChipInfoInFwDnldMode(true);
+    if (NFCSTATUS_SUCCESS == phNxpNciHal_getChipInfoInFwDnldMode(true))
+      bIsNfccDlState = true;
   }
 
   if (gsIsFirstHalMinOpen && gsIsFwRecoveryRequired) {
@@ -823,7 +828,8 @@ int phNxpNciHal_MinOpen (){
   do {
     if (fw_update_req && !fw_download_success) {
       gsIsFwRecoveryRequired = false;
-      status = phNxpNciHal_force_fw_download(seq_handler_offset);
+      status =
+          phNxpNciHal_force_fw_download(seq_handler_offset, bIsNfccDlState);
       if (status == NFCSTATUS_CMD_ABORTED) {
         return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
       } else if (fw_download_success) {
