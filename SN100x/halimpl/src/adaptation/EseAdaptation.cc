@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  *
- *  Copyright (C) 2015-2020, 2021 NXP
+ *  Copyright 2015-2022 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -138,10 +138,9 @@ void EseAdaptation::signal() { mCondVar.signal(); }
 ** Returns:     none
 **
 *******************************************************************************/
-uint32_t EseAdaptation::Thread(uint32_t arg) {
+uint32_t EseAdaptation::Thread() {
   const char* func = "EseAdaptation::Thread";
   ALOGD_IF(nfc_debug_enabled, "%s: enter", func);
-  arg = 0;
   { NfcHalThreadCondVar CondVar; }
 
   EseAdaptation::GetInstance().signal();
