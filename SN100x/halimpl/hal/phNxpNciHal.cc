@@ -189,8 +189,8 @@ static void phNxpNciHal_initialize_debug_enabled_flag() {
   if (len > 0) {
         // let Android property override .conf variable
     unsigned debug_enabled = 0;
-    sscanf(valueStr, "%u", &debug_enabled);
-    nfc_debug_enabled = (debug_enabled == 0) ? false : true;
+    int ret = sscanf(valueStr, "%u", &debug_enabled);
+    if (ret) nfc_debug_enabled = (debug_enabled == 0) ? false : true;
   }
   NXPLOG_NCIHAL_D("nfc_debug_enabled : %d",nfc_debug_enabled);
 
@@ -1875,7 +1875,8 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len, uint8_t* p_c
 
           char tmpbuffer[10] = {0};
           snprintf((char*)tmpbuffer, 10, "%04x", timeout);
-          sscanf((char*)tmpbuffer, "%x", &timeoutHx);
+          int ret = sscanf((char*)tmpbuffer, "%x", &timeoutHx);
+          if (!ret) timeoutHx = 0x0000;
 
           swp_switch_timeout_cmd[7] = (timeoutHx & 0xFF);
           swp_switch_timeout_cmd[8] = ((timeoutHx & 0xFF00) >> 8);
