@@ -448,10 +448,10 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
           snprintf(&print_buffer[i * 2], 3, "%02X", p_data[i]);
       }
       if (0 == memcmp(pString, "SEND", 0x04)) {
-          NXPLOG_NCIX_D("len = %3d > %s", len, print_buffer);
+          NXPLOG_NCIX_I("len = %3d > %s", len, print_buffer);
       }
       else if (0 == memcmp(pString, "RECV", 0x04)) {
-          NXPLOG_NCIR_D("len = %3d > %s", len, print_buffer);
+          NXPLOG_NCIR_I("len = %3d > %s", len, print_buffer);
       }
       else if (0 ==  memcmp(pString, "DEBUG", 0x05)) {
           NXPLOG_NCIHAL_D(" Debug Info > len = %3d > %s", len, print_buffer);
