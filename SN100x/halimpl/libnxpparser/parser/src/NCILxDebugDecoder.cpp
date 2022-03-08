@@ -1171,6 +1171,8 @@ void sL2RxEvent_t::toString(std::ostringstream &oss) {
   // Get pointer to container of this sL2RxEvent object
   psL2DecodedInfo_t decodedInfo = (psL2DecodedInfo_t)(
       (char *)this - ((size_t) & ((psL2DecodedInfo_t)0)->u.sL2RxEvent));
+  std::ios::fmtflags flgs(oss.flags());
+
   oss << ", RSSI = 0x";
   for (size_t i = 0; i < NUM_RSSI_BYTES; i++) {
     oss << std::setfill('0') << std::setw(2) << std::uppercase << std::hex
@@ -1184,6 +1186,7 @@ void sL2RxEvent_t::toString(std::ostringstream &oss) {
     oss << ", Error Info = 0x" << std::setfill('0') << std::setw(2)
         << std::uppercase << std::hex << (int)this->extraData;
   }
+  oss.flags(flgs);
 }
 
 /*******************************************************************************
@@ -1199,6 +1202,8 @@ void sL2TxEvent_t::toString(std::ostringstream &oss) {
   // Get pointer to container of this sL2TxEvent object
   psL2DecodedInfo_t decodedInfo = (psL2DecodedInfo_t)(
       (char *)this - ((size_t) & ((psL2DecodedInfo_t)0)->u.sL2TxEvent));
+  std::ios::fmtflags flgs(oss.flags());
+
   oss << ", DLMA = 0x";
   for (size_t i = 0; i < NUM_DLMA_BYTES; i++) {
     oss << std::setfill('0') << std::setw(2) << std::uppercase << std::hex
@@ -1212,6 +1217,7 @@ void sL2TxEvent_t::toString(std::ostringstream &oss) {
     oss << ", Error Info = 0x" << std::setfill('0') << std::setw(2)
         << std::uppercase << std::hex << (int)this->extraData;
   }
+  oss.flags(flgs);
 }
 
 /*******************************************************************************
@@ -1227,6 +1233,8 @@ void sL2FelicaCmdEvent_t::toString(std::ostringstream &oss) {
   // Get pointer to container of this sL2FelicaCmdEvent object
   psL2DecodedInfo_t decodedInfo = (psL2DecodedInfo_t)(
       (char *)this - ((size_t) & ((psL2DecodedInfo_t)0)->u.sL2FelicaCmdEvent));
+  std::ios::fmtflags flgs(oss.flags());
+
   oss << ", RSSI = 0x";
   for (size_t i = 0; i < NUM_RSSI_BYTES; i++) {
     oss << std::setfill('0') << std::setw(2) << std::uppercase << std::hex
@@ -1238,6 +1246,7 @@ void sL2FelicaCmdEvent_t::toString(std::ostringstream &oss) {
     oss << ", Extra Info = 0x" << std::setfill('0') << std::setw(2)
         << std::uppercase << std::hex << (int)this->extraData;
   }
+  oss.flags(flgs);
 }
 
 /*******************************************************************************
@@ -1250,11 +1259,13 @@ void sL2FelicaCmdEvent_t::toString(std::ostringstream &oss) {
  **
  ******************************************************************************/
 void sL2FelicaSysCodeEvent_t::toString(std::ostringstream &oss) {
+  std::ios::fmtflags flgs(oss.flags());
   oss << ", System Code = 0x";
   for (size_t i = 0; i < NUM_SYSCODE_BYTES; i++) {
     oss << std::setfill('0') << std::setw(2) << std::uppercase << std::hex
         << (int)this->felicaCmd[i];
   }
+  oss.flags(flgs);
 }
 
 /*******************************************************************************
@@ -1270,6 +1281,8 @@ void sL2FelicaRspEvent_t::toString(std::ostringstream &oss) {
   // Get pointer to container of this sL2FelicaRspEvent object
   psL2DecodedInfo_t decodedInfo = (psL2DecodedInfo_t)(
       (char *)this - ((size_t) & ((psL2DecodedInfo_t)0)->u.sL2FelicaRspEvent));
+  std::ios::fmtflags flgs(oss.flags());
+
   oss << ", DLMA = 0x";
   for (size_t i = 0; i < NUM_DLMA_BYTES; i++) {
     oss << std::setfill('0') << std::setw(2) << std::uppercase << std::hex
@@ -1287,6 +1300,7 @@ void sL2FelicaRspEvent_t::toString(std::ostringstream &oss) {
     oss << ", Extra data = 0x" << std::setfill('0') << std::setw(2)
         << std::uppercase << std::hex << (int)this->extraData;
   }
+  oss.flags(flgs);
 }
 
 /*******************************************************************************
@@ -1302,12 +1316,15 @@ void sL2FelicaMiscEvent_t::toString(std::ostringstream &oss) {
   // Get pointer to container of this sL2FelicaMiscEvent object
   psL2DecodedInfo_t decodedInfo = (psL2DecodedInfo_t)(
       (char *)this - ((size_t) & ((psL2DecodedInfo_t)0)->u.sL2FelicaMiscEvent));
+  std::ios::fmtflags flgs(oss.flags());
+
   oss << ", Event trigger = 0x" << std::setfill('0') << std::setw(2)
       << std::uppercase << std::hex << (int)this->trigger;
   if (decodedInfo->len == L2_EVT_FELICA_MISC_TAG_ID_EXTRA_DBG_LEN) {
     oss << ", Error = 0x" << std::setfill('0') << std::setw(2) << std::uppercase
         << std::hex << (int)this->extraData;
   }
+  oss.flags(flgs);
 }
 
 /*******************************************************************************
@@ -1323,6 +1340,8 @@ void sL2CmaEvent_t::toString(std::ostringstream &oss) {
   // Get pointer to container of this sL2CmaEvent object
   psL2DecodedInfo_t decodedInfo = (psL2DecodedInfo_t)(
       (char *)this - ((size_t) & ((psL2DecodedInfo_t)0)->u.sL2CmaEvent));
+  std::ios::fmtflags flgs(oss.flags());
+
   oss << ", Event trigger = 0x" << std::setfill('0') << std::setw(2)
       << std::uppercase << std::hex << (int)this->trigger;
   if (decodedInfo->len > L2_EVT_CMA_TAG_ID_MIN_LEN) {
@@ -1332,4 +1351,5 @@ void sL2CmaEvent_t::toString(std::ostringstream &oss) {
           << (int)this->extraData[i];
     }
   }
+  oss.flags(flgs);
 }
