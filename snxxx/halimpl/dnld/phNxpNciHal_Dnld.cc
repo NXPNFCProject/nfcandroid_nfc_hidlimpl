@@ -568,7 +568,7 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
               (PHDNLDNFC_HWVER_PN553_MRA1_0_UPDATED & pRespBuff->pBuff[0])))) ||
            (IS_CHIP_TYPE_EQ(sn100u) &&
             (PHDNLDNFC_HWVER_VENUS_MRA1_0 & pRespBuff->pBuff[0])) ||
-           (IS_CHIP_TYPE_EQ(sn220u) &&
+           ((IS_CHIP_TYPE_EQ(sn220u) || IS_CHIP_TYPE_EQ(pn560)) &&
             (PHDNLDNFC_HWVER_VULCAN_MRA1_0 & pRespBuff->pBuff[0])));
 
       if (isChipTypeMatchedWithHwVersion) {
@@ -924,7 +924,8 @@ static NFCSTATUS phNxpNciHal_fw_dnld_log_read(void* pContext, NFCSTATUS status,
         ((gphNxpNciHal_fw_IoctlCtx.bPrevSessnOpen) == false)) ||
        ((((gphNxpNciHal_fw_IoctlCtx.bPrevSessnOpen) == true)) &&
         ((gphNxpNciHal_fw_IoctlCtx.bRetryDnld) == true))) ||
-      IS_CHIP_TYPE_EQ(sn100u) || IS_CHIP_TYPE_EQ(sn220u))
+      IS_CHIP_TYPE_EQ(sn100u) || IS_CHIP_TYPE_EQ(sn220u) ||
+      IS_CHIP_TYPE_EQ(pn560))
 
   {
     return NFCSTATUS_SUCCESS;
