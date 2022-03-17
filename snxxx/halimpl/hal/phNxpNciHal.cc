@@ -968,7 +968,8 @@ int phNxpNciHal_fw_mw_ver_check() {
   } else if (IS_CHIP_TYPE_EQ(sn100u) && (rom_version == SN1XX_ROM_VERSION) &&
              (fw_maj_ver == SN1XX_FW_MAJOR_VERSION)) {
     status = NFCSTATUS_SUCCESS;
-  } else if (IS_CHIP_TYPE_EQ(sn220u) && (rom_version == SN2XX_ROM_VERSION) &&
+  } else if ((IS_CHIP_TYPE_EQ(sn220u) || IS_CHIP_TYPE_EQ(pn560)) &&
+             (rom_version == SN2XX_ROM_VERSION) &&
              (fw_maj_ver == SN2XX_FW_MAJOR_VERSION)) {
     status = NFCSTATUS_SUCCESS;
   }
