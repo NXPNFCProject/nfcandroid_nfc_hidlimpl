@@ -74,7 +74,8 @@ typedef enum {
   pn557,
   pn81T,
   sn100u,
-  sn220u
+  sn220u,
+  pn560
 } tNFC_chipType;
 
 typedef struct {
@@ -174,40 +175,49 @@ extern tNfc_featureList nfcFL;
     }                                                                          \
   }
 
-#define CONFIGURE_FEATURELIST_NFCC(chipType)                                   \
-  {                                                                            \
-    nfcFL._PHDNLDNFC_USERDATA_EEPROM_OFFSET = 0x023CU;                         \
-    nfcFL._PHDNLDNFC_USERDATA_EEPROM_LEN = 0x0C80U;                            \
-    nfcFL._FW_MOBILE_MAJOR_NUMBER = FW_MOBILE_MAJOR_NUMBER_PN48AD;             \
-    nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_VEN_RESET;                 \
-    switch (chipType) {                                                        \
-    case pn557:                                                                \
-      nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;                    \
-      STRCPY_FW("libpn557_fw")                                                 \
-      STRCPY_FW_BIN("pn557")                                                   \
-      break;                                                                   \
-    case sn100u:                                                               \
-      nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_NCI_CMD;                 \
-      nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;                    \
-      nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = false;                               \
-      nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                             \
-      nfcFL._FW_MOBILE_MAJOR_NUMBER = FW_MOBILE_MAJOR_NUMBER_SN100U;           \
-      STRCPY_FW("libsn100u_fw")                                                \
-      STRCPY_FW_BIN("sn100u")                                                  \
-      break;                                                                   \
-    case sn220u:                                                               \
-      nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_NCI_CMD;                 \
-      nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;                    \
-      nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = false;                               \
-      nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                             \
-      nfcFL._FW_MOBILE_MAJOR_NUMBER = FW_MOBILE_MAJOR_NUMBER_SN220U;           \
-      STRCPY_FW("libsn220u_fw")                                                \
-      STRCPY_FW_BIN("sn220u")                                                  \
-      break;                                                                   \
-    default:                                                                   \
-      nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                             \
-      break;                                                                   \
-    }                                                                          \
+#define CONFIGURE_FEATURELIST_NFCC(chipType)                           \
+  {                                                                    \
+    nfcFL._PHDNLDNFC_USERDATA_EEPROM_OFFSET = 0x023CU;                 \
+    nfcFL._PHDNLDNFC_USERDATA_EEPROM_LEN = 0x0C80U;                    \
+    nfcFL._FW_MOBILE_MAJOR_NUMBER = FW_MOBILE_MAJOR_NUMBER_PN48AD;     \
+    nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_VEN_RESET;         \
+    switch (chipType) {                                                \
+      case pn557:                                                      \
+        nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;          \
+        STRCPY_FW("libpn557_fw")                                       \
+        STRCPY_FW_BIN("pn557")                                         \
+        break;                                                         \
+      case sn100u:                                                     \
+        nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_NCI_CMD;       \
+        nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;          \
+        nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = false;                     \
+        nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                   \
+        nfcFL._FW_MOBILE_MAJOR_NUMBER = FW_MOBILE_MAJOR_NUMBER_SN100U; \
+        STRCPY_FW("libsn100u_fw")                                      \
+        STRCPY_FW_BIN("sn100u")                                        \
+        break;                                                         \
+      case sn220u:                                                     \
+        nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_NCI_CMD;       \
+        nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;          \
+        nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = false;                     \
+        nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                   \
+        nfcFL._FW_MOBILE_MAJOR_NUMBER = FW_MOBILE_MAJOR_NUMBER_SN220U; \
+        STRCPY_FW("libsn220u_fw")                                      \
+        STRCPY_FW_BIN("sn220u")                                        \
+        break;                                                         \
+      case pn560:                                                      \
+        nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_NCI_CMD;       \
+        nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;          \
+        nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = false;                     \
+        nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                   \
+        nfcFL._FW_MOBILE_MAJOR_NUMBER = FW_MOBILE_MAJOR_NUMBER_SN220U; \
+        STRCPY_FW("libpn560_fw")                                       \
+        STRCPY_FW_BIN("pn560")                                         \
+        break;                                                         \
+      default:                                                         \
+        nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                   \
+        break;                                                         \
+    }                                                                  \
   }
 
 #define STRCPY_FW_BIN(str) {                                                   \
