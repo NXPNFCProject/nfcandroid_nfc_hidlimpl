@@ -29,6 +29,7 @@
 #define NXP_EN_SN100U 1
 #define NXP_EN_SN220U 1
 #define NXP_EN_PN557 1
+#define NXP_EN_PN560 1
 #define NFC_NXP_MW_ANDROID_VER (13U)  /* Android version used by NFC MW */
 #define NFC_NXP_MW_VERSION_MAJ (0x04) /* MW Major Version */
 #define NFC_NXP_MW_VERSION_MIN (0x00) /* MW Minor Version */
@@ -50,9 +51,10 @@ static void printNfcMwVersion() {
   uint32_t validation = (NXP_EN_SN100U << 13);
   validation |= (NXP_EN_SN110U << 14);
   validation |= (NXP_EN_SN220U << 15);
+  validation |= (NXP_EN_PN560 << 16);
   validation |= (NXP_EN_PN557 << 11);
 
-  ALOGE("MW-HAL Version: NFC_AR_%02X_%04X_%02d.%02x.%02x",
+  ALOGE("MW-HAL Version: NFC_AR_%02X_%05X_%02d.%02x.%02x",
         NFC_NXP_MW_CUSTOMER_ID, validation, NFC_NXP_MW_ANDROID_VER,
         NFC_NXP_MW_VERSION_MAJ, NFC_NXP_MW_VERSION_MIN);
 }
