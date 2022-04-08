@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2015-2018,2020-2021 NXP
+ *  Copyright 2015-2018,2020-2022 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ tNFC_chipType capability::processChipType(uint8_t* msg, uint16_t msg_len) {
     } else if (msg[0] == 0x00) {
       if (msg[offsetFwRomCodeVersion] == 0x01 &&
           msg[offsetFwMajorVersion] == 0x01) {
-        if (msg[msg_len - 4] == 0xCA) {
+        if (msg[offsetDlRspChipType] == 0xCA) {
           chipType = pn560;
         } else {
           chipType = sn220u;
