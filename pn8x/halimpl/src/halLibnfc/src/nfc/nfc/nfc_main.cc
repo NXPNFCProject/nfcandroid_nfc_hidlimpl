@@ -83,7 +83,9 @@ using android::base::StringPrintf;
 using android::hardware::nfc::V1_1::NfcEvent;
 
 extern bool nfc_debug_enabled;
+#if (NXP_EXTNS == TRUE)
 extern std::string nfc_storage_path;
+#endif
 /****************************************************************************
 ** Declarations
 ****************************************************************************/
@@ -122,7 +124,7 @@ static const tNCI_DISCOVER_MAPS nfc_interface_mapping[NFC_NUM_INTERFACE_MAP] = {
 
 #endif
 };
-
+#if (NXP_EXTNS == TRUE)
 static const tNCI_DISCOVER_MAPS
     nfc_interface_mapping_stat[NFC_NUM_INTERFACE_MAP_STAT] = {
         /* Protocols that use Frame Interface do not need to be included in the
@@ -136,6 +138,7 @@ static const tNCI_DISCOVER_MAPS
          NCI_INTERFACE_NFC_DEP}
 #endif
 };
+#endif
 
 /*******************************************************************************
 **

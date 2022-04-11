@@ -8,5 +8,5 @@ package {
 }
 hidl_package_root {
     name: "vendor.nxp.nxpnfc",
-    path: "hardware/nxp/nfc/extns/intf/nxpnfc",
+    path: "hardware/nxp/nfc/pn8x/extns/intf/nxpnfc",
 }
