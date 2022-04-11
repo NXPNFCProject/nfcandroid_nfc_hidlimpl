@@ -1341,20 +1341,22 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
   }
 
   uint8_t get_cfg_eeprom[6] = {
-      0x20,    0x03,  // get_cfg header
-      0x03,           // len of following value
-      0x01,           // Num Parameters
-      addr[0],        // First byte of Address
-      addr[1]         // Second byte of Address
+      0x20,              // get_cfg header
+      0x03,              // get_cfg header
+      0x03,              // len of following value
+      0x01,              // Num Parameters
+      (uint8_t)addr[0],  // First byte of Address
+      (uint8_t)addr[1]   // Second byte of Address
   };
 
   uint8_t set_cfg_cmd_hdr[7] = {
-      0x20,    0x02,  // set_cfg header
-      len,            // len of following value
-      0x01,           // Num Param
-      addr[0],        // First byte of Address
-      addr[1],        // Second byte of Address
-      fieldLen        // Data len
+      0x20,              // set_cfg header
+      0x02,              // set_cfg header
+      len,               // len of following value
+      0x01,              // Num Param
+      (uint8_t)addr[0],  // First byte of Address
+      (uint8_t)addr[1],  // Second byte of Address
+      fieldLen           // Data len
   };
 
   set_cfg_cmd_len = sizeof(set_cfg_cmd_hdr) + fieldLen;
