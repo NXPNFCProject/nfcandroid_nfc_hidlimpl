@@ -195,8 +195,8 @@ static void phNxpNciHal_initialize_debug_enabled_flag() {
   if (len > 0) {
         // let Android property override .conf variable
     unsigned debug_enabled = 0;
-    sscanf(valueStr, "%u", &debug_enabled);
-    nfc_debug_enabled = (debug_enabled == 0) ? false : true;
+    int ret = sscanf(valueStr, "%u", &debug_enabled);
+    if (ret) nfc_debug_enabled = (debug_enabled == 0) ? false : true;
   }
   NXPLOG_NCIHAL_D("nfc_debug_enabled : %d",nfc_debug_enabled);
 
