@@ -3654,7 +3654,6 @@ static void phNxpNciHal_power_cycle_complete(NFCSTATUS status) {
 ******************************************************************************/
 
 int phNxpNciHal_check_ncicmd_write_window(uint16_t cmd_len, uint8_t* p_cmd) {
-  UNUSED(cmd_len);
   NFCSTATUS status = NFCSTATUS_FAILED;
   int sem_timedout = 2, s;
   struct timespec ts;
