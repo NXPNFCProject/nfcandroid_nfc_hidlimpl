@@ -3664,9 +3664,9 @@ int phNxpNciHal_check_ncicmd_write_window(uint16_t cmd_len, uint8_t* p_cmd) {
   }
 
   if ((p_cmd[0] & 0xF0) == 0x20) {
-    clock_gettime(CLOCK_REALTIME, &ts);
+    clock_gettime(CLOCK_MONOTONIC, &ts);
     ts.tv_sec += sem_timedout;
-    while ((s = sem_timedwait(&nxpncihal_ctrl.syncSpiNfc, &ts)) == -1 &&
+    while ((s = sem_timedwait_monotonic_np(&nxpncihal_ctrl.syncSpiNfc, &ts)) == -1 &&
            errno == EINTR)
       continue; /* Restart if interrupted by handler */
 
