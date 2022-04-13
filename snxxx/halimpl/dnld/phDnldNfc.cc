@@ -570,6 +570,10 @@ NFCSTATUS phDnldNfc_Force(pphDnldNfc_Buff_t pInputs, pphDnldNfc_RspCb_t pNotify,
             bClkFreq = phDnldNfc_ClkFreq_38_4Mhz;
           } else if (CLK_FREQ_52MHZ == (pInputs->pBuff[1])) {
             bClkFreq = phDnldNfc_ClkFreq_52Mhz;
+          } else if (CLK_FREQ_32MHZ == (pInputs->pBuff[1])) {
+            bClkFreq = phDnldNfc_ClkFreq_32Mhz;
+          } else if (CLK_FREQ_48MHZ == (pInputs->pBuff[1])) {
+            bClkFreq = phDnldNfc_ClkFreq_48Mhz;
           } else {
             NXPLOG_FWDNLD_E(
                 "Invalid Clk Frequency !! Using default value of 19.2Mhz..");
