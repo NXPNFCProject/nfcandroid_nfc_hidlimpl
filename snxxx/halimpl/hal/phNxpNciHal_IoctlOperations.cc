@@ -817,6 +817,14 @@ void phNxpNciHal_txNfccClockSetCmd(void) {
         dpllCmdLen = sizeof(PN557_SET_CONFIG_CMD_DPLL_38_4MHZ);
         break;
       }
+      case CLK_FREQ_48MHZ: {
+        NXPLOG_NCIHAL_D("PLL setting for CLK_FREQ_48MHZ");
+        pCmd4PllSetting = (uint8_t*)PN557_SET_CONFIG_CMD_PLL_48MHZ;
+        pllCmdLen = sizeof(PN557_SET_CONFIG_CMD_PLL_48MHZ);
+        pCmd4DpllSetting = (uint8_t*)PN557_SET_CONFIG_CMD_DPLL_48MHZ;
+        dpllCmdLen = sizeof(PN557_SET_CONFIG_CMD_DPLL_48MHZ);
+        break;
+      }
       default:
         phNxpNciClock.isClockSet = FALSE;
         NXPLOG_NCIHAL_E("ERROR: Invalid clock frequency!!");
