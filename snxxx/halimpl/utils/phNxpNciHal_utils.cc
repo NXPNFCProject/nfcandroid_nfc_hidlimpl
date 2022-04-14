@@ -432,7 +432,8 @@ void phNxpNciHal_releaseall_cb_data(void) {
 *******************************************************************************/
 void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
                               uint16_t len) {
-  if(!nfc_debug_enabled)
+  tNFC_printType printType = getPrintType(pString);
+  if (!nfc_debug_enabled && (printType == PRINT_UNKNOWN))
     return; // logging is disabled
   uint32_t i;
 #if (NXP_EXTNS == TRUE)
@@ -446,12 +447,19 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
     for (i = 0; i < len; i++) {
       snprintf(&print_buffer[i * 2], 3, "%02X", p_data[i]);
     }
-    if (0 == memcmp(pString, "SEND", 0x04)) {
-      NXPLOG_NCIX_I("len = %3d > %s", len, print_buffer);
-    } else if (0 == memcmp(pString, "RECV", 0x04)) {
-      NXPLOG_NCIR_I("len = %3d > %s", len, print_buffer);
-    } else if (0 == memcmp(pString, "DEBUG", 0x05)) {
-      NXPLOG_NCIHAL_D(" Debug Info > len = %3d > %s", len, print_buffer);
+    switch (printType) {
+      case PRINT_SEND:
+        NXPLOG_NCIX_I("len = %3d > %s", len, print_buffer);
+        break;
+      case PRINT_RECV:
+        NXPLOG_NCIR_I("len = %3d > %s", len, print_buffer);
+        break;
+      case PRINT_DEBUG:
+        NXPLOG_NCIHAL_D(" Debug Info > len = %3d > %s", len, print_buffer);
+        break;
+      default:
+        // Nothing to do
+        break;
     }
 #if (NXP_EXTNS == TRUE)
     free(print_buffer);
@@ -460,6 +468,29 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
   }
 #endif
   return;
+}
+
+/*******************************************************************************
+**
+** Function         getPrintType
+**
+** Description      get Print packet type (TX or RX or Debug)
+**
+** Returns          tNFC_printType enum.
+**
+*******************************************************************************/
+tNFC_printType getPrintType(const char* pString) {
+  if ((0 == memcmp(pString, "SEND", 0x04)) &&
+      (gLog_level.ncix_log_level >= NXPLOG_LOG_INFO_LOGLEVEL)) {
+    return PRINT_SEND;
+  } else if ((0 == memcmp(pString, "RECV", 0x04)) &&
+             (gLog_level.ncir_log_level >= NXPLOG_LOG_INFO_LOGLEVEL)) {
+    return PRINT_RECV;
+  } else if ((0 == memcmp(pString, "DEBUG", 0x05)) &&
+             (gLog_level.hal_log_level >= NXPLOG_LOG_DEBUG_LOGLEVEL)) {
+    return PRINT_DEBUG;
+  }
+  return PRINT_UNKNOWN;
 }
 
 /*******************************************************************************
