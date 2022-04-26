@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2019-2021 NXP
+ *  Copyright 2019-2022 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -222,8 +222,8 @@ void NxpMfcReader::BuildWrite16Cmd() {
   mMfcTagCmdIntfData.sendBufLen = mMfcTagCmdIntfData.sendBufLen - 1;
   uint8_t buff[mMfcTagCmdIntfData.sendBufLen];
   memset(buff, 0, mMfcTagCmdIntfData.sendBufLen);
-  memcpy(buff, mMfcTagCmdIntfData.sendBuf + 2, mMfcTagCmdIntfData.sendBufLen);
-  memcpy(mMfcTagCmdIntfData.sendBuf + 1, buff, mMfcTagCmdIntfData.sendBufLen);
+  memcpy(buff, mMfcTagCmdIntfData.sendBuf + 2, (mMfcTagCmdIntfData.sendBufLen-1));
+  memcpy(mMfcTagCmdIntfData.sendBuf + 1, buff, (mMfcTagCmdIntfData.sendBufLen-1));
 }
 
 /*******************************************************************************
