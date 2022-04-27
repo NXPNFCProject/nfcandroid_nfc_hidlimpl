@@ -320,6 +320,11 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
     }
     if(nxpncihal_ctrl.nci_info.nci_version != NCI_VERSION_2_0)
     {
+      if (*p_len <= (p_ntf[2] + 2)) {
+        android_errorWriteLog(0x534e4554, "181660091");
+        NXPLOG_NCIHAL_E("length error!");
+        return NFCSTATUS_FAILED;
+      }
 #if 0 /* this is work around added initially. not required now */
       if (p_ntf[p_ntf[2] + 2] == 0x00) {
         NXPLOG_NCIHAL_D("> Data of ISO-15693");
