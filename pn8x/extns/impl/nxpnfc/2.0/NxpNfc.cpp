@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2018-2020 NXP
+ *  Copyright 2018-2020, 2022 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -90,11 +90,7 @@ NxpNfc::setNxpTransitConfig(const ::android::hardware::hidl_string &strval)
   bool status = true;
   ALOGD("NxpNfc::setNxpTransitConfig Entry");
 
-  if (strlen(strval.c_str())) {
-    status = phNxpNciHal_setNxpTransitConfig((char *)strval.c_str());
-  } else {
-    status = phNxpNciHal_setNxpTransitConfig(NULL);
-  }
+  status = phNxpNciHal_setNxpTransitConfig((char *)strval.c_str());
 
   ALOGD("NxpNfc::setNxpTransitConfig Exit");
   return status;

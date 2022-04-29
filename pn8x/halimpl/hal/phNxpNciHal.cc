@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2021 NXP
+ * Copyright 2015-2022 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -3383,19 +3383,25 @@ int phNxpNciHal_configDiscShutdown(void) {
  * Returns          void.
  *
  ******************************************************************************/
-bool phNxpNciHal_setNxpTransitConfig(char *transitConfValue) {
+bool phNxpNciHal_setNxpTransitConfig(char* transitConfValue) {
   bool status = true;
   NXPLOG_NCIHAL_D("%s : Enter", __func__);
   std::string transitConfFileName = "/data/vendor/nfc/libnfc-nxpTransit.conf";
-  if (transitConfValue != NULL) {
+  long transitConfValueLen = strlen(transitConfValue) + 1;
+
+  if (transitConfValueLen > 1) {
     if (!WriteStringToFile(transitConfValue, transitConfFileName)) {
+      NXPLOG_NCIHAL_E("WriteStringToFile: Failed");
       status = false;
-      NXPLOG_NCIHAL_D("Failed to write transit values in the config values");
     }
   } else {
-    if (remove(transitConfFileName.c_str())) {
+    if (!WriteStringToFile("", transitConfFileName)) {
+      NXPLOG_NCIHAL_E("WriteStringToFile: Failed");
       status = false;
-      NXPLOG_NCIHAL_D("File deletion failed");
+    }
+    if (remove(transitConfFileName.c_str())) {
+      NXPLOG_NCIHAL_E("Unable to remove file");
+      status = false;
     }
   }
   NXPLOG_NCIHAL_D("%s : Exit", __func__);
