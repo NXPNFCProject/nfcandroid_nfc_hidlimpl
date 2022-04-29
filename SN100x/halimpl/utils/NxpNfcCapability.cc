@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2015-2018,2020-2021 NXP
+ *  Copyright 2015-2018,2020-2022 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -41,16 +41,28 @@ tNFC_chipType capability::processChipType(uint8_t* msg, uint16_t msg_len) {
              chipType = pn553;
            else if(msg[msg_len-3] == 0x01 && msg[msg_len-2] == 0x10)
              chipType = sn100u;
-           else if (msg[msg_len-3] == 0x01 && msg[msg_len-2] == 0x01)
-             chipType = sn220u;
+           else if (msg[msg_len - 3] == 0x01 && msg[msg_len - 2] == 0x01) {
+             if (msg[msg_len - 4] == 0xCA) {
+               chipType = pn560;
+             } else {
+               chipType = sn220u;
+             }
+           }
         }  else if (msg[0] == 0x00) {
-            if (msg[offsetFwRomCodeVersion] == 0x01 && msg[offsetFwMajorVersion] == 0x01)
-                chipType = sn220u;
-            else if (msg[offsetFwRomCodeVersion] == 0x01 && msg[offsetFwMajorVersion] == 0x10)
-                chipType = sn100u;
-            else if (msg[offsetFwRomCodeVersion] == 0x12 && (msg[offsetFwMajorVersion_pn557] == 0x21 ||
-              msg[offsetFwMajorVersion_pn557] == 0x01))
-               chipType = pn557;
+          if (msg[offsetFwRomCodeVersion] == 0x01 &&
+              msg[offsetFwMajorVersion] == 0x01) {
+            if (msg[msg_len - 4] == 0xCA) {
+              chipType = pn560;
+            } else {
+              chipType = sn220u;
+            }
+          } else if (msg[offsetFwRomCodeVersion] == 0x01 &&
+                     msg[offsetFwMajorVersion] == 0x10)
+            chipType = sn100u;
+          else if (msg[offsetFwRomCodeVersion] == 0x12 &&
+                   (msg[offsetFwMajorVersion_pn557] == 0x21 ||
+                    msg[offsetFwMajorVersion_pn557] == 0x01))
+            chipType = pn557;
         }
         else if(offsetHwVersion < msg_len) {
             ALOGD ("%s HwVersion : 0x%02x", __func__,msg[msg_len-4]);

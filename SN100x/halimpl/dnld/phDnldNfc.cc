@@ -1,5 +1,5 @@
 /*
- *  Copyright 2010-2021 NXP
+ *  Copyright 2010-2022 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -248,13 +248,17 @@ NFCSTATUS phDnldNfc_CheckIntegrity(uint8_t bChipVer, pphDnldNfc_Buff_t pCRCData,
       wStatus = PHNFCSTVAL(CID_NFC_DNLD, NFCSTATUS_BUSY);
     } else {
       if ((PHDNLDNFC_HWVER_MRA2_1 == bChipVer) ||
-           (PHDNLDNFC_HWVER_MRA2_2 == bChipVer) ||
-           ( (nfcFL.chipType == pn551) &&
-               ((PHDNLDNFC_HWVER_PN551_MRA1_0 == bChipVer)))||
-           ( ((nfcFL.chipType == pn553) || (nfcFL.chipType == pn557)) &&
-               ((PHDNLDNFC_HWVER_PN553_MRA1_0 == bChipVer) || (PHDNLDNFC_HWVER_PN553_MRA1_0_UPDATED & bChipVer)||((PHDNLDNFC_HWVER_PN557_MRA1_0 == bChipVer)))) ||
-           ( (nfcFL.chipType == sn100u) && (PHDNLDNFC_HWVER_VENUS_MRA1_0 & bChipVer)) ||
-           ( (nfcFL.chipType == sn220u) && (PHDNLDNFC_HWVER_VULCAN_MRA1_0 & bChipVer))) {
+          (PHDNLDNFC_HWVER_MRA2_2 == bChipVer) ||
+          ((nfcFL.chipType == pn551) &&
+           ((PHDNLDNFC_HWVER_PN551_MRA1_0 == bChipVer))) ||
+          (((nfcFL.chipType == pn553) || (nfcFL.chipType == pn557)) &&
+           ((PHDNLDNFC_HWVER_PN553_MRA1_0 == bChipVer) ||
+            (PHDNLDNFC_HWVER_PN553_MRA1_0_UPDATED & bChipVer) ||
+            ((PHDNLDNFC_HWVER_PN557_MRA1_0 == bChipVer)))) ||
+          ((nfcFL.chipType == sn100u) &&
+           (PHDNLDNFC_HWVER_VENUS_MRA1_0 & bChipVer)) ||
+          (((nfcFL.chipType == sn220u) || (nfcFL.chipType == pn560)) &&
+           (PHDNLDNFC_HWVER_VULCAN_MRA1_0 & bChipVer))) {
         (gpphDnldContext->FrameInp.Type) = phDnldNfc_ChkIntg;
       } else {
         (gpphDnldContext->FrameInp.Type) = phDnldNfc_FTNone;
@@ -808,10 +812,10 @@ NFCSTATUS phDnldNfc_InitImgInfo(bool bMinimalFw) {
     if ((NULL != gpphDnldContext->nxp_nfc_fw) &&
         (0 != gpphDnldContext->nxp_nfc_fw_len)) {
       uint16_t offsetFwMajorNum, offsetFwMinorNum;
-      if (nfcFL.chipType == sn220u) {
+      if ((nfcFL.chipType == sn220u) || (nfcFL.chipType == pn560)) {
         offsetFwMajorNum = ((uint16_t)(gpphDnldContext->nxp_nfc_fw[795]) << 8U);
         offsetFwMinorNum = ((uint16_t)(gpphDnldContext->nxp_nfc_fw[794]));
-      }else {
+      } else {
         offsetFwMajorNum = ((uint16_t)(gpphDnldContext->nxp_nfc_fw[5]) << 8U);
         offsetFwMinorNum = ((uint16_t)(gpphDnldContext->nxp_nfc_fw[4]));
       }

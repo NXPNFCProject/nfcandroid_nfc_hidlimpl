@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 NXP
+ * Copyright 2012-2022 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -556,15 +556,18 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
     if ((0 != pRespBuff->wLen) && (NULL != pRespBuff->pBuff)) {
       bHwVer = (pRespBuff->pBuff[0]);
       bHwVer &= 0x0F; /* 0x0F is the mask to extract chip version */
-      bool isChipTypeMatchedWithHwVersion = ((PHDNLDNFC_HWVER_MRA2_1 == bHwVer) ||
-          (PHDNLDNFC_HWVER_MRA2_2 == bHwVer) ||
-              ((nfcFL.chipType == pn551) &&
-                      ((PHDNLDNFC_HWVER_PN551_MRA1_0 == bHwVer))) ||
-                              (((nfcFL.chipType == pn553) || (nfcFL.chipType == pn557)) &&
-                                      ((PHDNLDNFC_HWVER_PN553_MRA1_0 == bHwVer ||
-                                              (PHDNLDNFC_HWVER_PN553_MRA1_0_UPDATED & pRespBuff->pBuff[0])))) ||
-                                              ((nfcFL.chipType == sn100u) && (PHDNLDNFC_HWVER_VENUS_MRA1_0 & pRespBuff->pBuff[0])) ||
-                                              ((nfcFL.chipType == sn220u) && (PHDNLDNFC_HWVER_VULCAN_MRA1_0 & pRespBuff->pBuff[0])));
+      bool isChipTypeMatchedWithHwVersion =
+          ((PHDNLDNFC_HWVER_MRA2_1 == bHwVer) ||
+           (PHDNLDNFC_HWVER_MRA2_2 == bHwVer) ||
+           ((nfcFL.chipType == pn551) &&
+            ((PHDNLDNFC_HWVER_PN551_MRA1_0 == bHwVer))) ||
+           (((nfcFL.chipType == pn553) || (nfcFL.chipType == pn557)) &&
+            ((PHDNLDNFC_HWVER_PN553_MRA1_0 == bHwVer ||
+              (PHDNLDNFC_HWVER_PN553_MRA1_0_UPDATED & pRespBuff->pBuff[0])))) ||
+           ((nfcFL.chipType == sn100u) &&
+            (PHDNLDNFC_HWVER_VENUS_MRA1_0 & pRespBuff->pBuff[0])) ||
+           (((nfcFL.chipType == sn220u) || (nfcFL.chipType == pn560)) &&
+            (PHDNLDNFC_HWVER_VULCAN_MRA1_0 & pRespBuff->pBuff[0])));
 
       if (isChipTypeMatchedWithHwVersion) {
           bExpectedLen = PHLIBNFC_IOCTL_DNLD_GETVERLEN_MRA2_1;
@@ -917,11 +920,12 @@ static NFCSTATUS phNxpNciHal_fw_dnld_log_read(void* pContext, NFCSTATUS status,
   UNUSED_PROP(status);
   UNUSED_PROP(pInfo);
   if ((((((gphNxpNciHal_fw_IoctlCtx.bSkipSeq) == true) ||
-       ((gphNxpNciHal_fw_IoctlCtx.bForceDnld) == true)) &&
-      ((gphNxpNciHal_fw_IoctlCtx.bPrevSessnOpen) == false)) ||
-      ((((gphNxpNciHal_fw_IoctlCtx.bPrevSessnOpen) == true)) &&
-      ((gphNxpNciHal_fw_IoctlCtx.bRetryDnld) == true))) ||
-      (nfcFL.chipType == sn100u) || (nfcFL.chipType == sn220u))
+         ((gphNxpNciHal_fw_IoctlCtx.bForceDnld) == true)) &&
+        ((gphNxpNciHal_fw_IoctlCtx.bPrevSessnOpen) == false)) ||
+       ((((gphNxpNciHal_fw_IoctlCtx.bPrevSessnOpen) == true)) &&
+        ((gphNxpNciHal_fw_IoctlCtx.bRetryDnld) == true))) ||
+      (nfcFL.chipType == sn100u) || (nfcFL.chipType == sn220u) ||
+      (nfcFL.chipType == pn560))
 
   {
     return NFCSTATUS_SUCCESS;

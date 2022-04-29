@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2018-2021 NXP
+ *  Copyright 2018-2022 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -65,20 +65,21 @@ typedef enum {
 } tNFCC_DnldType;
 
 typedef enum {
-    DEFAULT_CHIP_TYPE = 0x00,
-    pn547C2 = 0x01,
-    pn65T,
-    pn548C2,
-    pn66T,
-    pn551,
-    pn67T,
-    pn553,
-    pn80T,
-    pn557,
-    pn81T,
-    sn100u,
-    sn220u
-}tNFC_chipType;
+  DEFAULT_CHIP_TYPE = 0x00,
+  pn547C2 = 0x01,
+  pn65T,
+  pn548C2,
+  pn66T,
+  pn551,
+  pn67T,
+  pn553,
+  pn80T,
+  pn557,
+  pn81T,
+  sn100u,
+  sn220u,
+  pn560
+} tNFC_chipType;
 
 typedef struct {
     /*Flags common to all chip types*/
@@ -354,311 +355,285 @@ extern tNfc_featureList nfcFL;
         }                                                                   \
 }
 
-
-#define CONFIGURE_FEATURELIST_NFCC(chipType) {                              \
-        nfcFL.eseFL._ESE_WIRED_MODE_TIMEOUT = 3;                            \
-        nfcFL.eseFL._ESE_UICC_DUAL_MODE = 0;                                \
-        nfcFL.eseFL._ESE_WIRED_MODE_DISABLE_DISCOVERY = false;              \
-        nfcFL.eseFL._LEGACY_APDU_GATE = false;                              \
-        nfcFL.eseFL._TRIPLE_MODE_PROTECTION = false;                        \
-        nfcFL.eseFL._ESE_FELICA_CLT = false;                                \
-        nfcFL.eseFL._WIRED_MODE_STANDBY_PROP = false;                       \
-        nfcFL.eseFL._WIRED_MODE_STANDBY = false;                            \
-        nfcFL.eseFL._ESE_DUAL_MODE_PRIO_SCHEME =                            \
-        nfcFL.eseFL._ESE_WIRED_MODE_TIMEOUT;                                \
-        nfcFL.eseFL._ESE_FORCE_ENABLE = false;                              \
-        nfcFL.eseFL._ESE_RESET_METHOD = false;                              \
-        nfcFL.eseFL._ESE_ETSI_READER_ENABLE = false;                        \
-        nfcFL.eseFL._ESE_SVDD_SYNC = false;                                 \
-        nfcFL.eseFL._NFCC_ESE_UICC_CONCURRENT_ACCESS_PROTECTION = false;    \
-        nfcFL.eseFL._ESE_JCOP_DWNLD_PROTECTION = false;                     \
-        nfcFL.eseFL._UICC_HANDLE_CLEAR_ALL_PIPES = false;                   \
-        nfcFL.eseFL._GP_CONTINOUS_PROCESSING = false;                       \
-        nfcFL.eseFL._ESE_DWP_SPI_SYNC_ENABLE = false;                       \
-        nfcFL.eseFL._ESE_ETSI12_PROP_INIT = false;                          \
-        nfcFL.eseFL._ESE_WIRED_MODE_PRIO = false;                           \
-        nfcFL.eseFL._ESE_UICC_EXCLUSIVE_WIRED_MODE = false;                 \
-        nfcFL.eseFL._ESE_POWER_MODE = false;                                \
-        nfcFL.eseFL._ESE_P73_ISO_RST = false;                               \
-        nfcFL.eseFL._BLOCK_PROPRIETARY_APDU_GATE = false;                   \
-        nfcFL.eseFL._JCOP_WA_ENABLE = true;                                 \
-        nfcFL.eseFL._EXCLUDE_NV_MEM_DEPENDENCY = false;                     \
-        nfcFL.nfccFL._NXP_NFC_UICC_ETSI12 = false;                          \
-        nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = false;                    \
-        \
-        \
-        nfcFL.platformFL._NFCC_RESET_RSP_LEN = 0;                           \
-        \
-        \
-        nfcFL.nfcMwFL._NCI_INTERFACE_UICC_DIRECT = 0x00;                    \
-        nfcFL.nfcMwFL._NCI_INTERFACE_ESE_DIRECT = 0x00;                     \
-        nfcFL.nfcMwFL._NCI_PWR_LINK_PARAM_CMD_SIZE = 0x02;                  \
-        nfcFL.nfcMwFL._NCI_EE_PWR_LINK_ALWAYS_ON = 0x01;                    \
-        nfcFL._PHDNLDNFC_USERDATA_EEPROM_OFFSET = 0x023CU;          \
-        nfcFL._PHDNLDNFC_USERDATA_EEPROM_LEN = 0x0C80U;             \
-        nfcFL._FW_MOBILE_MAJOR_NUMBER =                             \
-        FW_MOBILE_MAJOR_NUMBER_PN48AD;                                      \
-        nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_VEN_RESET;          \
-        \
-        \
-        if (chipType == sn220u)                                             \
-        {                                                                   \
-            nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_NCI_CMD;        \
-            nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;           \
-            nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = false;                      \
-            nfcFL.nfccFL._NFCC_MW_RCVRY_BLK_FW_DNLD = true;                 \
-            nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_EXT_SWITCH = false;        \
-            nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_WO_EXT_SWITCH = false;     \
-            nfcFL.nfccFL._NFCC_FW_WA = true;                                \
-            nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT = false;                   \
-            nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true;                 \
-            nfcFL.nfccFL._HW_ANTENNA_LOOP4_SELF_TEST = false;               \
-            nfcFL.nfccFL._NFCEE_REMOVED_NTF_RECOVERY = true;                \
-            nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                    \
-            nfcFL.nfccFL._UICC_CREATE_CONNECTIVITY_PIPE = true;             \
-            nfcFL.nfccFL._NXP_NFC_UICC_ETSI12 = false;                      \
-            nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 3;                      \
-            nfcFL.nfccFL._NFCC_ROUTING_BLOCK_BIT_PROP = false;              \
-            nfcFL.nfccFL._NFCC_AID_MATCHING_PLATFORM_CONFIG = false;        \
-            \
-            \
-            nfcFL.eseFL._ESE_ETSI12_PROP_INIT = true;                       \
-            nfcFL.eseFL._EXCLUDE_NV_MEM_DEPENDENCY = true;                  \
-            \
-            \
-            nfcFL.platformFL._NFCC_RESET_RSP_LEN = 0x10U;                   \
-            \
-            \
-            nfcFL.nfcMwFL._NCI_INTERFACE_UICC_DIRECT = 0x82;                \
-            nfcFL.nfcMwFL._NCI_INTERFACE_ESE_DIRECT = 0x83;                 \
-            nfcFL._FW_MOBILE_MAJOR_NUMBER =                                 \
-            FW_MOBILE_MAJOR_NUMBER_SN220U;                                  \
-            SRTCPY_FW("libsn220u_fw", "libsn220u_fw_platform",              \
-                    "libsn220u_fw_pku")                                     \
-            STRCPY_FW_BIN("sn220u")\
-            \
-        }                                                                   \
-        if (chipType == sn100u)                                             \
-        {                                                                   \
-            nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_NCI_CMD;        \
-            nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;           \
-            nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = false;                      \
-            nfcFL.nfccFL._NFCC_MW_RCVRY_BLK_FW_DNLD = true;                 \
-            nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_EXT_SWITCH = false;        \
-            nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_WO_EXT_SWITCH = false;     \
-            nfcFL.nfccFL._NFCC_FW_WA = true;                                \
-            nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT = false;                   \
-            nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true;                 \
-            nfcFL.nfccFL._HW_ANTENNA_LOOP4_SELF_TEST = false;               \
-            nfcFL.nfccFL._NFCEE_REMOVED_NTF_RECOVERY = true;                \
-            nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                    \
-            nfcFL.nfccFL._UICC_CREATE_CONNECTIVITY_PIPE = true;             \
-            nfcFL.nfccFL._NXP_NFC_UICC_ETSI12 = false;                      \
-            nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 3;                      \
-            nfcFL.nfccFL._NFCC_ROUTING_BLOCK_BIT_PROP = false;              \
-            nfcFL.nfccFL._NFCC_AID_MATCHING_PLATFORM_CONFIG = false;        \
-            \
-            \
-            nfcFL.eseFL._ESE_ETSI12_PROP_INIT = true;                       \
-            nfcFL.eseFL._EXCLUDE_NV_MEM_DEPENDENCY = true;                  \
-            \
-            \
-            nfcFL.platformFL._NFCC_RESET_RSP_LEN = 0x10U;                   \
-            \
-            \
-            nfcFL.nfcMwFL._NCI_INTERFACE_UICC_DIRECT = 0x82;                \
-            nfcFL.nfcMwFL._NCI_INTERFACE_ESE_DIRECT = 0x83;                 \
-            nfcFL._FW_MOBILE_MAJOR_NUMBER =                                 \
-            FW_MOBILE_MAJOR_NUMBER_SN100U;                                  \
-            SRTCPY_FW("libsn100u_fw", "libsn100u_fw_platform",              \
-                    "libsn100u_fw_pku")                                     \
-            STRCPY_FW_BIN("sn100u")\
-            \
-            \
-        }                                                                   \
-        if (chipType == pn557)                                              \
-        {                                                                   \
-            nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;           \
-            nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = false;                      \
-            nfcFL.nfccFL._NFCC_MW_RCVRY_BLK_FW_DNLD = true;                 \
-            nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_EXT_SWITCH = false;        \
-            nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_WO_EXT_SWITCH = true;      \
-            nfcFL.nfccFL._NFCC_FW_WA = true;                                \
-            nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT = false;                   \
-            nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true;                 \
-            nfcFL.nfccFL._HW_ANTENNA_LOOP4_SELF_TEST = false;               \
-            nfcFL.nfccFL._NFCEE_REMOVED_NTF_RECOVERY = true;                \
-            nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                    \
-            nfcFL.nfccFL._UICC_CREATE_CONNECTIVITY_PIPE = true;             \
-            nfcFL.nfccFL._NXP_NFC_UICC_ETSI12 = false;                      \
-            nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 3;                      \
-            \
-            \
-            nfcFL.eseFL._ESE_ETSI12_PROP_INIT = true;                       \
-            nfcFL.eseFL._EXCLUDE_NV_MEM_DEPENDENCY = true;                  \
-            \
-            \
-            nfcFL.platformFL._NFCC_RESET_RSP_LEN = 0x10U;                   \
-            \
-            \
-            nfcFL.nfcMwFL._NCI_INTERFACE_UICC_DIRECT = 0x82;                \
-            nfcFL.nfcMwFL._NCI_INTERFACE_ESE_DIRECT = 0x83;                 \
-            \
-            \
-            SRTCPY_FW("libpn557_fw", "libpn557_fw_platform",            \
-                    "libpn557_fw_pku")                                    \
-            STRCPY_FW_BIN("pn557")\
-        }                                                                   \
-        else if (chipType == pn553)                                         \
-        {                                                                   \
-            nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;           \
-            nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = false;                      \
-            nfcFL.nfccFL._NFCC_MW_RCVRY_BLK_FW_DNLD = true;                 \
-            nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_EXT_SWITCH = true;      \
-            nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_WO_EXT_SWITCH = true;      \
-            nfcFL.nfccFL._NFCC_FW_WA = true;                                \
-            nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT = true;                    \
-            nfcFL.nfccFL._NFCC_ROUTING_BLOCK_BIT = true;                    \
-            nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true;                 \
-            nfcFL.nfccFL._HW_ANTENNA_LOOP4_SELF_TEST = false;               \
-            nfcFL.nfccFL._NFCEE_REMOVED_NTF_RECOVERY = true;                \
-            nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                    \
-            nfcFL.nfccFL._UICC_CREATE_CONNECTIVITY_PIPE = true;             \
-            nfcFL.nfccFL._NFCC_AID_MATCHING_PLATFORM_CONFIG = false;        \
-            nfcFL.nfccFL._NFCC_ROUTING_BLOCK_BIT_PROP = false;              \
-            nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 3;                      \
-            \
-            \
-            nfcFL.eseFL._ESE_ETSI12_PROP_INIT = true;                       \
-            nfcFL.eseFL._JCOP_WA_ENABLE = false;                            \
-            nfcFL.eseFL._EXCLUDE_NV_MEM_DEPENDENCY = true;                  \
-            \
-            \
-            nfcFL.platformFL._NFCC_RESET_RSP_LEN = 0x10U;                   \
-            \
-            \
-            nfcFL.nfcMwFL._NCI_INTERFACE_UICC_DIRECT = 0x82;                \
-            nfcFL.nfcMwFL._NCI_INTERFACE_ESE_DIRECT = 0x83;                 \
-            \
-            \
-            SRTCPY_FW("libpn553tc_fw", "libpn553tc_fw_platform",            \
-                    "libpn553tc_fw_pku")                                    \
-            STRCPY_FW_BIN("pn553")  \
-            nfcFL._FW_MOBILE_MAJOR_NUMBER =                         \
-            FW_MOBILE_MAJOR_NUMBER_PN553;                                   \
-            \
-            \
-        }                                                                   \
-        else if (chipType == pn551)                                         \
-        {                                                                   \
-            nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;           \
-            nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = true;                       \
-            nfcFL.nfccFL._NFCC_MW_RCVRY_BLK_FW_DNLD = false;                \
-            nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_EXT_SWITCH = true;         \
-            nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_WO_EXT_SWITCH = false;     \
-            nfcFL.nfccFL._NFCC_FW_WA = false;                               \
-            nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT = false;                   \
-            nfcFL.nfccFL._NFCC_ROUTING_BLOCK_BIT = false;                   \
-            nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = false;                \
-            nfcFL.nfccFL._HW_ANTENNA_LOOP4_SELF_TEST = true;                \
-            nfcFL.nfccFL._NFCEE_REMOVED_NTF_RECOVERY = true;                \
-            nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = false;                   \
-            nfcFL.nfccFL._UICC_CREATE_CONNECTIVITY_PIPE = false;            \
-            nfcFL.nfccFL._NFCC_AID_MATCHING_PLATFORM_CONFIG = true;         \
-            nfcFL.nfccFL._NFCC_ROUTING_BLOCK_BIT_PROP = true;               \
-            nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 2;                      \
-            \
-            \
-            nfcFL.eseFL._ESE_FORCE_ENABLE = true;                           \
-            \
-            \
-            nfcFL.platformFL._NFCC_RESET_RSP_LEN = 0x11U;                   \
-            \
-            \
-            nfcFL.nfcMwFL._NCI_INTERFACE_UICC_DIRECT = 0x82;                \
-            nfcFL.nfcMwFL._NCI_INTERFACE_ESE_DIRECT = 0x83;                 \
-            \
-            \
-            SRTCPY_FW("libpn551_fw", "libpn551_fw_platform",                \
-                    "libpn551_fw_pku")                                      \
-            \
-            STRCPY_FW_BIN("pn551")\
-            nfcFL._PHDNLDNFC_USERDATA_EEPROM_OFFSET = 0x02BCU;      \
-            nfcFL._PHDNLDNFC_USERDATA_EEPROM_LEN = 0x0C00U;         \
-            nfcFL._FW_MOBILE_MAJOR_NUMBER =                         \
-            FW_MOBILE_MAJOR_NUMBER_PN551;                                   \
-            \
-            \
-        }                                                                   \
-        else if (chipType == pn548C2)                                       \
-        {                                                                   \
-            nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;           \
-            nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = true;                       \
-            nfcFL.nfccFL._NFCC_MW_RCVRY_BLK_FW_DNLD = false;                \
-            nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_EXT_SWITCH = true;         \
-            nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_WO_EXT_SWITCH = false;     \
-            nfcFL.nfccFL._NFCC_FW_WA = false;                               \
-            nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT = false;                   \
-            nfcFL.nfccFL._NFCC_ROUTING_BLOCK_BIT = false;                   \
-            nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = false;                \
-            nfcFL.nfccFL._HW_ANTENNA_LOOP4_SELF_TEST = true;                \
-            nfcFL.nfccFL._NFCEE_REMOVED_NTF_RECOVERY = true;                \
-            nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = false;                   \
-            nfcFL.nfccFL._UICC_CREATE_CONNECTIVITY_PIPE = false;            \
-            nfcFL.nfccFL._NFCC_AID_MATCHING_PLATFORM_CONFIG = true;         \
-            nfcFL.nfccFL._NFCC_ROUTING_BLOCK_BIT_PROP = true;               \
-            nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 2;                      \
-            \
-            \
-            nfcFL.eseFL._ESE_FORCE_ENABLE = true;                           \
-            \
-            \
-            nfcFL.nfcMwFL._NCI_INTERFACE_UICC_DIRECT = 0x82;                \
-            nfcFL.nfcMwFL._NCI_INTERFACE_ESE_DIRECT = 0x83;                 \
-            \
-            \
-            SRTCPY_FW("libpn548ad_fw", "libpn548ad_fw_platform",            \
-                    "libpn548ad_fw_pku")                                    \
-            \
-            \
-            nfcFL._PHDNLDNFC_USERDATA_EEPROM_OFFSET = 0x02BCU;      \
-            nfcFL._PHDNLDNFC_USERDATA_EEPROM_LEN = 0x0C00U;         \
-            \
-            \
-        }                                                                   \
-        else if(chipType == pn547C2)                                        \
-        {                                                                   \
-            nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = false;          \
-            nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = true;                       \
-            nfcFL.nfccFL._NFCC_MW_RCVRY_BLK_FW_DNLD = false;                \
-            nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_EXT_SWITCH = false;        \
-            nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_WO_EXT_SWITCH = false;     \
-            nfcFL.nfccFL._NFCC_FW_WA = false;                               \
-            nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT = false;                   \
-            nfcFL.nfccFL._NFCC_ROUTING_BLOCK_BIT = false;                   \
-            nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = false;                \
-            nfcFL.nfccFL._HW_ANTENNA_LOOP4_SELF_TEST = true;                \
-            nfcFL.nfccFL._NFCEE_REMOVED_NTF_RECOVERY = true;                \
-            nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = false;                   \
-            nfcFL.nfccFL._UICC_CREATE_CONNECTIVITY_PIPE = false;            \
-            nfcFL.nfccFL._NFCC_AID_MATCHING_PLATFORM_CONFIG = true;         \
-            nfcFL.nfccFL._NFCC_ROUTING_BLOCK_BIT_PROP = false;              \
-            nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 2;                      \
-            \
-            \
-            nfcFL.nfcMwFL._NCI_INTERFACE_UICC_DIRECT = 0x81;                \
-            nfcFL.nfcMwFL._NCI_INTERFACE_ESE_DIRECT = 0x82;                 \
-            \
-            \
-            SRTCPY_FW("libpn547_fw", "libpn547_fw_platform",                \
-                    "libpn547_fw_pku")                                      \
-            \
-            \
-        }                                                                   \
-        else if(chipType == DEFAULT_CHIP_TYPE) {                            \
-            nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                   \
-        }                                                                  \
-}
+#define CONFIGURE_FEATURELIST_NFCC(chipType)                                   \
+  {                                                                            \
+    nfcFL.eseFL._ESE_WIRED_MODE_TIMEOUT = 3;                                   \
+    nfcFL.eseFL._ESE_UICC_DUAL_MODE = 0;                                       \
+    nfcFL.eseFL._ESE_WIRED_MODE_DISABLE_DISCOVERY = false;                     \
+    nfcFL.eseFL._LEGACY_APDU_GATE = false;                                     \
+    nfcFL.eseFL._TRIPLE_MODE_PROTECTION = false;                               \
+    nfcFL.eseFL._ESE_FELICA_CLT = false;                                       \
+    nfcFL.eseFL._WIRED_MODE_STANDBY_PROP = false;                              \
+    nfcFL.eseFL._WIRED_MODE_STANDBY = false;                                   \
+    nfcFL.eseFL._ESE_DUAL_MODE_PRIO_SCHEME =                                   \
+        nfcFL.eseFL._ESE_WIRED_MODE_TIMEOUT;                                   \
+    nfcFL.eseFL._ESE_FORCE_ENABLE = false;                                     \
+    nfcFL.eseFL._ESE_RESET_METHOD = false;                                     \
+    nfcFL.eseFL._ESE_ETSI_READER_ENABLE = false;                               \
+    nfcFL.eseFL._ESE_SVDD_SYNC = false;                                        \
+    nfcFL.eseFL._NFCC_ESE_UICC_CONCURRENT_ACCESS_PROTECTION = false;           \
+    nfcFL.eseFL._ESE_JCOP_DWNLD_PROTECTION = false;                            \
+    nfcFL.eseFL._UICC_HANDLE_CLEAR_ALL_PIPES = false;                          \
+    nfcFL.eseFL._GP_CONTINOUS_PROCESSING = false;                              \
+    nfcFL.eseFL._ESE_DWP_SPI_SYNC_ENABLE = false;                              \
+    nfcFL.eseFL._ESE_ETSI12_PROP_INIT = false;                                 \
+    nfcFL.eseFL._ESE_WIRED_MODE_PRIO = false;                                  \
+    nfcFL.eseFL._ESE_UICC_EXCLUSIVE_WIRED_MODE = false;                        \
+    nfcFL.eseFL._ESE_POWER_MODE = false;                                       \
+    nfcFL.eseFL._ESE_P73_ISO_RST = false;                                      \
+    nfcFL.eseFL._BLOCK_PROPRIETARY_APDU_GATE = false;                          \
+    nfcFL.eseFL._JCOP_WA_ENABLE = true;                                        \
+    nfcFL.eseFL._EXCLUDE_NV_MEM_DEPENDENCY = false;                            \
+    nfcFL.nfccFL._NXP_NFC_UICC_ETSI12 = false;                                 \
+    nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = false;                           \
+                                                                               \
+    nfcFL.platformFL._NFCC_RESET_RSP_LEN = 0;                                  \
+                                                                               \
+    nfcFL.nfcMwFL._NCI_INTERFACE_UICC_DIRECT = 0x00;                           \
+    nfcFL.nfcMwFL._NCI_INTERFACE_ESE_DIRECT = 0x00;                            \
+    nfcFL.nfcMwFL._NCI_PWR_LINK_PARAM_CMD_SIZE = 0x02;                         \
+    nfcFL.nfcMwFL._NCI_EE_PWR_LINK_ALWAYS_ON = 0x01;                           \
+    nfcFL._PHDNLDNFC_USERDATA_EEPROM_OFFSET = 0x023CU;                         \
+    nfcFL._PHDNLDNFC_USERDATA_EEPROM_LEN = 0x0C80U;                            \
+    nfcFL._FW_MOBILE_MAJOR_NUMBER = FW_MOBILE_MAJOR_NUMBER_PN48AD;             \
+    nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_VEN_RESET;                 \
+                                                                               \
+    if (chipType == sn220u) {                                                  \
+      nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_NCI_CMD;                 \
+      nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;                    \
+      nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = false;                               \
+      nfcFL.nfccFL._NFCC_MW_RCVRY_BLK_FW_DNLD = true;                          \
+      nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_EXT_SWITCH = false;                 \
+      nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_WO_EXT_SWITCH = false;              \
+      nfcFL.nfccFL._NFCC_FW_WA = true;                                         \
+      nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT = false;                            \
+      nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true;                          \
+      nfcFL.nfccFL._HW_ANTENNA_LOOP4_SELF_TEST = false;                        \
+      nfcFL.nfccFL._NFCEE_REMOVED_NTF_RECOVERY = true;                         \
+      nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                             \
+      nfcFL.nfccFL._UICC_CREATE_CONNECTIVITY_PIPE = true;                      \
+      nfcFL.nfccFL._NXP_NFC_UICC_ETSI12 = false;                               \
+      nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 3;                               \
+      nfcFL.nfccFL._NFCC_ROUTING_BLOCK_BIT_PROP = false;                       \
+      nfcFL.nfccFL._NFCC_AID_MATCHING_PLATFORM_CONFIG = false;                 \
+                                                                               \
+      nfcFL.eseFL._ESE_ETSI12_PROP_INIT = true;                                \
+      nfcFL.eseFL._EXCLUDE_NV_MEM_DEPENDENCY = true;                           \
+                                                                               \
+      nfcFL.platformFL._NFCC_RESET_RSP_LEN = 0x10U;                            \
+                                                                               \
+      nfcFL.nfcMwFL._NCI_INTERFACE_UICC_DIRECT = 0x82;                         \
+      nfcFL.nfcMwFL._NCI_INTERFACE_ESE_DIRECT = 0x83;                          \
+      nfcFL._FW_MOBILE_MAJOR_NUMBER = FW_MOBILE_MAJOR_NUMBER_SN220U;           \
+      SRTCPY_FW("libsn220u_fw", "libsn220u_fw_platform", "libsn220u_fw_pku")   \
+      STRCPY_FW_BIN("sn220u")                                                  \
+    }                                                                          \
+    if (chipType == pn560) {                                                   \
+      nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_NCI_CMD;                 \
+      nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;                    \
+      nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = false;                               \
+      nfcFL.nfccFL._NFCC_MW_RCVRY_BLK_FW_DNLD = true;                          \
+      nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_EXT_SWITCH = false;                 \
+      nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_WO_EXT_SWITCH = false;              \
+      nfcFL.nfccFL._NFCC_FW_WA = true;                                         \
+      nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT = false;                            \
+      nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true;                          \
+      nfcFL.nfccFL._HW_ANTENNA_LOOP4_SELF_TEST = false;                        \
+      nfcFL.nfccFL._NFCEE_REMOVED_NTF_RECOVERY = true;                         \
+      nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                             \
+      nfcFL.nfccFL._UICC_CREATE_CONNECTIVITY_PIPE = true;                      \
+      nfcFL.nfccFL._NXP_NFC_UICC_ETSI12 = false;                               \
+      nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 3;                               \
+      nfcFL.nfccFL._NFCC_ROUTING_BLOCK_BIT_PROP = false;                       \
+      nfcFL.nfccFL._NFCC_AID_MATCHING_PLATFORM_CONFIG = false;                 \
+                                                                               \
+      nfcFL.eseFL._ESE_ETSI12_PROP_INIT = true;                                \
+      nfcFL.eseFL._EXCLUDE_NV_MEM_DEPENDENCY = true;                           \
+                                                                               \
+      nfcFL.platformFL._NFCC_RESET_RSP_LEN = 0x10U;                            \
+                                                                               \
+      nfcFL.nfcMwFL._NCI_INTERFACE_UICC_DIRECT = 0x82;                         \
+      nfcFL.nfcMwFL._NCI_INTERFACE_ESE_DIRECT = 0x83;                          \
+      nfcFL._FW_MOBILE_MAJOR_NUMBER = FW_MOBILE_MAJOR_NUMBER_SN220U;           \
+      SRTCPY_FW("libpn560_fw", "libpn560_fw_platform", "libpn560_fw_pku")      \
+      STRCPY_FW_BIN("pn560")                                                   \
+    }                                                                          \
+    if (chipType == sn100u) {                                                  \
+      nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_NCI_CMD;                 \
+      nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;                    \
+      nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = false;                               \
+      nfcFL.nfccFL._NFCC_MW_RCVRY_BLK_FW_DNLD = true;                          \
+      nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_EXT_SWITCH = false;                 \
+      nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_WO_EXT_SWITCH = false;              \
+      nfcFL.nfccFL._NFCC_FW_WA = true;                                         \
+      nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT = false;                            \
+      nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true;                          \
+      nfcFL.nfccFL._HW_ANTENNA_LOOP4_SELF_TEST = false;                        \
+      nfcFL.nfccFL._NFCEE_REMOVED_NTF_RECOVERY = true;                         \
+      nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                             \
+      nfcFL.nfccFL._UICC_CREATE_CONNECTIVITY_PIPE = true;                      \
+      nfcFL.nfccFL._NXP_NFC_UICC_ETSI12 = false;                               \
+      nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 3;                               \
+      nfcFL.nfccFL._NFCC_ROUTING_BLOCK_BIT_PROP = false;                       \
+      nfcFL.nfccFL._NFCC_AID_MATCHING_PLATFORM_CONFIG = false;                 \
+                                                                               \
+      nfcFL.eseFL._ESE_ETSI12_PROP_INIT = true;                                \
+      nfcFL.eseFL._EXCLUDE_NV_MEM_DEPENDENCY = true;                           \
+                                                                               \
+      nfcFL.platformFL._NFCC_RESET_RSP_LEN = 0x10U;                            \
+                                                                               \
+      nfcFL.nfcMwFL._NCI_INTERFACE_UICC_DIRECT = 0x82;                         \
+      nfcFL.nfcMwFL._NCI_INTERFACE_ESE_DIRECT = 0x83;                          \
+      nfcFL._FW_MOBILE_MAJOR_NUMBER = FW_MOBILE_MAJOR_NUMBER_SN100U;           \
+      SRTCPY_FW("libsn100u_fw", "libsn100u_fw_platform", "libsn100u_fw_pku")   \
+      STRCPY_FW_BIN("sn100u")                                                  \
+    }                                                                          \
+    if (chipType == pn557) {                                                   \
+      nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;                    \
+      nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = false;                               \
+      nfcFL.nfccFL._NFCC_MW_RCVRY_BLK_FW_DNLD = true;                          \
+      nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_EXT_SWITCH = false;                 \
+      nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_WO_EXT_SWITCH = true;               \
+      nfcFL.nfccFL._NFCC_FW_WA = true;                                         \
+      nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT = false;                            \
+      nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true;                          \
+      nfcFL.nfccFL._HW_ANTENNA_LOOP4_SELF_TEST = false;                        \
+      nfcFL.nfccFL._NFCEE_REMOVED_NTF_RECOVERY = true;                         \
+      nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                             \
+      nfcFL.nfccFL._UICC_CREATE_CONNECTIVITY_PIPE = true;                      \
+      nfcFL.nfccFL._NXP_NFC_UICC_ETSI12 = false;                               \
+      nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 3;                               \
+                                                                               \
+      nfcFL.eseFL._ESE_ETSI12_PROP_INIT = true;                                \
+      nfcFL.eseFL._EXCLUDE_NV_MEM_DEPENDENCY = true;                           \
+                                                                               \
+      nfcFL.platformFL._NFCC_RESET_RSP_LEN = 0x10U;                            \
+                                                                               \
+      nfcFL.nfcMwFL._NCI_INTERFACE_UICC_DIRECT = 0x82;                         \
+      nfcFL.nfcMwFL._NCI_INTERFACE_ESE_DIRECT = 0x83;                          \
+                                                                               \
+      SRTCPY_FW("libpn557_fw", "libpn557_fw_platform", "libpn557_fw_pku")      \
+      STRCPY_FW_BIN("pn557")                                                   \
+    } else if (chipType == pn553) {                                            \
+      nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;                    \
+      nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = false;                               \
+      nfcFL.nfccFL._NFCC_MW_RCVRY_BLK_FW_DNLD = true;                          \
+      nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_EXT_SWITCH = true;                  \
+      nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_WO_EXT_SWITCH = true;               \
+      nfcFL.nfccFL._NFCC_FW_WA = true;                                         \
+      nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT = true;                             \
+      nfcFL.nfccFL._NFCC_ROUTING_BLOCK_BIT = true;                             \
+      nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true;                          \
+      nfcFL.nfccFL._HW_ANTENNA_LOOP4_SELF_TEST = false;                        \
+      nfcFL.nfccFL._NFCEE_REMOVED_NTF_RECOVERY = true;                         \
+      nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                             \
+      nfcFL.nfccFL._UICC_CREATE_CONNECTIVITY_PIPE = true;                      \
+      nfcFL.nfccFL._NFCC_AID_MATCHING_PLATFORM_CONFIG = false;                 \
+      nfcFL.nfccFL._NFCC_ROUTING_BLOCK_BIT_PROP = false;                       \
+      nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 3;                               \
+                                                                               \
+      nfcFL.eseFL._ESE_ETSI12_PROP_INIT = true;                                \
+      nfcFL.eseFL._JCOP_WA_ENABLE = false;                                     \
+      nfcFL.eseFL._EXCLUDE_NV_MEM_DEPENDENCY = true;                           \
+                                                                               \
+      nfcFL.platformFL._NFCC_RESET_RSP_LEN = 0x10U;                            \
+                                                                               \
+      nfcFL.nfcMwFL._NCI_INTERFACE_UICC_DIRECT = 0x82;                         \
+      nfcFL.nfcMwFL._NCI_INTERFACE_ESE_DIRECT = 0x83;                          \
+                                                                               \
+      SRTCPY_FW("libpn553tc_fw", "libpn553tc_fw_platform",                     \
+                "libpn553tc_fw_pku")                                           \
+      STRCPY_FW_BIN("pn553")                                                   \
+      nfcFL._FW_MOBILE_MAJOR_NUMBER = FW_MOBILE_MAJOR_NUMBER_PN553;            \
+                                                                               \
+    } else if (chipType == pn551) {                                            \
+      nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;                    \
+      nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = true;                                \
+      nfcFL.nfccFL._NFCC_MW_RCVRY_BLK_FW_DNLD = false;                         \
+      nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_EXT_SWITCH = true;                  \
+      nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_WO_EXT_SWITCH = false;              \
+      nfcFL.nfccFL._NFCC_FW_WA = false;                                        \
+      nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT = false;                            \
+      nfcFL.nfccFL._NFCC_ROUTING_BLOCK_BIT = false;                            \
+      nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = false;                         \
+      nfcFL.nfccFL._HW_ANTENNA_LOOP4_SELF_TEST = true;                         \
+      nfcFL.nfccFL._NFCEE_REMOVED_NTF_RECOVERY = true;                         \
+      nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = false;                            \
+      nfcFL.nfccFL._UICC_CREATE_CONNECTIVITY_PIPE = false;                     \
+      nfcFL.nfccFL._NFCC_AID_MATCHING_PLATFORM_CONFIG = true;                  \
+      nfcFL.nfccFL._NFCC_ROUTING_BLOCK_BIT_PROP = true;                        \
+      nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 2;                               \
+                                                                               \
+      nfcFL.eseFL._ESE_FORCE_ENABLE = true;                                    \
+                                                                               \
+      nfcFL.platformFL._NFCC_RESET_RSP_LEN = 0x11U;                            \
+                                                                               \
+      nfcFL.nfcMwFL._NCI_INTERFACE_UICC_DIRECT = 0x82;                         \
+      nfcFL.nfcMwFL._NCI_INTERFACE_ESE_DIRECT = 0x83;                          \
+                                                                               \
+      SRTCPY_FW("libpn551_fw", "libpn551_fw_platform", "libpn551_fw_pku")      \
+                                                                               \
+      STRCPY_FW_BIN("pn551")                                                   \
+      nfcFL._PHDNLDNFC_USERDATA_EEPROM_OFFSET = 0x02BCU;                       \
+      nfcFL._PHDNLDNFC_USERDATA_EEPROM_LEN = 0x0C00U;                          \
+      nfcFL._FW_MOBILE_MAJOR_NUMBER = FW_MOBILE_MAJOR_NUMBER_PN551;            \
+                                                                               \
+    } else if (chipType == pn548C2) {                                          \
+      nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;                    \
+      nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = true;                                \
+      nfcFL.nfccFL._NFCC_MW_RCVRY_BLK_FW_DNLD = false;                         \
+      nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_EXT_SWITCH = true;                  \
+      nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_WO_EXT_SWITCH = false;              \
+      nfcFL.nfccFL._NFCC_FW_WA = false;                                        \
+      nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT = false;                            \
+      nfcFL.nfccFL._NFCC_ROUTING_BLOCK_BIT = false;                            \
+      nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = false;                         \
+      nfcFL.nfccFL._HW_ANTENNA_LOOP4_SELF_TEST = true;                         \
+      nfcFL.nfccFL._NFCEE_REMOVED_NTF_RECOVERY = true;                         \
+      nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = false;                            \
+      nfcFL.nfccFL._UICC_CREATE_CONNECTIVITY_PIPE = false;                     \
+      nfcFL.nfccFL._NFCC_AID_MATCHING_PLATFORM_CONFIG = true;                  \
+      nfcFL.nfccFL._NFCC_ROUTING_BLOCK_BIT_PROP = true;                        \
+      nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 2;                               \
+                                                                               \
+      nfcFL.eseFL._ESE_FORCE_ENABLE = true;                                    \
+                                                                               \
+      nfcFL.nfcMwFL._NCI_INTERFACE_UICC_DIRECT = 0x82;                         \
+      nfcFL.nfcMwFL._NCI_INTERFACE_ESE_DIRECT = 0x83;                          \
+                                                                               \
+      SRTCPY_FW("libpn548ad_fw", "libpn548ad_fw_platform",                     \
+                "libpn548ad_fw_pku")                                           \
+                                                                               \
+      nfcFL._PHDNLDNFC_USERDATA_EEPROM_OFFSET = 0x02BCU;                       \
+      nfcFL._PHDNLDNFC_USERDATA_EEPROM_LEN = 0x0C00U;                          \
+                                                                               \
+    } else if (chipType == pn547C2) {                                          \
+      nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = false;                   \
+      nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = true;                                \
+      nfcFL.nfccFL._NFCC_MW_RCVRY_BLK_FW_DNLD = false;                         \
+      nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_EXT_SWITCH = false;                 \
+      nfcFL.nfccFL._NFC_NXP_STAT_DUAL_UICC_WO_EXT_SWITCH = false;              \
+      nfcFL.nfccFL._NFCC_FW_WA = false;                                        \
+      nfcFL.nfccFL._NFCC_FORCE_NCI1_0_INIT = false;                            \
+      nfcFL.nfccFL._NFCC_ROUTING_BLOCK_BIT = false;                            \
+      nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = false;                         \
+      nfcFL.nfccFL._HW_ANTENNA_LOOP4_SELF_TEST = true;                         \
+      nfcFL.nfccFL._NFCEE_REMOVED_NTF_RECOVERY = true;                         \
+      nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = false;                            \
+      nfcFL.nfccFL._UICC_CREATE_CONNECTIVITY_PIPE = false;                     \
+      nfcFL.nfccFL._NFCC_AID_MATCHING_PLATFORM_CONFIG = true;                  \
+      nfcFL.nfccFL._NFCC_ROUTING_BLOCK_BIT_PROP = false;                       \
+      nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 2;                               \
+                                                                               \
+      nfcFL.nfcMwFL._NCI_INTERFACE_UICC_DIRECT = 0x81;                         \
+      nfcFL.nfcMwFL._NCI_INTERFACE_ESE_DIRECT = 0x82;                          \
+                                                                               \
+      SRTCPY_FW("libpn547_fw", "libpn547_fw_platform", "libpn547_fw_pku")      \
+                                                                               \
+    } else if (chipType == DEFAULT_CHIP_TYPE) {                                \
+      nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                             \
+    }                                                                          \
+  }
 
 #define STRCPY_FW_BIN(str) {                                                \
   nfcFL._FW_BIN_PATH.clear();                                               \
