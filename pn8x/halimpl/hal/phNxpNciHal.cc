@@ -3446,7 +3446,7 @@ void phNxpNciHal_getVendorConfig(
   if (GetNxpNumValue(NAME_DEFAULT_ROUTE, &num, sizeof(num))) {
     config.defaultRoute = num;
   }
-  if (GetNxpByteArrayValue(NAME_DEVICE_HOST_WHITE_LIST, (char*)buffer.data(),
+  if (GetNxpByteArrayValue(NAME_DEVICE_HOST_ALLOW_LIST, (char*)buffer.data(),
                            buffer.size(), &retlen)) {
     config.hostWhitelist.resize(retlen);
     for (int i = 0; i < retlen; i++) config.hostWhitelist[i] = buffer[i];
