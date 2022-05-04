@@ -555,3 +555,57 @@ NFCSTATUS phNxpNciHal_setExtendedFieldMode() {
   }
   return status;
 }
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_configGPIOControl()
+**
+** Description      Helper function to configure GPIO control
+**
+** Parameters       gpioControl - Byte array with first two bytes are used to
+**                  configure gpio for specific functionality (ex:ULPDET,
+**                  GPIO LEVEL ...) and 3rd byte indicates the level of GPIO
+**                  to be set.
+**                  len        - Len of byte array
+**
+** Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS
+*******************************************************************************/
+NFCSTATUS phNxpNciHal_configGPIOControl(uint8_t gpioCtrl[], uint8_t len) {
+  NFCSTATUS status = NFCSTATUS_SUCCESS;
+
+  if (len == 0) {
+    return NFCSTATUS_INVALID_PARAMETER;
+  }
+  if (nfcFL.chipType <= sn100u) {
+    NXPLOG_NCIHAL_D("%s : Not applicable for chipType %d", __func__,
+                    nfcFL.chipType);
+    return status;
+  }
+  phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
+
+  mEEPROM_info.request_mode = SET_EEPROM_DATA;
+  mEEPROM_info.buffer = (uint8_t*)gpioCtrl;
+  // First two bytes decides purpose of GPIO config
+  // LIKE ULPDET, GPIO CTRL
+  mEEPROM_info.bufflen = 2;
+  mEEPROM_info.request_type = EEPROM_CONF_GPIO_CTRL;
+
+  status = request_EEPROM(&mEEPROM_info);
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_D("%s : Failed to Enable GPIO ctrl", __func__);
+    return status;
+  }
+  if (len >= 3) {
+    mEEPROM_info.request_mode = SET_EEPROM_DATA;
+    mEEPROM_info.buffer = gpioCtrl + 2;
+    // Last byte contains bitmask of GPIO 2/3 values.
+    mEEPROM_info.bufflen = 1;
+    mEEPROM_info.request_type = EEPROM_SET_GPIO_VALUE;
+
+    status = request_EEPROM(&mEEPROM_info);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_D("%s : Failed to set GPIO ctrl", __func__);
+    }
+  }
+  return status;
+}

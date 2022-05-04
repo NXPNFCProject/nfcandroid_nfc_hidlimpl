@@ -1959,6 +1959,14 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   }
 
 #if (NXP_EXTNS == TRUE)
+  uint8_t gpioCtrl[3] = {0x00, 0x00, 0x00};
+  long gpioCtrlLen = 0;
+  isfound = GetNxpByteArrayValue(NAME_CONF_GPIO_CONTROL, (char*)gpioCtrl,
+                                 sizeof(gpioCtrl), &gpioCtrlLen);
+  if (isfound > 0 && gpioCtrlLen != 0) {
+    phNxpNciHal_configGPIOControl(gpioCtrl, gpioCtrlLen);
+  }
+
   isfound = GetNxpNumValue(NAME_NXP_NCI_PARSER_LIBRARY, &num, sizeof(num));
   if (isfound > 0 && num == 0x01) {
     phNxpNciHal_configNciParser(true);
