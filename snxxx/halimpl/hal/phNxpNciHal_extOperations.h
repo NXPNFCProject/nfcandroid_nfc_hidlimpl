@@ -136,3 +136,19 @@ phNxpNciHal_get_uicc_hci_params(std::vector<uint8_t>& ptr, uint8_t bufflen,
  *
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_setExtendedFieldMode();
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_configGPIOControl()
+**
+** Description      Helper function to configure GPIO control
+**
+** Parameters       gpioControl - Byte array with first two bytes are used to
+**                  configure gpio for specific functionality (ex:ULPDET,
+**                  GPIO LEVEL ...) and 3rd byte indicates the level of GPIO
+**                  to be set.
+**                  len        - Len of byte array
+**
+** Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS
+*******************************************************************************/
+NFCSTATUS phNxpNciHal_configGPIOControl(uint8_t gpioControl[], uint8_t len);
