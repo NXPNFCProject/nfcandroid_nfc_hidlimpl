@@ -51,7 +51,7 @@ tNFC_chipType capability::processChipType(uint8_t* msg, uint16_t msg_len) {
         }  else if (msg[0] == 0x00) {
           if (msg[offsetFwRomCodeVersion] == 0x01 &&
               msg[offsetFwMajorVersion] == 0x01) {
-            if (msg[msg_len - 4] == 0xCA) {
+            if (msg[offsetDlRspChipType] == 0xCA) {
               chipType = pn560;
             } else {
               chipType = sn220u;
