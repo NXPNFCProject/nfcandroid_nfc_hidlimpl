@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 NXP
+ * Copyright 2012-2022 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1588,7 +1588,7 @@ void RemoveNfcDepIntfFromInitResp(uint8_t* coreInitResp,
   uint8_t noOfSupportedInterface = *(coreInitResp+ indexOfSupportedRfIntf + NCI_HEADER_SIZE);
   uint8_t rfInterfacesLength = *coreInitRespLen - (indexOfSupportedRfIntf + 1 + NCI_HEADER_SIZE);
   uint8_t* supportedRfInterfaces = NULL;
-
+  bool removeNfcDepRequired = false;
   if (noOfSupportedInterface) {
     supportedRfInterfaces = coreInitResp+ indexOfSupportedRfIntf + 1 + NCI_HEADER_SIZE;
   }
@@ -1596,19 +1596,26 @@ void RemoveNfcDepIntfFromInitResp(uint8_t* coreInitResp,
   /* Get the index of Supported RF Interface for NFC-DEP interface in CORE_INIT Response*/
   for (int i =0; i<noOfSupportedInterface; i++) {
     if (*supportedRfInterfaces == NCI_NFC_DEP_RF_INTF) {
+      removeNfcDepRequired = true;
       break;
     }
     uint8_t noOfExtensions = *(supportedRfInterfaces + 1);
     /* 2 bytes for RF interface type & length of Extensions */
     supportedRfInterfaces += (2 + noOfExtensions);
   }
-  /* If NFC-DEP is found in response then remove NFC-DEP from init response and frame
-   * new CORE_INIT_RESP and send to upper layer*/
-  if (supportedRfInterfaces && *supportedRfInterfaces == NCI_NFC_DEP_RF_INTF) {
-    coreInitResp[16] = noOfSupportedInterface -1;
-    uint8_t noBytesToSkipForNfcDep = 2 + *(supportedRfInterfaces+1);
-    memcpy(supportedRfInterfaces, supportedRfInterfaces + noBytesToSkipForNfcDep,
-        (rfInterfacesLength - ((supportedRfInterfaces-supportedRfInterfacesDetails) + noBytesToSkipForNfcDep)));
+  /* If NFC-DEP is found in response then remove NFC-DEP from init response and
+   * frame new CORE_INIT_RESP and send to upper layer*/
+  if (!removeNfcDepRequired) {
+    NXPLOG_NCIHAL_E("%s: NFC-DEP Removal is not requored !!", __func__);
+    return;
+  } else {
+    coreInitResp[16] = noOfSupportedInterface - 1;
+    uint8_t noBytesToSkipForNfcDep = 2 + *(supportedRfInterfaces + 1);
+    memcpy(supportedRfInterfaces,
+           supportedRfInterfaces + noBytesToSkipForNfcDep,
+           (rfInterfacesLength -
+            ((supportedRfInterfaces - supportedRfInterfacesDetails) +
+             noBytesToSkipForNfcDep)));
     *coreInitRespLen -= noBytesToSkipForNfcDep;
     coreInitResp[2] -= noBytesToSkipForNfcDep;
 
