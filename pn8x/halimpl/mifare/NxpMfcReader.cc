@@ -15,19 +15,20 @@
  *  limitations under the License.
  *
  ******************************************************************************/
-#include <log/log.h>
 #include "NxpMfcReader.h"
-#include "phNxpNciHal.h"
+
+#include <log/log.h>
 #include <phNfcCompId.h>
 #include <phNxpLog.h>
 #include <phNxpNciHal_Adaptation.h>
 #include <phNxpNciHal_ext.h>
+#include "phNxpNciHal.h"
 
 extern bool sendRspToUpperLayer;
 extern bool bEnableMfcExtns;
 extern bool bDisableLegacyMfcExtns;
 
-NxpMfcReader &NxpMfcReader::getInstance() {
+NxpMfcReader& NxpMfcReader::getInstance() {
   static NxpMfcReader msNxpMfcReader;
   return msNxpMfcReader;
 }
@@ -42,7 +43,7 @@ NxpMfcReader &NxpMfcReader::getInstance() {
 ** Returns          It returns number of bytes successfully written to NFCC.
 **
 *******************************************************************************/
-int NxpMfcReader::Write(uint16_t mfcDataLen, const uint8_t *pMfcData) {
+int NxpMfcReader::Write(uint16_t mfcDataLen, const uint8_t* pMfcData) {
   uint16_t mfcTagCmdBuffLen = 0;
   uint8_t mfcTagCmdBuff[MAX_MFC_BUFF_SIZE] = {0};
 
@@ -51,30 +52,28 @@ int NxpMfcReader::Write(uint16_t mfcDataLen, const uint8_t *pMfcData) {
     mfcDataLen = MAX_MFC_BUFF_SIZE;
   }
   memcpy(mfcTagCmdBuff, pMfcData, mfcDataLen);
-  if (mfcDataLen >= 3)
-    mfcTagCmdBuffLen = mfcDataLen - NCI_HEADER_SIZE;
+  if (mfcDataLen >= 3) mfcTagCmdBuffLen = mfcDataLen - NCI_HEADER_SIZE;
   BuildMfcCmd(&mfcTagCmdBuff[3], &mfcTagCmdBuffLen);
 
   mfcTagCmdBuff[2] = mfcTagCmdBuffLen;
   mfcDataLen = mfcTagCmdBuffLen + NCI_HEADER_SIZE;
 
-  if (checkIsMFCIncDecRestore(mfcTagCmdBuff[4])) {
+  if (checkIsMFCIncDecRestore(pMfcData[3])) {
     if (sem_init(&mNacksem, 0, 0) != 0) {
       NXPLOG_NCIHAL_E("%s : sem_init failed", __func__);
       return 0;
     }
   }
-
   int writtenDataLen = phNxpNciHal_write_internal(mfcDataLen, mfcTagCmdBuff);
 
   /* send TAG_CMD part 2 for Mifare increment ,decrement and restore commands */
-  if (checkIsMFCIncDecRestore(mfcTagCmdBuff[4])) {
+  if (checkIsMFCIncDecRestore(pMfcData[3])) {
     MfcWaitForAck();
     if (isAck) {
       NXPLOG_NCIHAL_D("part 1 command Acked");
       SendIncDecRestoreCmdPart2(pMfcData);
     } else {
-      NXPLOG_NCIHAL_E("part 1 command NAck");
+      NXPLOG_NCIHAL_E("part 1 command NACK");
     }
     sem_destroy(&mNacksem);
   }
@@ -90,30 +89,30 @@ int NxpMfcReader::Write(uint16_t mfcDataLen, const uint8_t *pMfcData) {
 ** Returns          None
 **
 *******************************************************************************/
-void NxpMfcReader::BuildMfcCmd(uint8_t *pData, uint16_t *pLength) {
+void NxpMfcReader::BuildMfcCmd(uint8_t* pData, uint16_t* pLength) {
   uint16_t cmdBuffLen = *pLength;
   memcpy(mMfcTagCmdIntfData.sendBuf, pData, cmdBuffLen);
   mMfcTagCmdIntfData.sendBufLen = cmdBuffLen;
 
   switch (pData[0]) {
-  case eMifareAuthentA:
-  case eMifareAuthentB:
-    BuildAuthCmd();
-    break;
-  case eMifareRead16:
-    BuildReadCmd();
-    break;
-  case eMifareWrite16:
-    AuthForWrite();
-    BuildWrite16Cmd();
-    break;
-  case eMifareInc:
-  case eMifareDec:
-    BuildIncDecCmd();
-    break;
-  default:
-    BuildRawCmd();
-    break;
+    case eMifareAuthentA:
+    case eMifareAuthentB:
+      BuildAuthCmd();
+      break;
+    case eMifareRead16:
+      BuildReadCmd();
+      break;
+    case eMifareWrite16:
+      AuthForWrite();
+      BuildWrite16Cmd();
+      break;
+    case eMifareInc:
+    case eMifareDec:
+      BuildIncDecCmd();
+      break;
+    default:
+      BuildRawCmd();
+      break;
   }
 
   memcpy(pData, mMfcTagCmdIntfData.sendBuf, (mMfcTagCmdIntfData.sendBufLen));
@@ -152,7 +151,7 @@ void NxpMfcReader::BuildAuthCmd() {
   if (!isPreloadedKey) {
     byKey |= MFC_EMBEDDED_KEY;
     memmove(&mMfcTagCmdIntfData.sendBuf[3], &mMfcTagCmdIntfData.sendBuf[6],
-           MFC_AUTHKEYLEN);
+            MFC_AUTHKEYLEN);
     mMfcTagCmdIntfData.sendBufLen += MFC_AUTHKEYLEN;
   }
 
@@ -221,8 +220,10 @@ bool NxpMfcReader::checkIsMFCIncDecRestore(uint8_t cmdInst) {
 void NxpMfcReader::BuildWrite16Cmd() {
   mMfcTagCmdIntfData.sendBuf[0] = eMfRawDataXchgHdr;
   mMfcTagCmdIntfData.sendBufLen = mMfcTagCmdIntfData.sendBufLen - 1;
-  memmove(mMfcTagCmdIntfData.sendBuf + 1, mMfcTagCmdIntfData.sendBuf + 2,
-          mMfcTagCmdIntfData.sendBufLen);
+  uint8_t buff[mMfcTagCmdIntfData.sendBufLen];
+  memset(buff, 0, mMfcTagCmdIntfData.sendBufLen);
+  memcpy(buff, mMfcTagCmdIntfData.sendBuf + 2, mMfcTagCmdIntfData.sendBufLen);
+  memcpy(mMfcTagCmdIntfData.sendBuf + 1, buff, mMfcTagCmdIntfData.sendBufLen);
 }
 
 /*******************************************************************************
@@ -236,8 +237,10 @@ void NxpMfcReader::BuildWrite16Cmd() {
 *******************************************************************************/
 void NxpMfcReader::BuildRawCmd() {
   mMfcTagCmdIntfData.sendBufLen = mMfcTagCmdIntfData.sendBufLen + 1;
-  memmove(mMfcTagCmdIntfData.sendBuf + 1, mMfcTagCmdIntfData.sendBuf,
-          mMfcTagCmdIntfData.sendBufLen);
+  uint8_t buff[mMfcTagCmdIntfData.sendBufLen];
+  memset(buff, 0, mMfcTagCmdIntfData.sendBufLen);
+  memcpy(buff, mMfcTagCmdIntfData.sendBuf, mMfcTagCmdIntfData.sendBufLen);
+  memcpy(mMfcTagCmdIntfData.sendBuf + 1, buff, mMfcTagCmdIntfData.sendBufLen);
   mMfcTagCmdIntfData.sendBuf[0] = eMfRawDataXchgHdr;
 }
 
@@ -251,10 +254,12 @@ void NxpMfcReader::BuildRawCmd() {
 **
 *******************************************************************************/
 void NxpMfcReader::BuildIncDecCmd() {
-  mMfcTagCmdIntfData.sendBufLen = 0x03; // eMfRawDataXchgHdr + cmd +
-                                        // blockaddress
-  memmove(mMfcTagCmdIntfData.sendBuf + 1, mMfcTagCmdIntfData.sendBuf,
-          mMfcTagCmdIntfData.sendBufLen);
+  mMfcTagCmdIntfData.sendBufLen = 0x03;  // eMfRawDataXchgHdr + cmd +
+                                         // blockaddress
+  uint8_t buff[mMfcTagCmdIntfData.sendBufLen];
+  memset(buff, 0, mMfcTagCmdIntfData.sendBufLen);
+  memcpy(buff, mMfcTagCmdIntfData.sendBuf, mMfcTagCmdIntfData.sendBufLen);
+  memcpy(mMfcTagCmdIntfData.sendBuf + 1, buff, mMfcTagCmdIntfData.sendBufLen);
   mMfcTagCmdIntfData.sendBuf[0] = eMfRawDataXchgHdr;
 }
 
@@ -294,7 +299,7 @@ void NxpMfcReader::AuthForWrite() {
 ** Returns          None
 **
 *******************************************************************************/
-void NxpMfcReader::SendIncDecRestoreCmdPart2(const uint8_t *mfcData) {
+void NxpMfcReader::SendIncDecRestoreCmdPart2(const uint8_t* mfcData) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   /* Build TAG_CMD part 2 for Mifare increment ,decrement and restore commands*/
   uint8_t incDecRestorePart2[] = {0x00, 0x00, 0x05, (uint8_t)eMfRawDataXchgHdr,
@@ -325,7 +330,7 @@ void NxpMfcReader::SendIncDecRestoreCmdPart2(const uint8_t *mfcData) {
 **                  NFCSTATUS_FAILED  - Data Reception failed
 **
 *******************************************************************************/
-NFCSTATUS NxpMfcReader::AnalyzeMfcResp(uint8_t *pBuff, uint16_t *pBufflen) {
+NFCSTATUS NxpMfcReader::AnalyzeMfcResp(uint8_t* pBuff, uint16_t* pBufflen) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   uint16_t wPldDataSize = 0;
   MfcRespId_t RecvdExtnRspId = eInvalidRsp;
@@ -336,64 +341,66 @@ NFCSTATUS NxpMfcReader::AnalyzeMfcResp(uint8_t *pBuff, uint16_t *pBufflen) {
     RecvdExtnRspId = (MfcRespId_t)pBuff[0];
     NXPLOG_NCIHAL_E("%s: RecvdExtnRspId=%d", __func__, RecvdExtnRspId);
     switch (RecvdExtnRspId) {
-    case eMfXchgDataRsp: {
-      NFCSTATUS writeRespStatus = NFCSTATUS_SUCCESS;
-      /* check the status byte */
-      if (*pBufflen == 3) {
-        if ((pBuff[0] == 0x10) && (pBuff[1] != 0x0A)) {
-          NXPLOG_NCIHAL_E("Mifare Error in payload response");
-          *pBufflen = 0x1;
-          pBuff[0] = NFCSTATUS_FAILED;
-          return NFCSTATUS_FAILED;
-        } else {
-          pBuff[0] = NFCSTATUS_SUCCESS;
-          return NFCSTATUS_SUCCESS;
+      case eMfXchgDataRsp: {
+        NFCSTATUS writeRespStatus = NFCSTATUS_SUCCESS;
+        /* check the status byte */
+        if (*pBufflen == 3) {
+          if ((pBuff[0] == 0x10) && (pBuff[1] != 0x0A)) {
+            NXPLOG_NCIHAL_E("Mifare Error in payload response");
+            *pBufflen = 0x1;
+            pBuff[0] = NFCSTATUS_FAILED;
+            return NFCSTATUS_FAILED;
+          } else {
+            pBuff[0] = NFCSTATUS_SUCCESS;
+            return NFCSTATUS_SUCCESS;
+          }
         }
-      }
-      writeRespStatus = pBuff[*pBufflen - 1];
+        writeRespStatus = pBuff[*pBufflen - 1];
 
-      if (NFCSTATUS_SUCCESS == writeRespStatus) {
-        status = NFCSTATUS_SUCCESS;
-        uint16_t wRecvDataSz = 0;
+        if (NFCSTATUS_SUCCESS == writeRespStatus) {
+          status = NFCSTATUS_SUCCESS;
+          uint16_t wRecvDataSz = 0;
 
-        wPldDataSize =
-            ((*pBufflen) - (MFC_EXTN_ID_SIZE + MFC_EXTN_STATUS_SIZE));
-        wRecvDataSz = MAX_MFC_BUFF_SIZE;
-        if ((wPldDataSize) <= wRecvDataSz) {
-          /* Extract the data part from pBuff[2] & fill it to be sent to
-           * upper layer */
-          memmove(&(pBuff[0]), &(pBuff[1]), wPldDataSize);
-          /* update the number of bytes received from lower layer,excluding
-           * the status byte */
-          *pBufflen = wPldDataSize;
+          wPldDataSize =
+              ((*pBufflen) - (MFC_EXTN_ID_SIZE + MFC_EXTN_STATUS_SIZE));
+          wRecvDataSz = MAX_MFC_BUFF_SIZE;
+          if ((wPldDataSize) <= wRecvDataSz) {
+            /* Extract the data part from pBuff[2] & fill it to be sent to
+             * upper layer */
+            memcpy(&(pBuff[0]), &(pBuff[1]), wPldDataSize);
+            /* update the number of bytes received from lower layer,excluding
+             * the status byte */
+            *pBufflen = wPldDataSize;
+          } else {
+            status = NFCSTATUS_FAILED;
+          }
         } else {
           status = NFCSTATUS_FAILED;
         }
-      } else {
-        status = NFCSTATUS_FAILED;
-      }
-    } break;
+      } break;
 
-    case eMfcAuthRsp: {
-      /* check the status byte */
-      if (NFCSTATUS_SUCCESS == pBuff[1]) {
-        status = NFCSTATUS_SUCCESS;
-        /* DataLen = TotalRecvdLen - (sizeof(RspId) + sizeof(Status)) */
-        wPldDataSize =
-            ((*pBufflen) - (MFC_EXTN_ID_SIZE + MFC_EXTN_STATUS_SIZE));
-        /* Extract the data part from pBuff[2] & fill it to be sent to upper
-         * layer */
-        pBuff[0] = pBuff[1];
-        /* update the number of bytes received from lower layer,excluding
-         * the status byte */
-        *pBufflen = wPldDataSize + 1;
-      } else {
-        pBuff[0] = pBuff[1];
-        *pBufflen = 1;
+      case eMfcAuthRsp: {
+        /* check the status byte */
+        if (NFCSTATUS_SUCCESS == pBuff[1]) {
+          status = NFCSTATUS_SUCCESS;
+          /* DataLen = TotalRecvdLen - (sizeof(RspId) + sizeof(Status)) */
+          wPldDataSize =
+              ((*pBufflen) - (MFC_EXTN_ID_SIZE + MFC_EXTN_STATUS_SIZE));
+          /* Extract the data part from pBuff[2] & fill it to be sent to upper
+           * layer */
+          pBuff[0] = pBuff[1];
+          /* update the number of bytes received from lower layer,excluding
+           * the status byte */
+          *pBufflen = wPldDataSize + 1;
+        } else {
+          pBuff[0] = pBuff[1];
+          *pBufflen = 1;
+          status = NFCSTATUS_FAILED;
+        }
+      } break;
+      default: {
         status = NFCSTATUS_FAILED;
-      }
-    } break;
-    default: { status = NFCSTATUS_FAILED; } break;
+      } break;
     }
   }
   return status;
@@ -410,7 +417,7 @@ NFCSTATUS NxpMfcReader::AnalyzeMfcResp(uint8_t *pBuff, uint16_t *pBufflen) {
 **                  NFCSTATUS_FAILED
 **
 *******************************************************************************/
-NFCSTATUS NxpMfcReader::CheckMfcResponse(uint8_t *pTransceiveData,
+NFCSTATUS NxpMfcReader::CheckMfcResponse(uint8_t* pTransceiveData,
                                          uint16_t transceiveDataLen) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
 
@@ -438,7 +445,7 @@ NFCSTATUS NxpMfcReader::CheckMfcResponse(uint8_t *pTransceiveData,
 
 /*******************************************************************************
 **
-** Function         MfcNotifyOnAckReceived
+** Function         MfcAckReceived
 **
 ** Description      This function is called to notify that MFC
 **                  response data is received
@@ -447,7 +454,7 @@ NFCSTATUS NxpMfcReader::CheckMfcResponse(uint8_t *pTransceiveData,
 **                  NFCSTATUS_FAILED
 **
 *******************************************************************************/
-void NxpMfcReader::MfcNotifyOnAckReceived(uint8_t *buff) {
+void NxpMfcReader::MfcNotifyOnAckReceived(uint8_t* buff) {
   const uint8_t NCI_RF_CONN_ID = 0;
   /*
    * If Mifare Activated & received RF data packet
@@ -457,7 +464,7 @@ void NxpMfcReader::MfcNotifyOnAckReceived(uint8_t *buff) {
     int sem_val;
     isAck = (buff[3] == NFCSTATUS_SUCCESS);
     sem_getvalue(&mNacksem, &sem_val);
-    if (sem_val == 0 ) {
+    if (sem_val == 0) {
       if (sem_post(&mNacksem) == -1) {
         NXPLOG_NCIHAL_E("%s : sem_post failed", __func__);
       }
@@ -482,12 +489,11 @@ NFCSTATUS NxpMfcReader::MfcWaitForAck() {
   isAck = false;
   clock_gettime(CLOCK_MONOTONIC, &ts);
   ts.tv_sec += sem_timedout;
-  while ((s = sem_timedwait_monotonic_np(&mNacksem, &ts)) == -1 &&
-         errno == EINTR) {
+  while ((s = sem_timedwait_monotonic_np(&mNacksem, &ts)) == -1 && errno == EINTR) {
     continue; /* Restart if interrupted by handler */
   }
   if (s != -1) {
-     status = NFCSTATUS_SUCCESS;
+    status = NFCSTATUS_SUCCESS;
   }
   return status;
 }
