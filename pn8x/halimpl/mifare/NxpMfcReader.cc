@@ -458,7 +458,7 @@ void NxpMfcReader::MfcNotifyOnAckReceived(uint8_t* buff) {
   const uint8_t NCI_RF_CONN_ID = 0;
   /*
    * If Mifare Activated & received RF data packet
-   * */
+   */
   if (bEnableMfcExtns && bDisableLegacyMfcExtns &&
       (buff[0] == NCI_RF_CONN_ID)) {
     int sem_val;
