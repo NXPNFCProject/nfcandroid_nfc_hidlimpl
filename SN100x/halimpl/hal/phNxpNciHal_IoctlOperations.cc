@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 NXP
+ * Copyright 2019-2022 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -865,6 +865,14 @@ void phNxpNciHal_txNfccClockSetCmd(void) {
       pllCmdLen = sizeof(PN557_SET_CONFIG_CMD_PLL_38_4MHZ);
       pCmd4DpllSetting = (uint8_t *)PN557_SET_CONFIG_CMD_DPLL_38_4MHZ;
       dpllCmdLen = sizeof(PN557_SET_CONFIG_CMD_DPLL_38_4MHZ);
+      break;
+    }
+    case CLK_FREQ_48MHZ: {
+      NXPLOG_NCIHAL_D("PLL setting for CLK_FREQ_48MHZ");
+      pCmd4PllSetting = (uint8_t*)PN557_SET_CONFIG_CMD_PLL_48MHZ;
+      pllCmdLen = sizeof(PN557_SET_CONFIG_CMD_PLL_48MHZ);
+      pCmd4DpllSetting = (uint8_t*)PN557_SET_CONFIG_CMD_DPLL_48MHZ;
+      dpllCmdLen = sizeof(PN557_SET_CONFIG_CMD_DPLL_48MHZ);
       break;
     }
     default:

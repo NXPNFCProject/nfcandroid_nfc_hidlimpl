@@ -2806,7 +2806,7 @@ static void phNxpNciHal_nfccClockCfgRead(void)
         nxpprofile_ctrl.bClkSrcVal = NXP_SYS_CLK_SRC_SEL;
     }
     if ((nxpprofile_ctrl.bClkFreqVal < CLK_FREQ_13MHZ) ||
-            (nxpprofile_ctrl.bClkFreqVal > CLK_FREQ_52MHZ))
+            (nxpprofile_ctrl.bClkFreqVal > CLK_FREQ_48MHZ))
     {
         NXPLOG_FWDNLD_E("Clock frequency value is wrong in config file, setting it as default");
         nxpprofile_ctrl.bClkFreqVal = NXP_SYS_CLK_FREQ_SEL;
@@ -2864,6 +2864,14 @@ int   phNxpNciHal_determineConfiguredClockSrc()
         else if (nxpprofile_ctrl.bClkFreqVal == CLK_FREQ_52MHZ)
         {
             param_clock_src |= 0x05;
+        }
+        else if (nxpprofile_ctrl.bClkFreqVal == CLK_FREQ_32MHZ)
+        {
+            param_clock_src |= 0x06;
+        }
+        else if (nxpprofile_ctrl.bClkFreqVal == CLK_FREQ_48MHZ)
+        {
+            param_clock_src |= 0x0A;
         }
         else
         {
@@ -3560,6 +3568,10 @@ int phNxpNciHal_check_config_parameter() {
       param_clock_src |= 0x04;
     } else if (nxpprofile_ctrl.bClkFreqVal == CLK_FREQ_52MHZ) {
       param_clock_src |= 0x05;
+    } else if (nxpprofile_ctrl.bClkFreqVal == CLK_FREQ_32MHZ) {
+      param_clock_src |= 0x06;
+    } else if (nxpprofile_ctrl.bClkFreqVal == CLK_FREQ_48MHZ) {
+      param_clock_src |= 0x0A;
     } else {
       NXPLOG_NCIHAL_E("Wrong clock freq, send default PLL@19.2MHz");
       param_clock_src = 0x11;
