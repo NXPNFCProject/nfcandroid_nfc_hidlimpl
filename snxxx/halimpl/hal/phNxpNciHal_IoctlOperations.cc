@@ -374,7 +374,6 @@ string phNxpNciHal_getNxpConfigIf() {
 *******************************************************************************/
 static void phNxpNciHal_getFilteredConfig(string& config) {
   config = phNxpNciHal_extractConfig(config);
-
   if (phNxpNciHal_IsAutonmousModeSet(config)) {
     config = phNxpNciHal_UpdatePwrStateConfigs(config);
   }
@@ -414,6 +413,19 @@ static string phNxpNciHal_extractConfig(string& config) {
       continue;
     }
     string value_string(Trim(line.substr(search + 1, string::npos)));
+
+    if(value_string[0] == '{' && value_string[value_string.length() - 1] != '}') {
+      string line_append;
+
+      do{
+        getline(ss, line_append);
+        if (line_append.empty()) break;
+        if (line_append.at(0) == '#') break;
+        if (line_append.at(0) == 0) break;
+        line_append = Trim(line_append);
+        value_string.append(line_append);
+      }while(line_append[line_append.length() - 1] != '}');
+    }
 
     if (!phNxpNciHal_parseValueFromString(value_string)) continue;
 
