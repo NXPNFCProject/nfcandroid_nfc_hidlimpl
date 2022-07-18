@@ -1062,13 +1062,14 @@ int phNxpNciHal_write_internal(uint16_t data_len, const uint8_t* p_data) {
   if (nxpncihal_ctrl.halStatus != HAL_STATUS_OPEN) {
     return NFCSTATUS_FAILED;
   }
+  if ((data_len + MAX_NXP_HAL_EXTN_BYTES) > NCI_MAX_DATA_LEN) {
+    NXPLOG_NCIHAL_D("cmd_len exceeds limit NCI_MAX_DATA_LEN");
+    android_errorWriteLog(0x534e4554, "121267042");
+    goto clean_and_return;
+  }
   /* Create local copy of cmd_data */
   memcpy(nxpncihal_ctrl.p_cmd_data, p_data, data_len);
   nxpncihal_ctrl.cmd_len = data_len;
-  if ((nxpncihal_ctrl.cmd_len + MAX_NXP_HAL_EXTN_BYTES) > NCI_MAX_DATA_LEN) {
-    NXPLOG_NCIHAL_D("cmd_len exceeds limit NCI_MAX_DATA_LEN");
-    goto clean_and_return;
-  }
 #ifdef P2P_PRIO_LOGIC_HAL_IMP
   /* Specific logic to block RF disable when P2P priority logic is busy */
   if (p_data[0] == 0x21 && p_data[1] == 0x06 && p_data[2] == 0x01 &&
