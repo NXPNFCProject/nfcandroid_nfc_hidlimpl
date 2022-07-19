@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2019-2021 NXP
+ *  Copyright 2019-2021, 2022 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
 
 #define NxpMfcReaderInstance (NxpMfcReader::getInstance())
 
-#define MAX_MFC_BUFF_SIZE 32
+#define MAX_MFC_BUFF_SIZE 300
 
 #define MFC_4K_BLK128 128  /*Block number 128 for Mifare 4k */
 #define MFC_SECTOR_NO32 32 /* Sector 32 for Mifare 4K*/
