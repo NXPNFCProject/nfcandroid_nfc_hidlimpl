@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020-2021 NXP
+ *  Copyright 2020-2022 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -33,6 +33,11 @@ enum NfccResetType : uint32_t {
 enum EseResetCallSrc : uint32_t {
   SRC_SPI = 0x0,
   SRC_NFC = 0x10,
+};
+
+enum NfcReadPending : uint32_t {
+  MODE_NFC_RESET_READ_PENDING = 0x0,
+  MODE_NFC_SET_READ_PENDING
 };
 
 enum EseResetType : uint32_t {
@@ -135,6 +140,21 @@ class NfccTransport {
    **
    ****************************************************************************/
   virtual int NfccReset(void* pDevHandle, NfccResetType eType);
+
+  /*****************************************************************************
+   **
+   ** Function         UpdateReadPending
+   **
+   ** Description      Set or Reset Read Pending of NFC
+   **
+   ** Parameters       pDevHandle     - valid device handle
+   **                  eType          - set or clear the flag
+   **
+   ** Returns           0   - operation success
+   **                  -1   - operation failure
+   **
+   ****************************************************************************/
+  virtual int UpdateReadPending(void* pDevHandle, NfcReadPending eType);
 
   /*****************************************************************************
    **
