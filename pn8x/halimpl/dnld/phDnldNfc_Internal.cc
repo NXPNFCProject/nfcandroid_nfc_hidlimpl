@@ -19,6 +19,7 @@
  * Download Component
  */
 
+#include <log/log.h>
 #include <phDnldNfc_Internal.h>
 #include <phDnldNfc_Utils.h>
 #include <phTmlNfc.h>
@@ -873,6 +874,12 @@ static NFCSTATUS phDnldNfc_ProcessFrame(void* pContext,
           NXPLOG_FWDNLD_E("Cannot update Response buff with received data!!");
         }
       } else {
+        if (pInfo->wLength <= PHDNLDNFC_FRAME_CRC_LEN) {
+          NXPLOG_FWDNLD_E("Invalid frame received");
+          android_errorWriteLog(0x534e4554, "184728427");
+          wStatus = PHNFCSTVAL(CID_NFC_DNLD, NFCSTATUS_FAILED);
+          return wStatus;
+        }
         /* calculate CRC16 */
         wCrcVal = phDnldNfc_CalcCrc16(
             (pInfo->pBuff), ((pInfo->wLength) - PHDNLDNFC_FRAME_CRC_LEN));
