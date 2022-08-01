@@ -1222,11 +1222,16 @@ static NFCSTATUS phDnldNfc_UpdateRsp(pphDnldNfc_DlContext_t pDlContext,
     } else {
       if (PH_DL_STATUS_OK == (pInfo->pBuff[PHDNLDNFC_FRAMESTATUS_OFFSET])) {
         if ((0 != (pDlContext->tRspBuffInfo.wLen)) &&
-            (NULL != (pDlContext->tRspBuffInfo.pBuff))) {
+            (NULL != pDlContext->tRspBuffInfo.pBuff) &&
+            (pDlContext->tRspBuffInfo.wLen >= wPldLen)) {
           memcpy((pDlContext->tRspBuffInfo.pBuff),
                  &(pInfo->pBuff[PHDNLDNFC_FRAMESTATUS_OFFSET + 1]), wPldLen);
 
           (pDlContext->tRspBuffInfo.wLen) = wPldLen;
+        } else {
+          NXPLOG_FWDNLD_E("Cannot update Response buff with received data!!");
+          wStatus = NFCSTATUS_BUFFER_TOO_SMALL;
+          android_errorWriteLog(0x534e4554, "192551247");
         }
       } else {
         NXPLOG_FWDNLD_E("Unsuccessful Status received!!");
