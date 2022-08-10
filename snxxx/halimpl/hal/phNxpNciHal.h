@@ -183,6 +183,7 @@ typedef struct phNxpNciHal_Control {
   /* to store and restore gpio values */
   phNxpNciGpioInfo_t phNxpNciGpioInfo;
   tNFC_chipType chipType;
+  bool_t power_reset_triggered;
 } phNxpNciHal_Control_t;
 
 typedef struct {

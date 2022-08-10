@@ -1300,6 +1300,9 @@ static void phNxpNciHal_read_complete(void* pContext,
       }
     }
     phNxpNciHal_print_res_status(pInfo->pBuff, &pInfo->wLength);
+    if (nxpncihal_ctrl.power_reset_triggered == true) {
+      nxpncihal_ctrl.power_reset_triggered = false;
+    }
 
     /* Check if response should go to hal module only */
     if (nxpncihal_ctrl.hal_ext_enabled == TRUE &&
@@ -2677,6 +2680,7 @@ int phNxpNciHal_power_cycle(void) {
     NXPLOG_NCIHAL_D("Power Cycle failed due to hal status not open");
     return NFCSTATUS_FAILED;
   }
+  nxpncihal_ctrl.power_reset_triggered = true;
   status = phTmlNfc_IoCtl(phTmlNfc_e_PowerReset);
 
   if (NFCSTATUS_SUCCESS == status) {
