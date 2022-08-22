@@ -16,6 +16,7 @@
 
 #include "phNxpNciHal_extOperations.h"
 #include <phNxpLog.h>
+#include <phTmlNfc.h>
 #include "phNfcCommon.h"
 #include "phNxpNciHal_IoctlOperations.h"
 
@@ -25,6 +26,9 @@ nxp_nfc_config_ext_t config_ext;
 static std::vector<uint8_t> uicc1HciParams(0);
 static std::vector<uint8_t> uicc2HciParams(0);
 static std::vector<uint8_t> uiccHciCeParams(0);
+static bool gULPDET_Mode_Flag;
+extern phNxpNciHal_Control_t nxpncihal_ctrl;
+extern NFCSTATUS phNxpNciHal_ext_send_sram_config_to_flash();
 
 /******************************************************************************
  * Function         phNxpNciHal_updateAutonomousPwrState
@@ -607,5 +611,120 @@ NFCSTATUS phNxpNciHal_configGPIOControl(uint8_t gpioCtrl[], uint8_t len) {
       NXPLOG_NCIHAL_D("%s : Failed to set GPIO ctrl", __func__);
     }
   }
+  return status;
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_isULPDetSupported()
+**
+** Description      this function is to check ULPDet feature is supported or not
+**
+** Returns          true or false
+*******************************************************************************/
+bool phNxpNciHal_isULPDetSupported() {
+  unsigned long num = 0;
+  if ((GetNxpNumValue(NAME_NXP_DEFAULT_ULPDET_MODE, &num, sizeof(num)))) {
+    if ((uint8_t)num > 0) {
+      NXPLOG_NCIHAL_E("%s: NxpNci isULPDetSupported true", __func__);
+      return true;
+    }
+  }
+  NXPLOG_NCIHAL_E("%s: NxpNci isULPDetSupported false", __func__);
+  return false;
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_setULPDetFlag()
+**
+** Description      this function is called by Framework API to set ULPDet mode
+**                  enable/disable
+**
+** Parameters       flag - true to enable ULPDet, false to disable
+**
+** Returns          true or false
+*******************************************************************************/
+void phNxpNciHal_setULPDetFlag(bool flag) { gULPDET_Mode_Flag = flag; }
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_getULPDetFlag()
+**
+** Description      this function get the ULPDet state, true if it is enabled
+**                  false if it is disabled
+**
+** Returns          true or false
+*******************************************************************************/
+bool phNxpNciHal_getULPDetFlag() { return gULPDET_Mode_Flag; }
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_propConfULPDetMode()
+**
+** Description      this function applies the configurations to enable/disable
+**                  ULPDet Mode
+**
+** Parameters       bEnable - true to enable, false to disable
+**
+** Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS
+*******************************************************************************/
+NFCSTATUS phNxpNciHal_propConfULPDetMode(bool bEnable) {
+  NFCSTATUS status = NFCSTATUS_SUCCESS;
+  NXPLOG_NCIHAL_E("%s flag %d", __func__, bEnable);
+  if (!phNxpNciHal_isULPDetSupported()) return false;
+
+  uint8_t cmd_coreULPDET[] = {0x2F, 0x00, 0x01, 0x03};
+  uint8_t getConfig_A015[] = {0x20, 0x03, 0x03, 0x01, 0xA0, 0x15};
+  uint8_t setConfig_A015[] = {0x20, 0x02, 0x05, 0x01, 0xA0, 0x15, 0x01, 0x01};
+  uint8_t getConfig_A10F[] = {0x20, 0x03, 0x03, 0x01, 0xA1, 0x0F};
+  uint8_t setConfig_A10F[] = {0x20, 0x02, 0x05, 0x01, 0xA1, 0x0F, 0x01, 0x00};
+
+  uint8_t setUlpdetConfig[] = {0x20, 0x02, 0x05, 0x01, 0xA0, 0x15, 0x01, 0x02};
+  if (bEnable) {
+    status = phNxpNciHal_send_ext_cmd(sizeof(setUlpdetConfig), setUlpdetConfig);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("ulpdet configs set: Failed");
+      goto ULPDEP_END;
+    }
+
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_coreULPDET), cmd_coreULPDET);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("coreULPDET: Failed");
+      goto ULPDEP_END;
+    }
+
+    nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
+    status = phNxpNciHal_ext_send_sram_config_to_flash();
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("Updation of the SRAM contents failed");
+      goto ULPDEP_END;
+    }
+    (void)phTmlNfc_IoCtl(phTmlNfc_e_PullVenLow);
+  } else {
+    status = phNxpNciHal_send_ext_cmd(sizeof(getConfig_A015), getConfig_A015);
+    if ((status == NFCSTATUS_SUCCESS) &&
+        (nxpncihal_ctrl.p_rx_data[8] != 0x01)) {
+      status = phNxpNciHal_send_ext_cmd(sizeof(setConfig_A015), setConfig_A015);
+      if (status != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("Set Config : Failed");
+      }
+    }
+
+    status = phNxpNciHal_send_ext_cmd(sizeof(getConfig_A10F), getConfig_A10F);
+    if ((status == NFCSTATUS_SUCCESS) &&
+        (nxpncihal_ctrl.p_rx_data[8] != 0x00)) {
+      status = phNxpNciHal_send_ext_cmd(sizeof(setConfig_A10F), setConfig_A10F);
+      if (status != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("Set Config: Failed");
+      }
+    }
+    /* reset the flag upon exit ulpdet mode */
+    gULPDET_Mode_Flag = false;
+  }
+
+ULPDEP_END:
+  NXPLOG_NCIHAL_E("%s: exit. status = %d", __func__, status);
+
   return status;
 }

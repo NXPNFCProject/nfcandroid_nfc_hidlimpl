@@ -119,7 +119,9 @@ typedef enum {
   phTmlNfc_e_PowerReset = 5,
   phTmlNfc_e_setFragmentSize,
   phTmlNfc_e_SetNfcState,
-  phTmlNfc_e_ResetNfcState
+  phTmlNfc_e_ResetNfcState,
+  phTmlNfc_e_PullVenLow,
+  phTmlNfc_e_PullVenHigh,
 } phTmlNfc_ControlCode_t; /* Control code for IOCTL call */
 
 /*

@@ -1034,6 +1034,16 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
                                           MODE_NFC_RESET_READ_PENDING);
         break;
       }
+      case phTmlNfc_e_PullVenLow: {
+        gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
+                                  MODE_POWER_OFF);
+        break;
+      }
+      case phTmlNfc_e_PullVenHigh: {
+        gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
+                                  MODE_POWER_ON);
+        break;
+      }
       default: {
         wStatus = NFCSTATUS_INVALID_PARAMETER;
         break;
