@@ -152,3 +152,50 @@ NFCSTATUS phNxpNciHal_setExtendedFieldMode();
 ** Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS
 *******************************************************************************/
 NFCSTATUS phNxpNciHal_configGPIOControl(uint8_t gpioControl[], uint8_t len);
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_isULPDetSupported()
+**
+** Description      this function is to check ULPDet feature is supported or not
+**
+** Returns          true or false
+*******************************************************************************/
+bool phNxpNciHal_isULPDetSupported();
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_setULPDetFlag()
+**
+** Description      this function is called by Framework API to set ULPDet mode
+**                  enable/disable
+**
+** Parameters       flag - true to enable ULPDet, false to disable
+**
+** Returns          true or false
+*******************************************************************************/
+void phNxpNciHal_setULPDetFlag(bool flag);
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_getULPDetFlag()
+**
+** Description      this function get the ULPDet state, true if it is enabled
+**                  false if it is disabled
+**
+** Returns          true or false
+*******************************************************************************/
+bool phNxpNciHal_getULPDetFlag();
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_propConfULPDetMode()
+**
+** Description      this function applies the configurations to enable/disable
+**                  ULPDet Mode
+**
+** Parameters       bEnable - true to enable, false to disable
+**
+** Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS
+*******************************************************************************/
+NFCSTATUS phNxpNciHal_propConfULPDetMode(bool bEnable);

@@ -792,6 +792,15 @@ int phNxpNciHal_MinOpen() {
 
   phTmlNfc_IoCtl(phTmlNfc_e_EnableVen);
 
+  if (phNxpNciHal_isULPDetSupported()) {
+    status = phTmlNfc_IoCtl(phTmlNfc_e_PullVenHigh);
+    if (NFCSTATUS_SUCCESS == status) {
+      NXPLOG_NCIHAL_D("ULPDET phTmlNfc_e_PullVenHigh - SUCCESS\n");
+    } else {
+      NXPLOG_NCIHAL_D("ULPDET phTmlNfc_e_PullVenHigh - FAILED\n");
+    }
+  }
+
   if (wFwVerRsp == 0) {
     bVenResetRequired = true;
   }
@@ -1613,6 +1622,8 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
     request_EEPROM(&mEEPROM_info);
   }
 
+  phNxpNciHal_propConfULPDetMode(false);
+
   config_access = false;
   status = phNxpNciHal_read_fw_dw_status(fw_dwnld_flag);
   if (status != NFCSTATUS_SUCCESS) {
@@ -2303,35 +2314,41 @@ int phNxpNciHal_close(bool bShutdown) {
           "command sent");
     }
 #if (NXP_EXTNS == TRUE)
+  } else if ((!bShutdown) && IS_CHIP_TYPE_GE(sn220u)) {
+    if (phNxpNciHal_getULPDetFlag() == true) {
+      phNxpNciHal_propConfULPDetMode(true);
+    }
   }
 #endif
 close_and_return:
   if (IS_CHIP_TYPE_L(sn220u) || bShutdown) {
     nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
   }
-  do { /*This is NXP_EXTNS code for retry*/
-    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
+  if (phNxpNciHal_getULPDetFlag() == false) {
+    do { /*This is NXP_EXTNS code for retry*/
+      status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
 
-    if (status == NFCSTATUS_SUCCESS) {
-      break;
-    } else {
-      NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed, perform retry after delay");
-      usleep(1000 * 1000);
-      retry++;
-      if (retry > 3) {
-        NXPLOG_NCIHAL_E(
-            "Maximum retries performed, shall restart HAL to recover");
-        abort();
+      if (status == NFCSTATUS_SUCCESS) {
+        break;
+      } else {
+        NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed, perform retry after delay");
+        usleep(1000 * 1000);
+        retry++;
+        if (retry > 3) {
+          NXPLOG_NCIHAL_E(
+              "Maximum retries performed, shall restart HAL to recover");
+          abort();
+        }
       }
-    }
-  } while (retry < 3);
+    } while (retry < 3);
 
-  if (IS_CHIP_TYPE_GE(sn220u) && !bShutdown) {
-    nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
-    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_system_set_service_status),
-                                      cmd_system_set_service_status);
-    if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("NCI SYSTEM SET SERVICE STATUS to OFF Failed");
+    if (IS_CHIP_TYPE_GE(sn220u) && !bShutdown) {
+      nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
+      status = phNxpNciHal_send_ext_cmd(sizeof(cmd_system_set_service_status),
+                                        cmd_system_set_service_status);
+      if (status != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("NCI SYSTEM SET SERVICE STATUS to OFF Failed");
+      }
     }
   }
 
