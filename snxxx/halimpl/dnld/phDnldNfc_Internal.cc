@@ -19,6 +19,7 @@
  * Download Component
  */
 
+#include <log/log.h>
 #include <phDnldNfc_Internal.h>
 #include <phDnldNfc_Utils.h>
 #include <phNxpLog.h>
@@ -868,6 +869,7 @@ static NFCSTATUS phDnldNfc_ProcessFrame(void* pContext,
       } else {
         if (pInfo->wLength <= PHDNLDNFC_FRAME_CRC_LEN) {
           NXPLOG_FWDNLD_E("Invalid frame received");
+          android_errorWriteLog(0x534e4554, "184728427");
           wStatus = PHNFCSTVAL(CID_NFC_DNLD, NFCSTATUS_FAILED);
           return wStatus;
         }
