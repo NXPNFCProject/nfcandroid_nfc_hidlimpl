@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2014, 2022 NXP
+ * Copyright 2010-2014, 2022-2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,6 +74,8 @@ extern bool nfc_debug_enabled;
 /* The Default log level for all the modules. */
 #define NXPLOG_DEFAULT_LOGLEVEL NXPLOG_LOG_ERROR_LOGLEVEL
 
+/* Enable/Disable Capturing SMB ntf to a file */
+#define NAME_NXP_SMBLOG_ENABLED "NXP_SMBLOG_ENABLED"
 /* ################################################################################################################
  */
 /* ############################################### Component Names
