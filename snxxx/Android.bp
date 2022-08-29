@@ -64,6 +64,7 @@ cc_library_shared {
         "halimpl/utils/NxpNfcThreadMutex.cc",
         "halimpl/utils/phNxpConfig.cc",
         "halimpl/utils/phNxpNciHal_utils.cc",
+        "halimpl/utils/phNxpSMBLogger.cc",
         "halimpl/utils/sparse_crc32.cc",
         "halimpl/utils/IntervalTimer.cpp",
         "halimpl/eseclients_extns/src/*.cc",

@@ -24,6 +24,7 @@
 #include <phNxpNciHal_ext.h>
 #include <phTmlNfc.h>
 #include <vector>
+#include "phNxpSMBLogger.h"
 #include "phNxpNciHal.h"
 #include "phNxpNciHal_IoctlOperations.h"
 #include "phNxpNciHal_PowerTrackerIface.h"
@@ -488,8 +489,10 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
       p_ntf[4] = 0x00;
       *p_len = 5;
     }
+  } else if (*p_len >= 2 && p_ntf[0] == 0x6F && p_ntf[1] == 0x04) {
+    NXPLOG_NCIHAL_D(">  SMB Debug notification received");
+    phNxpSMBLogger::getInstance().Log(p_ntf, *p_len);
   }
-
   return status;
 }
 
