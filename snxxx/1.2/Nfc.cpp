@@ -19,6 +19,7 @@
 #define LOG_TAG "android.hardware.nfc@1.2-impl"
 #include "Nfc.h"
 #include <log/log.h>
+#include <memunreachable/memunreachable.h>
 #include "halimpl/inc/phNxpNciHal_Adaptation.h"
 #include "phNfcStatus.h"
 
@@ -182,6 +183,13 @@ void Nfc::serviceDied(uint64_t /*cookie*/, const wp<IBase>& /*who*/) {
     mCallbackV1_0->unlinkToDeath(this);
     mCallbackV1_0 = nullptr;
   }
+}
+
+Return<void> Nfc::debug(const hidl_handle& /* fd */,
+                        const hidl_vec<hidl_string>& /* options */) {
+  ALOGD_IF(nfc_debug_enabled, "\n Nfc HAL MemoryLeak Info =  %s \n",
+           android::GetUnreachableMemoryString(true, 10000).c_str());
+  return Void();
 }
 
 }  // namespace implementation
