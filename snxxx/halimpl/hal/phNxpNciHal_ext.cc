@@ -26,6 +26,7 @@
 #if (NXP_EXTNS == TRUE)
 #include "phNxpNciHal.h"
 #include "phNxpNciHal_IoctlOperations.h"
+#include "phNxpNciHal_PowerTrackerIface.h"
 #include "phNxpNciHal_nciParser.h"
 #endif
 /* Timeout value to wait for response from PN548AD */
@@ -40,6 +41,7 @@
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 extern phNxpNciProfile_Control_t nxpprofile_ctrl;
 extern phNxpNci_getCfg_info_t* mGetCfg_info;
+extern PowerTrackerHandle gPowerTrackerHandle;
 
 extern bool_t gsIsFwRecoveryRequired;
 
@@ -1023,6 +1025,15 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
       //            memcpy(p_rsp_data, bCoreInitRsp, iCoreInitRspLen);
       //            status = NFCSTATUS_FAILED;
       //            NXPLOG_NCIHAL_D("> Going - core init optimization - END");
+    }
+  }
+  /* CORE_SET_POWER_SUB_STATE */
+  else if (p_cmd_data[0] == 0x20 && p_cmd_data[1] == 0x09 &&
+           p_cmd_data[2] == 0x01 &&
+           (p_cmd_data[3] == 0x00 || p_cmd_data[3] == 0x02)) {
+    // Sync power tracker data for screen on transition.
+    if (gPowerTrackerHandle.stateChange != NULL) {
+      gPowerTrackerHandle.stateChange(SCREEN_ON);
     }
   }
 

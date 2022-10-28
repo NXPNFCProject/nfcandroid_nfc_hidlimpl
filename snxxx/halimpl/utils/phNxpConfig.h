@@ -195,6 +195,8 @@ extern char Fw_Lib_Path[256];
 #define NAME_NXP_MIFARE_NACK_TO_RATS_ENABLE "NXP_MIFARE_NACK_TO_RATS_ENABLE"
 #define NAME_CONF_GPIO_CONTROL "CONF_GPIO_CONTROL"
 #define NAME_NXP_DEFAULT_ULPDET_MODE "NXP_DEFAULT_ULPDET_MODE"
+#define NAME_NXP_SYSTEM_POWER_TRACE_POLL_DURATION \
+  "NXP_SYSTEM_POWER_TRACE_POLL_DURATION_SEC"
 #endif
 /* default configuration */
 #define default_storage_location "/data/vendor/nfc"

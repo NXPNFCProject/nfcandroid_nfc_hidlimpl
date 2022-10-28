@@ -112,6 +112,20 @@ void NfcHalThreadCondVar::wait() {
 
 /*******************************************************************************
 **
+** Function:    NfcHalThreadCondVar::timedWait()
+**
+** Description: wait on the mCondVar or till timeout happens
+**
+** Returns:     none
+**
+*******************************************************************************/
+void NfcHalThreadCondVar::timedWait(struct timespec* time) {
+  pthread_cond_timedwait(&mCondVar, *this, time);
+  pthread_mutex_unlock(*this);
+}
+
+/*******************************************************************************
+**
 ** Function:    NfcHalThreadCondVar::signal()
 **
 ** Description: signal the mCondVar
