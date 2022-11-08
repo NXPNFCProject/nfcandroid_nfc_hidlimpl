@@ -22,6 +22,7 @@
 #include <phNxpNciHal_Adaptation.h>
 #include <phNxpNciHal_NfcDepSWPrio.h>
 #include <phNxpNciHal_ext.h>
+#include <phNxpTempMgr.h>
 #include <phTmlNfc.h>
 
 #include <vector>
@@ -497,6 +498,11 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
     NXPLOG_NCIHAL_D(">  DPD monitor event received");
     PhNxpEventLogger::GetInstance().Log(p_ntf, *p_len,
                                         LogEventType::kLogDPDEvent);
+  } else if (p_ntf[0] == 0x6F &&
+             p_ntf[1] == NCI_OID_SYSTEM_TERMPERATURE_INFO_NTF &&
+             p_ntf[2] == 0x06) {
+    NXPLOG_NCIHAL_D(">  Temperature status ntf received");
+    phNxpTempMgr::GetInstance().ParseResponse(p_ntf, *p_len);
   }
   return status;
 }

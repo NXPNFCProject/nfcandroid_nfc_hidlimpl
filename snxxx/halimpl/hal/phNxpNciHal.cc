@@ -29,6 +29,7 @@
 #include <phNxpNciHal_Dnld.h>
 #include <phNxpNciHal_NfcDepSWPrio.h>
 #include <phNxpNciHal_ext.h>
+#include <phNxpTempMgr.h>
 #include <phTmlNfc.h>
 #include <sys/stat.h>
 
@@ -464,6 +465,7 @@ static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset,
     } else if (status == NFCSTATUS_FW_CHECK_INTEGRITY_FAILED ||
                (phNxpNciHal_fw_mw_ver_check() != NFCSTATUS_SUCCESS)) {
       phOsalNfc_Timer_Cleanup();
+      phNxpTempMgr::GetInstance().Reset();
       phTmlNfc_Shutdown_CleanUp();
       return NFCSTATUS_CMD_ABORTED;
     }
@@ -1209,7 +1211,7 @@ int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t* p_data,
 retry:
 
   data_len = nxpncihal_ctrl.cmd_len;
-
+  phNxpTempMgr::GetInstance().CheckAndWait();
   status = phTmlNfc_Write(
       (uint8_t*)nxpncihal_ctrl.p_cmd_data, (uint16_t)nxpncihal_ctrl.cmd_len,
       (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_write_complete,
@@ -2414,6 +2416,7 @@ close_and_return:
       NXPLOG_TML_E("Fail to kill client thread!");
     }
     PhNxpEventLogger::GetInstance().Finalize();
+    phNxpTempMgr::GetInstance().Reset();
     phTmlNfc_CleanUp();
 
     phDal4Nfc_msgrelease(nxpncihal_ctrl.gDrvCfg.nClientId);
