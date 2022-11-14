@@ -514,12 +514,14 @@ void phNxpNciHal_emergency_recovery(uint8_t status) {
     case CORE_RESET_TRIGGER_TYPE_WATCHDOG_RESET:
     case CORE_RESET_TRIGGER_TYPE_INPUT_CLOCK_LOST:
     case CORE_RESET_TRIGGER_TYPE_UNRECOVERABLE_ERROR: {
+      phNxpNciHal_decodeGpioStatus();
       NXPLOG_NCIHAL_E("abort()");
       abort();
     }
     case CORE_RESET_TRIGGER_TYPE_POWERED_ON: {
       if (nxpncihal_ctrl.hal_open_status == true &&
         nxpncihal_ctrl.power_reset_triggered == false) {
+        phNxpNciHal_decodeGpioStatus();
         NXPLOG_NCIHAL_E("abort()");
         abort();
       }

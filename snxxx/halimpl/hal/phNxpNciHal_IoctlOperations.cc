@@ -634,6 +634,23 @@ NFCSTATUS phNxpNciHal_resetEse(uint64_t resetType) {
   return status;
 }
 
+/*******************************************************************************
+ **
+ ** Function:        phNxpNciHal_GetNfcGpiosStatus()
+ **
+ ** Description:     Sets the gpios status flag byte
+ **
+ ** Parameters       gpiostatus: flag byte
+ **
+ ** Returns:        returns 0 on success, < 0 on failure
+ **
+ ********************************************************************************/
+NFCSTATUS phNxpNciHal_GetNfcGpiosStatus(uint32_t* gpiosstatus) {
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  status = gpTransportObj->NfcGetGpioStatus(gpphTmlNfc_Context->pDevHandle,
+                                            gpiosstatus);
+  return status;
+}
 /******************************************************************************
  * Function         phNxpNciHal_setNxpTransitConfig
  *

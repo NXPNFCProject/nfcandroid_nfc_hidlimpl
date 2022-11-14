@@ -729,3 +729,23 @@ ULPDEP_END:
 
   return status;
 }
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_decodeGpioStatus()
+**
+** Description      this function decodes gpios status of the nfc pins
+**
+*******************************************************************************/
+void phNxpNciHal_decodeGpioStatus(void) {
+  NFCSTATUS status = NFCSTATUS_SUCCESS;
+  status = phNxpNciHal_GetNfcGpiosStatus(&gpios_data.gpios_status_data);
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("Get Gpio Status: Failed");
+  } else {
+    NXPLOG_NCIR_D("%s: NFC_IRQ = %d NFC_VEN = %d NFC_FW_DWL =%d", __func__,
+                  gpios_data.platform_gpios_status.irq,
+                  gpios_data.platform_gpios_status.ven,
+                  gpios_data.platform_gpios_status.fw_dwl);
+  }
+}

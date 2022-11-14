@@ -158,6 +158,21 @@ class NfccTransport {
 
   /*****************************************************************************
    **
+   ** Function         NfcGetGpioStatus
+   **
+   ** Description      Get the gpio status flag byte from kernel space
+   **
+   ** Parameters       pDevHandle     - valid device handle
+   **
+   **
+   ** Returns           0   - operation success
+   **                  -1   - operation failure
+   **
+   ****************************************************************************/
+  virtual int NfcGetGpioStatus(void* pDevHandle, uint32_t *status);
+
+  /*****************************************************************************
+   **
    ** Function         EseReset
    **
    ** Description      Request NFCC to reset the eSE
