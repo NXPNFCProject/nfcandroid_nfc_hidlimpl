@@ -368,6 +368,32 @@ int NfccI2cTransport::UpdateReadPending(void* pDevHandle,
   }
   return ret;
 }
+
+/*****************************************************************************
+ **
+ ** Function         NfcGetGpioStatus
+ **
+ ** Description      Get the gpio status flag byte from kernel space
+ **
+ ** Parameters       pDevHandle     - valid device handle
+ **
+ **
+ ** Returns           0   - operation success
+ **                  -1   - operation failure
+ **
+ ****************************************************************************/
+int NfccI2cTransport ::NfcGetGpioStatus(void* pDevHandle, uint32_t* status) {
+  int ret = -1;
+  if (NULL == pDevHandle) {
+    return ret;
+  }
+  ret = ioctl((int)(intptr_t)pDevHandle, NFC_GET_GPIO_STATUS, status);
+  if (ret != 0) {
+    NXPLOG_TML_E("%s: ret = 0x%x", __func__, ret);
+  }
+  NXPLOG_TML_D("%s, %d", __func__, *status);
+  return ret;
+}
 /*******************************************************************************
 **
 ** Function         EseReset

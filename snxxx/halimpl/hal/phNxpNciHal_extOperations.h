@@ -30,6 +30,27 @@ typedef struct {
 } nxp_nfc_config_ext_t;
 extern nxp_nfc_config_ext_t config_ext;
 
+/*
+* Add needed GPIO status to read into two bits each
+* INVALID(-2)
+* GPIO_SET(1)
+* GPIO_RESET(0)
+*/
+typedef struct {
+  int irq : 2;
+  int ven : 2;
+  int fw_dwl : 2;
+} platform_gpios_t;
+
+/*
+ * platform_gpios_status --> decoded gpio status flag bits
+ * gpios_status_data    -->  encoded gpio status flag bytes
+ */
+union {
+  uint32_t gpios_status_data;
+  platform_gpios_t platform_gpios_status;
+} gpios_data;
+
 /******************************************************************************
  * Function         phNxpNciHal_updateAutonomousPwrState
  *
@@ -199,3 +220,11 @@ bool phNxpNciHal_getULPDetFlag();
 ** Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS
 *******************************************************************************/
 NFCSTATUS phNxpNciHal_propConfULPDetMode(bool bEnable);
+/*******************************************************************************
+**
+** Function         phNxpNciHal_decodeGpioStatus()
+**
+** Description      this function decodes gpios status of the nfc pins
+**
+*******************************************************************************/
+void phNxpNciHal_decodeGpioStatus(void);

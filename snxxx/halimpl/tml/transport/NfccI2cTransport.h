@@ -46,6 +46,12 @@
  *  NFC_SET_RESET_READ_PENDING(0): reset read pending flag of NFC
  */
 #define NFC_SET_RESET_READ_PENDING _IOW(NFC_MAGIC, 0x04, uint32_t)
+
+/*
+ * read the gpios status flag encoded byte from kernel space
+ */
+#define NFC_GET_GPIO_STATUS _IOR(NFC_MAGIC, 0x05, uint32_t)
+
 extern phTmlNfc_i2cfragmentation_t fragmentation_enabled;
 
 class NfccI2cTransport : public NfccTransport {
@@ -147,6 +153,21 @@ class NfccI2cTransport : public NfccTransport {
    **
    ****************************************************************************/
   int UpdateReadPending(void* pDevHandle, NfcReadPending eType);
+
+  /*****************************************************************************
+   **
+   ** Function         NfcGetGpioStatus
+   **
+   ** Description      Get the gpio status flag byte from kernel space
+   **
+   ** Parameters       pDevHandle     - valid device handle
+   **
+   **
+   ** Returns           0   - operation success
+   **                  -1   - operation failure
+   **
+   ****************************************************************************/
+  int NfcGetGpioStatus(void* pDevHandle, uint32_t* status);
 
   /*****************************************************************************
    **
