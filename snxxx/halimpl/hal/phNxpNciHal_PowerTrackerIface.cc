@@ -22,7 +22,8 @@
 ** Function         phNxpNciHal_isPowerTrackerConfigured()
 **
 ** Description      This function is to check power tracker feature is
-**                   configured or not.
+**                  configured or not by checking poll duration from
+**                  config file.
 **
 ** Parameters       pollDuration - Output parameter for fetching poll duration
 **                                 if it is configured in libnfc-ncp.conf
@@ -83,10 +84,11 @@ NFCSTATUS phNxpNciHal_PowerTrackerInit(PowerTrackerHandle* outHandle) {
         dlerror());
   }
   outHandle->stateChange = (PowerTrackerStateChangeFunc_t)dlsym(
-      outHandle->dlHandle, "phNxpNciHal_onPowerStateChange");
+      outHandle->dlHandle, "phNxpNciHal_onRefreshNfccPowerState");
   if (outHandle->stateChange == NULL) {
     NXPLOG_NCIHAL_D(
-        "Error : Failed to find symbol phNxpNciHal_onPowerStateChange %s!!",
+        "Error : Failed to find symbol phNxpNciHal_onRefreshNfccPowerState "
+        "%s!!",
         dlerror());
   }
   outHandle->stop = (PowerTrackerStopFunc_t)dlsym(

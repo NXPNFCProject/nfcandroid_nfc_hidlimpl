@@ -59,7 +59,7 @@ bool phNxpNciHal_isULPDetSupported() {
 void phNxpNciHal_setULPDetFlag(bool flag) {
   nxpncihal_ctrl.isUlpdetModeEnabled = flag;
   if (gPowerTrackerHandle.stateChange != NULL) {
-    PowerState state = (flag) ? ULPDET_ON : ULPDET_OFF;
+    RefreshNfccPowerState state = (flag) ? ULPDET_ON : ULPDET_OFF;
     gPowerTrackerHandle.stateChange(state);
   }
 }

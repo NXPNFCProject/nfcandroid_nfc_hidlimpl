@@ -80,6 +80,7 @@ NfcHalThreadCondVar::NfcHalThreadCondVar() {
   pthread_condattr_t CondAttr;
 
   pthread_condattr_init(&CondAttr);
+  pthread_condattr_setclock(&CondAttr, CLOCK_MONOTONIC);
   pthread_cond_init(&mCondVar, &CondAttr);
 
   pthread_condattr_destroy(&CondAttr);
@@ -121,7 +122,6 @@ void NfcHalThreadCondVar::wait() {
 *******************************************************************************/
 void NfcHalThreadCondVar::timedWait(struct timespec* time) {
   pthread_cond_timedwait(&mCondVar, *this, time);
-  pthread_mutex_unlock(*this);
 }
 
 /*******************************************************************************

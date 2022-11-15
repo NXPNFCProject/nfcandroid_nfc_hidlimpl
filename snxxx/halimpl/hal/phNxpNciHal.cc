@@ -178,11 +178,35 @@ static uint8_t phNxpNciHal_getSessionInfoInFwDnldMode();
 static NFCSTATUS phNxpNciHal_dlResetInFwDnldMode();
 static NFCSTATUS phNxpNciHal_enableTmlRead();
 
+/******************************************************************************
+ * Function         onLoadLibrary
+ *
+ * Description      This function as marked with attribute constructor causes
+ *                  the function to be called automatically before execution
+ *                  enters main (). It is useful for initializing execution
+ *                  context  that will be used implicitly during the execution
+ *                  of the program like loading another dynamic library.
+ * PARAM            None
+ * Returns          void
+ *
+ ******************************************************************************/
 static __attribute__((constructor)) void onLoadLibrary(void) {
   NXPLOG_NCIHAL_D("Initializing power tracker");
   phNxpNciHal_PowerTrackerInit(&gPowerTrackerHandle);
 }
 
+/******************************************************************************
+ * Function         onUnloadLibrary
+ *
+ * Description      This function as marked with attribute desstructor causes
+ *                  the function to be called automatically after execution
+ *                  main () has completed. It is useful for deinitializing execution
+ *                  context  that were be used implicitly during the execution
+ *                  of the program like unloading another dynamic library.
+ * PARAM            None
+ * Returns          void
+ *
+ ******************************************************************************/
 static __attribute__((destructor)) void onUnloadLibrary(void) {
   NXPLOG_NCIHAL_D("Deinitializing power tracker");
   phNxpNciHal_PowerTrackerDeinit(&gPowerTrackerHandle);
