@@ -22,3 +22,26 @@ Higher the value set for the config below, lesser would be the overhead of addit
 power consumption to collect the stats.
 
 NXP_SYSTEM_POWER_TRACE_POLL_DURATION_SEC=30
+
+Integration Guide
+------------------
+Below code snippet shows how to integrate Nfc power stats with PowerStats HAL.
+
+Create PowerStats HAL instance
+'std::shared_ptr<PowerStats> p = ndk::SharedRefBase::make<PowerStats>();'
+
+Create PixelStateResidencyDataProvider instance
+'auto pixelSdp = std::make_unique<PixelStateResidencyDataProvider>();'
+
+Add "Nfc" Entity with 3 states namely STANDBY, ULPDET, ACTIVE
+'pixelSdp->addEntity("Nfc", {{0, "STANDBY"}, {1, "ULPDET"}, {2, "ACTIVE"}});'
+
+Start PixelStateResidencyDataProvider. This will register binder to service manager.
+'pixelSdp->start();'
+
+Add PixelStateResidencyDataProvider to PowerStats HAL
+'p->addStateResidencyDataProvider(std::move(pixelSdp));'
+
+Register PowerStats HAL with service manager
+'const std::string instance = std::string() + PowerStats::descriptor + "/default";'
+'binder_status_t status = AServiceManager_addService(p->asBinder().get(), instance.c_str());'

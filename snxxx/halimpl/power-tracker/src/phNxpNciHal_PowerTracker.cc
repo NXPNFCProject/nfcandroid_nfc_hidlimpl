@@ -14,134 +14,73 @@
  * limitations under the License.
  */
 #include "phNxpNciHal_PowerTracker.h"
+#include <inttypes.h>
+#include <phNxpNciHal_PowerStats.h>
 #include "IntervalTimer.h"
 #include "NfcProperties.sysprop.h"
 #include "NxpNfcThreadMutex.h"
+#include "phNfcCommon.h"
 #include "phNxpConfig.h"
 #include "phNxpNciHal_ext.h"
 
-#include <aidl/android/vendor/powerstats/BnPixelStateResidencyCallback.h>
-#include <aidl/android/vendor/powerstats/IPixelStateResidencyProvider.h>
-#include <android/binder_manager.h>
-#include <android/binder_process.h>
-
 using namespace vendor::nfc::nxp;
-using ::aidl::android::hardware::power::stats::StateResidency;
-using ::aidl::android::vendor::powerstats::BnPixelStateResidencyCallback;
-using ::aidl::android::vendor::powerstats::IPixelStateResidencyCallback;
-using ::aidl::android::vendor::powerstats::IPixelStateResidencyProvider;
-using ::ndk::ScopedAStatus;
-using ::ndk::SpAIBinder;
 using std::vector;
 
 /******************* Macro definition *****************************************/
 #define STATE_STANDBY_STR "STANDBY"
 #define STATE_ULPDET_STR "ULPDET"
 #define STATE_ACTIVE_STR "ACTIVE"
-#define STEP_TIME_MS 100
 
-#define TIME_MS(spec) (spec.tv_sec * 1000 + (long)(spec.tv_nsec / 1000000))
-
-const char* kPowerStatsSrvName = "power.stats-vendor";
-const char* kPowerEntityName = "Nfc";
+#define TIME_MS(spec) \
+  ((long)spec.tv_sec * 1000 + (long)(spec.tv_nsec / 1000000))
 
 /******************* Local functions *****************************************/
 static void* phNxpNciHal_pollPowerTrackerData(void* pContext);
-static NFCSTATUS phNxpNciHal_syncPowerTrackerDataLocked();
+static NFCSTATUS phNxpNciHal_syncPowerTrackerData();
 
 /******************* Enums and Class declarations ***********************/
-enum NfccStates {
-  STANDBY = 0,
-  ULPDET,
-  ACTIVE,
-  MAX_STATES,
-};
-
+/**
+ * Power data for each states.
+ */
 typedef struct {
   uint32_t stateEntryCount;
   uint32_t stateTickCount;
 } StateResidencyData;
 
+/**
+ * Context object used internally by power tracker implementation.
+ */
 typedef struct {
-  long pollDurationMs;
+  // Power data poll duration.
+  long pollDurationMilliSec;
+  // Power tracker thread id
   pthread_t thread;
-  NfcHalThreadCondVar event;    // To signal events.
-  NfcHalThreadMutex dataMutex;  // To protect state data
-  bool_t pollPowerTracker;
+  // To signal events.
+  NfcHalThreadCondVar event;
+  // To protect state data
+  NfcHalThreadMutex dataMutex;
+  // Poll for power tracker periodically if this is true.
+  bool_t isRefreshNfccStateOngoing;
+  // Timestamp of last power data sync.
   struct timespec lastSyncTime;
+  // Power data for STANDBY, ULPDET, ACTIVE states
   StateResidencyData stateData[MAX_STATES];
+  // Timer used for tracking ULPDET power data.
   IntervalTimer ulpdetTimer;
+  // Timestamp of ULPDET start.
   struct timespec ulpdetStartTime;
-  bool_t ulpdetOn;
+  // True if ULPDET is on.
+  bool_t isUlpdetOn;
 } PowerTrackerContext;
 
-/**
- * Class implemets power state residency callback.
- *
- * power.stats-venor service will involke getStateResidency callback
- * periodically for fetching current value of cached power data for each Nfc
- * state.
- */
-class NfcStateResidencyCallback : public BnPixelStateResidencyCallback {
- public:
-  NfcStateResidencyCallback(PowerTrackerContext* context) {
-    NXPLOG_NCIHAL_I("%s: descriptor = %s", __func__, descriptor);
-    pContext = context;
-  }
-  /**
-   * Returns current state residency data for all Nfc states.
-   */
-  virtual ScopedAStatus getStateResidency(
-      vector<StateResidency>* stateResidency) {
-
-    if (stateResidency == nullptr) {
-      return ScopedAStatus::fromServiceSpecificErrorWithMessage(
-          NFCSTATUS_INVALID_PARAMETER, "Invalid Parama");
-    }
-    stateResidency->resize(MAX_STATES);
-
-    NXPLOG_NCIHAL_I("%s: Returning state residency data", __func__);
-
-    // STANDBY
-    (*stateResidency)[STANDBY].id = STANDBY;
-    (*stateResidency)[STANDBY].totalTimeInStateMs =
-        NfcProps::standbyStateTick().value_or(0) * STEP_TIME_MS;
-    (*stateResidency)[STANDBY].totalStateEntryCount =
-          NfcProps::standbyStateEntryCount().value_or(0);
-    (*stateResidency)[STANDBY].lastEntryTimestampMs = 0;
-    // ULPDET
-    (*stateResidency)[ULPDET].id = ULPDET;
-    (*stateResidency)[ULPDET].totalTimeInStateMs =
-        NfcProps::ulpdetStateTick().value_or(0) * STEP_TIME_MS;
-    (*stateResidency)[ULPDET].totalStateEntryCount =
-          NfcProps::ulpdetStateEntryCount().value_or(0);
-    (*stateResidency)[ULPDET].lastEntryTimestampMs = 0;
-    // ACTIVE
-    (*stateResidency)[ACTIVE].id = ACTIVE;
-    (*stateResidency)[ACTIVE].totalTimeInStateMs =
-        NfcProps::activeStateTick().value_or(0) * STEP_TIME_MS;
-    (*stateResidency)[ACTIVE].totalStateEntryCount =
-          NfcProps::activeStateEntryCount().value_or(0);
-    (*stateResidency)[ACTIVE].lastEntryTimestampMs = 0;
-
-    return ScopedAStatus::ok();
-  }
-  ~NfcStateResidencyCallback() {}
-
- private:
-  PowerTrackerContext* pContext = NULL;
-};
-
-/******************* External variables
- * *****************************************/
+/******************* External variables ***************************************/
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 
 /*********************** Global Variables *************************************/
-
 static PowerTrackerContext gContext = {
-    .pollDurationMs = 0,
+    .pollDurationMilliSec = 0,
     .thread = 0,
-    .pollPowerTracker = false,
+    .isRefreshNfccStateOngoing = false,
     .lastSyncTime.tv_sec = 0,
     .lastSyncTime.tv_nsec = 0,
     .stateData[STANDBY].stateEntryCount = 0,
@@ -151,10 +90,6 @@ static PowerTrackerContext gContext = {
     .stateData[ACTIVE].stateEntryCount = 0,
     .stateData[ACTIVE].stateTickCount = 0,
 };
-
-std::shared_ptr<IPixelStateResidencyProvider> gStateResidencyProvider = NULL;
-std::shared_ptr<IPixelStateResidencyCallback> gStateResidencyCallback =
-    ndk::SharedRefBase::make<NfcStateResidencyCallback>(&gContext);
 
 /*******************************************************************************
 **
@@ -169,26 +104,25 @@ std::shared_ptr<IPixelStateResidencyCallback> gStateResidencyCallback =
 
 NFCSTATUS phNxpNciHal_startPowerTracker(unsigned long pollDuration) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
-  uint8_t cmd_configPowerTracker[] = {
-      0x20, 0x02,  // CORE_SET_CONFIG_CMD
-      0x05,        // Total LEN
-      0x01,        // Num of param fields to follow
-      0xA0, 0x6D,  // NCI_CORE_PROP_SYSTEM_POWER_TRACE_ENABLE
-      0x01,        // Length of val filed to follow
-      0x01,        // Value field. Enabled
-  };
+
+  phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
+  uint8_t power_tracker_enable = 0x01;
 
   NXPLOG_NCIHAL_I("%s: Starting PowerTracker with poll duration %ld", __func__,
                   pollDuration);
-  status = phNxpNciHal_send_ext_cmd(sizeof(cmd_configPowerTracker),
-                                    cmd_configPowerTracker);
+  mEEPROM_info.request_mode = SET_EEPROM_DATA;
+  mEEPROM_info.buffer = (uint8_t*)&power_tracker_enable;
+  mEEPROM_info.bufflen = sizeof(power_tracker_enable);
+  mEEPROM_info.request_type = EEPROM_POWER_TRACKER_ENABLE;
+
+  status = request_EEPROM(&mEEPROM_info);
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("Failed to Start PowerTracker, status - %d", status);
     return status;
   }
-  if (!gContext.pollPowerTracker) {
+  if (!gContext.isRefreshNfccStateOngoing) {
     // Initialize last sync time to the start time.
-    if (clock_gettime(CLOCK_REALTIME, &gContext.lastSyncTime) == -1) {
+    if (clock_gettime(CLOCK_MONOTONIC, &gContext.lastSyncTime) == -1) {
       NXPLOG_NCIHAL_E("%s Fail get time; errno=0x%X", __func__, errno);
     }
     // Sync Initial values of variables from sys properties.
@@ -207,28 +141,15 @@ NFCSTATUS phNxpNciHal_startPowerTracker(unsigned long pollDuration) {
         NfcProps::ulpdetStateTick().value_or(0);
 
     // Start polling Thread
-    gContext.pollDurationMs = pollDuration;
-    gContext.pollPowerTracker = true;
-    status = pthread_create(&gContext.thread, NULL,
-                            phNxpNciHal_pollPowerTrackerData, &gContext);
-    if (status != 0) {
-      NXPLOG_NCIHAL_E("Failed to create PowerTracker, thread - %d", status);
-      return status;
+    gContext.pollDurationMilliSec = pollDuration;
+    gContext.isRefreshNfccStateOngoing = true;
+    if (pthread_create(&gContext.thread, NULL, phNxpNciHal_pollPowerTrackerData,
+                       &gContext) != 0) {
+      NXPLOG_NCIHAL_E("%s: Failed to create PowerTracker, thread - %d",
+                      __func__, errno);
+      return NFCSTATUS_FAILED;
     }
-    // Register with power states HAL.
-    SpAIBinder binder(AServiceManager_checkService(kPowerStatsSrvName));
-    gStateResidencyProvider = IPixelStateResidencyProvider::fromBinder(binder);
-    if (gStateResidencyProvider == nullptr) {
-      NXPLOG_NCIHAL_E("%s: Failed to get PowerStats service", __func__);
-    } else {
-      NXPLOG_NCIHAL_D("%s: Registering with Power Stats service", __func__);
-      gStateResidencyProvider->registerCallback(kPowerEntityName,
-                                                gStateResidencyCallback);
-      NXPLOG_NCIHAL_D("%s: Starting thread pool for communication with powerstats", __func__);
-      ABinderProcess_setThreadPoolMaxThreadCount(1);
-      ABinderProcess_startThreadPool();
-      NXPLOG_NCIHAL_D("%s: Thread pool started successfully", __func__);
-    }
+    phNxpNciHal_registerToPowerStats();
   } else {
     NXPLOG_NCIHAL_E("PowerTracker already enabled");
   }
@@ -252,15 +173,15 @@ static void* phNxpNciHal_pollPowerTrackerData(void* pCtx) {
 
   NXPLOG_NCIHAL_D("Starting to poll for PowerTracker data");
   // Poll till power tracker is cancelled.
-  while (pContext->pollPowerTracker) {
+  while (pContext->isRefreshNfccStateOngoing) {
     struct timespec absoluteTime;
 
-    if (clock_gettime(CLOCK_REALTIME, &absoluteTime) == -1) {
+    if (clock_gettime(CLOCK_MONOTONIC, &absoluteTime) == -1) {
       NXPLOG_NCIHAL_E("%s Fail get time; errno=0x%X", __func__, errno);
     } else {
-      absoluteTime.tv_sec += pContext->pollDurationMs / 1000;
-      long ns =
-          absoluteTime.tv_nsec + ((pContext->pollDurationMs % 1000) * 1000000);
+      absoluteTime.tv_sec += pContext->pollDurationMilliSec / 1000;
+      long ns = absoluteTime.tv_nsec +
+                ((pContext->pollDurationMilliSec % 1000) * 1000000);
       if (ns > 1000000000) {
         absoluteTime.tv_sec++;
         absoluteTime.tv_nsec = ns - 1000000000;
@@ -270,11 +191,11 @@ static void* phNxpNciHal_pollPowerTrackerData(void* pCtx) {
     pContext->event.lock();
     // Wait for poll duration
     pContext->event.timedWait(&absoluteTime);
+    pContext->event.unlock();
 
-    NfcHalAutoThreadMutex(gContext.dataMutex);
     // Sync and cache power tracker data.
-    if (pContext->pollPowerTracker) {
-      status = phNxpNciHal_syncPowerTrackerDataLocked();
+    if (pContext->isRefreshNfccStateOngoing) {
+      status = phNxpNciHal_syncPowerTrackerData();
       if (NFCSTATUS_SUCCESS != status) {
         NXPLOG_NCIHAL_E("Failed to fetch PowerTracker data. error = %d",
                         status);
@@ -288,23 +209,22 @@ static void* phNxpNciHal_pollPowerTrackerData(void* pCtx) {
 
 /*******************************************************************************
 **
-** Function         phNxpNciHal_syncPowerTrackerDataLocked()
+** Function         phNxpNciHal_syncPowerTrackerData()
 **
 ** Description      Function to sync power tracker data from NFCC chip.
-**                  This should be called with dataMutex locked.
 **
 ** Parameters       None.
 ** Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS
 *******************************************************************************/
 
-static NFCSTATUS phNxpNciHal_syncPowerTrackerDataLocked() {
+static NFCSTATUS phNxpNciHal_syncPowerTrackerData() {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   struct timespec currentTime = {.tv_sec = 0, .tv_nsec = 0};
   ;
   uint8_t cmd_getPowerTrackerData[] = {0x2F,
                                        0x2E,  // NCI_PROP_GET_PWR_TRACK_DATA_CMD
                                        0x00};  // LENGTH
-  long activeTick = 0, activeCounter = 0;
+  uint64_t activeTick = 0, activeCounter = 0;
 
   CONCURRENCY_LOCK();  // This lock is to protect origin field.
   status = phNxpNciHal_send_ext_cmd(sizeof(cmd_getPowerTrackerData),
@@ -317,26 +237,34 @@ static NFCSTATUS phNxpNciHal_syncPowerTrackerDataLocked() {
     return (NFCSTATUS)nxpncihal_ctrl.p_rx_data[3];
   }
 
-  if (clock_gettime(CLOCK_REALTIME, &currentTime) == -1) {
+  if (clock_gettime(CLOCK_MONOTONIC, &currentTime) == -1) {
     NXPLOG_NCIHAL_E("%s Fail get time; errno=0x%X", __func__, errno);
   }
   uint8_t* rsp = nxpncihal_ctrl.p_rx_data;
-  activeCounter =
-      (rsp[4] << 0) | (rsp[5] << 8) | (rsp[6] << 16) | (rsp[7] << 24);
-  activeTick =
-      (rsp[8] << 0) | (rsp[9] << 8) | (rsp[10] << 16) | (rsp[11] << 24);
+  activeCounter = ((uint64_t)rsp[4] << 0) | ((uint64_t)rsp[5] << 8) |
+                  ((uint64_t)rsp[6] << 16) | ((uint64_t)rsp[7] << 24);
+  activeTick = ((uint64_t)rsp[8] << 0) | ((uint64_t)rsp[9] << 8) |
+               ((uint64_t)rsp[10] << 16) | ((uint64_t)rsp[11] << 24);
 
   // Calculate time difference between two sync
-  long totalTimeMs = TIME_MS(currentTime) - TIME_MS(gContext.lastSyncTime);
-  if (totalTimeMs > gContext.pollDurationMs) {
-    NXPLOG_NCIHAL_D("Total time duration (%ld) > Poll duration (%ld)",
-                    totalTimeMs, gContext.pollDurationMs);
-  }
+  uint64_t totalTimeMs = TIME_MS(currentTime) - TIME_MS(gContext.lastSyncTime);
+
+  NfcHalAutoThreadMutex(gContext.dataMutex);
   gContext.stateData[ACTIVE].stateEntryCount += activeCounter;
   gContext.stateData[ACTIVE].stateTickCount += activeTick;
-  gContext.stateData[STANDBY].stateEntryCount += activeCounter;
-  gContext.stateData[STANDBY].stateTickCount +=
-      ((totalTimeMs / STEP_TIME_MS) - activeTick);
+  // Standby counter is same as active counter less one as current
+  // data sync will move NFCC to active resulting in one value
+  // higher than standby
+  gContext.stateData[STANDBY].stateEntryCount =
+      (gContext.stateData[ACTIVE].stateEntryCount - 1);
+  if ((totalTimeMs / STEP_TIME_MS) > activeTick) {
+    gContext.stateData[STANDBY].stateTickCount +=
+        ((totalTimeMs / STEP_TIME_MS) - activeTick);
+  } else {
+    NXPLOG_NCIHAL_E("ActiveTick(%" PRIu64 ") > totalTick(%" PRIu64
+                    "), Shouldn't happen !!!",
+                    activeTick, (totalTimeMs / STEP_TIME_MS));
+  }
   gContext.lastSyncTime = currentTime;
 
   // Sync values of variables to sys properties so that
@@ -347,9 +275,9 @@ static NFCSTATUS phNxpNciHal_syncPowerTrackerDataLocked() {
   NfcProps::standbyStateTick(gContext.stateData[STANDBY].stateTickCount);
 
   NXPLOG_NCIHAL_D(
-      "Successfully fetched power tracker data "
-      "Active counter = %u, Active Tick = %u\n"
-      "Standby Counter = %u, Standby Tick = %u\n"
+      "Successfully fetched PowerTracker data "
+      "Active counter = %u, Active Tick = %u "
+      "Standby Counter = %u, Standby Tick = %u "
       "ULPDET Counter = %u, ULPDET Tick = %u",
       gContext.stateData[ACTIVE].stateEntryCount,
       gContext.stateData[ACTIVE].stateTickCount,
@@ -360,12 +288,26 @@ static NFCSTATUS phNxpNciHal_syncPowerTrackerDataLocked() {
   return status;
 }
 
+/*******************************************************************************
+**
+** Function         onUlpdetTimerExpired()
+**
+** Description      Callback involked by Ulpdet timer when timeout happens.
+**                  Currently ulpdet power data is tracked with same frequency
+**                  as poll duration to be in sync with ACTIVE, STANDBY data.
+**                  Once ULPDET timer expires after poll duration data are
+**                  updated and timer is re created until ULPDET is off.
+**
+** Parameters       val - Timer context passed while starting timer.
+** Returns          None
+*******************************************************************************/
+
 static void onUlpdetTimerExpired(union sigval val) {
   (void)val;
   NXPLOG_NCIHAL_D("%s Ulpdet Timer Expired,", __func__);
   struct timespec ulpdetEndTime = {.tv_sec = 0, .tv_nsec = 0};
   // End ulpdet Tick.
-  if (clock_gettime(CLOCK_REALTIME, &ulpdetEndTime) == -1) {
+  if (clock_gettime(CLOCK_MONOTONIC, &ulpdetEndTime) == -1) {
     NXPLOG_NCIHAL_E("%s fail get time; errno=0x%X", __func__, errno);
   }
   long ulpdetTimeMs =
@@ -379,26 +321,26 @@ static void onUlpdetTimerExpired(union sigval val) {
   NfcProps::ulpdetStateEntryCount(gContext.stateData[ULPDET].stateEntryCount);
   NfcProps::ulpdetStateTick(gContext.stateData[ULPDET].stateTickCount);
   gContext.ulpdetStartTime = ulpdetEndTime;
-  if (gContext.ulpdetOn) {
+  if (gContext.isUlpdetOn) {
     // Start ULPDET Timer
     NXPLOG_NCIHAL_D("%s Refreshing Ulpdet Timer", __func__);
-    gContext.ulpdetTimer.set(gContext.pollDurationMs, NULL,
+    gContext.ulpdetTimer.set(gContext.pollDurationMilliSec, NULL,
                              onUlpdetTimerExpired);
   }
 }
 
 /*******************************************************************************
 **
-** Function         phNxpNciHal_onPowerStateChange()
+** Function         phNxpNciHal_onRefreshNfccPowerState()
 **
 ** Description      Callback involked internally by HAL whenever there is system
-**                  state change
+**                  state change and power data needs to be refreshed.
 **
 ** Parameters       state - Can be SCREEN_OFF, SCREEN_ON, ULPDET_OFF, ULPDET_ON
 ** Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS
 *******************************************************************************/
 
-NFCSTATUS phNxpNciHal_onPowerStateChange(PowerState state) {
+NFCSTATUS phNxpNciHal_onRefreshNfccPowerState(RefreshNfccPowerState state) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   NXPLOG_NCIHAL_D("%s Enter", __func__);
   union sigval val;
@@ -411,25 +353,25 @@ NFCSTATUS phNxpNciHal_onPowerStateChange(PowerState state) {
       break;
     case ULPDET_ON:
       NXPLOG_NCIHAL_D("%s Ulpdet On, Syncing PowerTracker data", __func__);
-      if (phNxpNciHal_syncPowerTrackerDataLocked() != NFCSTATUS_SUCCESS) {
+      if (phNxpNciHal_syncPowerTrackerData() != NFCSTATUS_SUCCESS) {
         NXPLOG_NCIHAL_E("Failed to fetch PowerTracker data. error = %d",
                         status);
       }
       gContext.dataMutex.lock();
       gContext.stateData[ULPDET].stateEntryCount++;
-      if (clock_gettime(CLOCK_REALTIME, &gContext.ulpdetStartTime) == -1) {
+      if (clock_gettime(CLOCK_MONOTONIC, &gContext.ulpdetStartTime) == -1) {
         NXPLOG_NCIHAL_E("%s fail get time; errno=0x%X", __func__, errno);
       }
-      gContext.ulpdetOn = true;
+      gContext.isUlpdetOn = true;
       gContext.dataMutex.unlock();
       // Start ULPDET Timer
-      gContext.ulpdetTimer.set(gContext.pollDurationMs, NULL,
+      gContext.ulpdetTimer.set(gContext.pollDurationMilliSec, NULL,
                                onUlpdetTimerExpired);
       break;
     case ULPDET_OFF:
       NXPLOG_NCIHAL_D("%s Ulpdet Off, Killing ULPDET timer", __func__);
       gContext.ulpdetTimer.kill();
-      gContext.ulpdetOn = false;
+      gContext.isUlpdetOn = false;
       onUlpdetTimerExpired(val);
       gContext.ulpdetStartTime = {.tv_sec = 0, .tv_nsec = 0};
       break;
@@ -453,35 +395,34 @@ NFCSTATUS phNxpNciHal_onPowerStateChange(PowerState state) {
 
 NFCSTATUS phNxpNciHal_stopPowerTracker() {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
-  uint8_t cmd_configPowerTracker[] = {
-      0x20, 0x02,  // CORE_SET_CONFIG_CMD
-      0x05,        // Total LEN
-      0x01,        // Num of param fields to follow
-      0xA0, 0x6D,  // NCI_CORE_PROP_SYSTEM_POWER_TRACE_ENABLE
-      0x01,        // Length of val filed to follow
-      0x00,        // Value field. Disabled
-  };
-  status = phNxpNciHal_send_ext_cmd(sizeof(cmd_configPowerTracker),
-                                    cmd_configPowerTracker);
+  phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
+  uint8_t power_tracker_disable = 0x00;
+
+  mEEPROM_info.request_mode = SET_EEPROM_DATA;
+  mEEPROM_info.buffer = (uint8_t*)&power_tracker_disable;
+  mEEPROM_info.bufflen = sizeof(power_tracker_disable);
+  mEEPROM_info.request_type = EEPROM_POWER_TRACKER_ENABLE;
+
+  status = request_EEPROM(&mEEPROM_info);
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("%s Failed to disable PowerTracker, error = %d", __func__,
                     status);
   }
-  if (gContext.pollPowerTracker) {
+  if (gContext.isRefreshNfccStateOngoing) {
     // Stop Polling Thread
-    gContext.pollPowerTracker = false;
+    gContext.isRefreshNfccStateOngoing = false;
     gContext.event.signal();
-    pthread_join(gContext.thread, NULL);
+    if (pthread_join(gContext.thread, NULL) != 0) {
+      NXPLOG_NCIHAL_E("Failed to join with PowerTracker thread %d", errno);
+    }
   } else {
     NXPLOG_NCIHAL_E("PowerTracker is already disabled");
   }
-  // Unregister with PowerStats service
-  if (gStateResidencyProvider != nullptr) {
-    gStateResidencyProvider->unregisterCallback(gStateResidencyCallback);
-    gStateResidencyProvider = nullptr;
-    NXPLOG_NCIHAL_D("%s: Unegistered PowerStats callback successfully",
-                    __func__);
+  if (!gContext.isUlpdetOn) {
+    NXPLOG_NCIHAL_I("%s: Stopped PowerTracker", __func__);
+    phNxpNciHal_unregisterPowerStats();
+  } else {
+    NXPLOG_NCIHAL_D("%s: Skipping unregister for ULPDET case", __func__);
   }
-  NXPLOG_NCIHAL_I("%s: Stopped PowerTracker", __func__);
   return status;
 }

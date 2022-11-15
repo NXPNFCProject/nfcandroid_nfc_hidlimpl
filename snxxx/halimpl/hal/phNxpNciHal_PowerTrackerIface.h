@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __NXP_NCI_HAL_POWER_TRACKER_IFACE__
-#define __NXP_NCI_HAL_POWER_TRACKER_IFACE__
+#pragma once
 
 #include "phNxpNciHal_PowerTracker.h"
 
 typedef NFCSTATUS (*PowerTrackerStartFunc_t)(unsigned long pollDuration);
-typedef NFCSTATUS (*PowerTrackerStateChangeFunc_t)(PowerState state);
+typedef NFCSTATUS (*PowerTrackerStateChangeFunc_t)(RefreshNfccPowerState state);
 typedef NFCSTATUS (*PowerTrackerStopFunc_t)();
 
 /**
@@ -63,4 +62,3 @@ NFCSTATUS phNxpNciHal_PowerTrackerInit(PowerTrackerHandle* outHandle);
 *******************************************************************************/
 
 NFCSTATUS phNxpNciHal_PowerTrackerDeinit(PowerTrackerHandle* outHandle);
-#endif  // __NXP_NCI_HAL_POWER_TRACKER_IFACE__

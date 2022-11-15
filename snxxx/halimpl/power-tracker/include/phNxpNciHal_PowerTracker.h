@@ -13,12 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __NXP_NCI_HAL_POWER_TRACKER__
-#define __NXP_NCI_HAL_POWER_TRACKER__
+#pragma once
 
 #include <phNxpNciHal.h>
 
-typedef enum { SCREEN_OFF = 0, SCREEN_ON, ULPDET_OFF, ULPDET_ON } PowerState;
+typedef enum {
+  SCREEN_OFF = 0,
+  SCREEN_ON,
+  ULPDET_OFF,
+  ULPDET_ON
+} RefreshNfccPowerState;
 
 /*******************************************************************************
 **
@@ -34,15 +38,16 @@ extern "C" NFCSTATUS phNxpNciHal_startPowerTracker(unsigned long pollDuration);
 
 /*******************************************************************************
 **
-** Function         phNxpNciHal_onPowerStateChange()
+** Function         phNxpNciHal_onRefreshNfccPowerState()
 **
 ** Description      Callback involked internally by HAL whenever there is system
-**                  state change
+**                  state change and power data needs to be refreshed.
 **
 ** Parameters       state - Can be SCREEN_OFF, SCREEN_ON, ULPDET_OFF, ULPDET_ON
 ** Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS
 *******************************************************************************/
-extern "C" NFCSTATUS phNxpNciHal_onPowerStateChange(PowerState state);
+extern "C" NFCSTATUS phNxpNciHal_onRefreshNfccPowerState(
+    RefreshNfccPowerState state);
 
 /*******************************************************************************
 **
@@ -54,5 +59,3 @@ extern "C" NFCSTATUS phNxpNciHal_onPowerStateChange(PowerState state);
 ** Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS
 *******************************************************************************/
 extern "C" NFCSTATUS phNxpNciHal_stopPowerTracker();
-
-#endif  // __NXP_NCI_HAL_POWER_TRACKER__
