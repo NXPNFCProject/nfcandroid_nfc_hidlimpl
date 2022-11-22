@@ -842,7 +842,8 @@ static NFCSTATUS phNxpNciHal_fw_dnld_get_sessn_state(void* pContext,
   }
 
   if (phNxpNciHal_init_cb_data(&cb_data, NULL) != NFCSTATUS_SUCCESS) {
-    NXPLOG_FWDNLD_E("phNxpNciHal_fw_dnld_get_version cb_data creation failed");
+    NXPLOG_FWDNLD_E(
+        "phNxpNciHal_fw_dnld_get_sessn_state cb_data creation failed");
     return NFCSTATUS_FAILED;
   }
 
@@ -852,20 +853,20 @@ static NFCSTATUS phNxpNciHal_fw_dnld_get_sessn_state(void* pContext,
   wStatus = phDnldNfc_GetSessionState(
       &tDnldBuff, &phNxpNciHal_fw_dnld_get_sessn_state_cb, (void*)&cb_data);
   if (wStatus != NFCSTATUS_PENDING) {
-    NXPLOG_FWDNLD_E("phDnldNfc_GetSessionState failed");
+    NXPLOG_FWDNLD_E("phNxpNciHal_fw_dnld_get_sessn_state failed");
     wStatus = NFCSTATUS_FAILED;
     goto clean_and_return;
   }
 
   /* Wait for callback response */
   if (SEM_WAIT(cb_data)) {
-    NXPLOG_FWDNLD_E("phDnldNfc_GetSessionState semaphore error");
+    NXPLOG_FWDNLD_E("phNxpNciHal_fw_dnld_get_sessn_state semaphore error");
     wStatus = NFCSTATUS_FAILED;
     goto clean_and_return;
   }
 
   if (cb_data.status != NFCSTATUS_SUCCESS) {
-    NXPLOG_FWDNLD_E("phDnldNfc_GetSessionState cb failed");
+    NXPLOG_FWDNLD_E("phNxpNciHal_fw_dnld_get_sessn_state cb failed");
     wStatus = NFCSTATUS_FAILED;
     goto clean_and_return;
   }
