@@ -154,6 +154,7 @@ cc_binary {
         "ls_client",
         "se_extn_client",
         "jcos_client",
+        "libmemunreachable",
     ],
 
     local_include_dirs: [
