@@ -577,10 +577,12 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
         if ((IS_CHIP_TYPE_EQ(pn553) &&
              (PHDNLDNFC_HWVER_PN553_MRA1_0_UPDATED & pRespBuff->pBuff[0]))) {
           (gphNxpNciHal_fw_IoctlCtx.bChipVer) = pRespBuff->pBuff[0];
-        } else if ((PHDNLDNFC_HWVER_VENUS_MRA1_0 & pRespBuff->pBuff[0])) {
+        } else if (IS_CHIP_TYPE_EQ(sn100u) &&
+          (PHDNLDNFC_HWVER_VENUS_MRA1_0 & pRespBuff->pBuff[0])) {
           (gphNxpNciHal_fw_IoctlCtx.bChipVer) = pRespBuff->pBuff[0];
           bExpectedLen = PHLIBNFC_IOCTL_DNLD_SN100U_GETVERLEN;
-        } else if (PHDNLDNFC_HWVER_VULCAN_MRA1_0 & pRespBuff->pBuff[0]) {
+        } else if ((IS_CHIP_TYPE_EQ(sn220u) || IS_CHIP_TYPE_EQ(pn560)) &&
+          (PHDNLDNFC_HWVER_VULCAN_MRA1_0 & pRespBuff->pBuff[0])) {
           (gphNxpNciHal_fw_IoctlCtx.bChipVer) = pRespBuff->pBuff[0];
           bExpectedLen = PHLIBNFC_IOCTL_DNLD_SN220U_GETVERLEN;
         }
