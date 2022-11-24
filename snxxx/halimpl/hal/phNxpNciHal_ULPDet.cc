@@ -19,9 +19,11 @@
 #include <phTmlNfc.h>
 #include "phNfcCommon.h"
 #include "phNxpNciHal_IoctlOperations.h"
+#include "phNxpNciHal_PowerTrackerIface.h"
 
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 extern NFCSTATUS phNxpNciHal_ext_send_sram_config_to_flash();
+extern PowerTrackerHandle gPowerTrackerHandle;
 
 /*******************************************************************************
 **
@@ -56,6 +58,10 @@ bool phNxpNciHal_isULPDetSupported() {
 *******************************************************************************/
 void phNxpNciHal_setULPDetFlag(bool flag) {
   nxpncihal_ctrl.isUlpdetModeEnabled = flag;
+  if (gPowerTrackerHandle.stateChange != NULL) {
+    PowerState state = (flag) ? ULPDET_ON : ULPDET_OFF;
+    gPowerTrackerHandle.stateChange(state);
+  }
 }
 
 /*******************************************************************************
