@@ -38,6 +38,7 @@
 #include "NfccTransportFactory.h"
 #include "NxpNfcThreadMutex.h"
 #include "phNxpNciHal_IoctlOperations.h"
+#include "phNxpNciHal_ULPDet.h"
 #include "phNxpNciHal_extOperations.h"
 
 using android::base::StringPrintf;

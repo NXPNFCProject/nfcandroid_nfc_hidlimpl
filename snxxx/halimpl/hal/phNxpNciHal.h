@@ -184,6 +184,7 @@ typedef struct phNxpNciHal_Control {
   phNxpNciGpioInfo_t phNxpNciGpioInfo;
   tNFC_chipType chipType;
   bool_t power_reset_triggered;
+  bool_t isUlpdetModeEnabled;
 } phNxpNciHal_Control_t;
 
 typedef struct {
