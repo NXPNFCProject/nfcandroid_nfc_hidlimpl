@@ -26,6 +26,7 @@
 #include "phDnldNfc_Internal.h"
 #include "phNfcCommon.h"
 #include "phNxpNciHal_Adaptation.h"
+#include "phNxpNciHal_ULPDet.h"
 #include "phNxpNciHal_ext.h"
 #include "phNxpNciHal_extOperations.h"
 #include "phNxpNciHal_utils.h"

@@ -70,6 +70,7 @@ cc_library_shared {
         "halimpl/eseclients_extns/src/*.cc",
         "halimpl/hal/phNxpNciHal_IoctlOperations.cc",
         "halimpl/hal/phNxpNciHal_extOperations.cc",
+        "halimpl/hal/phNxpNciHal_ULPDet.cc",
         "halimpl/mifare/NxpMfcReader.cc",
         "halimpl/recovery/phNxpNciHal_Recovery.cc",
     ],
