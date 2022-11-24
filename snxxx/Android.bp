@@ -43,7 +43,6 @@ cc_library_shared {
         "-DNXP_FORCE_FW_DOWNLOAD=1",
         "-DNXP_BOOTTIME_UPDATE",
     ],
-
     srcs: [
         "halimpl/dnld/phDnldNfc.cc",
         "halimpl/dnld/phDnldNfc_Internal.cc",
@@ -67,12 +66,14 @@ cc_library_shared {
         "halimpl/utils/phNxpConfig.cc",
         "halimpl/utils/phNxpNciHal_utils.cc",
         "halimpl/utils/sparse_crc32.cc",
+        "halimpl/utils/IntervalTimer.cpp",
         "halimpl/eseclients_extns/src/*.cc",
         "halimpl/hal/phNxpNciHal_IoctlOperations.cc",
         "halimpl/hal/phNxpNciHal_extOperations.cc",
         "halimpl/hal/phNxpNciHal_ULPDet.cc",
         "halimpl/mifare/NxpMfcReader.cc",
         "halimpl/recovery/phNxpNciHal_Recovery.cc",
+        "halimpl/hal/phNxpNciHal_PowerTrackerIface.cc",
     ],
 
     local_include_dirs: [
@@ -112,6 +113,30 @@ cc_library_shared {
         "libutils",
         "vendor.nxp.nxpese@1.0",
         "vendor.nxp.nxpnfc@2.0",
+    ],
+    header_libs: [
+      "power_tracker_headers",
+    ],
+}
+
+cc_library_headers {
+    name: "nfc_nci_nxp_snxxx_headers",
+    vendor: true,
+    export_include_dirs: [
+        "halimpl/common",
+        "halimpl/dnld",
+        "halimpl/hal",
+        "halimpl/inc",
+        "halimpl/log",
+        "halimpl/self-test",
+        "halimpl/tml/transport",
+        "halimpl/tml",
+        "halimpl/utils",
+        "halimpl/eseclients_extns/inc",
+        "halimpl/src/include",
+        "halimpl/mifare",
+        "extns/impl/nxpnfc/2.0",
+        "halimpl/recovery",
     ],
 }
 

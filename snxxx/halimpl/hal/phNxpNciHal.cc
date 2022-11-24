@@ -38,6 +38,7 @@
 #include "NfccTransportFactory.h"
 #include "NxpNfcThreadMutex.h"
 #include "phNxpNciHal_IoctlOperations.h"
+#include "phNxpNciHal_PowerTrackerIface.h"
 #include "phNxpNciHal_ULPDet.h"
 #include "phNxpNciHal_extOperations.h"
 
@@ -114,6 +115,7 @@ uint32_t timeoutTimerId = 0;
 uint8_t fw_dwnld_flag = false;
 #endif
 bool nfc_debug_enabled = true;
+PowerTrackerHandle gPowerTrackerHandle;
 
 /*  Used to send Callback Transceive data during Mifare Write.
  *  If this flag is enabled, no need to send response to Upper layer */
@@ -175,6 +177,17 @@ static NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(
 static uint8_t phNxpNciHal_getSessionInfoInFwDnldMode();
 static NFCSTATUS phNxpNciHal_dlResetInFwDnldMode();
 static NFCSTATUS phNxpNciHal_enableTmlRead();
+
+static __attribute__((constructor)) void onLoadLibrary(void) {
+  NXPLOG_NCIHAL_D("Initializing power tracker");
+  phNxpNciHal_PowerTrackerInit(&gPowerTrackerHandle);
+}
+
+static __attribute__((destructor)) void onUnloadLibrary(void) {
+  NXPLOG_NCIHAL_D("Deinitializing power tracker");
+  phNxpNciHal_PowerTrackerDeinit(&gPowerTrackerHandle);
+}
+
 /******************************************************************************
  * Function         phNxpNciHal_initialize_debug_enabled_flag
  *
@@ -1625,6 +1638,9 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
 
   phNxpNciHal_propConfULPDetMode(false);
 
+  if (gPowerTrackerHandle.start != NULL) {
+    gPowerTrackerHandle.start(gPowerTrackerHandle.pollDuration);
+  }
   config_access = false;
   status = phNxpNciHal_read_fw_dw_status(fw_dwnld_flag);
   if (status != NFCSTATUS_SUCCESS) {
@@ -2221,6 +2237,9 @@ int phNxpNciHal_close(bool bShutdown) {
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
     NXPLOG_NCIHAL_D("phNxpNciHal_close is already closed, ignoring close");
     return NFCSTATUS_FAILED;
+  }
+  if (gPowerTrackerHandle.stop != NULL) {
+    gPowerTrackerHandle.stop();
   }
 #if (NXP_EXTNS == TRUE)
   if (IS_CHIP_TYPE_L(sn100u)) {
