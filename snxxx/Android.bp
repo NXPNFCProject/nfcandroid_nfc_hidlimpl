@@ -111,6 +111,7 @@ cc_library_shared {
         "libhidlbase",
         "liblog",
         "libutils",
+        "libbinder_ndk",
         "vendor.nxp.nxpese@1.0",
         "vendor.nxp.nxpnfc@2.0",
     ],
@@ -142,7 +143,7 @@ cc_library_headers {
 
 cc_binary {
     name: "android.hardware.nfc_snxxx@1.2-service",
-    defaults: ["hidl_defaults"],
+    // defaults: ["hidl_defaults"],
     proprietary: true,
     init_rc: ["1.2/android.hardware.nfc_snxxx@1.2-service.rc"],
     relative_install_path: "hw",
@@ -175,6 +176,7 @@ cc_binary {
         "android.hardware.nfc@1.1",
         "android.hardware.nfc@1.2",
         "libhidlbase",
+        "libbinder_ndk",
         "vendor.nxp.nxpese@1.0",
         "vendor.nxp.nxpnfc@2.0",
         "ls_client",
@@ -204,5 +206,46 @@ cc_binary {
         "hardware/nxp/secure_element_extns/inc",
         "hardware/nxp/secure_element_extns/ls_client/inc",
         "hardware/nxp/secure_element_extns/jcos_client/inc",
+    ],
+}
+
+cc_binary {
+    name: "android.hardware.nfc-service.nxp",
+    relative_install_path: "hw",
+    init_rc: ["aidl/nfc-service-nxp.rc"],
+    vintf_fragments: ["aidl/nfc-service-nxp.xml"],
+    vendor: true,
+    cflags: [
+        "-Wall",
+        "-Wextra",
+    ],
+    shared_libs: [
+        "libbase",
+        "liblog",
+        "libutils",
+        "libbinder_ndk",
+        "android.hardware.nfc-V1-ndk",
+        "android.hardware.nfc@1.2",
+        "nfc_nci_nxp_snxxx",
+        "libhardware",
+        "vendor.nxp.nxpnfc@2.0",
+        "vendor.nxp.nxpnfc_aidl-V1-ndk",
+    ],
+    srcs: [
+        "aidl/main.cpp",
+        "aidl/Nfc.cpp",
+        "extns/impl/nxpnfc/aidl/NxpNfc.cpp",
+    ],
+    local_include_dirs: [
+        "halimpl/common",
+        "halimpl/dnld",
+        "halimpl/hal",
+        "halimpl/inc",
+        "halimpl/log",
+        "halimpl/utils",
+        "halimpl/mifare",
+        "halimpl/recovery",
+        "halimpl/eseclients_extns/inc/",
+        "extns/impl/nxpnfc/aidl",
     ],
 }

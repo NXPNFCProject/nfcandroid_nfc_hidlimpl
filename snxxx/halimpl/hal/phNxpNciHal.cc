@@ -4137,4 +4137,30 @@ void phNxpNciHal_deinitializeRegRfFwDnld() {
   }
 }
 
+/******************************************************************************
+ * Function         phNxpNciHal_setVerboseLogging
+ *
+ * Description      This function enables the nfc_debug_enabled
+ *
+ * Returns          void
+ *
+ *****************************************************************************/
+
+void phNxpNciHal_setVerboseLogging(bool enable) {
+    nfc_debug_enabled = enable;
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_getVerboseLogging
+ *
+ * Description      This function returns the value of nfc_debug_enabled
+ *
+ * Returns          void
+ *
+ *****************************************************************************/
+
+bool phNxpNciHal_getVerboseLogging() {
+    return nfc_debug_enabled;
+}
+
 #endif
