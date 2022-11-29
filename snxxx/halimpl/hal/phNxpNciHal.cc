@@ -2186,7 +2186,9 @@ static void phNxpNciHal_core_initialized_complete(NFCSTATUS status) {
  ******************************************************************************/
 int phNxpNciHal_pre_discover(void) {
   /* Nothing to do here for initial version */
-  return NFCSTATUS_SUCCESS;
+  // This is set to return Failed as no vendor specific pre-discovery action is
+  // needed in case of HalPrediscover
+  return NFCSTATUS_FAILED;
 }
 
 /******************************************************************************
