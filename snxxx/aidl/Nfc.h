@@ -38,6 +38,9 @@ using ::aidl::android::hardware::nfc::NfcCloseType;
 using ::aidl::android::hardware::nfc::NfcConfig;
 using ::aidl::android::hardware::nfc::NfcStatus;
 using NfcConfig = aidl::android::hardware::nfc::NfcConfig;
+using ::aidl::android::hardware::nfc::NfcEvent;
+
+#define HAL_HCI_NETWORK_RESET 7u
 
 // Default implementation that reports no support NFC.
 struct Nfc : public BnNfc {
@@ -57,6 +60,9 @@ struct Nfc : public BnNfc {
 
     static void eventCallback(uint8_t event, uint8_t status) {
         if (mCallback != nullptr) {
+          if (event == HAL_HCI_NETWORK_RESET) {
+            event = (uint8_t)NfcEvent::HCI_NETWORK_RESET;
+          }
             auto ret = mCallback->sendEvent((NfcEvent)event, (NfcStatus)status);
             if (!ret.isOk()) {
                 LOG(ERROR) << "Failed to send event!";
