@@ -22,20 +22,10 @@
 #include <memunreachable/memunreachable.h>
 #include "halimpl/inc/phNxpNciHal_Adaptation.h"
 #include "phNfcStatus.h"
+#include "phNxpNciHal_ext.h"
 
 #define CHK_STATUS(x) \
   ((x) == NFCSTATUS_SUCCESS) ? (V1_0::NfcStatus::OK) : (V1_0::NfcStatus::FAILED)
-
-#define NXP_EN_SN110U 1
-#define NXP_EN_SN100U 1
-#define NXP_EN_SN220U 1
-#define NXP_EN_PN557 1
-#define NXP_EN_PN560 1
-#define NFC_NXP_MW_ANDROID_VER (14U)  /* Android version used by NFC MW */
-#define NFC_NXP_MW_VERSION_MAJ (0x02) /* MW Major Version */
-#define NFC_NXP_MW_VERSION_MIN (0x00) /* MW Minor Version */
-#define NFC_NXP_MW_CUSTOMER_ID (0x00) /* MW Customer Id */
-#define NFC_NXP_MW_RC_VERSION (0x00)  /* MW RC Version */
 
 extern bool nfc_debug_enabled;
 
@@ -48,17 +38,6 @@ namespace implementation {
 sp<V1_1::INfcClientCallback> Nfc::mCallbackV1_1 = nullptr;
 sp<V1_0::INfcClientCallback> Nfc::mCallbackV1_0 = nullptr;
 
-static void printNfcMwVersion() {
-  uint32_t validation = (NXP_EN_SN100U << 13);
-  validation |= (NXP_EN_SN110U << 14);
-  validation |= (NXP_EN_SN220U << 15);
-  validation |= (NXP_EN_PN560 << 16);
-  validation |= (NXP_EN_PN557 << 11);
-
-  ALOGE("MW-HAL Version: NFC_AR_%02X_%05X_%02d.%02x.%02x",
-        NFC_NXP_MW_CUSTOMER_ID, validation, NFC_NXP_MW_ANDROID_VER,
-        NFC_NXP_MW_VERSION_MAJ, NFC_NXP_MW_VERSION_MIN);
-}
 
 Return<V1_0::NfcStatus> Nfc::open_1_1(
     const sp<V1_1::INfcClientCallback>& clientCallback) {

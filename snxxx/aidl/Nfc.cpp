@@ -23,6 +23,7 @@
 #include "phNxpNciHal_Adaptation.h"
 #include "phNxpConfig.h"
 #include "phNfcStatus.h"
+#include "phNxpNciHal_ext.h"
 
 #define NXP_MAX_CONFIG_STRING_LEN 260
 
@@ -59,6 +60,7 @@ void OnDeath(void* cookie) {
         // Just ignore the error.
     }
 
+    printNfcMwVersion();
     int ret = phNxpNciHal_open(eventCallback, dataCallback);
     LOG(INFO) << "Nfc::open Exit";
     return ret == NFCSTATUS_SUCCESS ? ndk::ScopedAStatus::ok()
