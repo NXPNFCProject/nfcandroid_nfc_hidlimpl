@@ -24,6 +24,8 @@
 #include "phNxpConfig.h"
 #include "phNfcStatus.h"
 
+#define NXP_MAX_CONFIG_STRING_LEN 260
+
 namespace aidl {
 namespace android {
 namespace hardware {
@@ -109,7 +111,7 @@ void OnDeath(void* cookie) {
   LOG(INFO) << "Nfc::getConfig";
   NfcConfig config;
   unsigned long num = 0;
-  std::array<uint8_t, 10> buffer;
+  std::array<uint8_t, NXP_MAX_CONFIG_STRING_LEN> buffer;
   buffer.fill(0);
   long retlen = 0;
   memset(&config, 0x00, sizeof(NfcConfig));
@@ -145,6 +147,20 @@ void OnDeath(void* cookie) {
   }
   if (GetNxpNumValue(NAME_OFF_HOST_SIM_PIPE_ID, &num, sizeof(num))) {
     config.offHostSIMPipeId = (uint8_t)num;
+  }
+  if (GetNxpNumValue(NAME_DEFAULT_ISODEP_ROUTE, &num, sizeof(num))) {
+    config.defaultIsoDepRoute = (uint8_t)num;
+  }
+  if (GetNxpByteArrayValue(NAME_OFFHOST_ROUTE_UICC, (char*)buffer.data(),
+                           buffer.size(), &retlen)) {
+    config.offHostRouteUicc.resize(retlen);
+    for (long i = 0; i < retlen; i++) config.offHostRouteUicc[i] = buffer[i];
+  }
+
+  if (GetNxpByteArrayValue(NAME_OFFHOST_ROUTE_ESE, (char*)buffer.data(),
+                           buffer.size(), &retlen)) {
+    config.offHostRouteEse.resize(retlen);
+    for (long i = 0; i < retlen; i++) config.offHostRouteEse[i] = buffer[i];
   }
   if ((GetNxpByteArrayValue(NAME_NFA_PROPRIETARY_CFG, (char*)buffer.data(),
                             buffer.size(), &retlen)) &&
