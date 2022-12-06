@@ -32,7 +32,6 @@ namespace vendor {
 namespace nxp {
 namespace nxpnfc_aidl {
 
-using ::aidl::vendor::nxp::nxpnfc_aidl::NxpNfcHalEseState;
 using ::aidl::vendor::nxp::nxpnfc_aidl::INxpNfc;
 
 class NxpNfc : public BnNxpNfc {
@@ -44,12 +43,8 @@ class NxpNfc : public BnNxpNfc {
                                       const std::string& value,
                                       bool* _aidl_return) override;
   ::ndk::ScopedAStatus resetEse(int64_t resetType, bool* _aidl_return) override;
-  ::ndk::ScopedAStatus setEseUpdateState(NxpNfcHalEseState state,
-                                         bool* _aidl_return) override;
   ::ndk::ScopedAStatus setNxpTransitConfig(const std::string& strval,
                                            bool* _aidl_return) override;
-  ::ndk::ScopedAStatus isJcopUpdateRequired(bool* _aidl_return) override;
-  ::ndk::ScopedAStatus isLsUpdateRequired(bool* _aidl_return) override;
 };
 
 }  // namespace nxpnfc_aidl

@@ -142,74 +142,6 @@ cc_library_headers {
 }
 
 cc_binary {
-    name: "android.hardware.nfc_snxxx@1.2-service",
-    // defaults: ["hidl_defaults"],
-    proprietary: true,
-    init_rc: ["1.2/android.hardware.nfc_snxxx@1.2-service.rc"],
-    relative_install_path: "hw",
-    cflags: [
-         "-Wall",
-         "-Werror",
-         "-Wextra",
-         "-fexceptions",
-         "-DNXP_EXTNS=TRUE",
-         "-DNXP_NFC_RECOVERY=TRUE",
-         "-DNXP_BOOTTIME_UPDATE",
-     ],
-
-    srcs: [
-        "1.2/NxpNfcService.cpp",
-        "1.2/Nfc.cpp",
-        "extns/impl/nxpnfc/2.0/NxpNfc.cpp",
-        "halimpl/eseclients_extns/src/eSEClientExtns.cc",
-    ],
-
-    shared_libs: [
-        "nfc_nci_nxp_snxxx",
-        "libbase",
-        "libcutils",
-        "libdl",
-        "libhardware",
-        "liblog",
-        "libutils",
-        "android.hardware.nfc@1.0",
-        "android.hardware.nfc@1.1",
-        "android.hardware.nfc@1.2",
-        "libhidlbase",
-        "libbinder_ndk",
-        "vendor.nxp.nxpese@1.0",
-        "vendor.nxp.nxpnfc@2.0",
-        "ls_client",
-        "se_extn_client",
-        "jcos_client",
-        "libmemunreachable",
-    ],
-
-    local_include_dirs: [
-        "halimpl/common",
-        "halimpl/dnld",
-        "halimpl/hal",
-        "halimpl/inc",
-        "halimpl/log",
-        "halimpl/self-test",
-        "halimpl/tml",
-        "halimpl/utils",
-        "halimpl/mifare",
-        "halimpl/eseclients_extns/inc/",
-        "extns/impl/nxpnfc/2.0",
-        "halimpl/recovery",
-    ],
-
-    include_dirs: [
-        "hardware/nxp/secure_element/snxxx/extns/impl",
-        "hardware/nxp/secure_element_extns/inc",
-        "hardware/nxp/secure_element_extns/inc",
-        "hardware/nxp/secure_element_extns/ls_client/inc",
-        "hardware/nxp/secure_element_extns/jcos_client/inc",
-    ],
-}
-
-cc_binary {
     name: "android.hardware.nfc-service.nxp",
     relative_install_path: "hw",
     init_rc: ["aidl/nfc-service-nxp.rc"],
@@ -217,7 +149,9 @@ cc_binary {
     vendor: true,
     cflags: [
         "-Wall",
+        "-Werror",
         "-Wextra",
+        "-DNXP_NFC_RECOVERY=TRUE",
     ],
     shared_libs: [
         "libbase",

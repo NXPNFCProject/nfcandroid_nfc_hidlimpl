@@ -62,27 +62,6 @@ namespace nxpnfc_aidl {
                               static_cast<int64_t>(status));
 }
 
-::ndk::ScopedAStatus NxpNfc::setEseUpdateState(NxpNfcHalEseState eSEState, bool* _aidl_return) {
-  *_aidl_return = false;
-
-  ALOGD("AIDL NxpNfc::setEseUpdateState Entry");
-
-  if (eSEState == NxpNfcHalEseState::HAL_NFC_ESE_JCOP_UPDATE_COMPLETED ||
-      eSEState == NxpNfcHalEseState::HAL_NFC_ESE_LS_UPDATE_COMPLETED) {
-    ALOGD(
-        "NxpNfc::setEseUpdateState state == HAL_NFC_ESE_JCOP_UPDATE_COMPLETED");
-    seteSEClientState((uint8_t)eSEState);
-    eSEClientUpdate_NFC_Thread();
-  }
-  if (eSEState == NxpNfcHalEseState::HAL_NFC_ESE_UPDATE_COMPLETED) {
-    *_aidl_return = phNxpNciHal_Abort();
-  }
-
-  ALOGD("NxpNfc::setEseUpdateState Exit");
-  return ndk::ScopedAStatus::fromServiceSpecificError(
-                              static_cast<bool>(*_aidl_return));
-}
-
 ::ndk::ScopedAStatus NxpNfc::setNxpTransitConfig( const std::string& strval,bool* _aidl_return) {
   *_aidl_return = true;
   ALOGD("NxpNfc::setNxpTransitConfig Entry");
@@ -90,32 +69,6 @@ namespace nxpnfc_aidl {
   *_aidl_return = phNxpNciHal_setNxpTransitConfig((char*)strval.c_str());
 
   ALOGD("NxpNfc::setNxpTransitConfig Exit");
-  return ndk::ScopedAStatus::fromServiceSpecificError(
-                              static_cast<bool>(*_aidl_return));
-}
-
-::ndk::ScopedAStatus NxpNfc::isJcopUpdateRequired(bool* _aidl_return) {
-  *_aidl_return = false;
-  ALOGD("NxpNfc::isJcopUpdateRequired Entry");
-
-#ifdef NXP_BOOTTIME_UPDATE
-  *_aidl_return = getJcopUpdateRequired();
-#endif
-
-  ALOGD("NxpNfc::isJcopUpdateRequired Exit");
-  return ndk::ScopedAStatus::fromServiceSpecificError(
-                              static_cast<bool>(*_aidl_return));
-}
-
-::ndk::ScopedAStatus NxpNfc::isLsUpdateRequired(bool* _aidl_return) {
-  *_aidl_return = false;
-  ALOGD("NxpNfc::isLsUpdateRequired Entry");
-
-#ifdef NXP_BOOTTIME_UPDATE
-  *_aidl_return = getLsUpdateRequired();
-#endif
-
-  ALOGD("NxpNfc::isLsUpdateRequired Exit");
   return ndk::ScopedAStatus::fromServiceSpecificError(
                               static_cast<bool>(*_aidl_return));
 }

@@ -37,10 +37,7 @@ package vendor.nxp.nxpnfc_aidl;
 @VintfStability
 interface INxpNfc {
   String getVendorParam(in String key);
-  boolean isJcopUpdateRequired();
-  boolean isLsUpdateRequired();
   boolean resetEse(in long resetType);
-  boolean setEseUpdateState(in vendor.nxp.nxpnfc_aidl.NxpNfcHalEseState eSEState);
   boolean setNxpTransitConfig(in String transitConfValue);
   boolean setVendorParam(in String key, in String value);
 }

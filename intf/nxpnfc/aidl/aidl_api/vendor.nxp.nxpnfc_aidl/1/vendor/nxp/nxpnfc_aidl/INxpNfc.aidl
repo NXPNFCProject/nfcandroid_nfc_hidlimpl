@@ -34,12 +34,10 @@
 // later when a module using the interface is updated, e.g., Mainline modules.
 
 package vendor.nxp.nxpnfc_aidl;
-@Backing(type="int") @VintfStability
-enum NxpNfcHalEseState {
-  HAL_NFC_ESE_UPDATE_COMPLETED = 0,
-  HAL_NFC_ESE_UPDATE_STARTED = 1,
-  HAL_NFC_ESE_JCOP_UPDATE_REQUIRED = 2,
-  HAL_NFC_ESE_JCOP_UPDATE_COMPLETED = 3,
-  HAL_NFC_ESE_LS_UPDATE_REQUIRED = 4,
-  HAL_NFC_ESE_LS_UPDATE_COMPLETED = 5,
+@VintfStability
+interface INxpNfc {
+  String getVendorParam(in String key);
+  boolean resetEse(in long resetType);
+  boolean setNxpTransitConfig(in String transitConfValue);
+  boolean setVendorParam(in String key, in String value);
 }
