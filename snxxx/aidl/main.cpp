@@ -59,10 +59,6 @@ int main() {
 #if (NXP_NFC_RECOVERY == TRUE)
   phNxpNciHal_RecoverFWTearDown();
 #endif
-#ifdef NXP_BOOTTIME_UPDATE
-  initializeEseClient();
-  checkEseClientUpdate();
-#endif
   thread t1(startNxpNfcAidlService);
   ABinderProcess_joinThreadPool();
   return 0;

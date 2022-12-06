@@ -31,7 +31,7 @@ cc_library_shared {
         "nfc_nci_nxp_snxxx_headers",
         "libhardware_headers"
     ],
-    static_libs: ["NfcProps"],
+    static_libs: ["libNfcProps"],
 }
 
 cc_library_headers {

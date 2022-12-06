@@ -18,8 +18,6 @@
 
 package vendor.nxp.nxpnfc_aidl;
 
-import vendor.nxp.nxpnfc_aidl.NxpNfcHalEseState;
-
 @VintfStability
 interface INxpNfc {
     // Adding return type to method instead of out param String value since there is only one return value.
@@ -33,39 +31,12 @@ interface INxpNfc {
 
     // Adding return type to method instead of out param boolean status since there is only one return value.
     /**
-     * api to check jcop update is required or not
-     *
-     * @param none
-     * @return as a boolean, true if JCOP update required, false if not required.
-     */
-    boolean isJcopUpdateRequired();
-
-    // Adding return type to method instead of out param boolean status since there is only one return value.
-    /**
-     * api to check LS update is required or not
-     *
-     * @param none
-     * @return as a boolean, true if LS update required, false if not required.
-     */
-    boolean isLsUpdateRequired();
-
-    // Adding return type to method instead of out param boolean status since there is only one return value.
-    /**
      * reset the ese based on resettype
      *
      * @param uint64_t to specify resetType
      * @return as a boolean, true if success, false if failed
      */
     boolean resetEse(in long resetType);
-
-    // Adding return type to method instead of out param boolean status since there is only one return value.
-    /**
-     * updates ese with current state and notifies upper layer
-     *
-     * @param input current ese state to set
-     * @return as a boolean, true if success, false if failed
-     */
-    boolean setEseUpdateState(in NxpNfcHalEseState eSEState);
 
     // Adding return type to method instead of out param boolean status since there is only one return value.
     /**
