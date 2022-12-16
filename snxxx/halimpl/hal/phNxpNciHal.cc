@@ -1114,6 +1114,8 @@ int phNxpNciHal_write_internal(uint16_t data_len, const uint8_t* p_data) {
     android_errorWriteLog(0x534e4554, "121267042");
     goto clean_and_return;
   }
+
+  CONCURRENCY_LOCK();
   /* Create local copy of cmd_data */
   memcpy(nxpncihal_ctrl.p_cmd_data, p_data, data_len);
   nxpncihal_ctrl.cmd_len = data_len;
@@ -1141,10 +1143,8 @@ int phNxpNciHal_write_internal(uint16_t data_len, const uint8_t* p_data) {
     goto clean_and_return;
   }
 
-  CONCURRENCY_LOCK();
   data_len = phNxpNciHal_write_unlocked(nxpncihal_ctrl.cmd_len,
                                         nxpncihal_ctrl.p_cmd_data, ORIG_LIBNFC);
-  CONCURRENCY_UNLOCK();
 
   if (IS_CHIP_TYPE_L(sn100u) && IS_CHIP_TYPE_NE(pn557) && icode_send_eof == 1) {
     usleep(10000);
@@ -1157,6 +1157,7 @@ int phNxpNciHal_write_internal(uint16_t data_len, const uint8_t* p_data) {
 
 clean_and_return:
   /* No data written */
+  CONCURRENCY_UNLOCK();
   return data_len;
 }
 

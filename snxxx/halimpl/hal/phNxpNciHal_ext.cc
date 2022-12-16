@@ -1028,7 +1028,7 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
     }
   }
   /* CORE_SET_POWER_SUB_STATE */
-  else if (p_cmd_data[0] == 0x20 && p_cmd_data[1] == 0x09 &&
+  if (p_cmd_data[0] == 0x20 && p_cmd_data[1] == 0x09 &&
            p_cmd_data[2] == 0x01 &&
            (p_cmd_data[3] == 0x00 || p_cmd_data[3] == 0x02)) {
     // Sync power tracker data for screen on transition.
