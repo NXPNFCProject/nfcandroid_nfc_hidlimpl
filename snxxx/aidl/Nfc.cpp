@@ -20,10 +20,11 @@
 
 #include <android-base/logging.h>
 
-#include "phNxpNciHal_Adaptation.h"
-#include "phNxpConfig.h"
 #include "phNfcStatus.h"
+#include "phNxpConfig.h"
+#include "phNxpNciHal_Adaptation.h"
 #include "phNxpNciHal_ext.h"
+#include "phNxpNciHal_extOperations.h"
 
 #define NXP_MAX_CONFIG_STRING_LEN 260
 
@@ -117,6 +118,7 @@ void OnDeath(void* cookie) {
   buffer.fill(0);
   long retlen = 0;
   memset(&config, 0x00, sizeof(NfcConfig));
+  phNxpNciHal_getExtVendorConfig();
 
   if (GetNxpNumValue(NAME_NFA_POLL_BAIL_OUT_MODE, &num, sizeof(num))) {
     config.nfaPollBailOutMode = (bool)num;
@@ -134,7 +136,8 @@ void OnDeath(void* cookie) {
     config.defaultSystemCodeRoute = (uint8_t)num;
   }
   if (GetNxpNumValue(NAME_DEFAULT_SYS_CODE_PWR_STATE, &num, sizeof(num))) {
-    config.defaultSystemCodePowerState = num;
+    config.defaultSystemCodePowerState =
+        phNxpNciHal_updateAutonomousPwrState((uint8_t)num);
   }
   if (GetNxpNumValue(NAME_DEFAULT_ROUTE, &num, sizeof(num))) {
     config.defaultRoute = (uint8_t)num;
