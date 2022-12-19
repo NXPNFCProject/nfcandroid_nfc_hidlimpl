@@ -27,11 +27,6 @@
 #define PHLIBNFC_IOCTL_DNLD_MAX_ATTEMPTS 3
 #define PHLIBNFC_IOCTL_DNLD_GETVERLEN (0x0BU)
 #define PHLIBNFC_IOCTL_DNLD_GETVERLEN_MRA2_1 (0x09U)
-#define PHLIBNFC_DNLD_MEM_READ (0xECU)
-#define PHLIBNFC_DNLD_MEM_WRITE (0xEDU)
-#define PHLIBNFC_DNLD_READ_LOG (0xEEU)
-#define NFC_MEM_READ (0xD0U)
-#define NFC_MEM_WRITE (0xD1U)
 #define NFC_FW_DOWNLOAD (0x09F7U)
 #define PHLIBNFC_IOCTL_DNLD_SN100U_GETVERLEN (0x07U)
 #define PHLIBNFC_IOCTL_DNLD_SN220U_GETVERLEN (0x0FU)
@@ -1709,28 +1704,12 @@ static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
       if (NFCSTATUS_SUCCESS == status) {
         if (NFC_FW_DOWNLOAD == gphNxpNciHal_fw_IoctlCtx.IoctlCode) {
           NXPLOG_FWDNLD_E("Fw Download success.. ");
-        } else if (PHLIBNFC_DNLD_MEM_READ ==
-                   gphNxpNciHal_fw_IoctlCtx.IoctlCode) {
-          NXPLOG_FWDNLD_E("Read Request success.. ");
-        } else if (PHLIBNFC_DNLD_MEM_WRITE ==
-                   gphNxpNciHal_fw_IoctlCtx.IoctlCode) {
-          NXPLOG_FWDNLD_E("Write Request success.. ");
-        } else if (PHLIBNFC_DNLD_READ_LOG ==
-                   gphNxpNciHal_fw_IoctlCtx.IoctlCode) {
-          NXPLOG_FWDNLD_E("ReadLog Request success.. ");
         } else {
           NXPLOG_FWDNLD_E("Invalid Request!!");
         }
       } else {
         if (NFC_FW_DOWNLOAD == gphNxpNciHal_fw_IoctlCtx.IoctlCode) {
           NXPLOG_FWDNLD_E("Fw Download Failed!!");
-        } else if (NFC_MEM_READ == gphNxpNciHal_fw_IoctlCtx.IoctlCode) {
-          NXPLOG_FWDNLD_E("Read Request Failed!!");
-        } else if (NFC_MEM_WRITE == gphNxpNciHal_fw_IoctlCtx.IoctlCode) {
-          NXPLOG_FWDNLD_E("Write Request Failed!!");
-        } else if (PHLIBNFC_DNLD_READ_LOG ==
-                   gphNxpNciHal_fw_IoctlCtx.IoctlCode) {
-          NXPLOG_FWDNLD_E("ReadLog Request Failed!!");
         } else {
           NXPLOG_FWDNLD_E("Invalid Request!!");
         }
