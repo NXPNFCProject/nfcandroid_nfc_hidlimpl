@@ -51,6 +51,15 @@ union {
   platform_gpios_t platform_gpios_status;
 } gpios_data;
 
+/*******************************************************************************
+**
+** Function         phNxpNciHal_getExtVendorConfig()
+**
+** Description      this function gets and updates the extension params
+**
+*******************************************************************************/
+void phNxpNciHal_getExtVendorConfig();
+
 /******************************************************************************
  * Function         phNxpNciHal_updateAutonomousPwrState
  *

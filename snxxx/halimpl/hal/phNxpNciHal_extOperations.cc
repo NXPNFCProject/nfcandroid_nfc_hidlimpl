@@ -29,6 +29,25 @@ static std::vector<uint8_t> uiccHciCeParams(0);
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 extern NFCSTATUS phNxpNciHal_ext_send_sram_config_to_flash();
 
+/*******************************************************************************
+**
+** Function         phNxpNciHal_getExtVendorConfig()
+**
+** Description      this function gets and updates the extension params
+**
+*******************************************************************************/
+void phNxpNciHal_getExtVendorConfig() {
+  unsigned long num = 0;
+  memset(&config_ext, 0x00, sizeof(nxp_nfc_config_ext_t));
+
+  if ((GetNxpNumValue(NAME_NXP_AUTONOMOUS_ENABLE, &num, sizeof(num)))) {
+    config_ext.autonomous_mode = (uint8_t)num;
+  }
+  if ((GetNxpNumValue(NAME_NXP_GUARD_TIMER_VALUE, &num, sizeof(num)))) {
+    config_ext.guard_timer_value = (uint8_t)num;
+  }
+}
+
 /******************************************************************************
  * Function         phNxpNciHal_updateAutonomousPwrState
  *
