@@ -21,7 +21,7 @@ aidl_interface {
         },
         ndk: {
             vndk: {
-                enabled: true,
+                enabled: false,
             },
         },
 
