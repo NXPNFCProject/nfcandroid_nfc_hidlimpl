@@ -2291,7 +2291,7 @@ int phNxpNciHal_close(bool bShutdown) {
   if (sem_val == 0) {
     sem_post(&(nxpncihal_ctrl.syncSpiNfc));
   }
-  if (!bShutdown) {
+  if (!bShutdown && phNxpNciHal_getULPDetFlag() == false) {
     if (IS_CHIP_TYPE_GE(sn100u)) {
       status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_in_phone_off),
                                         cmd_ce_in_phone_off);
