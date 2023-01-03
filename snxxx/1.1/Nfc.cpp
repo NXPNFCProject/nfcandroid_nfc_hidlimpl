@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2018 NXP
+ *  Copyright 2018, 2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 #define LOG_TAG "android.hardware.nfc@1.1-impl"
 #include "Nfc.h"
 #include <log/log.h>
+#include "NfcExtns.h"
 #include "halimpl/inc/phNxpNciHal_Adaptation.h"
 #include "phNfcStatus.h"
 
@@ -133,7 +134,8 @@ Return<V1_0::NfcStatus> Nfc::closeForPowerOffCase() {
 
 Return<void> Nfc::getConfig(getConfig_cb hidl_cb) {
   NfcConfig nfcVendorConfig;
-  phNxpNciHal_getVendorConfig(nfcVendorConfig);
+  NfcExtns nfcExtns;
+  nfcExtns.getConfig(nfcVendorConfig);
   hidl_cb(nfcVendorConfig);
   return Void();
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 NXP
+ * Copyright 2019-2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 
 #include <hardware/nfc.h>
-#include "NxpNfc.h"
 #include "phNfcStatus.h"
 #include "phNxpConfig.h"
 #include "phNxpLog.h"

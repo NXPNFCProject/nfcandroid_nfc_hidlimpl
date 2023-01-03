@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2022 NXP
+ * Copyright 2010-2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@
 #ifdef NXP_BOOTTIME_UPDATE
 #include "eSEClientIntf.h"
 #endif
-#include <vendor/nxp/nxpnfc/2.0/types.h>
 
 #include "eSEClientExtns.h"
 #include "phNxpNciHal_IoctlOperations.h"

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 NXP
+ * Copyright 2019-2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 #pragma once
 
 #include <phNxpNciHal_ext.h>
+#include <vector>
 
 #include "phNfcStatus.h"
 
@@ -138,7 +139,7 @@ NFCSTATUS phNxpNciHal_setSrdtimeout();
  *
  ******************************************************************************/
 NFCSTATUS
-phNxpNciHal_set_uicc_hci_params(std::vector<uint8_t>& ptr, uint8_t bufflen,
+phNxpNciHal_set_uicc_hci_params(vector<uint8_t>& ptr, uint8_t bufflen,
                                 phNxpNci_EEPROM_request_type_t uiccType);
 /******************************************************************************
  * Function         phNxpNciHal_get_uicc_hci_params
@@ -153,7 +154,7 @@ phNxpNciHal_set_uicc_hci_params(std::vector<uint8_t>& ptr, uint8_t bufflen,
  *
  ******************************************************************************/
 NFCSTATUS
-phNxpNciHal_get_uicc_hci_params(std::vector<uint8_t>& ptr, uint8_t bufflen,
+phNxpNciHal_get_uicc_hci_params(vector<uint8_t>& ptr, uint8_t bufflen,
                                 phNxpNci_EEPROM_request_type_t uiccType);
 
 /******************************************************************************

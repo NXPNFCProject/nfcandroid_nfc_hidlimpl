@@ -17,9 +17,6 @@
  *
  ******************************************************************************/
 #pragma once
-#include <android/hardware/secure_element/1.0/ISecureElement.h>
-#include <android/hardware/secure_element/1.0/ISecureElementHalCallback.h>
-#include <android/hardware/secure_element/1.0/types.h>
 #include <utils/RefBase.h>
 #include <vendor/nxp/nxpese/1.0/INxpEse.h>
 
@@ -51,8 +48,6 @@ class EseAdaptation {
   static NfcHalThreadCondVar mHalOpenCompletedEvent;
   static NfcHalThreadCondVar mHalCloseCompletedEvent;
   static NfcHalThreadCondVar mHalIoctlEvent;
-  static android::sp<android::hardware::secure_element::V1_0::ISecureElement>
-      mHal;
   static android::sp<vendor::nxp::nxpese::V1_0::INxpEse> mHalNxpEse;
 #if (NXP_EXTNS == TRUE)
   static NfcHalThreadCondVar mHalCoreResetCompletedEvent;

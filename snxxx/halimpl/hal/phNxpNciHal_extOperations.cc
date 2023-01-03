@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 NXP
+ * Copyright 2019-2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@
 #define NCI_HEADER_SIZE 3
 #define NCI_SE_CMD_LEN 4
 nxp_nfc_config_ext_t config_ext;
-static std::vector<uint8_t> uicc1HciParams(0);
-static std::vector<uint8_t> uicc2HciParams(0);
-static std::vector<uint8_t> uiccHciCeParams(0);
+static vector<uint8_t> uicc1HciParams(0);
+static vector<uint8_t> uicc2HciParams(0);
+static vector<uint8_t> uiccHciCeParams(0);
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 extern NFCSTATUS phNxpNciHal_ext_send_sram_config_to_flash();
 
@@ -379,7 +379,7 @@ NFCSTATUS phNxpNciHal_restore_uicc_params() {
  *
  ******************************************************************************/
 NFCSTATUS
-phNxpNciHal_get_uicc_hci_params(std::vector<uint8_t>& ptr, uint8_t bufflen,
+phNxpNciHal_get_uicc_hci_params(vector<uint8_t>& ptr, uint8_t bufflen,
                                 phNxpNci_EEPROM_request_type_t uiccType) {
   if (IS_CHIP_TYPE_L(sn220u)) {
     NXPLOG_NCIHAL_E("%s Not supported", __func__);
@@ -407,7 +407,7 @@ phNxpNciHal_get_uicc_hci_params(std::vector<uint8_t>& ptr, uint8_t bufflen,
  *
  *****************************************************************************/
 NFCSTATUS
-phNxpNciHal_set_uicc_hci_params(std::vector<uint8_t>& ptr, uint8_t bufflen,
+phNxpNciHal_set_uicc_hci_params(vector<uint8_t>& ptr, uint8_t bufflen,
                                 phNxpNci_EEPROM_request_type_t uiccType) {
   if (IS_CHIP_TYPE_L(sn220u)) {
     NXPLOG_NCIHAL_E("%s Not supported", __func__);
