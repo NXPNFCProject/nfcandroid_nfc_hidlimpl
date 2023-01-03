@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020, 2022 NXP
+ * Copyright (C) 2012-2020, 2022-2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,7 @@
 #ifndef _PHNXPNCIHAL_ADAPTATION_H_
 #define _PHNXPNCIHAL_ADAPTATION_H_
 
-#include <android/hardware/nfc/1.2/INfc.h>
-#include <android/hardware/nfc/1.2/types.h>
 #include <hardware/nfc.h>
-
-using ::android::hardware::nfc::V1_2::NfcConfig;
 
 typedef struct {
   struct nfc_nci_device nci_device;
@@ -44,9 +40,6 @@ int phNxpNciHal_control_granted(void);
 int phNxpNciHal_power_cycle(void);
 int phNxpNciHal_ioctl(long arg, void* p_data);
 void phNxpNciHal_do_factory_reset(void);
-void phNxpNciHal_getVendorConfig(
-    android::hardware::nfc::V1_1::NfcConfig& config);
-void phNxpNciHal_getVendorConfig_1_2(NfcConfig& config);
 void phNxpNciHal_setVerboseLogging(bool enable);
 bool phNxpNciHal_getVerboseLogging();
 #endif /* _PHNXPNCIHAL_ADAPTATION_H_ */

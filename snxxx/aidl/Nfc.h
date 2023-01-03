@@ -1,6 +1,7 @@
+
 /******************************************************************************
  *
- *  Copyright 2022 NXP
+ *  Copyright 2022-2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,15 +20,16 @@
 #pragma once
 
 #include <aidl/android/hardware/nfc/BnNfc.h>
-#include <aidl/android/hardware/nfc/INfcClientCallback.h>
-#include <android-base/logging.h>
-#include <log/log.h>
 #include <aidl/android/hardware/nfc/INfc.h>
+#include <aidl/android/hardware/nfc/INfcClientCallback.h>
 #include <aidl/android/hardware/nfc/NfcConfig.h>
 #include <aidl/android/hardware/nfc/NfcEvent.h>
 #include <aidl/android/hardware/nfc/NfcStatus.h>
 #include <aidl/android/hardware/nfc/PresenceCheckAlgorithm.h>
 #include <aidl/android/hardware/nfc/ProtocolDiscoveryConfig.h>
+#include <android-base/logging.h>
+#include <log/log.h>
+#include "phNxpNciHal_ext.h"
 
 namespace aidl {
 namespace android {
@@ -39,8 +41,6 @@ using ::aidl::android::hardware::nfc::NfcConfig;
 using ::aidl::android::hardware::nfc::NfcStatus;
 using NfcConfig = aidl::android::hardware::nfc::NfcConfig;
 using ::aidl::android::hardware::nfc::NfcEvent;
-
-#define HAL_HCI_NETWORK_RESET 7u
 
 // Default implementation that reports no support NFC.
 struct Nfc : public BnNfc {
@@ -60,7 +60,7 @@ struct Nfc : public BnNfc {
 
     static void eventCallback(uint8_t event, uint8_t status) {
         if (mCallback != nullptr) {
-          if (event == HAL_HCI_NETWORK_RESET) {
+          if (event == HAL_HCI_NETWORK_RESET_EVT) {
             event = (uint8_t)NfcEvent::HCI_NETWORK_RESET;
           }
             auto ret = mCallback->sendEvent((NfcEvent)event, (NfcStatus)status);

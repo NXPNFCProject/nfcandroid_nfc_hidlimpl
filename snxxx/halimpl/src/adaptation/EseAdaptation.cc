@@ -18,9 +18,6 @@
  ******************************************************************************/
 #define LOG_TAG "EseAdaptation"
 #include "EseAdaptation.h"
-#include <android/hardware/secure_element/1.0/ISecureElement.h>
-#include <android/hardware/secure_element/1.0/ISecureElementHalCallback.h>
-#include <android/hardware/secure_element/1.0/types.h>
 #include <hwbinder/ProcessState.h>
 #include <log/log.h>
 
@@ -28,8 +25,6 @@ using android::sp;
 using android::hardware::hidl_vec;
 using android::hardware::Return;
 using android::hardware::Void;
-using android::hardware::secure_element::V1_0::ISecureElement;
-using android::hardware::secure_element::V1_0::ISecureElementHalCallback;
 
 using vendor::nxp::nxpese::V1_0::INxpEse;
 
@@ -44,7 +39,6 @@ EseAdaptation* EseAdaptation::mpInstance = NULL;
 NfcHalThreadMutex EseAdaptation::sLock;
 NfcHalThreadMutex EseAdaptation::sIoctlLock;
 sp<INxpEse> EseAdaptation::mHalNxpEse;
-sp<ISecureElement> EseAdaptation::mHal;
 tHAL_ESE_CBACK* EseAdaptation::mHalCallback = NULL;
 tHAL_ESE_DATA_CBACK* EseAdaptation::mHalDataCallback = NULL;
 NfcHalThreadCondVar EseAdaptation::mHalOpenCompletedEvent;

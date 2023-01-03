@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2018-2019 The Android Open Source Project
+// Copyright (C) 2018-2019, 2023 The Android Open Source Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -89,7 +89,6 @@ cc_library_shared {
         "halimpl/eseclients_extns/inc",
         "halimpl/src/include",
         "halimpl/mifare",
-        "extns/impl/nxpnfc/2.0",
         "halimpl/recovery",
     ],
 
@@ -99,10 +98,6 @@ cc_library_shared {
     ],
 
     shared_libs: [
-        "android.hardware.nfc@1.0",
-        "android.hardware.nfc@1.1",
-        "android.hardware.nfc@1.2",
-        "android.hardware.secure_element@1.0",
         "libbase",
         "libcutils",
         "libdl",
@@ -113,7 +108,6 @@ cc_library_shared {
         "libutils",
         "libbinder_ndk",
         "vendor.nxp.nxpese@1.0",
-        "vendor.nxp.nxpnfc@2.0",
     ],
     header_libs: [
       "power_tracker_headers",
@@ -159,15 +153,14 @@ cc_binary {
         "libutils",
         "libbinder_ndk",
         "android.hardware.nfc-V1-ndk",
-        "android.hardware.nfc@1.2",
         "nfc_nci_nxp_snxxx",
         "libhardware",
-        "vendor.nxp.nxpnfc@2.0",
         "vendor.nxp.nxpnfc_aidl-V1-ndk",
     ],
     srcs: [
         "aidl/main.cpp",
         "aidl/Nfc.cpp",
+        "aidl/NfcExtns.cpp",
         "extns/impl/nxpnfc/aidl/NxpNfc.cpp",
     ],
     local_include_dirs: [
