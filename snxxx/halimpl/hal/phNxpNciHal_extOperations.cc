@@ -488,7 +488,7 @@ NFCSTATUS phNxpNciHal_configure_merge_sak() {
   mEEPROM_info.request_mode = SET_EEPROM_DATA;
   return request_EEPROM(&mEEPROM_info);
 }
-#if (NXP_EXTNS == TRUE && NXP_SRD == TRUE)
+#if (NXP_SRD == TRUE)
 /******************************************************************************
  * Function         phNxpNciHal_setSrdtimeout
  *

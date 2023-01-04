@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2022 NXP
+ * Copyright 2010-2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -944,9 +944,7 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
       case phTmlNfc_e_ResetDevice:
 
       {
-#if (NXP_EXTNS == TRUE)
         if (IS_CHIP_TYPE_L(sn100u)) {
-#endif
           /*Reset PN54X*/
           gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
                                     MODE_POWER_ON);
@@ -956,9 +954,7 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
           usleep(100 * 1000);
           gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
                                     MODE_POWER_ON);
-#if (NXP_EXTNS == TRUE)
         }
-#endif
         break;
       }
       case phTmlNfc_e_EnableNormalMode: {

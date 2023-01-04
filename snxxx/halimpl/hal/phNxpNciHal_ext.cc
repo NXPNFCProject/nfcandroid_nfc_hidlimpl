@@ -24,12 +24,10 @@
 #include <phNxpNciHal_ext.h>
 #include <phTmlNfc.h>
 #include <vector>
-#if (NXP_EXTNS == TRUE)
 #include "phNxpNciHal.h"
 #include "phNxpNciHal_IoctlOperations.h"
 #include "phNxpNciHal_PowerTrackerIface.h"
 #include "phNxpNciHal_nciParser.h"
-#endif
 
 #define NXP_EN_SN110U 1
 #define NXP_EN_SN100U 1
@@ -158,7 +156,6 @@ NFCSTATUS phNxpNciHal_ext_send_sram_config_to_flash() {
 NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
 
-#if (NXP_EXTNS == TRUE)
   /*parse and decode LxDebug Notifications*/
   if (p_ntf[0] == 0x6F && (p_ntf[1] == 0x35 || p_ntf[1] == 0x36)) {
     if (gParserCreated) phNxpNciHal_parsePacket(p_ntf, *p_len);
@@ -175,7 +172,6 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
              p_ntf[3] == 0xE2) {
     nxpprofile_ctrl.profile_type = NFC_FORUM_PROFILE;
   }
-#endif
 #endif
 
   if (p_ntf[0] == 0x61 && p_ntf[1] == 0x05 && *p_len < 14) {
