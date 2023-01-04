@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2022 NXP
+ *  Copyright 2022,2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,11 +16,7 @@
  *
  ******************************************************************************/
 
-#if (NXP_EXTNS == TRUE)
 #include <stdint.h>
-#else
-#include <unistd.h>
-#endif
 #include <string>
 #ifndef NXP_FEATURES_H
 #define NXP_FEATURES_H

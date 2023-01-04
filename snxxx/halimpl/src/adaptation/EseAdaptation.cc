@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  *
- *  Copyright 2015-2022 NXP
+ *  Copyright 2015-2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -44,11 +44,9 @@ tHAL_ESE_DATA_CBACK* EseAdaptation::mHalDataCallback = NULL;
 NfcHalThreadCondVar EseAdaptation::mHalOpenCompletedEvent;
 NfcHalThreadCondVar EseAdaptation::mHalCloseCompletedEvent;
 
-#if (NXP_EXTNS == TRUE)
 NfcHalThreadCondVar EseAdaptation::mHalCoreResetCompletedEvent;
 NfcHalThreadCondVar EseAdaptation::mHalCoreInitCompletedEvent;
 NfcHalThreadCondVar EseAdaptation::mHalInitCompletedEvent;
-#endif
 #define SIGNAL_NONE 0
 #define SIGNAL_SIGNALED 1
 

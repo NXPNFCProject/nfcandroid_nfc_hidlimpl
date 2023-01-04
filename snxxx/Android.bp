@@ -15,7 +15,7 @@
 
 //
 //  The original Work has been changed by NXP.
-//  Copyright (C) 2021-2022 NXP
+//  Copyright (C) 2021-2023 NXP
 
 package {
     // See: http://go/android-license-faq
@@ -35,7 +35,6 @@ cc_library_shared {
         "-Wall",
         "-Werror",
         "-Wextra",
-        "-DNXP_EXTNS=TRUE",
         "-DNXP_HW_SELF_TEST=TRUE",
         "-DNXP_SRD=TRUE",
         "-DNXP_NFC_RECOVERY=TRUE",

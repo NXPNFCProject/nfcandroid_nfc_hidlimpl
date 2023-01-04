@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2013-2022 NXP
+ *  Copyright 2013-2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -436,14 +436,8 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
   if (!nfc_debug_enabled && (printType == PRINT_UNKNOWN))
     return; // logging is disabled
   uint32_t i;
-#if (NXP_EXTNS == TRUE)
   char* print_buffer = (char*)calloc((len * 3 + 1), sizeof(char));
   if (NULL != print_buffer) {
-#else
-  char print_buffer[len * 3 + 1];
-
-  memset(print_buffer, 0, sizeof(print_buffer));
-#endif
     for (i = 0; i < len; i++) {
       snprintf(&print_buffer[i * 2], 3, "%02X", p_data[i]);
     }
@@ -461,12 +455,10 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
         // Nothing to do
         break;
     }
-#if (NXP_EXTNS == TRUE)
     free(print_buffer);
   } else {
     NXPLOG_NCIX_E("\nphNxpNciHal_print_packet:Failed to Allocate memory\n");
   }
-#endif
   return;
 }
 
