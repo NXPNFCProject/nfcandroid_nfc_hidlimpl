@@ -76,7 +76,7 @@ void OnDeath(void* cookie) {
     }
     int ret = 0;
     if (type == NfcCloseType::HOST_SWITCHED_OFF) {
-        ret = phNxpNciHal_close(true);
+        ret = phNxpNciHal_configDiscShutdown();
     } else {
         ret = phNxpNciHal_close(false);
     }
