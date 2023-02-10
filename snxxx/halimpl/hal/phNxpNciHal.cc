@@ -2242,6 +2242,7 @@ int phNxpNciHal_close(bool bShutdown) {
       0x03,
   };
   uint8_t cmd_reset_nci[] = {0x20, 0x00, 0x01, 0x00};
+  uint8_t cmd_system_ese_power_cycle[] = {0x2F, 0x1E, 0x00};
   uint8_t cmd_ce_in_phone_off[] = {0x20, 0x02, 0x05, 0x01,
                                    0xA0, 0x8E, 0x01, 0x00};
   uint8_t cmd_ce_in_phone_off_pn557[] = {0x20, 0x02, 0x05, 0x01,
@@ -2355,6 +2356,13 @@ int phNxpNciHal_close(bool bShutdown) {
     }
   }
 close_and_return:
+  if (IS_CHIP_TYPE_EQ(sn100u) && bShutdown) {
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_system_ese_power_cycle),
+        cmd_system_ese_power_cycle);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("ese power cycle failed");
+    }
+  }
   if (IS_CHIP_TYPE_L(sn220u) || bShutdown) {
     nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
   }
