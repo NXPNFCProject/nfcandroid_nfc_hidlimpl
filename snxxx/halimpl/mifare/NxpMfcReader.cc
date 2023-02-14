@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2019-2022 NXP
+ *  Copyright 2019-2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -44,8 +44,10 @@ NxpMfcReader& NxpMfcReader::getInstance() {
 **
 *******************************************************************************/
 int NxpMfcReader::Write(uint16_t mfcDataLen, const uint8_t* pMfcData) {
+  // Eg:- From the App pMfcData- {|PART1-00 00 06 C1 04| PART2-01 00 00 00|}
   uint16_t mfcTagCmdBuffLen = 0;
   uint8_t mfcTagCmdBuff[MAX_MFC_BUFF_SIZE] = {0};
+  uint16_t mfcTagCmdRemaingCmdLen = mfcDataLen;
 
   if (mfcDataLen > MAX_MFC_BUFF_SIZE) {
     android_errorWriteLog(0x534e4554, "169259605");
@@ -71,7 +73,9 @@ int NxpMfcReader::Write(uint16_t mfcDataLen, const uint8_t* pMfcData) {
     MfcWaitForAck();
     if (isAck) {
       NXPLOG_NCIHAL_D("part 1 command Acked");
-      SendIncDecRestoreCmdPart2(pMfcData);
+      SendIncDecRestoreCmdPart2(
+          mfcTagCmdRemaingCmdLen - MFC_TAG_INCR_DECR_CMD_PART1_LEN,
+          &pMfcData[0]);
     } else {
       NXPLOG_NCIHAL_E("part 1 command NACK");
     }
@@ -299,17 +303,30 @@ void NxpMfcReader::AuthForWrite() {
 ** Returns          None
 **
 *******************************************************************************/
-void NxpMfcReader::SendIncDecRestoreCmdPart2(const uint8_t* mfcData) {
+void NxpMfcReader::SendIncDecRestoreCmdPart2(uint16_t mfcDataLen,
+                                             const uint8_t* mfcData) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
+  bool isError = false;
   /* Build TAG_CMD part 2 for Mifare increment ,decrement and restore commands*/
   uint8_t incDecRestorePart2[] = {0x00, 0x00, 0x05, (uint8_t)eMfRawDataXchgHdr,
                                   0x00, 0x00, 0x00, 0x00};
   uint8_t incDecRestorePart2Size =
       (sizeof(incDecRestorePart2) / sizeof(incDecRestorePart2[0]));
+
   if (mfcData[3] == eMifareInc || mfcData[3] == eMifareDec) {
-    for (int i = 4; i < incDecRestorePart2Size; i++) {
-      incDecRestorePart2[i] = mfcData[i + 1];
+    if (mfcDataLen > MFC_TAG_INCR_DECR_CMD_PART2_LEN) {
+      isError = true;
+      incDecRestorePart2Size = MFC_TAG_INCR_DECR_CMD_PART2_LEN;
+    } else if (mfcDataLen < MFC_TAG_INCR_DECR_CMD_PART2_LEN) {
+      isError = true;
+      incDecRestorePart2Size = mfcDataLen;
     }
+  }
+  if (isError) {
+    android_errorWriteLog(0x534e4554, "238177877");
+  }
+  for (int i = 4; i < incDecRestorePart2Size; i++) {
+    incDecRestorePart2[i] = mfcData[i + 1];
   }
   sendRspToUpperLayer = false;
   status = phNxpNciHal_send_ext_cmd(incDecRestorePart2Size, incDecRestorePart2);
