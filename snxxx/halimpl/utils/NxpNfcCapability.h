@@ -23,9 +23,9 @@
 class capability {
  private:
   static capability* instance;
-  static const uint8_t sn3XXHWVersion = 0xD1;
+  static const uint8_t sn3XXHWVersion = 0xD3;
   const uint8_t sn3XXFWRomVersion = 0x02;
-  const uint8_t sn3XXFWMajorVersion = 0x01;
+  const uint8_t sn3XXFWMajorVersion = 0x20;
   const uint16_t offsetHwVersion = 24;
   const uint16_t offsetDlRspChipType = 3;
   const uint16_t offsetFwRomCodeVersion = 4;
