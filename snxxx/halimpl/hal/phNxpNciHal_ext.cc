@@ -872,6 +872,8 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
   } else if ((*cmd_len >= 6) &&
              (p_cmd_data[3] == 0x81 && p_cmd_data[4] == 0x01 &&
               p_cmd_data[5] == 0x03)) {
+    if (IS_CHIP_TYPE_GE(sn300u)) return NFCSTATUS_SUCCESS;
+
     NXPLOG_NCIHAL_D("> Going through the set host list");
     if (IS_CHIP_TYPE_GE(sn100u)) {
       *cmd_len = 10;
