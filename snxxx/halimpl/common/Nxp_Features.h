@@ -176,7 +176,7 @@ extern tNfc_featureList nfcFL;
     case sn300u:                                                               \
       CONFIGURE_FEATURELIST_NFCC(sn300u)                                       \
       nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true;                          \
-      nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 4;                               \
+      nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 6;                               \
       break;                                                                   \
     default:                                                                   \
       break;                                                                   \
