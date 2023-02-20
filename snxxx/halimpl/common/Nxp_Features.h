@@ -71,7 +71,8 @@ typedef enum {
   pn81T,
   sn100u,
   sn220u,
-  pn560
+  pn560,
+  sn300u
 } tNFC_chipType;
 
 typedef struct {

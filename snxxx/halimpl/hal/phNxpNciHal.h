@@ -43,6 +43,8 @@
 #define SN1XX_FW_MAJOR_VERSION 0x10
 #define SN2XX_ROM_VERSION 0x01
 #define SN2XX_FW_MAJOR_VERSION 0x01
+#define SN3XX_ROM_VERSION 0x02
+#define SN3XX_FW_MAJOR_VERSION 0x01
 
 /*Mem alloc with 8 byte alignment*/
 #define size_align(sz) ((((sz)-1) | 7) + 1)

@@ -1013,6 +1013,9 @@ int phNxpNciHal_fw_mw_ver_check() {
              (rom_version == SN2XX_ROM_VERSION) &&
              (fw_maj_ver == SN2XX_FW_MAJOR_VERSION)) {
     status = NFCSTATUS_SUCCESS;
+  } else if (IS_CHIP_TYPE_EQ(sn300u) && (rom_version == SN3XX_ROM_VERSION) &&
+             (fw_maj_ver == SN3XX_FW_MAJOR_VERSION)) {
+    status = NFCSTATUS_SUCCESS;
   }
   if (NFCSTATUS_SUCCESS != status) {
     NXPLOG_NCIHAL_D("Chip Version Middleware Version mismatch!!!!");
