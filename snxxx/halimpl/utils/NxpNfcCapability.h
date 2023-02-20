@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2015-2018,2020-2022 NXP
+ *  Copyright 2015-2018,2020-2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -23,6 +23,9 @@
 class capability {
  private:
   static capability* instance;
+  static const uint8_t sn3XXHWVersion = 0xD1;
+  const uint8_t sn3XXFWRomVersion = 0x02;
+  const uint8_t sn3XXFWMajorVersion = 0x01;
   const uint16_t offsetHwVersion = 24;
   const uint16_t offsetDlRspChipType = 3;
   const uint16_t offsetFwRomCodeVersion = 4;
@@ -31,9 +34,10 @@ class capability {
   const uint16_t offsetFwMajorVersion_pn557 = 11;
   /*product[] will be used to print product version and
   should be kept in accordance with tNFC_chipType*/
-  const char* product[14] = {"UNKNOWN", "PN547C2", "PN65T",  "PN548C2", "PN66T",
-                             "PN551",   "PN67T",   "PN553",  "PN80T",   "PN557",
-                             "PN81T",   "sn100",  "sn220", "pn560"};
+  const char* product[15] = {"UNKNOWN", "PN547C2", "PN65T", "PN548C2",
+                             "PN66T",   "PN551",   "PN67T", "PN553",
+                             "PN80T",   "PN557",   "PN81T", "sn100u",
+                             "sn220u",  "pn560",   "sn300"};
   capability();
 
  public:
