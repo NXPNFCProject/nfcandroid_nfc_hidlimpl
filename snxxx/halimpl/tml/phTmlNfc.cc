@@ -1011,7 +1011,10 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
         break;
       }
       case phTmlNfc_e_setFragmentSize: {
-        if (IS_CHIP_TYPE_NE(pn557)) {
+        if (IS_CHIP_TYPE_EQ(sn300u)) {
+          gpphTmlNfc_Context->fragment_len = PH_TMLNFC_FRGMENT_SIZE_SN300;
+          NXPLOG_TML_D("phTmlNfc_e_setFragmentSize 0x22A");
+        } else if (IS_CHIP_TYPE_NE(pn557)) {
           gpphTmlNfc_Context->fragment_len = PH_TMLNFC_FRGMENT_SIZE_SNXXX;
           NXPLOG_TML_D("phTmlNfc_e_setFragmentSize 0x22A");
         } else {

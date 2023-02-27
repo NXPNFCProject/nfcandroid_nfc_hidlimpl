@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 NXP
+ * Copyright 2012-2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@
 #define PHLIBNFC_IOCTL_DNLD_SN220U_GETVERLEN (0x0FU)
 #define PHLIBNFC_DNLD_CHECKINTEGRITYLEN (0x1FU)
 #define MAX_GET_VER_RESP_LEN (0x0FU)
+#define CRC_SN300 (0xCFFC001F)
 /* External global variable to get FW version */
 extern uint16_t wFwVer;
 extern uint16_t wMwVer;
@@ -564,7 +565,9 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
            (IS_CHIP_TYPE_EQ(sn100u) &&
             (PHDNLDNFC_HWVER_VENUS_MRA1_0 & pRespBuff->pBuff[0])) ||
            ((IS_CHIP_TYPE_EQ(sn220u) || IS_CHIP_TYPE_EQ(pn560)) &&
-            (PHDNLDNFC_HWVER_VULCAN_MRA1_0 & pRespBuff->pBuff[0])));
+            (PHDNLDNFC_HWVER_VULCAN_MRA1_0 & pRespBuff->pBuff[0])) ||
+           (IS_CHIP_TYPE_EQ(sn300u) &&
+            (PHDNLDNFC_HWVER_EOS_MRA2_0 & pRespBuff->pBuff[0])));
 
       if (isChipTypeMatchedWithHwVersion) {
         bExpectedLen = PHLIBNFC_IOCTL_DNLD_GETVERLEN_MRA2_1;
@@ -923,7 +926,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_log_read(void* pContext, NFCSTATUS status,
        ((((gphNxpNciHal_fw_IoctlCtx.bPrevSessnOpen) == true)) &&
         ((gphNxpNciHal_fw_IoctlCtx.bRetryDnld) == true))) ||
       IS_CHIP_TYPE_EQ(sn100u) || IS_CHIP_TYPE_EQ(sn220u) ||
-      IS_CHIP_TYPE_EQ(pn560))
+      IS_CHIP_TYPE_EQ(pn560) || IS_CHIP_TYPE_EQ(sn300u))
 
   {
     return NFCSTATUS_SUCCESS;
@@ -1889,7 +1892,10 @@ static NFCSTATUS phLibNfc_VerifySNxxxU_CrcStatus(uint8_t* bCrcStatus) {
   /*acceptable CRC values defined in little indian format
    * Actual CRC values are 0FC03FFF         */
   uint32_t acceptable_crc_values = 0xFF3FC00F;
-  if (IS_CHIP_TYPE_GE(sn220u)) {
+  if (IS_CHIP_TYPE_GE(sn300u)) {
+    CODEINFO_LEN = 5;
+    acceptable_crc_values = CRC_SN300;
+  } else if (IS_CHIP_TYPE_EQ(sn220u)) {
     /* Accepted CRC value according to SN220 integrity bit mapping */
     acceptable_crc_values = 0xFBFFC00F;
   }

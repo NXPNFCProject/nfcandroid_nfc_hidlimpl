@@ -553,7 +553,9 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset,
 
     phDnldNfc_SetHwDevHandle();
 
-    if (IS_CHIP_TYPE_GE(sn100u)) {
+    if (IS_CHIP_TYPE_EQ(sn300u)) {
+      phDnldNfc_SetI2CFragmentLength(NCI_CMDRESP_MAX_BUFF_SIZE_SN300);
+    } else if (IS_CHIP_TYPE_GE(sn100u)) {
       phDnldNfc_SetI2CFragmentLength(NCI_CMDRESP_MAX_BUFF_SIZE_SNXXX);
     } else {
       phDnldNfc_SetI2CFragmentLength(NCI_CMDRESP_MAX_BUFF_SIZE_PN557);
@@ -3335,7 +3337,9 @@ NFCSTATUS phNxpNciHal_dlResetInFwDnldMode() {
   NXPLOG_NCIHAL_D("Sending DL Reset for NFCC soft reboot");
   phDnldNfc_SetHwDevHandle();
 
-  if (IS_CHIP_TYPE_GE(sn100u)) {
+  if (IS_CHIP_TYPE_EQ(sn300u)) {
+      phDnldNfc_SetI2CFragmentLength(NCI_CMDRESP_MAX_BUFF_SIZE_SN300);
+  } else if (IS_CHIP_TYPE_GE(sn100u)) {
     phDnldNfc_SetI2CFragmentLength(NCI_CMDRESP_MAX_BUFF_SIZE_SNXXX);
   } else {
     phDnldNfc_SetI2CFragmentLength(NCI_CMDRESP_MAX_BUFF_SIZE_PN557);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2022 NXP
+ * Copyright 2010-2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@
 #include <phDnldNfc_Cmd.h>
 #include <phDnldNfc_Status.h>
 
+#define PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SN300 (0x22AU)
 #define PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SNXXX (0x22AU)
 #define PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_PN557 (0x100U)
 
@@ -120,7 +121,7 @@ typedef enum phDnldNfc_FwFormat {
  */
 typedef struct phDnldNfc_FrameInfo {
   uint16_t dwSendlength; /* length of the payload  */
-  uint8_t aFrameBuff[PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SNXXX]; /* Buffer to store
+  uint8_t aFrameBuff[PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SN300]; /* Buffer to store
                                                           command that needs to
                                                           be sent*/
 } phDnldNfc_FrameInfo_t,

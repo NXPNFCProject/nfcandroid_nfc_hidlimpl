@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2022 NXP
+ * Copyright (C) 2010-2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -621,7 +621,7 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
           if (0 != (pDlContext->tRWInfo.wRWPldSize)) {
             if ((pDlContext->tRWInfo.bFramesSegmented) == true) {
               /* Turning ON the Fragmentation bit in FrameLen */
-              if (IS_CHIP_TYPE_EQ(sn220u) || IS_CHIP_TYPE_EQ(pn560)) {
+              if (IS_CHIP_TYPE_GE(sn220u) || IS_CHIP_TYPE_EQ(pn560)) {
                 wFrameLen = PHDNLDNFC_SET_HDR_FRAGBIT_SN220(wFrameLen);
               } else {
                 wFrameLen = PHDNLDNFC_SET_HDR_FRAGBIT(wFrameLen);
@@ -636,7 +636,7 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
                 .aFrameBuff[PHDNLDNFC_FRAME_HDR_OFFSET + 1] = pFrameByte[0];
 
             /* To ensure we have no frag bit set for crc calculation */
-            if (IS_CHIP_TYPE_EQ(sn220u) || IS_CHIP_TYPE_EQ(pn560)) {
+            if (IS_CHIP_TYPE_GE(sn220u) || IS_CHIP_TYPE_EQ(pn560)) {
               wFrameLen = PHDNLDNFC_CLR_HDR_FRAGBIT_SN220(wFrameLen);
             } else {
               wFrameLen = PHDNLDNFC_CLR_HDR_FRAGBIT(wFrameLen);
