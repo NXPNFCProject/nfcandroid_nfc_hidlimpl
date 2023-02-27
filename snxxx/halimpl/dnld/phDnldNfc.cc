@@ -1,5 +1,5 @@
 /*
- *  Copyright 2010-2022 NXP
+ *  Copyright 2010-2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -257,7 +257,9 @@ NFCSTATUS phDnldNfc_CheckIntegrity(uint8_t bChipVer, pphDnldNfc_Buff_t pCRCData,
           (IS_CHIP_TYPE_EQ(sn100u) &&
            (PHDNLDNFC_HWVER_VENUS_MRA1_0 & bChipVer)) ||
           ((IS_CHIP_TYPE_EQ(sn220u) || IS_CHIP_TYPE_EQ(pn560)) &&
-           (PHDNLDNFC_HWVER_VULCAN_MRA1_0 & bChipVer))) {
+           (PHDNLDNFC_HWVER_VULCAN_MRA1_0 & bChipVer)) ||
+          (IS_CHIP_TYPE_EQ(sn300u) &&
+           (PHDNLDNFC_HWVER_EOS_MRA2_0 & bChipVer))) {
         (gpphDnldContext->FrameInp.Type) = phDnldNfc_ChkIntg;
       } else {
         (gpphDnldContext->FrameInp.Type) = phDnldNfc_FTNone;
@@ -818,7 +820,7 @@ NFCSTATUS phDnldNfc_InitImgInfo(bool bMinimalFw) {
     if ((NULL != gpphDnldContext->nxp_nfc_fw) &&
         (0 != gpphDnldContext->nxp_nfc_fw_len)) {
       uint16_t offsetFwMajorNum, offsetFwMinorNum;
-      if (IS_CHIP_TYPE_EQ(sn220u) || IS_CHIP_TYPE_EQ(pn560)) {
+      if (IS_CHIP_TYPE_GE(sn220u) || IS_CHIP_TYPE_EQ(pn560)) {
         offsetFwMajorNum = ((uint16_t)(gpphDnldContext->nxp_nfc_fw[795]) << 8U);
         offsetFwMinorNum = ((uint16_t)(gpphDnldContext->nxp_nfc_fw[794]));
       } else {
@@ -842,7 +844,9 @@ NFCSTATUS phDnldNfc_InitImgInfo(bool bMinimalFw) {
   /* gpphDnldContext reset by phDnldNfc_SetHwDevHandle()
      so reassign the Fragment Length based on chip version */
   if (NFCSTATUS_SUCCESS == wStatus) {
-    if (IS_CHIP_TYPE_GE(sn100u)) {
+    if (IS_CHIP_TYPE_EQ(sn300u)) {
+      phDnldNfc_SetI2CFragmentLength(PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SN300);
+    } else if (IS_CHIP_TYPE_GE(sn100u)) {
       phDnldNfc_SetI2CFragmentLength(PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SNXXX);
     } else {
       phDnldNfc_SetI2CFragmentLength(PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_PN557);
@@ -898,7 +902,11 @@ NFCSTATUS phDnldNfc_LoadRecInfo(void) {
 
     /* gpphDnldContext reset by phDnldNfc_SetHwDevHandle()
     so reassign the Fragment Length 554 (0x22A) for chip sn1xx*/
-    phDnldNfc_SetI2CFragmentLength(PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SNXXX);
+    if (IS_CHIP_TYPE_EQ(sn300u)) {
+      phDnldNfc_SetI2CFragmentLength(PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SN300);
+    } else {
+      phDnldNfc_SetI2CFragmentLength(PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SNXXX);
+    }
 
     if ((NULL != gpphDnldContext->nxp_nfc_fwp) &&
         (0 != gpphDnldContext->nxp_nfc_fwp_len)) {
@@ -961,7 +969,11 @@ NFCSTATUS phDnldNfc_LoadPKInfo(void) {
 
     /* gpphDnldContext reset by phDnldNfc_SetHwDevHandle()
     so reassign the Fragment Length 554 (0x22A) for chip sn1xx*/
-    phDnldNfc_SetI2CFragmentLength(PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SNXXX);
+    if (IS_CHIP_TYPE_EQ(sn300u)) {
+      phDnldNfc_SetI2CFragmentLength(PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SN300);
+    } else {
+      phDnldNfc_SetI2CFragmentLength(PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SNXXX);
+    }
 
     if ((NULL != gpphDnldContext->nxp_nfc_fwp) &&
         (0 != gpphDnldContext->nxp_nfc_fwp_len)) {

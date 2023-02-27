@@ -228,6 +228,8 @@ extern tNfc_featureList nfcFL;
         nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = false;                     \
         nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                   \
         nfcFL._FW_MOBILE_MAJOR_NUMBER = FW_MOBILE_MAJOR_NUMBER_SN300U; \
+        STRCPY_FW("libsn300u_fw")                                      \
+        STRCPY_FW_BIN("sn300u")                                        \
         break;                                                         \
       default:                                                         \
         nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                   \

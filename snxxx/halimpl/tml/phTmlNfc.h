@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2022 NXP
+ * Copyright 2010-2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@
  */
 #define PH_TMLNFC_FRGMENT_SIZE_SNXXX (0x22A)
 #define PH_TMLNFC_FRGMENT_SIZE_PN557 (0x102)
-
+#define PH_TMLNFC_FRGMENT_SIZE_SN300 (0x22A)
 /*
 ***************************Globals,Structure and Enumeration ******************
 */
