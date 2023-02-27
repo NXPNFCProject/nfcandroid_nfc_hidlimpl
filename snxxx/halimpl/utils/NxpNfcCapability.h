@@ -36,8 +36,8 @@ class capability {
   should be kept in accordance with tNFC_chipType*/
   const char* product[15] = {"UNKNOWN", "PN547C2", "PN65T", "PN548C2",
                              "PN66T",   "PN551",   "PN67T", "PN553",
-                             "PN80T",   "PN557",   "PN81T", "sn100u",
-                             "sn220u",  "pn560",   "sn300"};
+                             "PN80T",   "PN557",   "PN81T", "sn100",
+                             "sn220",  "pn560",   "sn300"};
   capability();
 
  public:
