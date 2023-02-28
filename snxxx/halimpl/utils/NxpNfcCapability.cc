@@ -68,7 +68,8 @@ tNFC_chipType capability::processChipType(uint8_t* msg, uint16_t msg_len) {
                 msg[offsetFwMajorVersion_pn557] == 0x01))
         chipType = pn557;
       else if (msg[offsetFwRomCodeVersion] == sn3XXFWRomVersion &&
-               msg[offsetFwMajorVersion] == sn3XXFWMajorVersion) {
+               (msg[offsetFwMajorVersion] == sn3XXFWMajorVersion ||
+               msg[offsetDlRspChipType] == sn3XXHWVersion)) {
         chipType = sn300u;
       }
     } else if (offsetHwVersion < msg_len) {

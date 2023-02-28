@@ -101,6 +101,7 @@ typedef struct {
   uint8_t bClkSrcVal; /* Holds the System clock source read from config file */
   uint8_t
       bClkFreqVal; /* Holds the System clock frequency read from config file */
+  bool degradedFwDnld; /* Flag indicates if Degraded FW download is requested*/
 } phNxpNciHal_fw_Ioctl_Cntx_t;
 
 /* Global variables used in this file only*/
@@ -551,8 +552,10 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
   uint8_t bNewVer[2];
   uint8_t bCurrVer[2];
 
-  if ((NFCSTATUS_SUCCESS == wStatus) && (NULL != pInfo)) {
-    NXPLOG_FWDNLD_D("phNxpNciHal_fw_dnld_get_version_cb - Request Successful");
+  if (gphNxpNciHal_fw_IoctlCtx.degradedFwDnld) {
+    NXPLOG_FWDNLD_D("%s - Degraded FW download, Skip version check", __func__);
+  } else if ((NFCSTATUS_SUCCESS == wStatus) && (NULL != pInfo)) {
+    NXPLOG_FWDNLD_D("%s - Request Successful", __func__);
 
     pRespBuff = (pphDnldNfc_Buff_t)pInfo;
 
@@ -1782,7 +1785,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
 *******************************************************************************/
 NFCSTATUS phNxpNciHal_fw_download_seq(uint8_t bClkSrcVal, uint8_t bClkFreqVal,
                                       uint8_t seq_handler_offset,
-                                      bool bMinimalFw) {
+                                      bool bMinimalFw, bool degradedFwDnld) {
   NFCSTATUS status = NFCSTATUS_FAILED;
   phDnldNfc_Buff_t pInfo;
   const char* pContext = "FW-Download";
@@ -1802,8 +1805,9 @@ NFCSTATUS phNxpNciHal_fw_download_seq(uint8_t bClkSrcVal, uint8_t bClkFreqVal,
   (gphNxpNciHal_fw_IoctlCtx.bDnldAttempts) = 0;
   (gphNxpNciHal_fw_IoctlCtx.bClkSrcVal) = bClkSrcVal;
   (gphNxpNciHal_fw_IoctlCtx.bClkFreqVal) = bClkFreqVal;
+  (gphNxpNciHal_fw_IoctlCtx.degradedFwDnld) = degradedFwDnld;
   /* Get firmware version */
-  if (NFCSTATUS_SUCCESS == phDnldNfc_InitImgInfo(bMinimalFw)) {
+  if (NFCSTATUS_SUCCESS == phDnldNfc_InitImgInfo(bMinimalFw, degradedFwDnld)) {
     NXPLOG_FWDNLD_D("phDnldNfc_InitImgInfo:SUCCESS");
 #ifdef NXP_DUMMY_FW_DNLD
     if (gRecFWDwnld == true) {

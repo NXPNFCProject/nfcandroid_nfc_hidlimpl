@@ -49,6 +49,7 @@ using android::base::WriteStringToFile;
 #define CORE_RES_STATUS_BYTE 3
 #define MAX_NXP_HAL_EXTN_BYTES 10
 #define DEFAULT_MINIMAL_FW_VERSION 0x0110DE
+#define EOS_FW_SESSION_STATE_LOCKED 0x02
 
 bool bEnableMfcExtns = false;
 bool bEnableMfcReader = false;
@@ -165,6 +166,8 @@ static NFCSTATUS phNxpNciHal_resetDefaultSettings(uint8_t fw_update_req,
 static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset = 0,
                                                bool bIsNfccDlState = false);
 static int phNxpNciHal_MinOpen_Clean(char* nfc_dev_node);
+static void phNxpNciHal_DownloadFw(bool isMinFwVer,
+                                   bool degradedFwDnld = false);
 static void phNxpNciHal_CheckAndHandleFwTearDown(void);
 static NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(
     bool bIsVenResetReqd = false);
@@ -3165,19 +3168,61 @@ retry_send_ext:
 }
 
 /******************************************************************************
+ * Function         phNxpNciHal_DownloadFw
+ *
+ * Description      It is used to trigger the FW download as part of FW tearing
+ *                  scenario handling. It downloads either degraded or Normal
+ *                  FW, based on the session state of the NFCC.
+ *
+ * Returns          void
+ *
+ ******************************************************************************/
+static void phNxpNciHal_DownloadFw(bool isMinFwVer, bool degradedFwDnld) {
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadMode);
+  if (isMinFwVer) {
+    /* since minimal fw required dlreset to boot in Download mode */
+    status = phNxpNciHal_dlResetInFwDnldMode();
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("DL Reset failed for minimal fw");
+    }
+  }
+  phTmlNfc_EnableFwDnldMode(true);
+
+  /* Set the obtained device handle to download module */
+  phDnldNfc_SetHwDevHandle();
+  NXPLOG_NCIHAL_D("Calling Seq handler for FW Download \n");
+  status = phNxpNciHal_fw_download_seq(nxpprofile_ctrl.bClkSrcVal,
+                                       nxpprofile_ctrl.bClkFreqVal, 0, false,
+                                       degradedFwDnld);
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("FW Download Sequence Handler Failed.");
+  } else {
+    property_set("nfc.fw.force_download", "0");
+    fw_download_success = 1;
+  }
+
+  status = phNxpNciHal_dlResetInFwDnldMode();
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("DL Reset failed in FW DN mode");
+  }
+}
+
+/******************************************************************************
  * Function         phNxpNciHal_CheckAndHandleFwTearDown
  *
  * Description      Check Whether chip is in FW download mode, If chip is in
  *                  Download mode and previous session is not complete, then
  *                  Do force FW update.
  *
- * Returns          Status
+ * Returns          void
  *
  ******************************************************************************/
 void phNxpNciHal_CheckAndHandleFwTearDown() {
   NFCSTATUS status = NFCSTATUS_FAILED;
   uint8_t session_state = -1;
   unsigned long minimal_fw_version = DEFAULT_MINIMAL_FW_VERSION;
+  bool isMinFwVer = false;
   status = phNxpNciHal_getChipInfoInFwDnldMode();
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("Get Chip Info Failed");
@@ -3195,34 +3240,13 @@ void phNxpNciHal_CheckAndHandleFwTearDown() {
       NXPLOG_NCIHAL_E("NFC not in the teared state, boot NFCC in NCI mode");
       return;
     }
-  }
-  phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadMode);
-  if (wFwVerRsp == minimal_fw_version) {
-    /* since minimal fw required dlreset
-     * to boot in Download mode */
-    status = phNxpNciHal_dlResetInFwDnldMode();
-    if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("DL Reset failed for minimal fw");
-    }
-  }
-  phTmlNfc_EnableFwDnldMode(true);
-
-  /* Set the obtained device handle to download module */
-  phDnldNfc_SetHwDevHandle();
-  NXPLOG_NCIHAL_D("Calling Seq handler for FW Download \n");
-  status = phNxpNciHal_fw_download_seq(nxpprofile_ctrl.bClkSrcVal,
-                                       nxpprofile_ctrl.bClkFreqVal);
-  if (status != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("FW Download Sequence Handler Failed.");
   } else {
-    property_set("nfc.fw.force_download", "0");
-    fw_download_success = 1;
+    isMinFwVer = true;
   }
-
-  status = phNxpNciHal_dlResetInFwDnldMode();
-  if (status != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("DL Reset failed in FW DN mode");
+  if (session_state == EOS_FW_SESSION_STATE_LOCKED) {
+    phNxpNciHal_DownloadFw(isMinFwVer, true);
   }
+  phNxpNciHal_DownloadFw(isMinFwVer);
 }
 
 /******************************************************************************
@@ -3308,9 +3332,7 @@ uint8_t phNxpNciHal_getSessionInfoInFwDnldMode() {
     /* Check FW getResponse command response status byte */
     if (nxpncihal_ctrl.p_rx_data[2] == 0x00 &&
         nxpncihal_ctrl.p_rx_data[0] == 0x00) {
-      if (nxpncihal_ctrl.p_rx_data[3] == 0x00) {
-        session_status = 0;
-      }
+      session_status = nxpncihal_ctrl.p_rx_data[3];
     } else {
       NXPLOG_NCIHAL_D("get session info Failed !!!");
       usleep(150 * 1000);

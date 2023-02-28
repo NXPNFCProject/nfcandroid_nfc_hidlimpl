@@ -741,11 +741,13 @@ NFCSTATUS phDnldNfc_RawReq(pphDnldNfc_Buff_t pFrameData,
 **                  variables, to be used internally for write operation
 **
 ** Parameters       bMinimalFw - flag indicates for minimal FW Image
+**                  degradedFwDnld - Indicates if degraded FW download is
+**                  requested
 **
 ** Returns          NFC status
 **
 *******************************************************************************/
-NFCSTATUS phDnldNfc_InitImgInfo(bool bMinimalFw) {
+NFCSTATUS phDnldNfc_InitImgInfo(bool bMinimalFw, bool degradedFwDnld) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   uint8_t* pImageInfo = NULL;
   uint32_t ImageInfoLen = 0;
@@ -788,7 +790,8 @@ NFCSTATUS phDnldNfc_InitImgInfo(bool bMinimalFw) {
       wStatus = phDnldNfc_LoadFW(Fw_Lib_Path, &pImageInfo, &ImageInfoLen);
     }
 #else
-    wStatus = phDnldNfc_LoadFW(Fw_Lib_Path, &pImageInfo, &ImageInfoLen);
+    wStatus = phDnldNfc_LoadFW(Fw_Lib_Path, &pImageInfo, &ImageInfoLen,
+                               degradedFwDnld);
 #endif
   } else {
     NXPLOG_FWDNLD_E("firmware file format mismatch!!!\n");
@@ -1029,15 +1032,18 @@ void phDnldNfc_CloseFwLibHandle(void) {
 ** Parameters       pathName    - Firmware image path
 **                  pImgInfo    - Firmware image handle
 **                  pImgInfoLen - Firmware image length
+**                  degradedFwDnld - Indicates if degraded FW download is
+**                  requested
 **
 ** Returns          NFC status
 **
 *******************************************************************************/
 NFCSTATUS phDnldNfc_LoadFW(const char* pathName, uint8_t** pImgInfo,
-                           uint32_t* pImgInfoLen) {
+                           uint32_t* pImgInfoLen, bool degradedFwDnld) {
   void* pImageInfo = NULL;
   void* pImageInfoLen = NULL;
-
+  const char* pFwSymbol = "gphDnldNfc_DlSeq";
+  const char* pFwSymbolSz = "gphDnldNfc_DlSeqSz";
   /* check for path name */
   if (pathName == NULL) pathName = nfcFL._FW_LIB_PATH.c_str();
 
@@ -1060,18 +1066,24 @@ NFCSTATUS phDnldNfc_LoadFW(const char* pathName, uint8_t** pImgInfo,
 
   dlerror(); /* Clear any existing error */
 
+  if (degradedFwDnld) {
+    NXPLOG_FWDNLD_D("%s: Loading Degraded FW info", __func__);
+    pFwSymbol = "gphDnldNfc_DlSeq_DegradedFw";
+    pFwSymbolSz = "gphDnldNfc_DlSeqSz_DegradedFw";
+  }
+
   /* load the address of download image pointer and image size */
-  pImageInfo = (void*)dlsym(pFwHandle, "gphDnldNfc_DlSeq");
+  pImageInfo = (void*)dlsym(pFwHandle, pFwSymbol);
 
   if (dlerror() || (NULL == pImageInfo)) {
-    NXPLOG_FWDNLD_E("Problem loading symbol : gphDnldNfc_DlSeq");
+    NXPLOG_FWDNLD_E("Problem loading symbol : %s", pFwSymbol);
     return NFCSTATUS_FAILED;
   }
   (*pImgInfo) = (*(uint8_t**)pImageInfo);
 
-  pImageInfoLen = (void*)dlsym(pFwHandle, "gphDnldNfc_DlSeqSz");
+  pImageInfoLen = (void*)dlsym(pFwHandle, pFwSymbolSz);
   if (dlerror() || (NULL == pImageInfoLen)) {
-    NXPLOG_FWDNLD_E("Problem loading symbol : gphDnldNfc_DlSeqSz");
+    NXPLOG_FWDNLD_E("Problem loading symbol : %s", pFwSymbolSz);
     return NFCSTATUS_FAILED;
   }
 
