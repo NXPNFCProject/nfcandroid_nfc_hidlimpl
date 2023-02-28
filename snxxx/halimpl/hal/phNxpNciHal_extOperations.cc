@@ -75,8 +75,8 @@ uint8_t phNxpNciHal_updateAutonomousPwrState(uint8_t num) {
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_setAutonomousMode() {
   if (IS_CHIP_TYPE_L(sn100u)) {
-    NXPLOG_NCIHAL_D("%s : Not applicable for chipType %d", __func__,
-                    nfcFL.chipType);
+    NXPLOG_NCIHAL_D("%s : Not applicable for chipType %s", __func__,
+                    pConfigFL->product[nfcFL.chipType]);
     return NFCSTATUS_SUCCESS;
   }
   phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
@@ -465,8 +465,8 @@ NFCSTATUS phNxpNciHal_send_get_cfg(const uint8_t* cmd_get_cfg, long cmd_len) {
  *****************************************************************************/
 NFCSTATUS phNxpNciHal_configure_merge_sak() {
   if (IS_CHIP_TYPE_L(sn100u)) {
-    NXPLOG_NCIHAL_D("%s : Not applicable for chipType %d", __func__,
-                    nfcFL.chipType);
+    NXPLOG_NCIHAL_D("%s : Not applicable for chipType %s", __func__,
+                    pConfigFL->product[nfcFL.chipType]);
     return NFCSTATUS_SUCCESS;
   }
   long retlen = 0;
@@ -599,8 +599,8 @@ NFCSTATUS phNxpNciHal_configGPIOControl(uint8_t gpioCtrl[], uint8_t len) {
     return NFCSTATUS_INVALID_PARAMETER;
   }
   if (nfcFL.chipType <= sn100u) {
-    NXPLOG_NCIHAL_D("%s : Not applicable for chipType %d", __func__,
-                    nfcFL.chipType);
+    NXPLOG_NCIHAL_D("%s : Not applicable for chipType %s", __func__,
+                    pConfigFL->product[nfcFL.chipType]);
     return status;
   }
   phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
