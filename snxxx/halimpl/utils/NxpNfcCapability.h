@@ -32,15 +32,14 @@ class capability {
   const uint16_t offsetFwMinorVersion = 6;
   const uint16_t offsetFwMajorVersion = 7;
   const uint16_t offsetFwMajorVersion_pn557 = 11;
-  /*product[] will be used to print product version and
-  should be kept in accordance with tNFC_chipType*/
-  const char* product[15] = {"UNKNOWN", "PN547C2", "PN65T", "PN548C2",
-                             "PN66T",   "PN551",   "PN67T", "PN553",
-                             "PN80T",   "PN557",   "PN81T", "sn100",
-                             "sn220",  "pn560",   "sn300"};
   capability();
 
  public:
+  /*product[] will be used to print product version and
+  should be kept in accordance with tNFC_chipType*/
+  const char* product[15] = {"UNKNOWN", "PN547C2", "PN65T", "PN548C2", "PN66T",
+                             "PN551",   "PN67T",   "PN553", "PN80T",   "PN557",
+                             "PN81T",   "sn100",   "SN220", "pn560",   "SN300"};
   static tNFC_chipType chipType;
   static capability* getInstance();
   tNFC_chipType processChipType(uint8_t* msg, uint16_t msg_len);

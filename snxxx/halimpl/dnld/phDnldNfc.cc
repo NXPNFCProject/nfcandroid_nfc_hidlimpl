@@ -25,6 +25,7 @@
 #include <phNxpLog.h>
 #include <phTmlNfc.h>
 #include <string>
+#include "NxpNfcCapability.h"
 
 #if (NXP_NFC_RECOVERY == TRUE)
 #include <phDnldNfc_UpdateSeq.h>
@@ -1076,12 +1077,11 @@ NFCSTATUS phDnldNfc_LoadFW(const char* pathName, uint8_t** pImgInfo,
 
   if (IS_CHIP_TYPE_GE(sn100u)) {
     (*pImgInfoLen) = (uint32_t)(*((uint32_t*)pImageInfoLen));
-    NXPLOG_FWDNLD_D("FW image loded for chipType sn100u (%x)", nfcFL.chipType)
   } else {
     (*pImgInfoLen) = (uint16_t)(*((uint16_t*)pImageInfoLen));
-    NXPLOG_FWDNLD_D("FW image loded for chipType pn557 (%x)", nfcFL.chipType)
   }
-
+  NXPLOG_FWDNLD_D("FW image loaded for chipType %s",
+                  pConfigFL->product[nfcFL.chipType]);
   return NFCSTATUS_SUCCESS;
 }
 
