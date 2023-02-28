@@ -20,13 +20,13 @@
 #include <phDal4Nfc_messageQueueLib.h>
 #include <phDnldNfc.h>
 #include <phNxpConfig.h>
+#include <phNxpEventLogger.h>
 #include <phNxpLog.h>
 #include <phNxpNciHal.h>
 #include <phNxpNciHal_Adaptation.h>
 #include <phNxpNciHal_Dnld.h>
 #include <phNxpNciHal_NfcDepSWPrio.h>
 #include <phNxpNciHal_ext.h>
-#include <phNxpSMBLogger.h>
 #include <phTmlNfc.h>
 #include "phNxpNciHal_nciParser.h"
 
@@ -957,7 +957,7 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
     phNxpNciHal_open_complete(wConfigStatus);
     return wConfigStatus;
   } else if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
-    phNxpSMBLogger::getInstance().initialize();
+    PhNxpEventLogger::GetInstance().Initialize();
     memset(&nxpncihal_ctrl, 0x00, sizeof(nxpncihal_ctrl));
     nxpncihal_ctrl.p_nfc_stack_cback = p_cback;
     nxpncihal_ctrl.p_nfc_stack_data_cback = p_data_cback;
@@ -2405,7 +2405,7 @@ close_and_return:
     if (0 != pthread_join(nxpncihal_ctrl.client_thread, (void**)NULL)) {
       NXPLOG_TML_E("Fail to kill client thread!");
     }
-    phNxpSMBLogger::getInstance().finalize();
+    PhNxpEventLogger::GetInstance().Finalize();
     phTmlNfc_CleanUp();
 
     phDal4Nfc_msgrelease(nxpncihal_ctrl.gDrvCfg.nClientId);
