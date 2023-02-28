@@ -60,7 +60,8 @@ typedef void (*pphDnldNfc_RspCb_t)(void* pContext, NFCSTATUS wStatus,
 #define PHDNLDNFC_HWVER_PN557_MRA1_0 (0x01U)
 #define PHDNLDNFC_HWVER_VENUS_MRA1_0 (0xA0U)
 #define PHDNLDNFC_HWVER_VULCAN_MRA1_0 (0xC0U)
-#define PHDNLDNFC_HWVER_EOS_MRA2_0 (0xD3U)
+#define PHDNLDNFC_HWVER_EOS_MRA2_0 (0xD0U)
+#define PHDNLDNFC_UPPER_NIBBLE_MASK (0xF0)
 
 /*
  * Enum definition contains Download Life Cycle States
