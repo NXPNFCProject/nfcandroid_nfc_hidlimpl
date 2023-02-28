@@ -31,9 +31,6 @@
 #define FW_MOBILE_MAJOR_NUMBER_SN220U 0x01
 #define FW_MOBILE_MAJOR_NUMBER_SN300U 0x20
 
-/*Including T4T NFCEE by incrementing 1*/
-#define NFA_EE_MAX_EE_SUPPORTED 5
-
 #define JCOP_VER_3_3 3
 #define JCOP_VER_4_0 4
 #ifndef FW_LIB_ROOT_DIR
