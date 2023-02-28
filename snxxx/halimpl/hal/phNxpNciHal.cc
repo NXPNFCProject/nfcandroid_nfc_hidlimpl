@@ -3281,14 +3281,16 @@ NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd) {
       if (nxpncihal_ctrl.p_rx_data[0] == 0x00) {
         if (nxpncihal_ctrl.p_rx_data[2] != 0x00) {
           status = NFCSTATUS_FAILED;
+          /* Resend DL_GET_VERSION_CMD to recover from error
+           * such as DL_PROTOCOL_ERROR.
+           */
           if (retry_cnt < MAX_RETRY_COUNT) {
             retry_cnt++;
-            /*reset NFCC state to avoid any failures
-             *such as DL_PROTOCOL_ERROR
+            /* No default read pending in FW dowbload mode.
+             * Thus, keep read pending before every cmd retry
              */
-            status = phNxpNciHal_dlResetInFwDnldMode();
-            if (status != NFCSTATUS_SUCCESS) {
-              NXPLOG_NCIHAL_E("DL Reset failed in FW DN mode");
+            if (phNxpNciHal_enableTmlRead() != NFCSTATUS_PENDING) {
+              NXPLOG_NCIHAL_E("%s read error", __func__);
             }
           }
         }
