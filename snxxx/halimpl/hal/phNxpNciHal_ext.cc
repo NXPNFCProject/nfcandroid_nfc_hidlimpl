@@ -66,7 +66,6 @@ static uint8_t ee_disc_done = 0x00;
 uint8_t EnableP2P_PrioLogic = false;
 extern bool bEnableMfcExtns;
 extern bool bEnableMfcReader;
-extern bool bDisableLegacyMfcExtns;
 static uint32_t RfDiscID = 1;
 static uint32_t RfProtocolType = 4;
 /* NFCEE Set mode */
@@ -223,7 +222,7 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
 
   status = NFCSTATUS_SUCCESS;
 
-  if (bDisableLegacyMfcExtns && bEnableMfcExtns && p_ntf[0] == 0) {
+  if (bEnableMfcExtns && p_ntf[0] == 0) {
     if (*p_len < NCI_HEADER_SIZE) {
       android_errorWriteLog(0x534e4554, "169258743");
       return NFCSTATUS_FAILED;
@@ -237,7 +236,7 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
 
   if (p_ntf[0] == 0x61 && p_ntf[1] == 0x05) {
     bEnableMfcExtns = false;
-    if (bDisableLegacyMfcExtns && p_ntf[4] == 0x80 && p_ntf[5] == 0x80) {
+    if (p_ntf[4] == 0x80 && p_ntf[5] == 0x80) {
       bEnableMfcExtns = true;
       NXPLOG_NCIHAL_D("NxpNci: RF Interface = Mifare Enable MifareExtns");
     }
