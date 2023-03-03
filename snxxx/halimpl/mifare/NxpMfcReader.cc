@@ -26,7 +26,6 @@
 
 extern bool sendRspToUpperLayer;
 extern bool bEnableMfcExtns;
-extern bool bDisableLegacyMfcExtns;
 
 NxpMfcReader& NxpMfcReader::getInstance() {
   static NxpMfcReader msNxpMfcReader;
@@ -476,8 +475,7 @@ void NxpMfcReader::MfcNotifyOnAckReceived(uint8_t* buff) {
   /*
    * If Mifare Activated & received RF data packet
    */
-  if (bEnableMfcExtns && bDisableLegacyMfcExtns &&
-      (buff[0] == NCI_RF_CONN_ID)) {
+  if (bEnableMfcExtns && (buff[0] == NCI_RF_CONN_ID)) {
     int sem_val;
     isAck = (buff[3] == NFCSTATUS_SUCCESS);
     sem_getvalue(&mNacksem, &sem_val);

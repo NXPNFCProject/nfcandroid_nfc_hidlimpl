@@ -53,7 +53,6 @@ using android::base::WriteStringToFile;
 
 bool bEnableMfcExtns = false;
 bool bEnableMfcReader = false;
-bool bDisableLegacyMfcExtns = true;
 
 /* Processing of ISO 15693 EOF */
 extern uint8_t icode_send_eof;
@@ -1089,7 +1088,7 @@ static void phNxpNciHal_open_complete(NFCSTATUS status) {
  *
  ******************************************************************************/
 int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data) {
-  if (bDisableLegacyMfcExtns && bEnableMfcExtns && p_data[0] == 0x00) {
+  if (bEnableMfcExtns && p_data[0] == 0x00) {
     return NxpMfcReaderInstance.Write(data_len, p_data);
   }
   return phNxpNciHal_write_internal(data_len, p_data);
@@ -1379,7 +1378,7 @@ static void phNxpNciHal_read_complete(void* pContext,
       /* Unlock semaphore waiting for only  ntf*/
       nxpncihal_ctrl.nci_info.wait_for_ntf = FALSE;
       SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
-    } else if (bDisableLegacyMfcExtns && !sendRspToUpperLayer &&
+    } else if (!sendRspToUpperLayer &&
                (nxpncihal_ctrl.p_rx_data[0x00] == 0x00)) {
       sendRspToUpperLayer = true;
       NFCSTATUS mfcRspStatus = NxpMfcReaderInstance.CheckMfcResponse(
@@ -3803,16 +3802,10 @@ static void phNxpNciHal_print_res_status(uint8_t* p_rx_data, uint16_t* p_len) {
 static void phNxpNciHal_initialize_mifare_flag() {
   unsigned long num = 0;
   bEnableMfcReader = false;
-  bDisableLegacyMfcExtns = true;
   // 1: Enable Mifare Classic protocol in RF Discovery.
   // 0: Remove Mifare Classic protocol in RF Discovery.
   if (GetNxpNumValue(NAME_MIFARE_READER_ENABLE, &num, sizeof(num))) {
     bEnableMfcReader = (num == 0) ? false : true;
-  }
-  // 1: Use legacy JNI MFC extns.
-  // 0: Disable legacy JNI MFC extns, use hal MFC Extns instead.
-  if (GetNxpNumValue(NAME_LEGACY_MIFARE_READER, &num, sizeof(num))) {
-    bDisableLegacyMfcExtns = (num == 0) ? true : false;
   }
 }
 
