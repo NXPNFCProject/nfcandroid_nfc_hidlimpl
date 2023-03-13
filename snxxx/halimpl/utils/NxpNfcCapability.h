@@ -32,6 +32,8 @@ class capability {
   const uint16_t offsetFwMinorVersion = 6;
   const uint16_t offsetFwMajorVersion = 7;
   const uint16_t offsetFwMajorVersion_pn557 = 11;
+  const uint16_t chipTypePN560Variant1 = 0xCA;
+  const uint16_t chipTypePN560Variant2 = 0xCB;
   capability();
 
  public:
