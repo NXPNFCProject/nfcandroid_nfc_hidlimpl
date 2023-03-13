@@ -43,7 +43,8 @@ tNFC_chipType capability::processChipType(uint8_t* msg, uint16_t msg_len) {
       else if (msg[msg_len - 3] == 0x01 && msg[msg_len - 2] == 0x10)
         chipType = sn100u;
       else if (msg[msg_len - 3] == 0x01 && msg[msg_len - 2] == 0x01) {
-        if (msg[msg_len - 4] == 0xCA) {
+        if (msg[msg_len - 4] == chipTypePN560Variant1 ||
+            msg[msg_len - 4] == chipTypePN560Variant2) {
           chipType = pn560;
         } else {
           chipType = sn220u;
@@ -55,7 +56,8 @@ tNFC_chipType capability::processChipType(uint8_t* msg, uint16_t msg_len) {
     } else if (msg[0] == 0x00) {
       if (msg[offsetFwRomCodeVersion] == 0x01 &&
           msg[offsetFwMajorVersion] == 0x01) {
-        if (msg[offsetDlRspChipType] == 0xCA) {
+        if (msg[offsetDlRspChipType] == chipTypePN560Variant1 ||
+            msg[offsetDlRspChipType] == chipTypePN560Variant2) {
           chipType = pn560;
         } else {
           chipType = sn220u;
