@@ -143,10 +143,8 @@ NFCSTATUS phNxpNciHal_propConfULPDetMode(bool bEnable) {
           NXPLOG_NCIHAL_E("Set Config: Failed");
         }
       }
-      if(nxpncihal_ctrl.isUlpdetModeEnabled) {
-        /* reset the flag upon exit ulpdet mode */
-        phNxpNciHal_setULPDetFlag(false);
-      }
+      /* reset the flag upon exit ulpdet mode */
+      phNxpNciHal_setULPDetFlag(false);
     }
   } while (false);
   NXPLOG_NCIHAL_E("%s: exit. status = %d", __func__, status);
