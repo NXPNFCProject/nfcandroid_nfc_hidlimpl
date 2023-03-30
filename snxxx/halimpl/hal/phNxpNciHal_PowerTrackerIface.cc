@@ -15,6 +15,7 @@
  */
 
 #include "phNxpNciHal_PowerTrackerIface.h"
+
 #include <dlfcn.h>
 
 /*******************************************************************************
@@ -38,7 +39,7 @@ static bool phNxpNciHal_isPowerTrackerConfigured(unsigned long* pollDuration) {
     if ((uint8_t)num > 0) {
       NXPLOG_NCIHAL_D("%s: NxpNci isPowerTrackerSupported true", __func__);
       if (pollDuration) {
-        // Convert from seconds to Millisecs
+        // Convert from seconds to Milliseconds
         *pollDuration = num * 1000;
       }
       return true;

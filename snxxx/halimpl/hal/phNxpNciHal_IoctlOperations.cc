@@ -15,11 +15,14 @@
  */
 
 #include "phNxpNciHal_IoctlOperations.h"
+
 #include <android-base/file.h>
 #include <android-base/parseint.h>
 #include <android-base/strings.h>
+
 #include <map>
 #include <set>
+
 #include "EseAdaptation.h"
 #include "NfccTransport.h"
 #include "NfccTransportFactory.h"
@@ -425,17 +428,18 @@ static string phNxpNciHal_extractConfig(string& config) {
     }
     string value_string(Trim(line.substr(search + 1, string::npos)));
 
-    if(value_string[0] == '{' && value_string[value_string.length() - 1] != '}') {
+    if (value_string[0] == '{' &&
+        value_string[value_string.length() - 1] != '}') {
       string line_append;
 
-      do{
+      do {
         getline(ss, line_append);
         if (line_append.empty()) break;
         if (line_append.at(0) == '#') break;
         if (line_append.at(0) == 0) break;
         line_append = Trim(line_append);
         value_string.append(line_append);
-      }while(line_append[line_append.length() - 1] != '}');
+      } while (line_append[line_append.length() - 1] != '}');
     }
 
     if (!phNxpNciHal_parseValueFromString(value_string)) continue;

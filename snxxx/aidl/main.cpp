@@ -21,9 +21,10 @@
 #include <android/binder_process.h>
 
 #include <thread>
+
 #include "Nfc.h"
-#include "phNxpNciHal_Adaptation.h"
 #include "NxpNfc.h"
+#include "phNxpNciHal_Adaptation.h"
 #include "phNxpNciHal_Recovery.h"
 
 using ::aidl::android::hardware::nfc::Nfc;
@@ -34,7 +35,8 @@ using namespace std;
 void startNxpNfcAidlService() {
   ALOGI("NXP NFC Extn Service is starting.");
   std::shared_ptr<NxpNfc> nxp_nfc_service = ndk::SharedRefBase::make<NxpNfc>();
-  const std::string nxpNfcInstName = std::string() + NxpNfc::descriptor + "/default";
+  const std::string nxpNfcInstName =
+      std::string() + NxpNfc::descriptor + "/default";
   ALOGI("NxpNfc Registering service: %s", nxpNfcInstName.c_str());
   binder_status_t status = AServiceManager_addService(
       nxp_nfc_service->asBinder().get(), nxpNfcInstName.c_str());

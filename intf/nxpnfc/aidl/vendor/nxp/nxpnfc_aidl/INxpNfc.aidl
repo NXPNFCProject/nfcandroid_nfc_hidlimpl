@@ -20,7 +20,6 @@ package vendor.nxp.nxpnfc_aidl;
 
 @VintfStability
 interface INxpNfc {
-    // Adding return type to method instead of out param String value since there is only one return value.
     /**
      * Gets vendor params values whose Key has been provided.
      *
@@ -29,7 +28,6 @@ interface INxpNfc {
      */
     String getVendorParam(in String key);
 
-    // Adding return type to method instead of out param boolean status since there is only one return value.
     /**
      * reset the ese based on resettype
      *
@@ -38,7 +36,6 @@ interface INxpNfc {
      */
     boolean resetEse(in long resetType);
 
-    // Adding return type to method instead of out param boolean status since there is only one return value.
     /**
      * Sets Transit config value
      *
@@ -47,7 +44,6 @@ interface INxpNfc {
      */
     boolean setNxpTransitConfig(in String transitConfValue);
 
-    // Adding return type to method instead of out param boolean status since there is only one return value.
     /**
      * Saves the vendor params provided as key-value pair
      *

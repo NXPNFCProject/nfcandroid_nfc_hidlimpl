@@ -17,6 +17,7 @@
  ******************************************************************************/
 
 #include <stdint.h>
+
 #include <string>
 #ifndef NXP_FEATURES_H
 #define NXP_FEATURES_H
@@ -102,82 +103,82 @@ extern tNfc_featureList nfcFL;
 #define IS_CHIP_TYPE_L(cType) (nfcFL.chipType < cType)
 #define IS_CHIP_TYPE_NE(cType) (nfcFL.chipType != cType)
 
-#define CONFIGURE_FEATURELIST(chipType)                                        \
-  {                                                                            \
-    nfcFL.chipType = chipType;                                                 \
-    switch (chipType) {                                                        \
-    case pn81T:                                                                \
-      nfcFL.chipType = pn557;                                                  \
-      nfcFL.nfcNxpEse = true;                                                  \
-      CONFIGURE_FEATURELIST_NFCC_WITH_ESE(chipType)                            \
-      break;                                                                   \
-    case pn80T:                                                                \
-      nfcFL.chipType = pn553;                                                  \
-      nfcFL.nfcNxpEse = true;                                                  \
-      CONFIGURE_FEATURELIST_NFCC_WITH_ESE(chipType)                            \
-      break;                                                                   \
-    case pn67T:                                                                \
-      nfcFL.chipType = pn551;                                                  \
-      nfcFL.nfcNxpEse = true;                                                  \
-      CONFIGURE_FEATURELIST_NFCC_WITH_ESE(chipType)                            \
-      break;                                                                   \
-    case pn66T:                                                                \
-      nfcFL.chipType = pn548C2;                                                \
-      nfcFL.nfcNxpEse = true;                                                  \
-      CONFIGURE_FEATURELIST_NFCC_WITH_ESE(chipType)                            \
-      break;                                                                   \
-    case pn65T:                                                                \
-      nfcFL.chipType = pn547C2;                                                \
-      nfcFL.nfcNxpEse = true;                                                  \
-      CONFIGURE_FEATURELIST_NFCC_WITH_ESE(chipType)                            \
-      break;                                                                   \
-    case sn100u:                                                               \
-      nfcFL.chipType = sn100u;                                                 \
-      nfcFL.nfcNxpEse = true;                                                  \
-      CONFIGURE_FEATURELIST_NFCC_WITH_ESE(chipType)                            \
-      break;                                                                   \
-    case sn220u:                                                               \
-      nfcFL.chipType = sn220u;                                                 \
-      nfcFL.nfcNxpEse = true;                                                  \
-      CONFIGURE_FEATURELIST_NFCC_WITH_ESE(chipType)                            \
-      break;                                                                   \
-    case sn300u:                                                               \
-      nfcFL.chipType = sn300u;                                                 \
-      nfcFL.nfcNxpEse = true;                                                  \
-      CONFIGURE_FEATURELIST_NFCC_WITH_ESE(chipType)                            \
-      break;                                                                   \
-    default:                                                                   \
-      nfcFL.nfcNxpEse = false;                                                 \
-      CONFIGURE_FEATURELIST_NFCC(chipType)                                     \
-    }                                                                          \
+#define CONFIGURE_FEATURELIST(chipType)               \
+  {                                                   \
+    nfcFL.chipType = chipType;                        \
+    switch (chipType) {                               \
+      case pn81T:                                     \
+        nfcFL.chipType = pn557;                       \
+        nfcFL.nfcNxpEse = true;                       \
+        CONFIGURE_FEATURELIST_NFCC_WITH_ESE(chipType) \
+        break;                                        \
+      case pn80T:                                     \
+        nfcFL.chipType = pn553;                       \
+        nfcFL.nfcNxpEse = true;                       \
+        CONFIGURE_FEATURELIST_NFCC_WITH_ESE(chipType) \
+        break;                                        \
+      case pn67T:                                     \
+        nfcFL.chipType = pn551;                       \
+        nfcFL.nfcNxpEse = true;                       \
+        CONFIGURE_FEATURELIST_NFCC_WITH_ESE(chipType) \
+        break;                                        \
+      case pn66T:                                     \
+        nfcFL.chipType = pn548C2;                     \
+        nfcFL.nfcNxpEse = true;                       \
+        CONFIGURE_FEATURELIST_NFCC_WITH_ESE(chipType) \
+        break;                                        \
+      case pn65T:                                     \
+        nfcFL.chipType = pn547C2;                     \
+        nfcFL.nfcNxpEse = true;                       \
+        CONFIGURE_FEATURELIST_NFCC_WITH_ESE(chipType) \
+        break;                                        \
+      case sn100u:                                    \
+        nfcFL.chipType = sn100u;                      \
+        nfcFL.nfcNxpEse = true;                       \
+        CONFIGURE_FEATURELIST_NFCC_WITH_ESE(chipType) \
+        break;                                        \
+      case sn220u:                                    \
+        nfcFL.chipType = sn220u;                      \
+        nfcFL.nfcNxpEse = true;                       \
+        CONFIGURE_FEATURELIST_NFCC_WITH_ESE(chipType) \
+        break;                                        \
+      case sn300u:                                    \
+        nfcFL.chipType = sn300u;                      \
+        nfcFL.nfcNxpEse = true;                       \
+        CONFIGURE_FEATURELIST_NFCC_WITH_ESE(chipType) \
+        break;                                        \
+      default:                                        \
+        nfcFL.nfcNxpEse = false;                      \
+        CONFIGURE_FEATURELIST_NFCC(chipType)          \
+    }                                                 \
   }
 
-#define CONFIGURE_FEATURELIST_NFCC_WITH_ESE(chipType)                          \
-  {                                                                            \
-    switch (chipType) {                                                        \
-    case pn81T:                                                                \
-      CONFIGURE_FEATURELIST_NFCC(pn557)                                        \
-      nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true;                          \
-      nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 4;                               \
-      break;                                                                   \
-    case sn100u:                                                               \
-      CONFIGURE_FEATURELIST_NFCC(sn100u)                                       \
-      nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true;                          \
-      nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 5;                               \
-      break;                                                                   \
-    case sn220u:                                                               \
-      CONFIGURE_FEATURELIST_NFCC(sn220u)                                       \
-      nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true;                          \
-      nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 4;                               \
-      break;                                                                   \
-    case sn300u:                                                               \
-      CONFIGURE_FEATURELIST_NFCC(sn300u)                                       \
-      nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true;                          \
-      nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 6;                               \
-      break;                                                                   \
-    default:                                                                   \
-      break;                                                                   \
-    }                                                                          \
+#define CONFIGURE_FEATURELIST_NFCC_WITH_ESE(chipType)   \
+  {                                                     \
+    switch (chipType) {                                 \
+      case pn81T:                                       \
+        CONFIGURE_FEATURELIST_NFCC(pn557)               \
+        nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true; \
+        nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 4;      \
+        break;                                          \
+      case sn100u:                                      \
+        CONFIGURE_FEATURELIST_NFCC(sn100u)              \
+        nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true; \
+        nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 5;      \
+        break;                                          \
+      case sn220u:                                      \
+        CONFIGURE_FEATURELIST_NFCC(sn220u)              \
+        nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true; \
+        nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 4;      \
+        break;                                          \
+      case sn300u:                                      \
+        CONFIGURE_FEATURELIST_NFCC(sn300u)              \
+        nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true; \
+        nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED = 6;      \
+        break;                                          \
+      default:                                          \
+        break;                                          \
+    }                                                   \
   }
 
 #define CONFIGURE_FEATURELIST_NFCC(chipType)                           \
@@ -234,16 +235,18 @@ extern tNfc_featureList nfcFL;
     }                                                                  \
   }
 
-#define STRCPY_FW_BIN(str) {                                                   \
-  nfcFL._FW_BIN_PATH.clear();                                                  \
-  nfcFL._FW_BIN_PATH.append(FW_BIN_ROOT_DIR);                                  \
-  nfcFL._FW_BIN_PATH.append(str);                                              \
-  nfcFL._FW_BIN_PATH.append(FW_BIN_EXTENSION);                                 \
-}
-#define STRCPY_FW(str1) {                                                      \
-  nfcFL._FW_LIB_PATH.clear();                                                  \
-  nfcFL._FW_LIB_PATH.append(FW_LIB_ROOT_DIR);                                  \
-  nfcFL._FW_LIB_PATH.append(str1);                                             \
-  nfcFL._FW_LIB_PATH.append(FW_LIB_EXTENSION);                                 \
-}
+#define STRCPY_FW_BIN(str)                       \
+  {                                              \
+    nfcFL._FW_BIN_PATH.clear();                  \
+    nfcFL._FW_BIN_PATH.append(FW_BIN_ROOT_DIR);  \
+    nfcFL._FW_BIN_PATH.append(str);              \
+    nfcFL._FW_BIN_PATH.append(FW_BIN_EXTENSION); \
+  }
+#define STRCPY_FW(str1)                          \
+  {                                              \
+    nfcFL._FW_LIB_PATH.clear();                  \
+    nfcFL._FW_LIB_PATH.append(FW_LIB_ROOT_DIR);  \
+    nfcFL._FW_LIB_PATH.append(str1);             \
+    nfcFL._FW_LIB_PATH.append(FW_LIB_EXTENSION); \
+  }
 #endif

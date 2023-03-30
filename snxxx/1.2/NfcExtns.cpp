@@ -31,7 +31,7 @@ namespace implementation {
  * Function         getConfig
  *
  * Description      This function can be used by HAL to inform
- *                 to update vendor configuration parametres
+ *                 to update vendor configuration parameters
  *
  * Returns          void.
  *
@@ -65,7 +65,7 @@ void NfcExtns::getConfig(android::hardware::nfc::V1_2::NfcConfig& config) {
  * Function         getConfig
  *
  * Description      This function can be used by HAL to inform
- *                 to update vendor configuration parametres
+ *                 to update vendor configuration parameters
  *
  * Returns          void.
  *

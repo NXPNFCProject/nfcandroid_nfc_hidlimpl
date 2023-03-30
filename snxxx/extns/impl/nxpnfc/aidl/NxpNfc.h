@@ -36,14 +36,13 @@ using ::aidl::vendor::nxp::nxpnfc_aidl::INxpNfc;
 
 class NxpNfc : public BnNxpNfc {
  public:
-
   ::ndk::ScopedAStatus getVendorParam(const std::string& key,
                                       std::string* _aidl_return) override;
   ::ndk::ScopedAStatus setVendorParam(const std::string& key,
                                       const std::string& value,
                                       bool* _aidl_return) override;
   ::ndk::ScopedAStatus resetEse(int64_t resetType, bool* _aidl_return) override;
-  ::ndk::ScopedAStatus setNxpTransitConfig(const std::string& strval,
+  ::ndk::ScopedAStatus setNxpTransitConfig(const std::string& strVal,
                                            bool* _aidl_return) override;
 };
 

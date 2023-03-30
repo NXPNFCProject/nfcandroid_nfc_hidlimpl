@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
+#include <EseAdaptation.h>
 #include <android-base/file.h>
+#include <android-base/stringprintf.h>
 #include <dlfcn.h>
 #include <log/log.h>
 #include <phDal4Nfc_messageQueueLib.h>
@@ -28,10 +30,6 @@
 #include <phNxpNciHal_NfcDepSWPrio.h>
 #include <phNxpNciHal_ext.h>
 #include <phTmlNfc.h>
-#include "phNxpNciHal_nciParser.h"
-
-#include <EseAdaptation.h>
-#include <android-base/stringprintf.h>
 #include <sys/stat.h>
 
 #include "NfccTransportFactory.h"
@@ -40,6 +38,8 @@
 #include "phNxpNciHal_PowerTrackerIface.h"
 #include "phNxpNciHal_ULPDet.h"
 #include "phNxpNciHal_extOperations.h"
+#include "phNxpNciHal_nciParser.h"
+
 
 using android::base::StringPrintf;
 using android::base::WriteStringToFile;
@@ -194,17 +194,18 @@ static __attribute__((constructor)) void onLoadLibrary(void) {
 /******************************************************************************
  * Function         onUnloadLibrary
  *
- * Description      This function as marked with attribute desstructor causes
+ * Description      This function as marked with attribute destructor causes
  *                  the function to be called automatically after execution
- *                  main () has completed. It is useful for deinitializing execution
- *                  context  that were be used implicitly during the execution
- *                  of the program like unloading another dynamic library.
+ *                  main () has completed. It is useful for de-initializing
+ *                  execution context  that were be used implicitly during the
+ *                  execution of the program like unloading another dynamic
+ *                  library.
  * PARAM            None
  * Returns          void
  *
  ******************************************************************************/
 static __attribute__((destructor)) void onUnloadLibrary(void) {
-  NXPLOG_NCIHAL_D("Deinitializing power tracker");
+  NXPLOG_NCIHAL_D("De-initializing power tracker");
   phNxpNciHal_PowerTrackerDeinit(&gPowerTrackerHandle);
 }
 
@@ -807,7 +808,7 @@ int phNxpNciHal_MinOpen() {
     return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
   }
 
-  /* Get the chiptype to know if it is PN557
+  /* Get the chip-type to know if it is PN557
    Then don't send the Get version command */
   unsigned long chipInfo = 0;
   if (GetNxpNumValue(NAME_NXP_NFC_CHIP, &chipInfo, sizeof(chipInfo))) {
@@ -4054,9 +4055,7 @@ void phNxpNciHal_deinitializeRegRfFwDnld() {
  *
  *****************************************************************************/
 
-void phNxpNciHal_setVerboseLogging(bool enable) {
-    nfc_debug_enabled = enable;
-}
+void phNxpNciHal_setVerboseLogging(bool enable) { nfc_debug_enabled = enable; }
 
 /******************************************************************************
  * Function         phNxpNciHal_getVerboseLogging
@@ -4067,6 +4066,4 @@ void phNxpNciHal_setVerboseLogging(bool enable) {
  *
  *****************************************************************************/
 
-bool phNxpNciHal_getVerboseLogging() {
-    return nfc_debug_enabled;
-}
+bool phNxpNciHal_getVerboseLogging() { return nfc_debug_enabled; }

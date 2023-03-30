@@ -17,6 +17,7 @@
 #pragma once
 
 #include <phNxpNciHal_ext.h>
+
 #include <vector>
 
 #include "phNfcStatus.h"
@@ -32,11 +33,11 @@ typedef struct {
 extern nxp_nfc_config_ext_t config_ext;
 
 /*
-* Add needed GPIO status to read into two bits each
-* INVALID(-2)
-* GPIO_SET(1)
-* GPIO_RESET(0)
-*/
+ * Add needed GPIO status to read into two bits each
+ * INVALID(-2)
+ * GPIO_SET(1)
+ * GPIO_RESET(0)
+ */
 typedef struct {
   int irq : 2;
   int ven : 2;
