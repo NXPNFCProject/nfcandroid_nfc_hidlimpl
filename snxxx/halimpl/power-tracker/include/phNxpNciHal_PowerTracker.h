@@ -31,7 +31,7 @@ typedef enum {
 ** Description      Function to start power tracker feature.
 **
 ** Parameters       pollDuration - Poll duration in MS for fetching power data
-*from NFCC.
+**                  from NFCC.
 ** Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS
 *******************************************************************************/
 extern "C" NFCSTATUS phNxpNciHal_startPowerTracker(unsigned long pollDuration);
@@ -40,7 +40,7 @@ extern "C" NFCSTATUS phNxpNciHal_startPowerTracker(unsigned long pollDuration);
 **
 ** Function         phNxpNciHal_onRefreshNfccPowerState()
 **
-** Description      Callback involked internally by HAL whenever there is system
+** Description      Callback invoked internally by HAL whenever there is system
 **                  state change and power data needs to be refreshed.
 **
 ** Parameters       state - Can be SCREEN_OFF, SCREEN_ON, ULPDET_OFF, ULPDET_ON

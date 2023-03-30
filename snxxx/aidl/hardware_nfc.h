@@ -24,10 +24,11 @@ typedef uint8_t nfc_status_t;
  * The callback passed in from the NFC stack that the HAL
  * can use to pass events back to the stack.
  */
-typedef void(nfc_stack_callback_t)(nfc_event_t event, nfc_status_t event_status);
+typedef void(nfc_stack_callback_t)(nfc_event_t event,
+                                   nfc_status_t event_status);
 
 /*
  * The callback passed in from the NFC stack that the HAL
- * can use to pass incomming data to the stack.
+ * can use to pass incoming data to the stack.
  */
 typedef void(nfc_stack_data_callback_t)(uint16_t data_len, uint8_t* p_data);

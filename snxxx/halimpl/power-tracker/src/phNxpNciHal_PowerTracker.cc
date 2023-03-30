@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 #include "phNxpNciHal_PowerTracker.h"
+
 #include <inttypes.h>
 #include <phNxpNciHal_PowerStats.h>
+
 #include "IntervalTimer.h"
 #include "NfcProperties.sysprop.h"
 #include "NxpNfcThreadMutex.h"
@@ -98,7 +100,7 @@ static PowerTrackerContext gContext = {
 ** Description      Function to start power tracker feature.
 **
 ** Parameters       pollDuration - Poll duration in MS for fetching power data
-*from NFCC.
+**                  from NFCC.
 ** Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS
 *******************************************************************************/
 
@@ -160,7 +162,7 @@ NFCSTATUS phNxpNciHal_startPowerTracker(unsigned long pollDuration) {
 **
 ** Function         phNxpNciHal_pollPowerTrackerData
 **
-** Description      Thread funcation which tracks power data in a loop with
+** Description      Thread function which tracks power data in a loop with
 **                  configured duration until power tracker feature is stopped.
 **
 ** Parameters       pContext - Power tracker thread context if any.
@@ -220,7 +222,6 @@ static void* phNxpNciHal_pollPowerTrackerData(void* pCtx) {
 static NFCSTATUS phNxpNciHal_syncPowerTrackerData() {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   struct timespec currentTime = {.tv_sec = 0, .tv_nsec = 0};
-  ;
   uint8_t cmd_getPowerTrackerData[] = {0x2F,
                                        0x2E,  // NCI_PROP_GET_PWR_TRACK_DATA_CMD
                                        0x00};  // LENGTH
@@ -292,7 +293,7 @@ static NFCSTATUS phNxpNciHal_syncPowerTrackerData() {
 **
 ** Function         onUlpdetTimerExpired()
 **
-** Description      Callback involked by Ulpdet timer when timeout happens.
+** Description      Callback invoked by Ulpdet timer when timeout happens.
 **                  Currently ulpdet power data is tracked with same frequency
 **                  as poll duration to be in sync with ACTIVE, STANDBY data.
 **                  Once ULPDET timer expires after poll duration data are
@@ -333,7 +334,7 @@ static void onUlpdetTimerExpired(union sigval val) {
 **
 ** Function         phNxpNciHal_onRefreshNfccPowerState()
 **
-** Description      Callback involked internally by HAL whenever there is system
+** Description      Callback invoked internally by HAL whenever there is system
 **                  state change and power data needs to be refreshed.
 **
 ** Parameters       state - Can be SCREEN_OFF, SCREEN_ON, ULPDET_OFF, ULPDET_ON

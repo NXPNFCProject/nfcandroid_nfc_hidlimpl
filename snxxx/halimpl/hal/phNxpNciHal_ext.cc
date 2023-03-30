@@ -23,7 +23,9 @@
 #include <phNxpNciHal_NfcDepSWPrio.h>
 #include <phNxpNciHal_ext.h>
 #include <phTmlNfc.h>
+
 #include <vector>
+
 #include "phNxpEventLogger.h"
 #include "phNxpNciHal.h"
 #include "phNxpNciHal_IoctlOperations.h"

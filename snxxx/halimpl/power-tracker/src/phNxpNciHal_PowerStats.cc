@@ -17,9 +17,9 @@
 #include <aidl/android/vendor/powerstats/IPixelStateResidencyProvider.h>
 #include <android/binder_manager.h>
 #include <android/binder_process.h>
-#include "NfcProperties.sysprop.h"
-
 #include <phNxpNciHal_PowerStats.h>
+
+#include "NfcProperties.sysprop.h"
 
 using namespace vendor::nfc::nxp;
 using ::aidl::android::hardware::power::stats::StateResidency;
@@ -35,9 +35,9 @@ const char* kPowerStatsSrvName = "power.stats-vendor";
 const char* kPowerEntityName = "Nfc";
 
 /**
- * Class implemets power state residency callback.
+ * Class implements power state residency callback.
  *
- * power.stats-venor service will involke getStateResidency callback
+ * power.stats-vendor service will invoke getStateResidency callback
  * periodically for fetching current value of cached power data for each Nfc
  * state.
  */
@@ -53,7 +53,7 @@ class NfcStateResidencyCallback : public BnPixelStateResidencyCallback {
       vector<StateResidency>* stateResidency) {
     if (stateResidency == nullptr) {
       return ScopedAStatus::fromServiceSpecificErrorWithMessage(
-          NFCSTATUS_INVALID_PARAMETER, "Invalid Parama");
+          NFCSTATUS_INVALID_PARAMETER, "Invalid Param");
     }
     stateResidency->resize(MAX_STATES);
 

@@ -15,8 +15,10 @@
  */
 
 #include "phNxpNciHal_extOperations.h"
+
 #include <phNxpLog.h>
 #include <phTmlNfc.h>
+
 #include "phNfcCommon.h"
 #include "phNxpNciHal_IoctlOperations.h"
 

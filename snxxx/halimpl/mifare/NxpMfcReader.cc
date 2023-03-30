@@ -22,6 +22,7 @@
 #include <phNxpLog.h>
 #include <phNxpNciHal_Adaptation.h>
 #include <phNxpNciHal_ext.h>
+
 #include "phNxpNciHal.h"
 
 extern bool sendRspToUpperLayer;
@@ -46,7 +47,7 @@ int NxpMfcReader::Write(uint16_t mfcDataLen, const uint8_t* pMfcData) {
   // Eg:- From the App pMfcData- {|PART1-00 00 06 C1 04| PART2-01 00 00 00|}
   uint16_t mfcTagCmdBuffLen = 0;
   uint8_t mfcTagCmdBuff[MAX_MFC_BUFF_SIZE] = {0};
-  uint16_t mfcTagCmdRemaingCmdLen = mfcDataLen;
+  uint16_t mfcTagCmdRemainingCmdLen = mfcDataLen;
 
   if (mfcDataLen > MAX_MFC_BUFF_SIZE) {
     android_errorWriteLog(0x534e4554, "169259605");
@@ -73,7 +74,7 @@ int NxpMfcReader::Write(uint16_t mfcDataLen, const uint8_t* pMfcData) {
     if (isAck) {
       NXPLOG_NCIHAL_D("part 1 command Acked");
       SendIncDecRestoreCmdPart2(
-          mfcTagCmdRemaingCmdLen - MFC_TAG_INCR_DECR_CMD_PART1_LEN,
+          mfcTagCmdRemainingCmdLen - MFC_TAG_INCR_DECR_CMD_PART1_LEN,
           &pMfcData[0]);
     } else {
       NXPLOG_NCIHAL_E("part 1 command NACK");
@@ -225,8 +226,10 @@ void NxpMfcReader::BuildWrite16Cmd() {
   mMfcTagCmdIntfData.sendBufLen = mMfcTagCmdIntfData.sendBufLen - 1;
   uint8_t buff[mMfcTagCmdIntfData.sendBufLen];
   memset(buff, 0, mMfcTagCmdIntfData.sendBufLen);
-  memcpy(buff, mMfcTagCmdIntfData.sendBuf + 2, (mMfcTagCmdIntfData.sendBufLen-1));
-  memcpy(mMfcTagCmdIntfData.sendBuf + 1, buff, (mMfcTagCmdIntfData.sendBufLen-1));
+  memcpy(buff, mMfcTagCmdIntfData.sendBuf + 2,
+         (mMfcTagCmdIntfData.sendBufLen - 1));
+  memcpy(mMfcTagCmdIntfData.sendBuf + 1, buff,
+         (mMfcTagCmdIntfData.sendBufLen - 1));
 }
 
 /*******************************************************************************

@@ -18,8 +18,10 @@
 
 #define LOG_TAG "android.hardware.nfc@1.2-impl"
 #include "Nfc.h"
+
 #include <log/log.h>
 #include <memunreachable/memunreachable.h>
+
 #include "NfcExtns.h"
 #include "halimpl/inc/phNxpNciHal_Adaptation.h"
 #include "phNfcStatus.h"
@@ -38,7 +40,6 @@ namespace implementation {
 
 sp<V1_1::INfcClientCallback> Nfc::mCallbackV1_1 = nullptr;
 sp<V1_0::INfcClientCallback> Nfc::mCallbackV1_0 = nullptr;
-
 
 Return<V1_0::NfcStatus> Nfc::open_1_1(
     const sp<V1_1::INfcClientCallback>& clientCallback) {
