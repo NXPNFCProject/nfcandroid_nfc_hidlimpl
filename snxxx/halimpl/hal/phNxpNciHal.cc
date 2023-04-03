@@ -3898,6 +3898,10 @@ void phNxpNciHal_configFeatureList(uint8_t* init_rsp, uint16_t rsp_len) {
 static void phNxpNciHal_UpdateFwStatus(HalNfcFwUpdateStatus fwStatus) {
   static phLibNfc_Message_t msg;
   static uint8_t status;
+  if (RfFwRegionDnld_handle == NULL) {
+    /* If proprietary feature not supported */
+    return;
+  }
   NXPLOG_NCIHAL_D("phNxpNciHal_UpdateFwStatus Enter");
 
   status = (uint8_t)fwStatus;
