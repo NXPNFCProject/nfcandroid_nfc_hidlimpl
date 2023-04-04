@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 NXP
+ * Copyright 2022-2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,7 +144,7 @@ NFCSTATUS phNxpNciHal_propConfULPDetMode(bool bEnable) {
         }
       }
       /* reset the flag upon exit ulpdet mode */
-      nxpncihal_ctrl.isUlpdetModeEnabled = false;
+      phNxpNciHal_setULPDetFlag(false);
     }
   } while (false);
   NXPLOG_NCIHAL_E("%s: exit. status = %d", __func__, status);

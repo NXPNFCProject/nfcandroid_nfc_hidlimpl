@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 NXP
+ * Copyright 2022-2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,7 +98,7 @@ static PowerTrackerContext gContext = {
 ** Description      Function to start power tracker feature.
 **
 ** Parameters       pollDuration - Poll duration in MS for fetching power data
-*from NFCC.
+**                  from NFCC.
 ** Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS
 *******************************************************************************/
 
@@ -160,7 +160,7 @@ NFCSTATUS phNxpNciHal_startPowerTracker(unsigned long pollDuration) {
 **
 ** Function         phNxpNciHal_pollPowerTrackerData
 **
-** Description      Thread funcation which tracks power data in a loop with
+** Description      Thread function which tracks power data in a loop with
 **                  configured duration until power tracker feature is stopped.
 **
 ** Parameters       pContext - Power tracker thread context if any.
@@ -220,7 +220,6 @@ static void* phNxpNciHal_pollPowerTrackerData(void* pCtx) {
 static NFCSTATUS phNxpNciHal_syncPowerTrackerData() {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   struct timespec currentTime = {.tv_sec = 0, .tv_nsec = 0};
-  ;
   uint8_t cmd_getPowerTrackerData[] = {0x2F,
                                        0x2E,  // NCI_PROP_GET_PWR_TRACK_DATA_CMD
                                        0x00};  // LENGTH
@@ -292,7 +291,7 @@ static NFCSTATUS phNxpNciHal_syncPowerTrackerData() {
 **
 ** Function         onUlpdetTimerExpired()
 **
-** Description      Callback involked by Ulpdet timer when timeout happens.
+** Description      Callback invoked by Ulpdet timer when timeout happens.
 **                  Currently ulpdet power data is tracked with same frequency
 **                  as poll duration to be in sync with ACTIVE, STANDBY data.
 **                  Once ULPDET timer expires after poll duration data are
@@ -333,7 +332,7 @@ static void onUlpdetTimerExpired(union sigval val) {
 **
 ** Function         phNxpNciHal_onRefreshNfccPowerState()
 **
-** Description      Callback involked internally by HAL whenever there is system
+** Description      Callback invoked internally by HAL whenever there is system
 **                  state change and power data needs to be refreshed.
 **
 ** Parameters       state - Can be SCREEN_OFF, SCREEN_ON, ULPDET_OFF, ULPDET_ON
@@ -342,17 +341,14 @@ static void onUlpdetTimerExpired(union sigval val) {
 
 NFCSTATUS phNxpNciHal_onRefreshNfccPowerState(RefreshNfccPowerState state) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
-  NXPLOG_NCIHAL_D("%s Enter", __func__);
+  NXPLOG_NCIHAL_D("%s Enter, RefreshNfccPowerState = %u", __func__, state);
   union sigval val;
   switch (state) {
     case SCREEN_ON:
       // Signal power tracker thread to sync data from NFCC
-      NXPLOG_NCIHAL_D("%s Screen state On, Syncing PowerTracker data",
-                      __func__);
       gContext.event.signal();
       break;
     case ULPDET_ON:
-      NXPLOG_NCIHAL_D("%s Ulpdet On, Syncing PowerTracker data", __func__);
       if (phNxpNciHal_syncPowerTrackerData() != NFCSTATUS_SUCCESS) {
         NXPLOG_NCIHAL_E("Failed to fetch PowerTracker data. error = %d",
                         status);
@@ -369,11 +365,12 @@ NFCSTATUS phNxpNciHal_onRefreshNfccPowerState(RefreshNfccPowerState state) {
                                onUlpdetTimerExpired);
       break;
     case ULPDET_OFF:
-      NXPLOG_NCIHAL_D("%s Ulpdet Off, Killing ULPDET timer", __func__);
-      gContext.ulpdetTimer.kill();
-      gContext.isUlpdetOn = false;
-      onUlpdetTimerExpired(val);
-      gContext.ulpdetStartTime = {.tv_sec = 0, .tv_nsec = 0};
+      if (gContext.isUlpdetOn) {
+        gContext.ulpdetTimer.kill();
+        gContext.isUlpdetOn = false;
+        onUlpdetTimerExpired(val);
+        gContext.ulpdetStartTime = {.tv_sec = 0, .tv_nsec = 0};
+      }
       break;
     default:
       status = NFCSTATUS_FAILED;
