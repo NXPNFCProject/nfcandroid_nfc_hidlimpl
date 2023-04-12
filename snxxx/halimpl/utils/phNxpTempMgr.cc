@@ -22,7 +22,7 @@
 #include <phNxpLog.h>
 #include <phOsalNfc_Timer.h>
 
-using namespace std;
+#define PH_NFC_TIMER_ID_INVALID (0xFFFF)
 
 static void tempNTf_timeout_cb(uint32_t TimerId, void* pContext) {
   (void)TimerId;
@@ -32,7 +32,7 @@ static void tempNTf_timeout_cb(uint32_t TimerId, void* pContext) {
 }
 
 phNxpTempMgr::phNxpTempMgr() {
-  timeout_timer_id_ = 0;
+  timeout_timer_id_ = PH_NFC_TIMER_ID_INVALID;
   num_of_ntf_ = 0;
   write_delay_ = 1000;   // 1 sec
   timeout_ = 10 * 1000;  // 10 secs
@@ -53,16 +53,21 @@ void phNxpTempMgr::ParseResponse(uint8_t* p_ntf, uint16_t p_len) {
   NXPLOG_NCIHAL_D("phNxpTempMgr: IC temp state is %d", is_ic_temp_ok);
   if (!is_ic_temp_ok) {
     num_of_ntf_++;
-    if (timeout_timer_id_ == 0) timeout_timer_id_ = phOsalNfc_Timer_Create();
-    /* Start timer */
-    status = phOsalNfc_Timer_Start(timeout_timer_id_, timeout_,
-                                   &tempNTf_timeout_cb, this);
-    if (NFCSTATUS_SUCCESS != status) {
-      NXPLOG_NCIHAL_D("tempNtf timer not started!!!");
+    if (timeout_timer_id_ == PH_NFC_TIMER_ID_INVALID)
+      timeout_timer_id_ = phOsalNfc_Timer_Create();
+    if (timeout_timer_id_ != PH_NFC_TIMER_ID_INVALID) {
+      /* Start timer */
+      status = phOsalNfc_Timer_Start(timeout_timer_id_, timeout_,
+                                     &tempNTf_timeout_cb, this);
+      if (NFCSTATUS_SUCCESS != status) {
+        NXPLOG_NCIHAL_D("tempNtf timer not started!!!");
+      }
+    } else {
+      NXPLOG_NCIHAL_E("tempNtf timer creation failed");
     }
   } else {
     if (num_of_ntf_ > 0) num_of_ntf_--;
-    if (num_of_ntf_ == 0) {
+    if (num_of_ntf_ == 0 && (timeout_timer_id_ != PH_NFC_TIMER_ID_INVALID)) {
       /* Stop Timer */
       status = phOsalNfc_Timer_Stop(timeout_timer_id_);
       if (NFCSTATUS_SUCCESS != status) {
@@ -83,6 +88,6 @@ void phNxpTempMgr::Reset(bool reset_timer) {
   std::lock_guard<std::mutex> lock(ic_temp_mutex_);
   num_of_ntf_ = 0;
   if (reset_timer) {
-    timeout_timer_id_ = 0;
+    timeout_timer_id_ = PH_NFC_TIMER_ID_INVALID;
   }
 }
