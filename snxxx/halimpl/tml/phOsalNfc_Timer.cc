@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2014, 2020 NXP
+ * Copyright 2010-2014, 2020,2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,11 +144,13 @@ NFCSTATUS phOsalNfc_Timer_Start(uint32_t dwTimerId, uint32_t dwRegTimeCnt,
   phOsalNfc_TimerHandle_t* pTimerHandle;
   /* Retrieve the index at which the timer handle structure is stored */
   dwIndex = dwTimerId - PH_NFC_TIMER_BASE_ADDRESS - 0x01;
+  if (dwIndex >= PH_NFC_MAX_TIMER) {
+    return PHNFCSTVAL(CID_NFC_OSAL, NFCSTATUS_INVALID_PARAMETER);
+  }
   pTimerHandle = (phOsalNfc_TimerHandle_t*)&apTimerInfo[dwIndex];
   /* OSAL Module needs to be initialized for timer usage */
   /* Check whether the handle provided by user is valid */
-  if ((dwIndex < PH_NFC_MAX_TIMER) && (0x00 != pTimerHandle->TimerId) &&
-      (NULL != pApplication_callback)) {
+  if ((0x00 != pTimerHandle->TimerId) && (NULL != pApplication_callback)) {
     its.it_interval.tv_sec = 0;
     its.it_interval.tv_nsec = 0;
     its.it_value.tv_sec = dwRegTimeCnt / 1000;
@@ -197,11 +199,13 @@ NFCSTATUS phOsalNfc_Timer_Stop(uint32_t dwTimerId) {
   uint32_t dwIndex;
   phOsalNfc_TimerHandle_t* pTimerHandle;
   dwIndex = dwTimerId - PH_NFC_TIMER_BASE_ADDRESS - 0x01;
+  if (dwIndex >= PH_NFC_MAX_TIMER) {
+    return PHNFCSTVAL(CID_NFC_OSAL, NFCSTATUS_INVALID_PARAMETER);
+  }
   pTimerHandle = (phOsalNfc_TimerHandle_t*)&apTimerInfo[dwIndex];
   /* OSAL Module and Timer needs to be initialized for timer usage */
   /* Check whether the TimerId provided by user is valid */
-  if ((dwIndex < PH_NFC_MAX_TIMER) && (0x00 != pTimerHandle->TimerId) &&
-      (pTimerHandle->eState != eTimerIdle)) {
+  if ((0x00 != pTimerHandle->TimerId) && (pTimerHandle->eState != eTimerIdle)) {
     /* Stop the timer only if the callback has not been invoked */
     if (pTimerHandle->eState == eTimerRunning) {
       if ((timer_settime(pTimerHandle->hTimerHandle, 0, &its, NULL)) == -1) {
@@ -243,12 +247,15 @@ NFCSTATUS phOsalNfc_Timer_Delete(uint32_t dwTimerId) {
   uint32_t dwIndex;
   phOsalNfc_TimerHandle_t* pTimerHandle;
   dwIndex = dwTimerId - PH_NFC_TIMER_BASE_ADDRESS - 0x01;
+  if (dwIndex >= PH_NFC_MAX_TIMER) {
+    return PHNFCSTVAL(CID_NFC_OSAL, NFCSTATUS_INVALID_PARAMETER);
+  }
   pTimerHandle = (phOsalNfc_TimerHandle_t*)&apTimerInfo[dwIndex];
   /* OSAL Module and Timer needs to be initialized for timer usage */
 
   /* Check whether the TimerId passed by user is valid and Deregistering of
    * timer is successful */
-  if ((dwIndex < PH_NFC_MAX_TIMER) && (0x00 != pTimerHandle->TimerId) &&
+  if ((0x00 != pTimerHandle->TimerId) &&
       (NFCSTATUS_SUCCESS == phOsalNfc_CheckTimerPresence(pTimerHandle))) {
     /* Cancel the timer before deleting */
     if (timer_delete(pTimerHandle->hTimerHandle) == -1) {
