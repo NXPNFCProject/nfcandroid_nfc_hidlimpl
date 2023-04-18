@@ -846,7 +846,7 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
   }
 
   if (mfc_mode == true && p_cmd_data[0] == 0x21 && p_cmd_data[1] == 0x03) {
-    NXPLOG_NCIHAL_D("EmvCo Poll mode - Discover map only for A and B");
+    NXPLOG_NCIHAL_D("EmvCo Poll mode - Discover map only for A");
     p_cmd_data[2] = 0x03;
     p_cmd_data[3] = 0x01;
     p_cmd_data[4] = 0x00;
@@ -858,19 +858,12 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
   if (*cmd_len <= (NCI_MAX_DATA_LEN - 3) && bEnableMfcReader &&
       (p_cmd_data[0] == 0x21 && p_cmd_data[1] == 0x00) &&
       (nxpprofile_ctrl.profile_type == NFC_FORUM_PROFILE)) {
-    unsigned long retval = 0;
     if (p_cmd_data[2] == 0x04 && p_cmd_data[3] == 0x01 &&
         p_cmd_data[4] == 0x80 && p_cmd_data[5] == 0x01 &&
         p_cmd_data[6] == 0x83) {
       mfc_mode = true;
     } else {
-      if (!GetNxpNumValue(NAME_MIFARE_READER_ENABLE, &retval,
-                          sizeof(unsigned long))) {
-        NXPLOG_NCIHAL_E(
-            "Reading of MIFARE_READER_ENABLE failed. Default retval = %lu",
-            retval);
-      }
-      if (retval == 0x01) {
+      if (bEnableMfcReader) {
         NXPLOG_NCIHAL_D("Going through extns - Adding Mifare in RF Discovery");
         p_cmd_data[2] += 3;
         p_cmd_data[3] += 1;

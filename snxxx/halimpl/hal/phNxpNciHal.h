@@ -39,12 +39,6 @@
 #define NCI_VERSION_UNKNOWN 0x00
 #define SNXXX_NXP_AUTH_TIMEOUT_BUF_LEN 0x05
 #define PN557_NXP_AUTH_TIMEOUT_BUF_LEN 0x0C
-#define SN1XX_ROM_VERSION 0x01
-#define SN1XX_FW_MAJOR_VERSION 0x10
-#define SN2XX_ROM_VERSION 0x01
-#define SN2XX_FW_MAJOR_VERSION 0x01
-#define SN3XX_ROM_VERSION 0x02
-#define SN3XX_FW_MAJOR_VERSION 0x20
 
 /*Mem alloc with 8 byte alignment*/
 #define size_align(sz) ((((sz)-1) | 7) + 1)
@@ -52,10 +46,6 @@
 
 typedef void(phNxpNciHal_control_granted_callback_t)();
 
-/*ROM CODE VERSION FW*/
-#define FW_MOBILE_ROM_VERSION_PN551 0x10
-#define FW_MOBILE_ROM_VERSION_PN553 0x11
-#define FW_MOBILE_ROM_VERSION_PN557 0x12
 #define NCI_CMDRESP_MAX_BUFF_SIZE_SN300 (0x22AU)
 #define NCI_CMDRESP_MAX_BUFF_SIZE_SNXXX (0x22AU)
 #define NCI_CMDRESP_MAX_BUFF_SIZE_PN557 (0x102U)

@@ -34,94 +34,141 @@ capability* capability::getInstance() {
 
 tNFC_chipType capability::processChipType(uint8_t* msg, uint16_t msg_len) {
   if ((msg != NULL) && (msg_len != 0)) {
-    if (msg[0] == 0x60 && msg[1] == 0x00) {
-      if (msg[msg_len - 3] == 0x12 &&
-          (msg[msg_len - 2] == 0x01 || msg[msg_len - 2] == 0x21))
-        chipType = pn557;
-      else if (msg[msg_len - 3] == 0x11 && msg[msg_len - 2] == 0x02)
-        chipType = pn553;
-      else if (msg[msg_len - 3] == 0x01 && msg[msg_len - 2] == 0x10)
-        chipType = sn100u;
-      else if (msg[msg_len - 3] == 0x01 && msg[msg_len - 2] == 0x01) {
-        if (msg[msg_len - 4] == chipTypePN560Variant1 ||
-            msg[msg_len - 4] == chipTypePN560Variant2) {
-          chipType = pn560;
-        } else {
-          chipType = sn220u;
-        }
-      } else if (msg[msg_len - 3] == sn3XXFWRomVersion &&
-                 msg[msg_len - 2] == sn3XXFWMajorVersion) {
-        chipType = sn300u;
-      }
-    } else if (msg[0] == 0x00) {
-      if (msg[offsetFwRomCodeVersion] == 0x01 &&
-          msg[offsetFwMajorVersion] == 0x01) {
-        if (msg[offsetDlRspChipType] == chipTypePN560Variant1 ||
-            msg[offsetDlRspChipType] == chipTypePN560Variant2) {
-          chipType = pn560;
-        } else {
-          chipType = sn220u;
-        }
-      } else if (msg[offsetFwRomCodeVersion] == 0x01 &&
-                 msg[offsetFwMajorVersion] == 0x10)
-        chipType = sn100u;
-      else if (msg[offsetFwRomCodeVersion] == 0x12 &&
-               (msg[offsetFwMajorVersion_pn557] == 0x21 ||
-                msg[offsetFwMajorVersion_pn557] == 0x01))
-        chipType = pn557;
-      else if (msg[offsetFwRomCodeVersion] == sn3XXFWRomVersion &&
-               (msg[offsetFwMajorVersion] == sn3XXFWMajorVersion ||
-               msg[offsetDlRspChipType] == sn3XXHWVersion)) {
-        chipType = sn300u;
-      }
+    if ((msg_len > 2) && msg[0] == NCI_CMD_RSP_SUCCESS_SW1 &&
+        msg[1] == NCI_CMD_RSP_SUCCESS_SW2) {
+      chipType = determineChipTypeFromNciRsp(msg, msg_len);
+    } else if (msg[0] == FW_DL_RSP_FIRST_BYTE) {
+      chipType = determineChipTypeFromDLRsp(msg, msg_len);
     } else if (offsetHwVersion < msg_len) {
-      ALOGD("%s HwVersion : 0x%02x", __func__, msg[msg_len - 4]);
-      switch (msg[msg_len - 4]) {
-        case 0x40:  // PN553 A0
-        case 0x41:  // PN553 B0
-          chipType = pn553;
-          break;
-
-        case 0x50:  // PN553 A0 + P73
-        case 0x51:  // PN553 B0 + P73
-          chipType = pn80T;
-          break;
-
-        case 0x98:
-          chipType = pn551;
-          break;
-
-        case 0xA8:
-        case 0x08:
-          chipType = pn67T;
-          break;
-
-        case 0x28:
-        case 0x48:  // NQ210
-          chipType = pn548C2;
-          break;
-
-        case 0x18:
-        case 0x58:  // NQ220
-          chipType = pn66T;
-          break;
-        case 0xA0:
-        case 0xA2:
-          chipType = sn100u;
-          break;
-        case sn3XXHWVersion:
-          chipType = sn300u;
-          break;
-        default:
-          chipType = pn80T;
-      }
+      chipType = determineChipTypeFromHwVersion(msg[msg_len - 4]);
     } else {
-      ALOGD("%s Wrong msg_len. Setting Default ChiptType pn80T", __func__);
+      ALOGD("%s Wrong msg_len. Setting Default ChipType pn80T", __func__);
       chipType = pn81T;
     }
   }
   ALOGD("%s Product : %s", __func__, product[chipType]);
   return chipType;
+}
+
+tNFC_chipType capability::determineChipTypeFromNciRsp(uint8_t* msg,
+                                                      uint16_t msg_len) {
+  tNFC_chipType chip_type = pn81T;
+  if ((msg == NULL) || (msg_len < 3)) {
+    ALOGD("%s Wrong msg_len. Setting Default ChipType pn80T", __func__);
+    return chip_type;
+  }
+  if (GET_FW_ROM_VERSION_NCI_RESP(msg, msg_len) ==
+          FW_MOBILE_ROM_VERSION_PN557 &&
+      (GET_FW_MAJOR_VERSION_NCI_RESP(msg, msg_len) ==
+           FW_MOBILE_MAJOR_NUMBER_PN557 ||
+       GET_FW_MAJOR_VERSION_NCI_RESP(msg, msg_len) ==
+           FW_MOBILE_MAJOR_NUMBER_PN557_V2))
+    chip_type = pn557;
+  else if (GET_FW_ROM_VERSION_NCI_RESP(msg, msg_len) ==
+               FW_MOBILE_ROM_VERSION_PN553 &&
+           GET_FW_MAJOR_VERSION_NCI_RESP(msg, msg_len) ==
+               FW_MOBILE_MAJOR_NUMBER_PN553)
+    chip_type = pn553;
+  else if (GET_FW_ROM_VERSION_NCI_RESP(msg, msg_len) ==
+               FW_MOBILE_ROM_VERSION_SN100U &&
+           GET_FW_MAJOR_VERSION_NCI_RESP(msg, msg_len) ==
+               FW_MOBILE_MAJOR_NUMBER_SN100U)
+    chip_type = sn100u;
+  /* PN560 & SN220 have same rom & fw major version but chip type is different*/
+  else if (GET_FW_ROM_VERSION_NCI_RESP(msg, msg_len) ==
+               FW_MOBILE_ROM_VERSION_SN220U &&
+           GET_FW_MAJOR_VERSION_NCI_RESP(msg, msg_len) ==
+               FW_MOBILE_MAJOR_NUMBER_SN220U) {
+    if ((msg_len >= 4) &&
+        (GET_HW_VERSION_NCI_RESP(msg, msg_len) == HW_PN560_V1 ||
+         GET_HW_VERSION_NCI_RESP(msg, msg_len) == HW_PN560_V2)) {
+      chip_type = pn560;
+    } else {
+      chip_type = sn220u;
+    }
+  } else if (GET_FW_ROM_VERSION_NCI_RESP(msg, msg_len) ==
+                 FW_MOBILE_ROM_VERSION_SN300U &&
+             GET_FW_MAJOR_VERSION_NCI_RESP(msg, msg_len) ==
+                 FW_MOBILE_MAJOR_NUMBER_SN300U) {
+    chip_type = sn300u;
+  }
+  return chip_type;
+}
+
+tNFC_chipType capability::determineChipTypeFromDLRsp(uint8_t* msg,
+                                                     uint16_t msg_len) {
+  tNFC_chipType chip_type = pn81T;
+  if ((msg == NULL) || (msg_len < 3)) {
+    ALOGD("%s Wrong msg_len. Setting Default ChipType pn80T", __func__);
+    return chip_type;
+  }
+  /* PN560 & SN220 have same rom & fw major version but chip type is different*/
+  if (msg[offsetFwRomCodeVersion] == FW_MOBILE_ROM_VERSION_SN220U &&
+      msg[offsetFwMajorVersion] == FW_MOBILE_MAJOR_NUMBER_SN220U) {
+    if (msg[offsetDlRspChipType] == HW_PN560_V1 ||
+        msg[offsetDlRspChipType] == HW_PN560_V2) {
+      chip_type = pn560;
+    } else {
+      chip_type = sn220u;
+    }
+  } else if (msg[offsetFwRomCodeVersion] == FW_MOBILE_ROM_VERSION_SN100U &&
+             msg[offsetFwMajorVersion] == FW_MOBILE_MAJOR_NUMBER_SN100U)
+    chip_type = sn100u;
+  else if (msg[offsetFwRomCodeVersion] == FW_MOBILE_ROM_VERSION_PN557 &&
+           (msg[offsetFwMajorVersion_pn557] == FW_MOBILE_ROM_VERSION_PN557 ||
+            msg[offsetFwMajorVersion_pn557] == FW_MOBILE_MAJOR_NUMBER_PN557_V2))
+    chip_type = pn557;
+  else if (msg[offsetFwRomCodeVersion] == FW_MOBILE_ROM_VERSION_SN300U &&
+           (msg[offsetFwMajorVersion] == FW_MOBILE_MAJOR_NUMBER_SN300U ||
+            msg[offsetDlRspChipType] == HW_SN300U)) {
+    chip_type = sn300u;
+  }
+  return chip_type;
+}
+
+tNFC_chipType capability::determineChipTypeFromHwVersion(uint8_t hwVersion) {
+  ALOGD("%s HwVersion : 0x%02x", __func__, hwVersion);
+  tNFC_chipType chip_type = pn81T;
+  switch (hwVersion) {
+    case HW_PN553_A0:
+    case HW_PN553_B0:
+      chip_type = pn553;
+      break;
+
+    case HW_PN80T_A0:  // PN553 A0 + P73
+    case HW_PN80T_B0:  // PN553 B0 + P73
+      chip_type = pn80T;
+      break;
+
+    case HW_PN551:
+      chip_type = pn551;
+      break;
+
+    case HW_PN67T_A0:
+    case HW_PN67T_B0:
+      chip_type = pn67T;
+      break;
+
+    case HW_PN548C2_A0:
+    case HW_PN548C2_B0:  // NQ210
+      chip_type = pn548C2;
+      break;
+
+    case HW_PN66T_A0:
+    case HW_PN66T_B0:  // NQ220
+      chip_type = pn66T;
+      break;
+    case HW_SN100U_A0:
+    case HW_SN100U_A2:
+      chip_type = sn100u;
+      break;
+    case HW_SN300U:
+      chip_type = sn300u;
+      break;
+    default:
+      chip_type = pn80T;
+  }
+  return chip_type;
 }
 
 uint32_t capability::getFWVersionInfo(uint8_t* msg, uint16_t msg_len) {
