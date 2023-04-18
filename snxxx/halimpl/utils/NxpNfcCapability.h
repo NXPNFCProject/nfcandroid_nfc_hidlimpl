@@ -23,18 +23,16 @@
 class capability {
  private:
   static capability* instance;
-  static const uint8_t sn3XXHWVersion = 0xD3;
-  const uint8_t sn3XXFWRomVersion = 0x02;
-  const uint8_t sn3XXFWMajorVersion = 0x20;
   const uint16_t offsetHwVersion = 24;
   const uint16_t offsetDlRspChipType = 3;
   const uint16_t offsetFwRomCodeVersion = 4;
   const uint16_t offsetFwMinorVersion = 6;
   const uint16_t offsetFwMajorVersion = 7;
   const uint16_t offsetFwMajorVersion_pn557 = 11;
-  const uint16_t chipTypePN560Variant1 = 0xCA;
-  const uint16_t chipTypePN560Variant2 = 0xCB;
   capability();
+  tNFC_chipType determineChipTypeFromNciRsp(uint8_t* msg, uint16_t msg_len);
+  tNFC_chipType determineChipTypeFromDLRsp(uint8_t* msg, uint16_t msg_len);
+  tNFC_chipType determineChipTypeFromHwVersion(uint8_t hwVersion);
 
  public:
   /*product[] will be used to print product version and

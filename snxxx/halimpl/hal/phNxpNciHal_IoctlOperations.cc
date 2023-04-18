@@ -208,7 +208,6 @@ std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
                                 "NXP_NFCC_RECOVERY_SUPPORT",
                                 "NXP_AGC_DEBUG_ENABLE",
                                 "NXP_EXTENDED_FIELD_DETECT_MODE",
-                                "LEGACY_MIFARE_READER",
                                 "NXP_SE_SMB_TERMINAL_TYPE",
                                 "OFF_HOST_ESIM_PIPE_ID",
                                 "OFF_HOST_ESIM2_PIPE_ID"};

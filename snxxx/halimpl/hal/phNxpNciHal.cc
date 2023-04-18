@@ -1006,25 +1006,45 @@ int phNxpNciHal_fw_mw_ver_check() {
   uint8_t rom_version = 0xFF & (wFwVerRsp >> 16);
   uint8_t fw_maj_ver = 0xFF & (wFwVerRsp >> 8);
 
-  if (IS_CHIP_TYPE_EQ(pn557) && (rom_version == FW_MOBILE_ROM_VERSION_PN557) &&
-      (fw_maj_ver == 0x01)) {
-    status = NFCSTATUS_SUCCESS;
-  } else if ((IS_CHIP_TYPE_EQ(pn553) || IS_CHIP_TYPE_EQ(pn80T)) &&
-             (rom_version == 0x11) && (fw_maj_ver == 0x01)) {
-    status = NFCSTATUS_SUCCESS;
-  } else if ((IS_CHIP_TYPE_EQ(pn551) || IS_CHIP_TYPE_EQ(pn67T)) &&
-             (rom_version == 0x10) && (fw_maj_ver == 0x05)) {
-    status = NFCSTATUS_SUCCESS;
-  } else if (IS_CHIP_TYPE_EQ(sn100u) && (rom_version == SN1XX_ROM_VERSION) &&
-             (fw_maj_ver == SN1XX_FW_MAJOR_VERSION)) {
-    status = NFCSTATUS_SUCCESS;
-  } else if ((IS_CHIP_TYPE_EQ(sn220u) || IS_CHIP_TYPE_EQ(pn560)) &&
-             (rom_version == SN2XX_ROM_VERSION) &&
-             (fw_maj_ver == SN2XX_FW_MAJOR_VERSION)) {
-    status = NFCSTATUS_SUCCESS;
-  } else if (IS_CHIP_TYPE_EQ(sn300u) && (rom_version == SN3XX_ROM_VERSION) &&
-             (fw_maj_ver == SN3XX_FW_MAJOR_VERSION)) {
-    status = NFCSTATUS_SUCCESS;
+  switch (nfcFL.chipType) {
+    case pn557:
+      if ((rom_version == FW_MOBILE_ROM_VERSION_PN557) &&
+          (fw_maj_ver == FW_MOBILE_MAJOR_NUMBER_PN557))
+        status = NFCSTATUS_SUCCESS;
+      break;
+    case pn80T:
+      /* PN553 & PN80T have same rom & fw major version */
+      [[fallthrough]];
+    case pn553:
+      if ((rom_version == FW_MOBILE_ROM_VERSION_PN553) &&
+          (fw_maj_ver == FW_MOBILE_MAJOR_NUMBER_PN553))
+        status = NFCSTATUS_SUCCESS;
+      break;
+    case pn67T:
+      /* PN551 & PN67T have same rom & fw major version */
+      [[fallthrough]];
+    case pn551:
+      if ((rom_version == FW_MOBILE_ROM_VERSION_PN551) &&
+          (fw_maj_ver == FW_MOBILE_MAJOR_NUMBER_PN551))
+        status = NFCSTATUS_SUCCESS;
+      break;
+    case sn100u:
+      if ((rom_version == FW_MOBILE_ROM_VERSION_SN100U) &&
+          (fw_maj_ver == FW_MOBILE_MAJOR_NUMBER_SN100U))
+        status = NFCSTATUS_SUCCESS;
+      break;
+    case sn220u:
+      if ((rom_version == FW_MOBILE_ROM_VERSION_SN220U) &&
+          (fw_maj_ver == FW_MOBILE_MAJOR_NUMBER_SN220U))
+        status = NFCSTATUS_SUCCESS;
+      break;
+    case sn300u:
+      if ((rom_version == FW_MOBILE_ROM_VERSION_SN300U) &&
+          (fw_maj_ver == FW_MOBILE_MAJOR_NUMBER_SN300U))
+        status = NFCSTATUS_SUCCESS;
+      break;
+    default:
+      status = NFCSTATUS_FAILED;
   }
   if (NFCSTATUS_SUCCESS != status) {
     NXPLOG_NCIHAL_D("Chip Version Middleware Version mismatch!!!!");
