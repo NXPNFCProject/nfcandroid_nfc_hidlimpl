@@ -27,7 +27,6 @@
 #include <phNxpNciHal.h>
 #include <phNxpNciHal_Adaptation.h>
 #include <phNxpNciHal_Dnld.h>
-#include <phNxpNciHal_NfcDepSWPrio.h>
 #include <phNxpNciHal_ext.h>
 #include <phNxpTempMgr.h>
 #include <phTmlNfc.h>
@@ -641,14 +640,7 @@ NFCSTATUS phNxpNciHal_CheckValidFwVersion(void) {
     } else {
       status = NFCSTATUS_NOT_ALLOWED;
     }
-  }
-#ifdef NXP_DUMMY_FW_DNLD
-  else if (gRecFWDwnld == TRUE) {
-    NXPLOG_NCIHAL_E("FW Version 4");
-    status = NFCSTATUS_SUCCESS;
-  }
-#endif
-  else {
+  } else {
     NXPLOG_NCIHAL_E("Wrong FW Version >>> Firmware download not allowed");
   }
 

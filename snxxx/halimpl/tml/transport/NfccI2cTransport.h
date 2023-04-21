@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020-2022 NXP
+ *  Copyright 2020-2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -183,21 +183,6 @@ class NfccI2cTransport : public NfccTransport {
    **
    ****************************************************************************/
   int EseReset(void* pDevHandle, EseResetType eType);
-
-  /*****************************************************************************
-   **
-   ** Function         EseGetPower
-   **
-   ** Description      Request NFCC to reset the eSE
-   **
-   ** Parameters       pDevHandle     - valid device handle
-   **                  level          - reset level
-   **
-   ** Returns           0   - reset operation success
-   **                  else - reset operation failure
-   **
-   ****************************************************************************/
-  int EseGetPower(void* pDevHandle, uint32_t level);
 
   /*****************************************************************************
    **

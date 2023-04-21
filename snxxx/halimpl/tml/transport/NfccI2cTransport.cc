@@ -1,5 +1,5 @@
 /******************************************************************************
- *  Copyright 2020-2022 NXP
+ *  Copyright 2020-2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -419,23 +419,6 @@ int NfccI2cTransport::EseReset(void* pDevHandle, EseResetType eType) {
     NXPLOG_TML_E("%s :failed errno = 0x%x", __func__, errno);
   }
   return ret;
-}
-
-/*******************************************************************************
-**
-** Function         EseGetPower
-**
-** Description      Request NFCC to reset the eSE
-**
-** Parameters       pDevHandle     - valid device handle
-**                  level          - reset level
-**
-** Returns           0   - reset operation success
-**                  else - reset operation failure
-**
-*******************************************************************************/
-int NfccI2cTransport::EseGetPower(void* pDevHandle, uint32_t level) {
-  return ioctl((int)(intptr_t)pDevHandle, ESE_GET_PWR, level);
 }
 
 /*******************************************************************************

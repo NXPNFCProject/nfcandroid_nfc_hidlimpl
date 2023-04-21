@@ -20,7 +20,6 @@
 #include <phNxpLog.h>
 #include <phNxpNciHal.h>
 #include <phNxpNciHal_Adaptation.h>
-#include <phNxpNciHal_NfcDepSWPrio.h>
 #include <phNxpNciHal_ext.h>
 #include <phNxpTempMgr.h>
 #include <phTmlNfc.h>
@@ -61,7 +60,6 @@ extern PowerTrackerHandle gPowerTrackerHandle;
 
 extern bool_t gsIsFwRecoveryRequired;
 
-extern uint32_t cleanup_timer;
 extern bool nfc_debug_enabled;
 uint8_t icode_detected = 0x00;
 uint8_t icode_send_eof = 0x00;
@@ -69,8 +67,6 @@ static uint8_t ee_disc_done = 0x00;
 uint8_t EnableP2P_PrioLogic = false;
 extern bool bEnableMfcExtns;
 extern bool bEnableMfcReader;
-static uint32_t RfDiscID = 1;
-static uint32_t RfProtocolType = 4;
 /* NFCEE Set mode */
 static uint8_t setEEModeDone = 0x00;
 /* External global variable to get FW version from NCI response*/
@@ -267,7 +263,6 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
     switch (p_ntf[5]) {
       case 0x01:
         NXPLOG_NCIHAL_D("NxpNci: Protocol = T1T");
-        phNxpDta_T1TEnable();
         break;
       case 0x02:
         NXPLOG_NCIHAL_D("NxpNci: Protocol = T2T");
@@ -430,24 +425,6 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
       ee_disc_done = 0x00;
     }
     NXPLOG_NCIHAL_D("Going through workaround - NFCEE_DISCOVER_RSP - END");
-
-  } else if (p_ntf[0] == 0x61 && p_ntf[1] == 0x03 /*&& cleanup_timer!=0*/) {
-    if (cleanup_timer != 0) {
-      /* if RF Notification Type of RF_DISCOVER_NTF is Last Notification */
-      if (0 == (*(p_ntf + 2 + (*(p_ntf + 2))))) {
-        phNxpNciHal_select_RF_Discovery(RfDiscID, RfProtocolType);
-        status = NFCSTATUS_FAILED;
-        return status;
-      } else {
-        RfDiscID = p_ntf[3];
-        RfProtocolType = p_ntf[4];
-      }
-      status = NFCSTATUS_FAILED;
-      return status;
-    }
-  } else if (p_ntf[0] == 0x41 && p_ntf[1] == 0x04 && cleanup_timer != 0) {
-    status = NFCSTATUS_FAILED;
-    return status;
   } else if (*p_len == 4 && p_ntf[0] == 0x4F && p_ntf[1] == 0x11 &&
              p_ntf[2] == 0x01) {
     if (p_ntf[3] == 0x00) {
@@ -781,12 +758,6 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
                                 uint16_t* rsp_len, uint8_t* p_rsp_data) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
 
-  phNxpNciHal_NfcDep_cmd_ext(p_cmd_data, cmd_len);
-
-  if (phNxpDta_IsEnable() == true) {
-    status = phNxpNHal_DtaUpdate(cmd_len, p_cmd_data, rsp_len, p_rsp_data);
-  }
-
   if (p_cmd_data[0] == PROPRIETARY_CMD_FELICA_READER_MODE &&
       p_cmd_data[1] == PROPRIETARY_CMD_FELICA_READER_MODE &&
       p_cmd_data[2] == PROPRIETARY_CMD_FELICA_READER_MODE) {
@@ -1090,30 +1061,6 @@ NFCSTATUS phNxpNciHal_send_ext_cmd(uint16_t cmd_len, uint8_t* p_cmd) {
   status = phNxpNciHal_process_ext_cmd_rsp(nxpncihal_ctrl.cmd_len,
                                            nxpncihal_ctrl.p_cmd_data);
 
-  return status;
-}
-
-/******************************************************************************
- * Function         phNxpNciHal_send_ese_hal_cmd
- *
- * Description      This function send the extension command to NFCC. No
- *                  response is checked by this function but it waits for
- *                  the response to come.
- *
- * Returns          Returns NFCSTATUS_SUCCESS if sending cmd is successful and
- *                  response is received.
- *
- ******************************************************************************/
-NFCSTATUS phNxpNciHal_send_ese_hal_cmd(uint16_t cmd_len, uint8_t* p_cmd) {
-  NFCSTATUS status = NFCSTATUS_FAILED;
-  if (cmd_len > NCI_MAX_DATA_LEN) {
-    NXPLOG_NCIHAL_E("cmd_len exceeds limit NCI_MAX_DATA_LEN");
-    return status;
-  }
-  nxpncihal_ctrl.cmd_len = cmd_len;
-  memcpy(nxpncihal_ctrl.p_cmd_data, p_cmd, cmd_len);
-  status = phNxpNciHal_process_ext_cmd_rsp(nxpncihal_ctrl.cmd_len,
-                                           nxpncihal_ctrl.p_cmd_data);
   return status;
 }
 
