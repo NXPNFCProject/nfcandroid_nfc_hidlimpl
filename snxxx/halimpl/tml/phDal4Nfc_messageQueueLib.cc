@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2019 NXP Semiconductors
+ * Copyright 2010-2019, 2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,49 +97,6 @@ void phDal4Nfc_msgrelease(intptr_t msqid) {
   }
 
   return;
-}
-
-/*******************************************************************************
-**
-** Function         phDal4Nfc_msgctl
-**
-** Description      Destroys message queue
-**
-** Parameters       msqid - message queue handle
-**                  cmd, buf - ignored, included only for Linux queue API
-**                  compatibility
-**
-** Returns          0,  if successful
-**                  -1, if invalid handle is passed
-**
-*******************************************************************************/
-int phDal4Nfc_msgctl(intptr_t msqid, int cmd, void* buf) {
-  phDal4Nfc_message_queue_t* pQueue;
-  phDal4Nfc_message_queue_item_t* p;
-  UNUSED_PROP(cmd);
-  UNUSED_PROP(buf);
-  if (msqid == 0) return -1;
-
-  pQueue = (phDal4Nfc_message_queue_t*)msqid;
-  pthread_mutex_lock(&pQueue->nCriticalSectionMutex);
-  if (pQueue->pItems != NULL) {
-    p = pQueue->pItems;
-    while (p->pNext != NULL) {
-      p = p->pNext;
-    }
-    while (p->pPrev != NULL) {
-      p = p->pPrev;
-      free(p->pNext);
-      p->pNext = NULL;
-    }
-    free(p);
-  }
-  pQueue->pItems = NULL;
-  pthread_mutex_unlock(&pQueue->nCriticalSectionMutex);
-  pthread_mutex_destroy(&pQueue->nCriticalSectionMutex);
-  free(pQueue);
-
-  return 0;
 }
 
 /*******************************************************************************

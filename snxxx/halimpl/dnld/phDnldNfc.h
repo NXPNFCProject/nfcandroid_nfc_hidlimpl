@@ -153,9 +153,6 @@ extern void phDnldNfc_CloseFwLibHandle(void);
 extern NFCSTATUS phDnldNfc_LoadFW(const char* pathName, uint8_t** pImgInfo,
                                   uint32_t* pImgInfoLen,
                                   bool degradedFwDnld = false);
-extern NFCSTATUS phDnldNfc_LoadRecoveryFW(const char* pathName,
-                                          uint8_t** pImgInfo,
-                                          uint32_t* pImgInfoLen);
 extern NFCSTATUS phDnldNfc_LoadBinFW(uint8_t** pImgInfo, uint32_t* pImgInfoLen);
 extern NFCSTATUS phDnldNfc_UnloadFW(void);
 extern void phDnldNfc_SetDlRspTimeout(uint16_t timeout);

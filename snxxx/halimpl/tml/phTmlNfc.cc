@@ -52,8 +52,6 @@ static void phTmlNfc_ReadDeferredCb(void* pParams);
 static void phTmlNfc_WriteDeferredCb(void* pParams);
 static void* phTmlNfc_TmlThread(void* pParam);
 static void* phTmlNfc_TmlWriterThread(void* pParam);
-static void phTmlNfc_ReTxTimerCb(uint32_t dwTimerId, void* pContext);
-static NFCSTATUS phTmlNfc_InitiateTimer(void);
 static void phTmlNfc_SignalWriteComplete(void);
 static int phTmlNfc_WaitReadInit(void);
 
@@ -274,58 +272,6 @@ static NFCSTATUS phTmlNfc_StartThread(void) {
   }
 
   return wStartStatus;
-}
-
-/*******************************************************************************
-**
-** Function         phTmlNfc_ReTxTimerCb
-**
-** Description      This is the timer callback function after timer expiration.
-**
-** Parameters       dwThreadId  - id of the thread posting message
-**                  pContext    - context provided by upper layer
-**
-** Returns          None
-**
-*******************************************************************************/
-static void phTmlNfc_ReTxTimerCb(uint32_t dwTimerId, void* pContext) {
-  if ((gpphTmlNfc_Context->dwTimerId == dwTimerId) && (NULL == pContext)) {
-    /* If Retry Count has reached its limit,Retransmit Nci
-       packet */
-    if (0 == bCurrentRetryCount) {
-      /* Since the count has reached its limit,return from timer callback
-         Upper layer Timeout would have happened */
-    } else {
-      bCurrentRetryCount--;
-      gpphTmlNfc_Context->tWriteInfo.bThreadBusy = true;
-      gpphTmlNfc_Context->tWriteInfo.bEnable = 1;
-    }
-    sem_post(&gpphTmlNfc_Context->txSemaphore);
-  }
-
-  return;
-}
-
-/*******************************************************************************
-**
-** Function         phTmlNfc_InitiateTimer
-**
-** Description      Start a timer for Tx and Rx thread.
-**
-** Parameters       void
-**
-** Returns          NFC status
-**
-*******************************************************************************/
-static NFCSTATUS phTmlNfc_InitiateTimer(void) {
-  NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
-
-  /* Start Timer once Nci packet is sent */
-  wStatus = phOsalNfc_Timer_Start(gpphTmlNfc_Context->dwTimerId,
-                                  (uint32_t)PHTMLNFC_MAXTIME_RETRANSMIT,
-                                  phTmlNfc_ReTxTimerCb, NULL);
-
-  return wStatus;
 }
 
 /*******************************************************************************
@@ -571,19 +517,6 @@ static void* phTmlNfc_TmlWriterThread(void* pParam) {
         }
       } else {
         NXPLOG_TML_D("PN54X - gpphTmlNfc_Context->pDevHandle is NULL");
-      }
-
-      /* If Data packet is sent, then NO retransmission */
-      if ((phTmlNfc_e_EnableRetrans == gpphTmlNfc_Context->eConfig) &&
-          (0x00 != (gpphTmlNfc_Context->tWriteInfo.pBuffer[0] & 0xE0))) {
-        NXPLOG_TML_D("PN54X - Starting timer for Retransmission case");
-        wStatus = phTmlNfc_InitiateTimer();
-        if (NFCSTATUS_SUCCESS != wStatus) {
-          /* Reset Variables used for Retransmission */
-          NXPLOG_TML_D("PN54X - Retransmission timer initiate failed");
-          gpphTmlNfc_Context->tWriteInfo.bEnable = 0;
-          bCurrentRetryCount = 0;
-        }
       }
     } else {
       NXPLOG_TML_D("PN54X - Write request NOT enabled");

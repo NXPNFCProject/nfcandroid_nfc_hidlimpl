@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2021-2022 NXP
+ *  Copyright 2021-2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -36,7 +36,6 @@ class NfcHalThreadCondVar : public NfcHalThreadMutex {
   NfcHalThreadCondVar();
   virtual ~NfcHalThreadCondVar();
   void signal();
-  void wait();
   void timedWait(struct timespec* time);
   operator pthread_cond_t*() { return &mCondVar; }
   operator pthread_mutex_t*() {
@@ -52,7 +51,6 @@ class NfcHalAutoThreadMutex {
   NfcHalAutoThreadMutex(NfcHalThreadMutex& m);
   virtual ~NfcHalAutoThreadMutex();
   operator NfcHalThreadMutex&() { return mm; }
-  operator pthread_mutex_t*() { return (pthread_mutex_t*)mm; }
 
  private:
   NfcHalThreadMutex& mm;

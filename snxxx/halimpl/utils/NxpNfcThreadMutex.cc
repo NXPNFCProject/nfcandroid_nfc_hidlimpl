@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2021-2022 NXP
+ *  Copyright 2021-2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -96,20 +96,6 @@ NfcHalThreadCondVar::NfcHalThreadCondVar() {
 **
 *******************************************************************************/
 NfcHalThreadCondVar::~NfcHalThreadCondVar() { pthread_cond_destroy(&mCondVar); }
-
-/*******************************************************************************
-**
-** Function:    NfcHalThreadCondVar::wait()
-**
-** Description: wait on the mCondVar
-**
-** Returns:     none
-**
-*******************************************************************************/
-void NfcHalThreadCondVar::wait() {
-  pthread_cond_wait(&mCondVar, *this);
-  pthread_mutex_unlock(*this);
-}
 
 /*******************************************************************************
 **
