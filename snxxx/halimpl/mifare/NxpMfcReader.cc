@@ -58,7 +58,6 @@ int NxpMfcReader::Write(uint16_t mfcDataLen, const uint8_t* pMfcData) {
   BuildMfcCmd(&mfcTagCmdBuff[3], &mfcTagCmdBuffLen);
 
   mfcTagCmdBuff[2] = mfcTagCmdBuffLen;
-  mfcDataLen = mfcTagCmdBuffLen + NCI_HEADER_SIZE;
 
   if (checkIsMFCIncDecRestore(pMfcData[3])) {
     if (sem_init(&mNacksem, 0, 0) != 0) {
@@ -66,7 +65,8 @@ int NxpMfcReader::Write(uint16_t mfcDataLen, const uint8_t* pMfcData) {
       return 0;
     }
   }
-  int writtenDataLen = phNxpNciHal_write_internal(mfcDataLen, mfcTagCmdBuff);
+  int writtenDataLen = phNxpNciHal_write_internal(
+      mfcTagCmdBuffLen + NCI_HEADER_SIZE, mfcTagCmdBuff);
 
   /* send TAG_CMD part 2 for Mifare increment ,decrement and restore commands */
   if (checkIsMFCIncDecRestore(pMfcData[3])) {
@@ -314,7 +314,6 @@ void NxpMfcReader::SendIncDecRestoreCmdPart2(uint16_t mfcDataLen,
                                   0x00, 0x00, 0x00, 0x00};
   uint8_t incDecRestorePart2Size =
       (sizeof(incDecRestorePart2) / sizeof(incDecRestorePart2[0]));
-
   if (mfcData[3] == eMifareInc || mfcData[3] == eMifareDec) {
     if (mfcDataLen > MFC_TAG_INCR_DECR_CMD_PART2_LEN) {
       isError = true;
