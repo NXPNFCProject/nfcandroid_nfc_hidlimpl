@@ -46,10 +46,6 @@
 
 typedef void(phNxpNciHal_control_granted_callback_t)();
 
-#define NCI_CMDRESP_MAX_BUFF_SIZE_SN300 (0x22AU)
-#define NCI_CMDRESP_MAX_BUFF_SIZE_SNXXX (0x22AU)
-#define NCI_CMDRESP_MAX_BUFF_SIZE_PN557 (0x102U)
-
 #define FW_DBG_REASON_AVAILABLE (0xA3)
 
 #define HOST_ID 0x00

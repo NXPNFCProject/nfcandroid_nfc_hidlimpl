@@ -620,7 +620,8 @@ NFCSTATUS phDnldNfc_Force(pphDnldNfc_Buff_t pInputs, pphDnldNfc_RspCb_t pNotify,
 ** Function         phDnldNfc_SetHwDevHandle
 **
 ** Description      Stores the HwDev handle to download context. The handle is
-**                  required for subsequent operations
+**                  required for subsequent operations. Also, sets the I2C
+**                  fragmentation length as per the chip type.
 **
 ** Parameters       None
 **
@@ -628,23 +629,30 @@ NFCSTATUS phDnldNfc_Force(pphDnldNfc_Buff_t pInputs, pphDnldNfc_RspCb_t pNotify,
 **
 *******************************************************************************/
 void phDnldNfc_SetHwDevHandle(void) {
-  pphDnldNfc_DlContext_t psDnldContext = NULL;
-
   if (NULL == gpphDnldContext) {
     NXPLOG_FWDNLD_D("Allocating Mem for Dnld Context..");
     /* Create the memory for Download Mgmt Context */
-    psDnldContext =
-        (pphDnldNfc_DlContext_t)malloc(sizeof(phDnldNfc_DlContext_t));
-
-    if (psDnldContext != NULL) {
-      (void)memset((void*)psDnldContext, 0, sizeof(phDnldNfc_DlContext_t));
-      gpphDnldContext = psDnldContext;
-    } else {
+    gpphDnldContext =
+        (pphDnldNfc_DlContext_t)calloc(1, sizeof(phDnldNfc_DlContext_t));
+    if (gpphDnldContext == NULL) {
       NXPLOG_FWDNLD_E("Error Allocating Mem for Dnld Context..");
+      return;
     }
   } else {
+    if (gpphDnldContext->tCmdRspFrameInfo.aFrameBuff != NULL) {
+      free(gpphDnldContext->tCmdRspFrameInfo.aFrameBuff);
+    }
     (void)memset((void*)gpphDnldContext, 0, sizeof(phDnldNfc_DlContext_t));
   }
+  // Set the gpphDnldContext->nxp_i2c_fragment_len as per chiptype
+  phDnldNfc_SetI2CFragmentLength();
+  gpphDnldContext->tCmdRspFrameInfo.aFrameBuff =
+      (uint8_t*)calloc(gpphDnldContext->nxp_i2c_fragment_len, sizeof(uint8_t));
+  if (gpphDnldContext->tCmdRspFrameInfo.aFrameBuff == NULL) {
+    NXPLOG_FWDNLD_E("Error Allocating Mem for Dnld Context aFrameBuff..");
+  }
+  // Update the write Fragmentation Length at TML layer
+  phTmlNfc_IoCtl(phTmlNfc_e_setFragmentSize);
   return;
 }
 
@@ -665,6 +673,7 @@ void phDnldNfc_ReSetHwDevHandle(void) {
     free(gpphDnldContext);
     gpphDnldContext = NULL;
   }
+  phTmlNfc_IoCtl(phTmlNfc_e_setFragmentSize);
 }
 
 /*******************************************************************************
@@ -835,18 +844,6 @@ NFCSTATUS phDnldNfc_InitImgInfo(bool bMinimalFw, bool degradedFwDnld) {
     }
   }
 
-  /* gpphDnldContext reset by phDnldNfc_SetHwDevHandle()
-     so reassign the Fragment Length based on chip version */
-  if (NFCSTATUS_SUCCESS == wStatus) {
-    if (IS_CHIP_TYPE_EQ(sn300u)) {
-      phDnldNfc_SetI2CFragmentLength(PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SN300);
-    } else if (IS_CHIP_TYPE_GE(sn100u)) {
-      phDnldNfc_SetI2CFragmentLength(PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SNXXX);
-    } else {
-      phDnldNfc_SetI2CFragmentLength(PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_PN557);
-    }
-  }
-
   return wStatus;
 }
 
@@ -887,14 +884,6 @@ NFCSTATUS phDnldNfc_LoadRecInfo(void) {
     /* fetch the PLL recovery image pointer and the image length */
     gpphDnldContext->nxp_nfc_fwp = (uint8_t*)pImageInfo;
     gpphDnldContext->nxp_nfc_fwp_len = ImageInfoLen;
-
-    /* gpphDnldContext reset by phDnldNfc_SetHwDevHandle()
-    so reassign the Fragment Length 554 (0x22A) for chip sn1xx*/
-    if (IS_CHIP_TYPE_EQ(sn300u)) {
-      phDnldNfc_SetI2CFragmentLength(PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SN300);
-    } else {
-      phDnldNfc_SetI2CFragmentLength(PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SNXXX);
-    }
 
     if ((NULL != gpphDnldContext->nxp_nfc_fwp) &&
         (0 != gpphDnldContext->nxp_nfc_fwp_len)) {
@@ -948,14 +937,6 @@ NFCSTATUS phDnldNfc_LoadPKInfo(void) {
     /* fetch the PKU image pointer and the image length */
     gpphDnldContext->nxp_nfc_fwp = (uint8_t*)pImageInfo;
     gpphDnldContext->nxp_nfc_fwp_len = ImageInfoLen;
-
-    /* gpphDnldContext reset by phDnldNfc_SetHwDevHandle()
-    so reassign the Fragment Length 554 (0x22A) for chip sn1xx*/
-    if (IS_CHIP_TYPE_EQ(sn300u)) {
-      phDnldNfc_SetI2CFragmentLength(PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SN300);
-    } else {
-      phDnldNfc_SetI2CFragmentLength(PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SNXXX);
-    }
 
     if ((NULL != gpphDnldContext->nxp_nfc_fwp) &&
         (0 != gpphDnldContext->nxp_nfc_fwp_len)) {
@@ -1207,16 +1188,22 @@ void phDnldNfc_SetDlRspTimeout(uint16_t timeout) {
 **
 ** Function         phDnldNfc_SetI2CFragmentLength
 **
-** Description      sets the fragment length
+** Description      sets the fragment length as per chip being used
 **
-** Parameters       Fragment Length
+** Parameters       None
 **
 ** Returns          None                -
 **
 *******************************************************************************/
-void phDnldNfc_SetI2CFragmentLength(uint16_t len) {
+void phDnldNfc_SetI2CFragmentLength() {
   if (NULL != gpphDnldContext) {
-    gpphDnldContext->nxp_i2c_fragment_len = len;
+    if (IS_CHIP_TYPE_EQ(sn300u)) {
+      gpphDnldContext->nxp_i2c_fragment_len = PH_TMLNFC_FRGMENT_SIZE_SN300;
+    } else if (IS_CHIP_TYPE_GE(sn100u)) {
+      gpphDnldContext->nxp_i2c_fragment_len = PH_TMLNFC_FRGMENT_SIZE_SNXXX;
+    } else {
+      gpphDnldContext->nxp_i2c_fragment_len = PH_TMLNFC_FRGMENT_SIZE_PN557;
+    }
     NXPLOG_FWDNLD_D("fragment len set %x",
                     gpphDnldContext->nxp_i2c_fragment_len);
   } else {

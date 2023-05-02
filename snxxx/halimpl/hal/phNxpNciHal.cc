@@ -557,14 +557,6 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset,
 
     phDnldNfc_SetHwDevHandle();
 
-    if (IS_CHIP_TYPE_EQ(sn300u)) {
-      phDnldNfc_SetI2CFragmentLength(NCI_CMDRESP_MAX_BUFF_SIZE_SN300);
-    } else if (IS_CHIP_TYPE_GE(sn100u)) {
-      phDnldNfc_SetI2CFragmentLength(NCI_CMDRESP_MAX_BUFF_SIZE_SNXXX);
-    } else {
-      phDnldNfc_SetI2CFragmentLength(NCI_CMDRESP_MAX_BUFF_SIZE_PN557);
-    }
-
     NXPLOG_NCIHAL_D("Calling Seq handler for FW Download \n");
     status = phNxpNciHal_fw_download_seq(nxpprofile_ctrl.bClkSrcVal,
                                          nxpprofile_ctrl.bClkFreqVal,
@@ -763,9 +755,6 @@ int phNxpNciHal_MinOpen() {
     return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
   }
   memset(mGetCfg_info, 0x00, sizeof(phNxpNci_getCfg_info_t));
-
-  /* Set Default Fragment Length */
-  tTmlConfig.fragment_len = NCI_CMDRESP_MAX_BUFF_SIZE_PN557;
 
   /* Initialize TML layer */
   wConfigStatus = phTmlNfc_Init(&tTmlConfig);
@@ -3383,14 +3372,6 @@ NFCSTATUS phNxpNciHal_dlResetInFwDnldMode() {
   phTmlNfc_EnableFwDnldMode(true);
   NXPLOG_NCIHAL_D("Sending DL Reset for NFCC soft reboot");
   phDnldNfc_SetHwDevHandle();
-
-  if (IS_CHIP_TYPE_EQ(sn300u)) {
-      phDnldNfc_SetI2CFragmentLength(NCI_CMDRESP_MAX_BUFF_SIZE_SN300);
-  } else if (IS_CHIP_TYPE_GE(sn100u)) {
-    phDnldNfc_SetI2CFragmentLength(NCI_CMDRESP_MAX_BUFF_SIZE_SNXXX);
-  } else {
-    phDnldNfc_SetI2CFragmentLength(NCI_CMDRESP_MAX_BUFF_SIZE_PN557);
-  }
 
   status = phNxpNciHal_fw_dnld_switch_normal_mode();
 

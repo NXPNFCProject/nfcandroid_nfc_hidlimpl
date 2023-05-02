@@ -140,8 +140,6 @@ extern NFCSTATUS phDnldNfc_Log(pphDnldNfc_Buff_t pData,
                                pphDnldNfc_RspCb_t pNotify, void* pContext);
 extern void phDnldNfc_SetHwDevHandle(void);
 void phDnldNfc_ReSetHwDevHandle(void);
-extern NFCSTATUS phDnldNfc_ReadMem(void* pHwRef, pphDnldNfc_RspCb_t pNotify,
-                                   void* pContext);
 extern NFCSTATUS phDnldNfc_RawReq(pphDnldNfc_Buff_t pFrameData,
                                   pphDnldNfc_Buff_t pRspData,
                                   pphDnldNfc_RspCb_t pNotify, void* pContext);
@@ -156,5 +154,5 @@ extern NFCSTATUS phDnldNfc_LoadFW(const char* pathName, uint8_t** pImgInfo,
 extern NFCSTATUS phDnldNfc_LoadBinFW(uint8_t** pImgInfo, uint32_t* pImgInfoLen);
 extern NFCSTATUS phDnldNfc_UnloadFW(void);
 extern void phDnldNfc_SetDlRspTimeout(uint16_t timeout);
-extern void phDnldNfc_SetI2CFragmentLength(uint16_t len);
+extern void phDnldNfc_SetI2CFragmentLength();
 #endif /* PHDNLDNFC_H */

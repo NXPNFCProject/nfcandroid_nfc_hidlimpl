@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 NXP
+ * Copyright 2021-2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -539,9 +539,6 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
   tOsalConfig.dwCallbackThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
   tOsalConfig.pLogFile = NULL;
   tTmlConfig.dwGetMsgThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
-
-  /* Set Default Fragment Length */
-  tTmlConfig.fragment_len = NCI_CMDRESP_MAX_BUFF_SIZE_PN557;
 
   /* Initialize TML layer */
   if (phTmlNfc_Init(&tTmlConfig) != NFCSTATUS_SUCCESS) {
