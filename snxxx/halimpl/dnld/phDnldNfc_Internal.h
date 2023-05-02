@@ -24,10 +24,6 @@
 #include <phDnldNfc_Cmd.h>
 #include <phDnldNfc_Status.h>
 
-#define PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SN300 (0x22AU)
-#define PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SNXXX (0x22AU)
-#define PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_PN557 (0x100U)
-
 /* DL Host Short Frame Buffer Size for pipelined WRITE RSP */
 #define PHDNLDNFC_WRITERSP_BUFF_SIZE (0x08U)
 
@@ -121,9 +117,7 @@ typedef enum phDnldNfc_FwFormat {
  */
 typedef struct phDnldNfc_FrameInfo {
   uint16_t dwSendlength; /* length of the payload  */
-  uint8_t aFrameBuff[PHDNLDNFC_CMDRESP_MAX_BUFF_SIZE_SN300]; /* Buffer to store
-                                                          command that needs to
-                                                          be sent*/
+  uint8_t* aFrameBuff;   /* Buffer to store command/frame to be sent */
 } phDnldNfc_FrameInfo_t,
     *pphDnldNfc_FrameInfo_t; /* pointer to #phDnldNfc_FrameInfo_t */
 
