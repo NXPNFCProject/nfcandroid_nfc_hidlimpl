@@ -1204,7 +1204,7 @@ void phDnldNfc_SetI2CFragmentLength() {
     } else {
       gpphDnldContext->nxp_i2c_fragment_len = PH_TMLNFC_FRGMENT_SIZE_PN557;
     }
-    NXPLOG_FWDNLD_D("fragment len set %x",
+    NXPLOG_FWDNLD_D("fragment len set %u",
                     gpphDnldContext->nxp_i2c_fragment_len);
   } else {
     NXPLOG_FWDNLD_E("Error setting the fragment length");
