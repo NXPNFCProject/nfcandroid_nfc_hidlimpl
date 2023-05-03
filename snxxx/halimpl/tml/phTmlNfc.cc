@@ -957,7 +957,7 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
         } else {
           gpphTmlNfc_Context->fragment_len = PH_TMLNFC_FRGMENT_SIZE_PN557;
         }
-        NXPLOG_TML_D("Set FragmentSize: %X", gpphTmlNfc_Context->fragment_len);
+        NXPLOG_TML_D("Set FragmentSize: %u", gpphTmlNfc_Context->fragment_len);
         break;
       }
       case phTmlNfc_e_SetNfcState: {
