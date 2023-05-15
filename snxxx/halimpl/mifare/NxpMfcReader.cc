@@ -397,6 +397,10 @@ NFCSTATUS NxpMfcReader::AnalyzeMfcResp(uint8_t* pBuff, uint16_t* pBufflen) {
       } break;
 
       case eMfcAuthRsp: {
+        if (*pBufflen < 2) {
+          status = NFCSTATUS_FAILED;
+          break;
+        }
         /* check the status byte */
         if (NFCSTATUS_SUCCESS == pBuff[1]) {
           status = NFCSTATUS_SUCCESS;
