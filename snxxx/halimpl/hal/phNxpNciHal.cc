@@ -1860,6 +1860,8 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
       }
     }
 
+    phNxpNciHal_setDCDCConfig();
+
     if (fpVerInfoStoreInEeprom != NULL) {
       fpVerInfoStoreInEeprom();
     }

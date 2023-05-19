@@ -196,6 +196,7 @@ extern char Fw_Lib_Path[256];
 #define NAME_NXP_SYSTEM_POWER_TRACE_POLL_DURATION \
   "NXP_SYSTEM_POWER_TRACE_POLL_DURATION_SEC"
 #define NAME_NXP_SE_SMB_TERMINAL_TYPE "NXP_SE_SMB_TERMINAL_TYPE"
+#define NAME_NXP_ENABLE_DCDC_ON "NXP_ENABLE_DCDC_ON"
 /* default configuration */
 #define default_storage_location "/data/vendor/nfc"
 #define NAME_NXP_AUTH_TIMEOUT_CFG "NXP_AUTH_TIMEOUT_CFG"
