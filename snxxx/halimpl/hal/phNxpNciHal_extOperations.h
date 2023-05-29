@@ -193,3 +193,12 @@ NFCSTATUS phNxpNciHal_configGPIOControl(uint8_t gpioControl[], uint8_t len);
 **
 *******************************************************************************/
 void phNxpNciHal_decodeGpioStatus(void);
+
+/******************************************************************************
+ **
+ ** Function         phNxpNciHal_setDCDCConfig()
+ **
+ ** Description      Sets DCDC On/Off
+ **
+ *****************************************************************************/
+void phNxpNciHal_setDCDCConfig(void);
