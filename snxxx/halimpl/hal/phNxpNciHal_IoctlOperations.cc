@@ -80,12 +80,11 @@ extern phNxpNciClock_t phNxpNciClock;
  ********************************************************************************/
 int property_get_intf(const char* propName, char* valueStr,
                       const char* defaultStr) {
-  string paramPropName = propName;
   string propValue;
   string propValueDefault = defaultStr;
   int len = 0;
 
-  propValue = phNxpNciHal_getSystemProperty(paramPropName);
+  propValue = phNxpNciHal_getSystemProperty(propName);
   if (propValue.length() > 0) {
     NXPLOG_NCIHAL_D("property_get_intf , key[%s], propValue[%s], length[%zu]",
                     propName, propValue.c_str(), propValue.length());
@@ -114,10 +113,8 @@ int property_get_intf(const char* propName, char* valueStr,
  **
  ********************************************************************************/
 int property_set_intf(const char* propName, const char* valueStr) {
-  string paramPropName = propName;
-  string propValue = valueStr;
   NXPLOG_NCIHAL_D("property_set_intf, key[%s], value[%s]", propName, valueStr);
-  if (phNxpNciHal_setSystemProperty(paramPropName, propValue))
+  if (phNxpNciHal_setSystemProperty(propName, valueStr))
     return NFCSTATUS_SUCCESS;
   else
     return NFCSTATUS_FAILED;
@@ -349,7 +346,7 @@ bool phNxpNciHal_setSystemProperty(string key, string value) {
     }
     phNxpNciHal_setULPDetFlag(flag);
   }
-  gsystemProperty[key] = value;
+  gsystemProperty[key] = std::move(value);
   return stat;
 }
 
