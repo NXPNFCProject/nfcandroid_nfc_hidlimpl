@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 NXP
+ * Copyright 2019-2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -188,6 +188,7 @@ std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
                                 "NFA_CONFIG_FORMAT",
                                 "NXP_T4T_NFCEE_ENABLE",
                                 "NXP_DISCONNECT_TAG_IN_SCRN_OFF",
+                                "NXP_CE_PRIORITY_ENABLED",
                                 "NXP_RDR_REQ_GUARD_TIME",
                                 "OFF_HOST_SIM2_PIPE_ID",
                                 "NXP_ENABLE_DISABLE_LOGS",
