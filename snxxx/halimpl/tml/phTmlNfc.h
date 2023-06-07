@@ -252,7 +252,6 @@ void phTmlNfc_DeferredCall(uintptr_t dwThreadId,
 void phTmlNfc_ConfigNciPktReTx(phTmlNfc_ConfigRetrans_t eConfig,
                                uint8_t bRetryCount);
 void phTmlNfc_set_fragmentation_enabled(phTmlNfc_i2cfragmentation_t enable);
-phTmlNfc_i2cfragmentation_t phTmlNfc_get_fragmentation_enabled();
 NFCSTATUS phTmlNfc_ConfigTransport();
 void phTmlNfc_EnableFwDnldMode(bool mode);
 bool phTmlNfc_IsFwDnldModeEnabled(void);
