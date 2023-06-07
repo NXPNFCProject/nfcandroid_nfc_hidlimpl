@@ -313,7 +313,6 @@ NFCSTATUS phNxpNciHal_send_get_cfgs();
 int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t* p_data,
                                int origin);
 NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info);
-int phNxpNciHal_check_config_parameter();
 NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset = 0,
                                   bool bIsNfccDlState = false);
 NFCSTATUS phNxpNciHal_nfcc_core_reset_init(bool keep_config = false);

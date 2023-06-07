@@ -1068,9 +1068,6 @@ void phTmlNfc_set_fragmentation_enabled(phTmlNfc_i2cfragmentation_t result) {
   fragmentation_enabled = result;
 }
 
-phTmlNfc_i2cfragmentation_t phTmlNfc_get_fragmentation_enabled() {
-  return fragmentation_enabled;
-}
 
 /*******************************************************************************
 **
