@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 NXP
+ * Copyright 2022-2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
 
 #include <phNxpNciHal_ext.h>
 
+#define ENABLE_ULPDET_USING_API 0x01
+#define ENABLE_ULPDET_ON_DEVICE_OFF 0x02
+
 /*******************************************************************************
 **
 ** Function         phNxpNciHal_isULPDetSupported()
@@ -25,6 +28,16 @@
 ** Returns          true or false
 *******************************************************************************/
 bool phNxpNciHal_isULPDetSupported();
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_isULPDetDeviceOffSupported()
+**
+** Description      this function is to check ULPDet Device Off supported or not
+**
+** Returns          true or false
+*******************************************************************************/
+bool phNxpNciHal_isULPDetDeviceOffSupported();
 
 /*******************************************************************************
 **
@@ -62,3 +75,49 @@ bool phNxpNciHal_getULPDetFlag();
 ** Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS
 *******************************************************************************/
 NFCSTATUS phNxpNciHal_propConfULPDetMode(bool bEnable);
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_setULPDetConfig()
+**
+** Description      this function set's ULPDet config which is required to
+**                  enable ULPDet mode
+**
+** flag             true to update configurations to enable ULPDET, false
+**                  to update configurations to disable ULPDET
+**
+** Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS
+*******************************************************************************/
+NFCSTATUS phNxpNciHal_setULPDetConfig(bool flag);
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_checkAndDisableULPDetConfigs()
+**
+** Description      this function disables the power mode when the ULPDet
+**                  feature is disabled
+**
+** Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS
+*******************************************************************************/
+NFCSTATUS phNxpNciHal_checkAndDisableULPDetConfigs();
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_getUlpdetGPIOConfig()
+**
+** Description      this function gets the ULPDET get gpio configuration
+**
+** Returns          true or false
+*******************************************************************************/
+uint8_t phNxpNciHal_getUlpdetGPIOConfig();
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_enableUlpdetOrAutonomousMode()
+**
+** Description      this function enables ULPDET mode or Autonomous modes based
+**                  on the configurations
+**
+** Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS
+*******************************************************************************/
+NFCSTATUS phNxpNciHal_enableUlpdetOrAutonomousMode();

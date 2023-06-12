@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 NXP
+ * Copyright 2019-2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,16 +60,35 @@ NFCSTATUS phNxpNciHal_setAutonomousMode() {
                     nfcFL.chipType);
     return NFCSTATUS_SUCCESS;
   }
-  phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
-  uint8_t autonomous_mode_value = 0x01;
-  if (config_ext.autonomous_mode == true) autonomous_mode_value = 0x02;
+  uint8_t autonomous_mode_value = STANDBY_STATE;
+  if (config_ext.autonomous_mode == true)
+    autonomous_mode_value = AUTONOMOUS_MODE;
 
-  mEEPROM_info.request_mode = SET_EEPROM_DATA;
-  mEEPROM_info.buffer = (uint8_t*)&autonomous_mode_value;
-  mEEPROM_info.bufflen = sizeof(autonomous_mode_value);
-  mEEPROM_info.request_type = EEPROM_AUTONOMOUS_MODE;
-
-  return request_EEPROM(&mEEPROM_info);
+  NFCSTATUS status = NFCSTATUS_SUCCESS;
+  vector<uint8_t> getConfig_A015 = {0x20, 0x03, 0x03, 0x01, 0xA0, 0x15};
+  vector<uint8_t> setConfig_A015 = {0x20, 0x02, 0x05, 0x01,
+                                    0xA0, 0x15, 0x01, 0x01};
+  status = phNxpNciHal_send_ext_cmd(getConfig_A015.size(), &getConfig_A015[0]);
+  if ((status == NFCSTATUS_SUCCESS) &&
+      (nxpncihal_ctrl.p_rx_data[8] != autonomous_mode_value)) {
+    setConfig_A015[7] = autonomous_mode_value;
+    // Power mode reset to standby enabled if the A015 values is previously
+    // enabled for ULPDET
+    if (nxpncihal_ctrl.p_rx_data[8] == AUTONOMOUS_ULPDET_MODE) {
+      vector<uint8_t> coreSetPowerToUlpdet = {0x2F, 0x00, 0x01, 0x01};
+      status = phNxpNciHal_send_ext_cmd(coreSetPowerToUlpdet.size(),
+                                        &coreSetPowerToUlpdet[0]);
+      if (status != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("Failed to set NFCC power state to ULPDet");
+      }
+    }
+    status =
+        phNxpNciHal_send_ext_cmd(setConfig_A015.size(), &setConfig_A015[0]);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("Set Config: Failed");
+    }
+  }
+  return status;
 }
 /******************************************************************************
  * Function         phNxpNciHal_setGuardTimer
@@ -611,4 +630,24 @@ NFCSTATUS phNxpNciHal_configGPIOControl(uint8_t gpioCtrl[], uint8_t len) {
     }
   }
   return status;
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_setVenConfig
+ *
+ * Description      This will update value of Ven Config flag
+ *                  to eeprom
+ *
+ * Parameters       value - this value will be updated to eeprom flag.
+ *
+ * Returns          status of the write
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_setVenConfig(uint8_t enable_ven_cfg) {
+  phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
+  mEEPROM_info.buffer = &enable_ven_cfg;
+  mEEPROM_info.bufflen = sizeof(uint8_t);
+  mEEPROM_info.request_type = EEPROM_ENABLE_VEN_CFG;
+  mEEPROM_info.request_mode = SET_EEPROM_DATA;
+  return request_EEPROM(&mEEPROM_info);
 }

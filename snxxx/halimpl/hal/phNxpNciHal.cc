@@ -1638,20 +1638,19 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
     }
   }
 
-  status = phNxpNciHal_setAutonomousMode();
+  status = phNxpNciHal_enableUlpdetOrAutonomousMode();
   if (status != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("Set Autonomous enable: Failed");
+    NXPLOG_NCIHAL_E("Enable ULPDET or Autonomous mode failed ...");
     retry_core_init_cnt++;
     goto retry_core_init;
   }
 
   if (IS_CHIP_TYPE_EQ(pn557)) enable_ven_cfg = PN557_VEN_CFG_DEFAULT;
-
-  mEEPROM_info.buffer = &enable_ven_cfg;
-  mEEPROM_info.bufflen = sizeof(uint8_t);
-  mEEPROM_info.request_type = EEPROM_ENABLE_VEN_CFG;
-  mEEPROM_info.request_mode = SET_EEPROM_DATA;
-  request_EEPROM(&mEEPROM_info);
+  if (IS_CHIP_TYPE_GE(sn220u) && (phNxpNciHal_isULPDetDeviceOffSupported() ||
+                                  phNxpNciHal_isULPDetSupported())) {
+    enable_ven_cfg = 0x00;
+  }
+  phNxpNciHal_setVenConfig(enable_ven_cfg);
 
   if (IS_CHIP_TYPE_GE(sn100u)) {
     mEEPROM_info.buffer = &enable_ce_in_phone_off;
@@ -1660,8 +1659,6 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
     mEEPROM_info.request_mode = SET_EEPROM_DATA;
     request_EEPROM(&mEEPROM_info);
   }
-
-  phNxpNciHal_propConfULPDetMode(false);
 
   if (gPowerTrackerHandle.start != NULL) {
     gPowerTrackerHandle.start(gPowerTrackerHandle.pollDuration);
@@ -2257,6 +2254,8 @@ int phNxpNciHal_close(bool bShutdown) {
   unsigned long uiccListenMask = 0x00;
   unsigned long eseListenMask = 0x00;
   uint8_t retry = 0;
+  bool isULPDetRequiredForShutdown =
+      IS_CHIP_TYPE_GE(sn220u) && phNxpNciHal_isULPDetDeviceOffSupported();
 
   phNxpNciHal_deinitializeRegRfFwDnld();
   NfcHalAutoThreadMutex a(sHalFnLock);
@@ -2298,10 +2297,12 @@ int phNxpNciHal_close(bool bShutdown) {
       if (status != NFCSTATUS_SUCCESS) {
         NXPLOG_NCIHAL_E("CMD_CE_IN_PHONE_OFF: Failed");
       }
-      config_ext.autonomous_mode = 0x00;
-      status = phNxpNciHal_setAutonomousMode();
-      if (status != NFCSTATUS_SUCCESS) {
-        NXPLOG_NCIHAL_E("Autonomous mode Disable: Failed");
+      if (!isULPDetRequiredForShutdown) {
+        config_ext.autonomous_mode = 0x00;
+        status = phNxpNciHal_setAutonomousMode();
+        if (status != NFCSTATUS_SUCCESS) {
+          NXPLOG_NCIHAL_E("Autonomous mode Disable: Failed");
+        }
       }
     } else {
       status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_in_phone_off_pn557),
@@ -2377,7 +2378,9 @@ close_and_return:
   if (IS_CHIP_TYPE_L(sn220u) || bShutdown) {
     nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
   }
-  if (phNxpNciHal_getULPDetFlag() == false) {
+
+  if (phNxpNciHal_getULPDetFlag() == false &&
+      !(bShutdown && isULPDetRequiredForShutdown)) {
     do { /*This is NXP_EXTNS code for retry*/
       status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
 
@@ -2495,6 +2498,8 @@ int phNxpNciHal_configDiscShutdown(void) {
   /* Discover map - PROTOCOL_ISO_DEP, PROTOCOL_T3T and MIFARE Classic*/
   uint8_t cmd_disc_map[] = {0x21, 0x00, 0x0A, 0x03, 0x04, 0x03, 0x02,
                             0x03, 0x02, 0x01, 0x80, 0x01, 0x80};
+  bool isULPDetRequiredForShutdown =
+      IS_CHIP_TYPE_GE(sn220u) && phNxpNciHal_isULPDetDeviceOffSupported();
   CONCURRENCY_LOCK();
 
   status = phNxpNciHal_send_ext_cmd(sizeof(cmd_disable_disc), cmd_disable_disc);
@@ -2518,14 +2523,27 @@ int phNxpNciHal_configDiscShutdown(void) {
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("Discovery Map command: Failed");
     }
+
+    if (isULPDetRequiredForShutdown) {
+      // Enables ULPDet mode during the shutdown
+      uint8_t coreSetPowerToUlpdet[] = {0x2F, 0x00, 0x01, 0x03};
+      status = phNxpNciHal_send_ext_cmd(sizeof(coreSetPowerToUlpdet),
+                                        coreSetPowerToUlpdet);
+      if (status != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("Failed to set NFCC power state to ULPDET");
+      }
+    }
+
     status = phNxpNciHal_ext_send_sram_config_to_flash();
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("Updation of the SRAM contents failed");
     }
   }
-  status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_disc_nci), cmd_ce_disc_nci);
-  if (status != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("CMD_CE_DISC_NCI: Failed");
+  if (!isULPDetRequiredForShutdown) {
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_disc_nci), cmd_ce_disc_nci);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("CMD_CE_DISC_NCI: Failed");
+    }
   }
 
   CONCURRENCY_UNLOCK();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 NXP
+ * Copyright 2019-2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,10 @@
 #define SWITCH_OFF_MASK 0x02
 #define NCI_GET_CONFI_MIN_LEN 0x04
 #define NXP_MAX_RETRY_COUNT 0x03
+// Power state configurations
+#define STANDBY_STATE 0x01
+#define AUTONOMOUS_MODE 0x02
+#define AUTONOMOUS_ULPDET_MODE 0x03
 typedef struct {
   uint8_t autonomous_mode;
   uint8_t guard_timer_value;
@@ -152,3 +156,16 @@ NFCSTATUS phNxpNciHal_setExtendedFieldMode();
 ** Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS
 *******************************************************************************/
 NFCSTATUS phNxpNciHal_configGPIOControl(uint8_t gpioControl[], uint8_t len);
+
+/******************************************************************************
+ * Function         phNxpNciHal_setVenConfig
+ *
+ * Description      This will update value of Ven Config flag
+ *                  to eeprom
+ *
+ * Parameters       value - this value will be updated to eeprom flag.
+ *
+ * Returns          status of the write
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_setVenConfig(uint8_t enable_ven_cfg);
