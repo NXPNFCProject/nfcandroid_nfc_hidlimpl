@@ -1338,8 +1338,9 @@ static void phNxpNciHal_read_complete(void* pContext,
 
     /*Check the Omapi command response and store in dedicated buffer to solve
      * sync issue*/
-    if (IS_CHIP_TYPE_LE(sn100u) && pInfo->pBuff[0] == 0x4F &&
-        pInfo->pBuff[1] == 0x01 && pInfo->pBuff[2] == 0x01) {
+    if (IS_CHIP_TYPE_LE(sn100u) && pInfo->wLength > 2 &&
+        pInfo->pBuff[0] == 0x4F && pInfo->pBuff[1] == 0x01 &&
+        pInfo->pBuff[2] == 0x01) {
       nxpncihal_ctrl.p_rx_ese_data = pInfo->pBuff;
       nxpncihal_ctrl.rx_ese_data_len = pInfo->wLength;
       SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
