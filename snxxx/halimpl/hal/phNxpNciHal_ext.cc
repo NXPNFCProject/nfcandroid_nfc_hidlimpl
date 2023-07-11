@@ -99,6 +99,10 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
 static void RemoveNfcDepIntfFromInitResp(uint8_t* coreInitResp,
                                          uint16_t* coreInitRespLen);
 
+static NFCSTATUS phNxpNciHal_process_screen_state_cmd(uint16_t* cmd_len,
+                                                      uint8_t* p_cmd_data,
+                                                      uint16_t* rsp_len,
+                                                      uint8_t* p_rsp_data);
 void printNfcMwVersion() {
   uint32_t validation = (NXP_EN_SN100U << 13);
   validation |= (NXP_EN_SN110U << 14);
@@ -481,7 +485,7 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
              p_ntf[1] == NCI_OID_SYSTEM_TERMPERATURE_INFO_NTF &&
              p_ntf[2] == 0x06) {
     NXPLOG_NCIHAL_D(">  Temperature status ntf received");
-    phNxpTempMgr::GetInstance().ParseResponse(p_ntf, *p_len);
+    phNxpTempMgr::GetInstance().UpdateICTempStatus(p_ntf, *p_len);
   }
   return status;
 }
@@ -1029,6 +1033,11 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
       //            status = NFCSTATUS_FAILED;
       //            NXPLOG_NCIHAL_D("> Going - core init optimization - END");
     }
+  }
+  if (!phNxpTempMgr::GetInstance().IsICTempOk()) {
+    NXPLOG_NCIHAL_E("> IC Temp is NOK");
+    status = phNxpNciHal_process_screen_state_cmd(cmd_len, p_cmd_data, rsp_len,
+                                                  p_rsp_data);
   }
   /* CORE_SET_POWER_SUB_STATE */
   if (p_cmd_data[0] == 0x20 && p_cmd_data[1] == 0x09 &&
@@ -1653,4 +1662,48 @@ void RemoveNfcDepIntfFromInitResp(uint8_t* coreInitResp,
     /* Print updated CORE_INIT_RESP for debug purpose*/
     phNxpNciHal_print_packet("DEBUG", coreInitResp, *coreInitRespLen);
   }
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_process_screen_state_cmd
+ *
+ * Description      Forms a dummy response for cmds sent during screen
+ *                  state change,when IC temp is not normal.
+ *                  These Cmds are not forwarded to NFCC.
+ *
+ * Returns          Returns NFCSTATUS_FAILED for screen state change cmd
+ *                  or returns NFCSTATUS_SUCCESS.
+ *
+ ******************************************************************************/
+static NFCSTATUS phNxpNciHal_process_screen_state_cmd(uint16_t* cmd_len,
+                                                      uint8_t* p_cmd_data,
+                                                      uint16_t* rsp_len,
+                                                      uint8_t* p_rsp_data) {
+  NFCSTATUS status = NFCSTATUS_SUCCESS;
+  if (*cmd_len == 7 && p_cmd_data[0] == 0x20 && p_cmd_data[1] == 0x02 &&
+      p_cmd_data[2] == 0x04 && p_cmd_data[4] == 0x02) {
+    // CON_DISCOVERY_PARAM
+    phNxpNciHal_print_packet("SEND", p_cmd_data, 7);
+    *rsp_len = 5;
+    p_rsp_data[0] = 0x40;
+    p_rsp_data[1] = 0x02;
+    p_rsp_data[2] = 0x02;
+    p_rsp_data[3] = 0x00;
+    p_rsp_data[4] = 0x00;
+    NXPLOG_NCIHAL_E(
+        "> Sending fake response for CON_DISCOVERY_PARAM set config");
+    phNxpNciHal_print_packet("RECV", p_rsp_data, 5);
+    status = NFCSTATUS_FAILED;
+  } else if (*cmd_len == 4 && p_cmd_data[0] == 0x20 && p_cmd_data[1] == 0x09) {
+    phNxpNciHal_print_packet("SEND", p_cmd_data, 4);
+    *rsp_len = 4;
+    p_rsp_data[0] = 0x40;
+    p_rsp_data[1] = 0x09;
+    p_rsp_data[2] = 0x01;
+    p_rsp_data[3] = 0x00;
+    NXPLOG_NCIHAL_E("> Sending fake response for POWER_SUB_STATE cmd");
+    phNxpNciHal_print_packet("RECV", p_rsp_data, 4);
+    status = NFCSTATUS_FAILED;
+  }
+  return status;
 }

@@ -1212,7 +1212,9 @@ int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t* p_data,
 retry:
 
   data_len = nxpncihal_ctrl.cmd_len;
-  phNxpTempMgr::GetInstance().CheckAndWait();
+  if (!phNxpTempMgr::GetInstance().IsICTempOk())
+    phNxpTempMgr::GetInstance().Wait();
+
   status = phTmlNfc_Write(
       (uint8_t*)nxpncihal_ctrl.p_cmd_data, (uint16_t)nxpncihal_ctrl.cmd_len,
       (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_write_complete,

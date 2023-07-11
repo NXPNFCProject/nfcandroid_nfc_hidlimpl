@@ -33,31 +33,35 @@ static void tempNTf_timeout_cb(uint32_t TimerId, void* pContext) {
 
 phNxpTempMgr::phNxpTempMgr() {
   timeout_timer_id_ = PH_NFC_TIMER_ID_INVALID;
-  num_of_ntf_ = 0;
-  write_delay_ = 1000;   // 1 sec
-  timeout_ = 10 * 1000;  // 10 secs
+  is_ic_temp_ok_ = true;
+  total_delay_ms_ = 11 * 1000;  // 11 sec
 }
 
 phNxpTempMgr& phNxpTempMgr::GetInstance() {
-  static phNxpTempMgr _nxpTempmgr;
-  return _nxpTempmgr;
+  static phNxpTempMgr nxpTempmgr;
+  return nxpTempmgr;
 }
 
-void phNxpTempMgr::ParseResponse(uint8_t* p_ntf, uint16_t p_len) {
+void phNxpTempMgr::UpdateTempStatusLocked(bool temp_status) {
+  std::lock_guard<std::mutex> lock(ic_temp_mutex_);
+  is_ic_temp_ok_ = temp_status;
+}
+void phNxpTempMgr::UpdateICTempStatus(uint8_t* p_ntf, uint16_t p_len) {
   (void)p_len;
   NFCSTATUS status = NFCSTATUS_FAILED;
-
-  std::lock_guard<std::mutex> lock(ic_temp_mutex_);
-  bool is_ic_temp_ok = p_ntf[03] == 0x00 ? true : false;
-
-  NXPLOG_NCIHAL_D("phNxpTempMgr: IC temp state is %d", is_ic_temp_ok);
-  if (!is_ic_temp_ok) {
-    num_of_ntf_++;
+  bool temp_status = p_ntf[03] == 0x00 ? true : false;
+  UpdateTempStatusLocked(temp_status);
+  NXPLOG_NCIHAL_D("phNxpTempMgr: IC temp state is %d", IsICTempOk());
+  // Temperature status will be notified for only one module at a time.
+  // If temp NOK status was notified for eSE first, next temp status
+  // NTF (OK/NOK) will also be notified for the same module i.e. eSE in this
+  // case
+  if (!IsICTempOk()) {
     if (timeout_timer_id_ == PH_NFC_TIMER_ID_INVALID)
       timeout_timer_id_ = phOsalNfc_Timer_Create();
     if (timeout_timer_id_ != PH_NFC_TIMER_ID_INVALID) {
       /* Start timer */
-      status = phOsalNfc_Timer_Start(timeout_timer_id_, timeout_,
+      status = phOsalNfc_Timer_Start(timeout_timer_id_, total_delay_ms_,
                                      &tempNTf_timeout_cb, this);
       if (NFCSTATUS_SUCCESS != status) {
         NXPLOG_NCIHAL_D("tempNtf timer not started!!!");
@@ -66,8 +70,7 @@ void phNxpTempMgr::ParseResponse(uint8_t* p_ntf, uint16_t p_len) {
       NXPLOG_NCIHAL_E("tempNtf timer creation failed");
     }
   } else {
-    if (num_of_ntf_ > 0) num_of_ntf_--;
-    if (num_of_ntf_ == 0 && (timeout_timer_id_ != PH_NFC_TIMER_ID_INVALID)) {
+    if (timeout_timer_id_ != PH_NFC_TIMER_ID_INVALID) {
       /* Stop Timer */
       status = phOsalNfc_Timer_Stop(timeout_timer_id_);
       if (NFCSTATUS_SUCCESS != status) {
@@ -77,16 +80,19 @@ void phNxpTempMgr::ParseResponse(uint8_t* p_ntf, uint16_t p_len) {
   }
 }
 
-void phNxpTempMgr::CheckAndWait() {
-  if (num_of_ntf_ > 0) {
-    NXPLOG_NCIHAL_D("Wait for %d seconds", write_delay_ / 1000);
-    usleep(write_delay_ * 1000);
+void phNxpTempMgr::Wait() {
+  if (!IsICTempOk()) {
+    NXPLOG_NCIHAL_D("Wait for %d seconds", total_delay_ms_ / 1000);
+    uint16_t delay_per_try = 500;  // millisec
+    uint16_t counter = total_delay_ms_ / delay_per_try;
+    while (!IsICTempOk() && counter--) {
+      usleep(delay_per_try * 1000);  // 500 millisec
+    }
   }
 }
 void phNxpTempMgr::Reset(bool reset_timer) {
   NXPLOG_NCIHAL_D("phNxpTempMgr::Reset ");
-  std::lock_guard<std::mutex> lock(ic_temp_mutex_);
-  num_of_ntf_ = 0;
+  UpdateTempStatusLocked(true /*Temp OK*/);
   if (reset_timer) {
     timeout_timer_id_ = PH_NFC_TIMER_ID_INVALID;
   }
