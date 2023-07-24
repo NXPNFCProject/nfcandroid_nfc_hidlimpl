@@ -558,15 +558,6 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
       NXPLOG_NCIHAL_D("NxpNci> FW Version: %x.%x.%x", p_ntf[len - 2],
                       p_ntf[len - 1], p_ntf[len]);
     } else {
-      uint32_t i;
-      char print_buffer[*p_len * 3 + 1];
-
-      memset(print_buffer, 0, sizeof(print_buffer));
-      for (i = 0; i < *p_len; i++) {
-        snprintf(&print_buffer[i * 2], 3, "%02X", p_ntf[i]);
-      }
-      NXPLOG_NCIHAL_D("CORE_RESET_NTF received !");
-      NXPLOG_NCIR_E("len = %3d > %s", *p_len, print_buffer);
       phNxpNciHal_emergency_recovery(p_ntf[3]);
       status = NFCSTATUS_FAILED;
     } /* Parsing CORE_INIT_RSP*/
