@@ -1128,8 +1128,11 @@ int phNxpNciHal_write_internal(uint16_t data_len, const uint8_t* p_data) {
   nxpncihal_ctrl.cmd_len = data_len;
 #ifdef P2P_PRIO_LOGIC_HAL_IMP
   /* Specific logic to block RF disable when P2P priority logic is busy */
-  if (p_data[0] == 0x21 && p_data[1] == 0x06 && p_data[2] == 0x01 &&
-      EnableP2P_PrioLogic == true) {
+  if (data_len < NORMAL_MODE_HEADER_LEN) {
+    /* Avoid OOB Read */
+    android_errorWriteLog(0x534e4554, "270046229");
+  } else if (p_data[0] == 0x21 && p_data[1] == 0x06 && p_data[2] == 0x01 &&
+             EnableP2P_PrioLogic == true) {
     NXPLOG_NCIHAL_D("P2P priority logic busy: Disable it.");
     phNxpNciHal_clean_P2P_Prio();
   }
