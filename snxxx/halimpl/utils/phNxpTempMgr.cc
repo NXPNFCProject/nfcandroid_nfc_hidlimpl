@@ -23,6 +23,7 @@
 #include <phOsalNfc_Timer.h>
 
 #define PH_NFC_TIMER_ID_INVALID (0xFFFF)
+#define PH_NXP_TEMPMGR_TOTAL_DELAY (11)
 
 static void tempNTf_timeout_cb(uint32_t TimerId, void* pContext) {
   (void)TimerId;
@@ -34,7 +35,7 @@ static void tempNTf_timeout_cb(uint32_t TimerId, void* pContext) {
 phNxpTempMgr::phNxpTempMgr() {
   timeout_timer_id_ = PH_NFC_TIMER_ID_INVALID;
   is_ic_temp_ok_ = true;
-  total_delay_ms_ = 11 * 1000;  // 11 sec
+  total_delay_ms_ = PH_NXP_TEMPMGR_TOTAL_DELAY * 1000;  // 11 sec
 }
 
 phNxpTempMgr& phNxpTempMgr::GetInstance() {
@@ -84,8 +85,7 @@ void phNxpTempMgr::Wait() {
   if (!IsICTempOk()) {
     NXPLOG_NCIHAL_D("Wait for %d seconds", total_delay_ms_ / 1000);
     uint16_t delay_per_try = 500;  // millisec
-    uint16_t counter = total_delay_ms_ / delay_per_try;
-    while (!IsICTempOk() && counter--) {
+    while (!IsICTempOk()) {
       usleep(delay_per_try * 1000);  // 500 millisec
     }
   }
