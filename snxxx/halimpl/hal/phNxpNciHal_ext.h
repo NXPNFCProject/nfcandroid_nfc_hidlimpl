@@ -29,6 +29,12 @@
 #define NXP_NFC_PARAM_ID_SWP2 0xD4
 #define NXP_NFC_PARAM_ID_SWPUICC3 0xDC
 
+#define CORE_GENERIC_ERR_CURRENT_NTF 0xEA
+// PROTECTED_USER_AREA_AT_CRC_MISMATCH
+#define CORE_GENERIC_ERR_UA_CRC_NTF 0xF6
+// PROTECTED_MIR_USER_AREA_AT_CRC_MISMATCH
+#define CORE_GENERIC_ERR_UA_MIR_CRC_NTF 0xF7
+
 void printNfcMwVersion();
 void phNxpNciHal_ext_init(void);
 NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len);

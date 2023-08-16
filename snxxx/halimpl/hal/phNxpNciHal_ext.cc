@@ -407,7 +407,9 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
   }
 
   if (p_ntf[0] == 0x60 && p_ntf[1] == 0x07 && p_ntf[2] == 0x01) {
-    if (p_ntf[3] == 0xEA) {
+    if (p_ntf[3] == CORE_GENERIC_ERR_CURRENT_NTF ||
+        p_ntf[3] == CORE_GENERIC_ERR_UA_CRC_NTF ||
+        p_ntf[3] == CORE_GENERIC_ERR_UA_MIR_CRC_NTF) {
       gsIsFwRecoveryRequired = true;
       NXPLOG_NCIHAL_D("FW update required");
       status = NFCSTATUS_FAILED;
