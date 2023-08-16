@@ -63,6 +63,7 @@ extern phTmlNfc_Context_t* gpphTmlNfc_Context;
 extern bool nfc_debug_enabled;
 extern NFCSTATUS phNxpLog_EnableDisableLogLevel(uint8_t enable);
 extern phNxpNciClock_t phNxpNciClock;
+extern NfcHalThreadMutex sHalFnLock;
 
 /*******************************************************************************
  **
@@ -618,9 +619,12 @@ static string phNxpNciHal_parseBytesString(string in) {
 NFCSTATUS phNxpNciHal_resetEse(uint64_t resetType) {
   NFCSTATUS status = NFCSTATUS_FAILED;
 
-  if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
-    if (NFCSTATUS_SUCCESS != phNxpNciHal_MinOpen()) {
-      return NFCSTATUS_FAILED;
+  {
+    NfcHalAutoThreadMutex a(sHalFnLock);
+    if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
+      if (NFCSTATUS_SUCCESS != phNxpNciHal_MinOpen()) {
+        return NFCSTATUS_FAILED;
+      }
     }
   }
 

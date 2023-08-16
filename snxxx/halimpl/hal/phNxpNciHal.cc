@@ -68,7 +68,7 @@ static uint8_t read_failed_disable_nfc = false;
 static uint8_t fw_download_success = 0;
 static uint8_t config_access = false;
 static uint8_t config_success = true;
-static NfcHalThreadMutex sHalFnLock;
+NfcHalThreadMutex sHalFnLock;
 
 /* NCI HAL Control structure */
 phNxpNciHal_Control_t nxpncihal_ctrl;
@@ -687,7 +687,6 @@ int phNxpNciHal_MinOpen() {
   int dnld_retry_cnt = 0;
   NXPLOG_NCIHAL_D("phNxpNci_MinOpen(): enter");
 
-  NfcHalAutoThreadMutex a(sHalFnLock);
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_MIN_OPEN) {
     NXPLOG_NCIHAL_D("phNxpNciHal_MinOpen(): already open");
     return NFCSTATUS_SUCCESS;
@@ -935,6 +934,7 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
     return NFCSTATUS_FAILED;
   }
 #endif
+  NfcHalAutoThreadMutex a(sHalFnLock);
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_OPEN) {
     NXPLOG_NCIHAL_D("phNxpNciHal_open already open");
     phNxpNciHal_open_complete(wConfigStatus);
@@ -3639,6 +3639,7 @@ static NFCSTATUS phNxpNciHal_do_swp_session_reset(void) {
  ******************************************************************************/
 void phNxpNciHal_do_factory_reset(void) {
   NFCSTATUS status = NFCSTATUS_FAILED;
+  // After factory reset phone will turnoff so mutex not required here.
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
     status = phNxpNciHal_MinOpen();
     if (status != NFCSTATUS_SUCCESS) {
