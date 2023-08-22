@@ -845,29 +845,6 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
             "Going through extns - Adding Mifare in RF Discovery - END");
       }
     }
-  } else if ((*cmd_len >= 6) &&
-             (p_cmd_data[3] == 0x81 && p_cmd_data[4] == 0x01 &&
-              p_cmd_data[5] == 0x03)) {
-    if (IS_CHIP_TYPE_GE(sn220u)) return NFCSTATUS_SUCCESS;
-
-    NXPLOG_NCIHAL_D("> Going through the set host list");
-    if (IS_CHIP_TYPE_EQ(sn100u)) {
-      *cmd_len = 10;
-
-      p_cmd_data[2] = 0x07;
-
-      p_cmd_data[6] = 0x02;
-      p_cmd_data[7] = 0x80;
-      p_cmd_data[8] = 0x81;
-      p_cmd_data[9] = 0xC0;
-    } else {
-      *cmd_len = 8;
-
-      p_cmd_data[2] = 0x05;
-      p_cmd_data[6] = 0x02;
-      p_cmd_data[7] = 0xC0;
-    }
-    status = NFCSTATUS_SUCCESS;
   } else if (icode_detected) {
     if (IS_CHIP_TYPE_L(sn100u) && IS_CHIP_TYPE_NE(pn557) &&
         (p_cmd_data[3] & 0x40) == 0x40 &&
