@@ -583,17 +583,19 @@ NFCSTATUS phNxpNciHal_setSrdtimeout() {
  *
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_setExtendedFieldMode() {
-  const uint8_t enable_val = 0x01;
-  const uint8_t disable_val = 0x00;
-  uint8_t extended_field_mode = disable_val;
+  const uint8_t enableWithOutCMAEvents = 0x01;
+  const uint8_t enableWithCMAEvents = 0x03;
+  const uint8_t disableEvents = 0x00;
+  uint8_t extended_field_mode = disableEvents;
   phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
   NFCSTATUS status = NFCSTATUS_FEATURE_NOT_SUPPORTED;
 
   if (IS_CHIP_TYPE_GE(sn100u) &&
       GetNxpNumValue(NAME_NXP_EXTENDED_FIELD_DETECT_MODE, &extended_field_mode,
                      sizeof(extended_field_mode))) {
-    if (extended_field_mode == enable_val ||
-        extended_field_mode == disable_val) {
+    if (extended_field_mode == enableWithOutCMAEvents ||
+        extended_field_mode == enableWithCMAEvents ||
+        extended_field_mode == disableEvents) {
       mEEPROM_info.buffer = &extended_field_mode;
       mEEPROM_info.bufflen = sizeof(extended_field_mode);
       mEEPROM_info.request_type = EEPROM_EXT_FIELD_DETECT_MODE;
