@@ -394,16 +394,6 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
     NXPLOG_NCIHAL_D("> Polling Loop Re-Started");
     icode_detected = 0;
     if (IS_CHIP_TYPE_L(sn100u)) icode_send_eof = 0;
-  } else if (*p_len == 4 && p_ntf[0] == 0x40 && p_ntf[1] == 0x02 &&
-             p_ntf[2] == 0x01 && p_ntf[3] == 0x06) {
-    /*NXPLOG_NCIHAL_D("> Deinit workaround for LLCP set_config 0x%x 0x%x 0x%x",
-                    p_ntf[21], p_ntf[22], p_ntf[23]);*/
-    p_ntf[0] = 0x40;
-    p_ntf[1] = 0x02;
-    p_ntf[2] = 0x02;
-    p_ntf[3] = 0x00;
-    p_ntf[4] = 0x00;
-    *p_len = 5;
   }
 
   if (p_ntf[0] == 0x60 && p_ntf[1] == 0x07 && p_ntf[2] == 0x01) {
@@ -432,49 +422,6 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
       ee_disc_done = 0x00;
     }
     NXPLOG_NCIHAL_D("Going through workaround - NFCEE_DISCOVER_RSP - END");
-  } else if (*p_len == 4 && p_ntf[0] == 0x4F && p_ntf[1] == 0x11 &&
-             p_ntf[2] == 0x01) {
-    if (p_ntf[3] == 0x00) {
-      NXPLOG_NCIHAL_D(
-          ">  Workaround for ISO-DEP Presence Check, ignore response and wait "
-          "for notification");
-      p_ntf[0] = 0x60;
-      p_ntf[1] = 0x06;
-      p_ntf[2] = 0x03;
-      p_ntf[3] = 0x01;
-      p_ntf[4] = 0x00;
-      p_ntf[5] = 0x01;
-      *p_len = 6;
-    } else {
-      NXPLOG_NCIHAL_D(
-          ">  Workaround for ISO-DEP Presence Check, presence check return "
-          "failed");
-      p_ntf[0] = 0x60;
-      p_ntf[1] = 0x08;
-      p_ntf[2] = 0x02;
-      p_ntf[3] = 0xB2;
-      p_ntf[4] = 0x00;
-      *p_len = 5;
-    }
-  } else if (*p_len == 4 && p_ntf[0] == 0x6F && p_ntf[1] == 0x11 &&
-             p_ntf[2] == 0x01) {
-    if (p_ntf[3] == 0x01) {
-      NXPLOG_NCIHAL_D(
-          ">  Workaround for ISO-DEP Presence Check - Card still in field");
-      p_ntf[0] = 0x00;
-      p_ntf[1] = 0x00;
-      p_ntf[2] = 0x01;
-      p_ntf[3] = 0x7E;
-    } else {
-      NXPLOG_NCIHAL_D(
-          ">  Workaround for ISO-DEP Presence Check - Card not in field");
-      p_ntf[0] = 0x60;
-      p_ntf[1] = 0x08;
-      p_ntf[2] = 0x02;
-      p_ntf[3] = 0xB2;
-      p_ntf[4] = 0x00;
-      *p_len = 5;
-    }
   } else if (*p_len >= 2 && p_ntf[0] == 0x6F && p_ntf[1] == 0x04) {
     NXPLOG_NCIHAL_D(">  SMB Debug notification received");
     PhNxpEventLogger::GetInstance().Log(p_ntf, *p_len,
