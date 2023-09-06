@@ -196,12 +196,18 @@ typedef struct phNxpNciMwEepromArea {
 
 enum { SE_TYPE_ESE, SE_TYPE_EUICC, SE_TYPE_UICC, SE_TYPE_UICC2, NUM_SE_TYPES };
 
+typedef enum {
+  ANTENNA_CHECK_STATUS,
+  ANTENNA_SET_VDDPA
+} phNxpNci_Antenaa_Actions_type_t;
+
 typedef void (*fpVerInfoStoreInEeprom_t)();
 typedef int (*fpVerifyCscEfsTest_t)(char* nfcc_csc, char* rffilepath,
                                     char* fwfilepath);
 typedef int (*fpRegRfFwDndl_t)(uint8_t* fw_update_req, uint8_t* rf_update_req,
                                uint8_t skipEEPROMRead);
 typedef int (*fpPropConfCover_t)(bool attached, int type);
+typedef int (*fpDoAntennaActivity_t)(phNxpNci_Antenaa_Actions_type_t action);
 void phNxpNciHal_initializeRegRfFwDnld();
 void phNxpNciHal_deinitializeRegRfFwDnld();
 /*set config management*/
@@ -252,7 +258,8 @@ typedef enum {
   EEPROM_EXT_FIELD_DETECT_MODE,
   EEPROM_CONF_GPIO_CTRL,
   EEPROM_SET_GPIO_VALUE,
-  EEPROM_POWER_TRACKER_ENABLE
+  EEPROM_POWER_TRACKER_ENABLE,
+  EEPROM_VDDPA,
 } phNxpNci_EEPROM_request_type_t;
 
 typedef struct phNxpNci_EEPROM_info {
@@ -322,6 +329,7 @@ NFCSTATUS phNxpNciHal_china_tianjin_rf_setting(void);
 NFCSTATUS phNxpNciHal_CheckValidFwVersion(void);
 
 NFCSTATUS phNxpNciHal_send_nfcee_pwr_cntl_cmd(uint8_t type);
+NFCSTATUS phNxpNciHal_nfccClockCfgApply(void);
 /*******************************************************************************
 **
 ** Function         phNxpNciHal_configFeatureList

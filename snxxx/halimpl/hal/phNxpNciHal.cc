@@ -132,6 +132,7 @@ void* RfFwRegionDnld_handle = NULL;
 fpVerInfoStoreInEeprom_t fpVerInfoStoreInEeprom = NULL;
 fpRegRfFwDndl_t fpRegRfFwDndl = NULL;
 fpPropConfCover_t fpPropConfCover = NULL;
+fpDoAntennaActivity_t fpDoAntennaActivity = NULL;
 void* phNxpNciHal_client_thread(void* arg);
 /**************** local methods used in this file only ************************/
 static void phNxpNciHal_open_complete(NFCSTATUS status);
@@ -146,7 +147,6 @@ static void phNxpNciHal_power_cycle_complete(NFCSTATUS status);
 static void phNxpNciHal_kill_client_thread(
     phNxpNciHal_Control_t* p_nxpncihal_ctrl);
 static void phNxpNciHal_nfccClockCfgRead(void);
-static NFCSTATUS phNxpNciHal_nfccClockCfgApply(void);
 static void phNxpNciHal_hci_network_reset(void);
 static NFCSTATUS phNxpNciHal_do_swp_session_reset(void);
 static void phNxpNciHal_print_res_status(uint8_t* p_rx_data, uint16_t* p_len);
@@ -899,6 +899,10 @@ int phNxpNciHal_MinOpen() {
     }
 
   } while (status != NFCSTATUS_SUCCESS || gsIsFwRecoveryRequired);
+
+  if (fpDoAntennaActivity != NULL && (gsIsFirstHalMinOpen || fw_download_success)) {
+    fpDoAntennaActivity(ANTENNA_CHECK_STATUS);
+  }
   /* Call open complete */
   phNxpNciHal_MinOpen_complete(wConfigStatus);
   NXPLOG_NCIHAL_D("phNxpNciHal_MinOpen(): exit");
@@ -1893,7 +1897,9 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
       goto retry_core_init;
     }
   }
-
+  if (fpDoAntennaActivity != NULL) {
+    fpDoAntennaActivity(ANTENNA_SET_VDDPA);
+  }
   config_access = true;
 
   retlen = 0;
@@ -3991,6 +3997,11 @@ void phNxpNciHal_initializeRegRfFwDnld() {
   if ((fpPropConfCover = (fpPropConfCover_t)dlsym(RfFwRegionDnld_handle,
                                                   "prop_conf_cover")) == NULL) {
     NXPLOG_NCIHAL_D("Error while linking (prop_conf_cover) !!");
+    return;
+  }
+  if ((fpDoAntennaActivity = (fpDoAntennaActivity_t)dlsym(
+           RfFwRegionDnld_handle, "DoAntennaActivity")) == NULL) {
+    NXPLOG_NCIHAL_E("Error while linking (DoAntennaActivity) !!");
     return;
   }
 }
