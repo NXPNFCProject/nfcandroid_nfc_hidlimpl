@@ -150,6 +150,7 @@ systemProperty gsystemProperty = {
     {"nfc.fw.dfl_areacode", ""},
     {"nfc.cover.cover_id", ""},
     {"nfc.cover.state", ""},
+    {"ro.factory.factory_binary", ""},
 };
 const char default_nxp_config_path[] = "/vendor/etc/libnfc-nxp.conf";
 std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",

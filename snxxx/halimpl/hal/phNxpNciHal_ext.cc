@@ -1249,6 +1249,14 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
       addr[0] = 0xA0;
       addr[1] = 0x6D;
       break;
+    case EEPROM_VDDPA:
+      mEEPROM_info->update_mode = BYTEWISE;
+      memIndex = 0x14;
+      fieldLen = 0x30;
+      len = fieldLen + 4;
+      addr[0] = 0xA0;
+      addr[1] = 0x0E;
+      break;
     default:
       ALOGE("No valid request information found");
       break;
