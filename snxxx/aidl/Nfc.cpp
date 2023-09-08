@@ -118,7 +118,7 @@ void OnDeath(void* cookie) {
   NfcConfig config;
   NfcExtns nfcExtns;
   nfcExtns.getConfig(config);
-  *_aidl_return = config;
+  *_aidl_return = std::move(config);
   return ndk::ScopedAStatus::ok();
 }
 
