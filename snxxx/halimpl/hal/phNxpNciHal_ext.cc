@@ -29,8 +29,8 @@
 #include "phNxpEventLogger.h"
 #include "phNxpNciHal.h"
 #include "phNxpNciHal_IoctlOperations.h"
+#include "phNxpNciHal_LxDebug.h"
 #include "phNxpNciHal_PowerTrackerIface.h"
-#include "phNxpNciHal_nciParser.h"
 
 #define NXP_EN_SN110U 1
 #define NXP_EN_SN100U 1
@@ -73,7 +73,6 @@ static uint8_t setEEModeDone = 0x00;
 extern uint32_t wFwVerRsp;
 /* External global variable to get FW version from FW file*/
 extern uint16_t wFwVer;
-extern bool_t gParserCreated;
 /* local buffer to store CORE_INIT response */
 static uint32_t bCoreInitRsp[40];
 static uint32_t iCoreInitRspLen;
@@ -161,10 +160,6 @@ NFCSTATUS phNxpNciHal_ext_send_sram_config_to_flash() {
 NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
 
-  /*parse and decode LxDebug Notifications*/
-  if (p_ntf[0] == 0x6F && (p_ntf[1] == 0x35 || p_ntf[1] == 0x36)) {
-    if (gParserCreated) phNxpNciHal_parsePacket(p_ntf, *p_len);
-  }
 #if (NXP_SRD == TRUE)
   if (*p_len > 29 && p_ntf[0] == 0x01 && p_ntf[1] == 0x00 && p_ntf[5] == 0x81 &&
       p_ntf[23] == 0x82 && p_ntf[26] == 0xA0 && p_ntf[27] == 0xFE) {

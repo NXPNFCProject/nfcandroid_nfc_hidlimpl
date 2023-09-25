@@ -35,11 +35,10 @@
 #include "NfccTransportFactory.h"
 #include "NxpNfcThreadMutex.h"
 #include "phNxpNciHal_IoctlOperations.h"
+#include "phNxpNciHal_LxDebug.h"
 #include "phNxpNciHal_PowerTrackerIface.h"
 #include "phNxpNciHal_ULPDet.h"
 #include "phNxpNciHal_extOperations.h"
-#include "phNxpNciHal_nciParser.h"
-
 
 using android::base::StringPrintf;
 using android::base::WriteStringToFile;
@@ -91,7 +90,6 @@ extern void phNxpNciHal_prop_conf_rssi();
 
 nfc_stack_callback_t* p_nfc_stack_cback_backup;
 phNxpNci_getCfg_info_t* mGetCfg_info = NULL;
-bool_t gParserCreated = FALSE;
 /* global variable to get FW version from NCI response or dl get version
  * response*/
 uint32_t wFwVerRsp;
@@ -153,7 +151,7 @@ static void phNxpNciHal_print_res_status(uint8_t* p_rx_data, uint16_t* p_len);
 static void phNxpNciHal_enable_i2c_fragmentation();
 static NFCSTATUS phNxpNciHal_get_mw_eeprom(void);
 static NFCSTATUS phNxpNciHal_set_mw_eeprom(void);
-static void phNxpNciHal_configNciParser(bool enable);
+static void phNxpNciHal_configureLxDebugMode();
 static void phNxpNciHal_gpio_restore(phNxpNciHal_GpioInfoState state);
 static void phNxpNciHal_initialize_debug_enabled_flag();
 static void phNxpNciHal_initialize_mifare_flag();
@@ -2020,17 +2018,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   if (isfound > 0 && gpioCtrlLen != 0) {
     phNxpNciHal_configGPIOControl(gpioCtrl, gpioCtrlLen);
   }
-
-  isfound = GetNxpNumValue(NAME_NXP_NCI_PARSER_LIBRARY, &num, sizeof(num));
-  if (isfound > 0 && num == 0x01) {
-    phNxpNciHal_configNciParser(true);
-    NXPLOG_NCIHAL_D("NCI Parser is enabled");
-  } else if (isfound > 0 && num == 0x00) {
-    NXPLOG_NCIHAL_D("Disabling NCI Parser...");
-    phNxpNciHal_configNciParser(false);
-  } else {
-    NXPLOG_NCIHAL_D("NCI Parser is disabled");
-  }
+  phNxpNciHal_configureLxDebugMode();
 
   if (IS_CHIP_TYPE_EQ(pn557)) {
     if (GetNxpNumValue(NAME_NXP_PROP_CE_ACTION_NTF, (void*)&retlen,
@@ -2401,10 +2389,6 @@ close_and_return:
 
   sem_destroy(&nxpncihal_ctrl.syncSpiNfc);
 
-  if (gParserCreated) {
-    phNxpNciHal_deinitParser();
-    gParserCreated = FALSE;
-  }
   if (NULL != gpphTmlNfc_Context->pDevHandle) {
     phNxpNciHal_close_complete(NFCSTATUS_SUCCESS);
     /* Abort any pending read and write */
@@ -3880,7 +3864,7 @@ static void phNxpNciHal_UpdateFwStatus(HalNfcFwUpdateStatus fwStatus) {
 
 /*******************************************************************************
 **
-** Function         phNxpNciHal_configNciParser(bool enable)
+** Function         phNxpNciHal_configureLxDebugMode
 **
 ** Description      Helper function to configure LxDebug modes
 **
@@ -3888,7 +3872,7 @@ static void phNxpNciHal_UpdateFwStatus(HalNfcFwUpdateStatus fwStatus) {
 **
 ** Returns          void
 *******************************************************************************/
-void phNxpNciHal_configNciParser(bool enable) {
+void phNxpNciHal_configureLxDebugMode() {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   unsigned long lx_debug_cfg = 0;
   uint8_t isfound = 0;
@@ -3898,14 +3882,11 @@ void phNxpNciHal_configNciParser(bool enable) {
   isfound = GetNxpNumValue(NAME_NXP_CORE_PROP_SYSTEM_DEBUG, &lx_debug_cfg,
                            sizeof(lx_debug_cfg));
 
-  if (isfound > 0 && enable == true) {
+  if (isfound) {
     if (lx_debug_cfg & LX_DEBUG_CFG_MASK_RFU) {
       NXPLOG_NCIHAL_E(
           "One or more RFU bits are enabled.\nMasking the RFU bits");
       lx_debug_cfg = lx_debug_cfg & ~LX_DEBUG_CFG_MASK_RFU;
-    }
-    if (lx_debug_cfg == LX_DEBUG_CFG_DISABLE) {
-      NXPLOG_NCIHAL_D("Disable LxDebug");
     }
     if (lx_debug_cfg & LX_DEBUG_CFG_ENABLE_L1_EVENT) {
       NXPLOG_NCIHAL_D("Enable L1 RF NTF debugs");
@@ -3932,33 +3913,13 @@ void phNxpNciHal_configNciParser(bool enable) {
     cmd_lxdebug[7] = (uint8_t)(lx_debug_cfg & LX_DEBUG_CFG_MASK);
     cmd_lxdebug[8] = (uint8_t)((lx_debug_cfg & LX_DEBUG_CFG_MASK) >> 8);
   }
+  if (lx_debug_cfg == LX_DEBUG_CFG_DISABLE) {
+    NXPLOG_NCIHAL_D("Disable LxDebug");
+  }
   status = phNxpNciHal_send_ext_cmd(
       sizeof(cmd_lxdebug) / sizeof(cmd_lxdebug[0]), cmd_lxdebug);
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("Set lxDebug config failed");
-  }
-  if (enable ==
-      false) { /*We are here to disable the LX_DEBUG_CFG and parser library*/
-    return;
-  }
-  /* try initializing parser library*/
-  NXPLOG_NCIHAL_D("Try Init Parser gParserCreated:%d", gParserCreated);
-
-  if (!gParserCreated) {
-    gParserCreated = phNxpNciHal_initParser();
-  } else {
-    NXPLOG_NCIHAL_D("Parser Already Initialized");
-  }
-
-  if (gParserCreated) {
-    NXPLOG_NCIHAL_D("Parser Initialized Successfully");
-    if (isfound) {
-      NXPLOG_NCIHAL_D("Setting lxdebug levels in library");
-      phNxpNciHal_parsePacket(cmd_lxdebug,
-                              sizeof(cmd_lxdebug) / sizeof(cmd_lxdebug[0]));
-    }
-  } else {
-    NXPLOG_NCIHAL_E("Parser Library Not Available");
   }
 }
 
