@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2022 NXP
+ * Copyright 2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,11 @@
  */
 
 /*
- * phNxpNciHal_nciParser.h
+ * phNxpNciHal_LxDebug.h
  */
 
-#ifndef _PHNXPNCIHAL_NCIPARSER_H_
-#define _PHNXPNCIHAL_NCIPARSER_H_
-
-#define NXP_NCI_PARSER_PATH "/vendor/lib64/nxp_nci_parser.so"
+#ifndef _PHNXPNCIHAL_LXDEBUG_H_
+#define _PHNXPNCIHAL_LXDEBUG_H_
 
 /*******************Lx_DEBUG_CFG*******************/
 #define LX_DEBUG_CFG_DISABLE 0x0000
@@ -35,23 +33,4 @@
 #define LX_DEBUG_CFG_MASK_RFU 0xDFC0
 #define LX_DEBUG_CFG_MASK 0x20FF
 
-typedef void* (*tHAL_API_NATIVE_CREATE_PARSER)();
-typedef void (*tHAL_API_NATIVE_DESTROY_PARSER)(void*);
-typedef void (*tHAL_API_NATIVE_INIT_PARSER)(void*);
-typedef void (*tHAL_API_NATIVE_DEINIT_PARSER)(void*);
-typedef void (*tHAL_API_NATIVE_PARSE_PACKET)(void*, unsigned char*,
-                                             unsigned short);
-
-typedef struct {
-  tHAL_API_NATIVE_CREATE_PARSER createParser;
-  tHAL_API_NATIVE_DESTROY_PARSER destroyParser;
-  tHAL_API_NATIVE_INIT_PARSER initParser;
-  tHAL_API_NATIVE_DEINIT_PARSER deinitParser;
-  tHAL_API_NATIVE_PARSE_PACKET parsePacket;
-} tNCI_PARSER_FUNCTIONS;
-
-unsigned char phNxpNciHal_initParser();
-void phNxpNciHal_parsePacket(unsigned char*, unsigned short);
-void phNxpNciHal_deinitParser();
-
-#endif /* _PHNXPNCIHAL_NCIPARSER_H_ */
+#endif /* _PHNXPNCIHAL_LXDEBUG_H_ */
