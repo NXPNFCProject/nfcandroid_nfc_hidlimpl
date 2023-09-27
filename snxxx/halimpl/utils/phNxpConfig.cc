@@ -741,8 +741,7 @@ void CNfcConfig::dump() {
 bool CNfcConfig::isAllowed(const char* name) {
   string token(name);
   bool stat = false;
-  if ((token.find("P2P_LISTEN_TECH_MASK") != std::string::npos) ||
-      (token.find("HOST_LISTEN_TECH_MASK") != std::string::npos) ||
+  if ((token.find("HOST_LISTEN_TECH_MASK") != std::string::npos) ||
       (token.find("UICC_LISTEN_TECH_MASK") != std::string::npos) ||
       (token.find("NXP_ESE_LISTEN_TECH_MASK") != std::string::npos) ||
       (token.find("POLLING_TECH_MASK") != std::string::npos) ||
