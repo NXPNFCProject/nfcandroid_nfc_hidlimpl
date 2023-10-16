@@ -1128,17 +1128,6 @@ int phNxpNciHal_write_internal(uint16_t data_len, const uint8_t* p_data) {
   /* Create local copy of cmd_data */
   memcpy(nxpncihal_ctrl.p_cmd_data, p_data, data_len);
   nxpncihal_ctrl.cmd_len = data_len;
-#ifdef P2P_PRIO_LOGIC_HAL_IMP
-  /* Specific logic to block RF disable when P2P priority logic is busy */
-  if (data_len < NORMAL_MODE_HEADER_LEN) {
-    /* Avoid OOB Read */
-    android_errorWriteLog(0x534e4554, "270046229");
-  } else if (p_data[0] == 0x21 && p_data[1] == 0x06 && p_data[2] == 0x01 &&
-             EnableP2P_PrioLogic == true) {
-    NXPLOG_NCIHAL_D("P2P priority logic busy: Disable it.");
-    phNxpNciHal_clean_P2P_Prio();
-  }
-#endif
 
   /* Check for NXP ext before sending write */
   status =
@@ -1489,9 +1478,6 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   uint8_t isfound = 0;
   uint8_t fw_dwnld_flag = false;
   uint8_t setConfigAlways = false;
-
-  uint8_t p2p_listen_mode_routing_cmd[] = {0x21, 0x01, 0x07, 0x00, 0x01,
-                                           0x01, 0x03, 0x00, 0x01, 0x05};
 
   uint8_t swp_full_pwr_mode_on_cmd[] = {0x20, 0x02, 0x05, 0x01,
                                         0xA0, 0xF1, 0x01, 0x01};
@@ -1972,19 +1958,6 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
 
   retlen = 0;
   config_access = false;
-  // if recovery mode and length of last command is 0 then only reset the P2P
-  // listen mode routing.
-  if (core_init_rsp_params_len >= 36 && (*p_core_init_rsp_params > 0) &&
-      (*p_core_init_rsp_params < 4) && p_core_init_rsp_params[35] == 0) {
-    /* P2P listen mode routing */
-    status = phNxpNciHal_send_ext_cmd(sizeof(p2p_listen_mode_routing_cmd),
-                                      p2p_listen_mode_routing_cmd);
-    if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("P2P listen mode routing failed");
-      retry_core_init_cnt++;
-      goto retry_core_init;
-    }
-  }
 
   retlen = 0;
 

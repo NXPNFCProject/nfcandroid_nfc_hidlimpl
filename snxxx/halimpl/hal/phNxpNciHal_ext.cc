@@ -50,8 +50,6 @@
 #define NCI_STATUS_OK 0x00
 #define NCI_MODE_HEADER_LEN 3
 
-#undef P2P_PRIO_LOGIC_HAL_IMP
-
 /******************* Global variables *****************************************/
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 extern phNxpNciProfile_Control_t nxpprofile_ctrl;
@@ -64,7 +62,6 @@ extern bool nfc_debug_enabled;
 uint8_t icode_detected = 0x00;
 uint8_t icode_send_eof = 0x00;
 static uint8_t ee_disc_done = 0x00;
-uint8_t EnableP2P_PrioLogic = false;
 extern bool bEnableMfcExtns;
 extern bool bEnableMfcReader;
 /* NFCEE Set mode */
@@ -127,7 +124,6 @@ void phNxpNciHal_ext_init(void) {
     icode_send_eof = 0x00;
   }
   setEEModeDone = 0x00;
-  EnableP2P_PrioLogic = false;
 }
 
 /*******************************************************************************
@@ -198,27 +194,6 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
     p_ntf[5] = 0x03;
     NXPLOG_NCIHAL_D("FelicaReaderMode:Activity 1.1");
   }
-
-#ifdef P2P_PRIO_LOGIC_HAL_IMP
-  if (p_ntf[0] == 0x61 && p_ntf[1] == 0x05 && p_ntf[4] == 0x02 &&
-      p_ntf[5] == 0x04 && nxpprofile_ctrl.profile_type == NFC_FORUM_PROFILE) {
-    EnableP2P_PrioLogic = true;
-  }
-
-  NXPLOG_NCIHAL_D("Is EnableP2P_PrioLogic: 0x0%X", EnableP2P_PrioLogic);
-  if (phNxpDta_IsEnable() == false) {
-    if ((icode_detected != 1) && (EnableP2P_PrioLogic == true)) {
-      if (phNxpNciHal_NfcDep_comapre_ntf(p_ntf, *p_len) == NFCSTATUS_FAILED) {
-        status = phNxpNciHal_NfcDep_rsp_ext(p_ntf, p_len);
-        if (status != NFCSTATUS_INVALID_PARAMETER) {
-          return status;
-        }
-      }
-    }
-  }
-#endif
-
-  status = NFCSTATUS_SUCCESS;
 
   if (bEnableMfcExtns && p_ntf[0] == 0) {
     if (*p_len < NCI_HEADER_SIZE) {
