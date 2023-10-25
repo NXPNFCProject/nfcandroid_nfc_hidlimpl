@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2019, 2022 NXP
+ * Copyright 2010-2019, 2022-2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ const char* NXPLOG_ITEM_NCIX = "NxpNciX";
 const char* NXPLOG_ITEM_NCIR = "NxpNciR";
 const char* NXPLOG_ITEM_FWDNLD = "NxpFwDnld";
 const char* NXPLOG_ITEM_TML = "NxpTml";
+const char* NXPLOG_ITEM_ONEBIN = "NxpOneBinary";
 
 #ifdef NXP_HCI_REQ
 const char* NXPLOG_ITEM_HCPX = "NxpHcpX";
