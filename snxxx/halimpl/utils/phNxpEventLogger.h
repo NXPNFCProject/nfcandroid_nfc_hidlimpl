@@ -19,6 +19,7 @@
 #include <fstream>
 
 #define ESE_CONNECTIVITY_PACKET 0x96
+#define EUICC_CONNECTIVITY_PACKET 0xAB
 #define ESE_DPD_EVENT 0x70
 
 enum class LogEventType { kLogSMBEvent = 0, kLogDPDEvent };
