@@ -397,7 +397,9 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
     PhNxpEventLogger::GetInstance().Log(p_ntf, *p_len,
                                         LogEventType::kLogSMBEvent);
   } else if (*p_len >= 5 && p_ntf[0] == 0x01 &&
-             p_ntf[3] == ESE_CONNECTIVITY_PACKET && p_ntf[4] == ESE_DPD_EVENT) {
+             (p_ntf[3] == ESE_CONNECTIVITY_PACKET ||
+              p_ntf[3] == EUICC_CONNECTIVITY_PACKET) &&
+             p_ntf[4] == ESE_DPD_EVENT) {
     NXPLOG_NCIHAL_D(">  DPD monitor event received");
     PhNxpEventLogger::GetInstance().Log(p_ntf, *p_len,
                                         LogEventType::kLogDPDEvent);
