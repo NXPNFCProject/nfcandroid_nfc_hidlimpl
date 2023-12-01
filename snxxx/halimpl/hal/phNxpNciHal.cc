@@ -1634,6 +1634,9 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   }
 
   if (IS_CHIP_TYPE_EQ(pn557)) enable_ven_cfg = PN557_VEN_CFG_DEFAULT;
+  if (IS_CHIP_TYPE_GE(sn220u) && phNxpNciHal_isULPDetSupported()) {
+    enable_ven_cfg = 0x00;
+  }
 
   mEEPROM_info.buffer = &enable_ven_cfg;
   mEEPROM_info.bufflen = sizeof(uint8_t);
