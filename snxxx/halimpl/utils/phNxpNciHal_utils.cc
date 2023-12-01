@@ -511,7 +511,7 @@ void phNxpNciHal_emergency_recovery(uint8_t status) {
       abort();
     }
     case CORE_RESET_TRIGGER_TYPE_POWERED_ON: {
-      if (nxpncihal_ctrl.hal_open_status == true &&
+      if (nxpncihal_ctrl.hal_open_status != HAL_CLOSED &&
         nxpncihal_ctrl.power_reset_triggered == false) {
         phNxpNciHal_decodeGpioStatus();
         NXPLOG_NCIHAL_E("abort()");
