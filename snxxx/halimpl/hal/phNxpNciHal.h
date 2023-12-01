@@ -95,6 +95,13 @@ typedef enum {
 } phNxpNci_HalStatus;
 
 typedef enum {
+  HAL_CLOSED, /* Either hal_close() done or hal_open() is on going */
+  HAL_OPENED, /* hal_open() is done */
+  HAL_OPEN_CORE_INITIALIZING /* core_initialized() ongoing. will be set back to
+                                HAL_OPENED once done. */
+} phNxpNci_HalOpenStatus;
+
+typedef enum {
   HAL_NFC_FW_UPDATE_INVALID = 0x00,
   HAL_NFC_FW_UPDATE_START,
   HAL_NFC_FW_UPDATE_SCUCCESS,
@@ -148,7 +155,7 @@ typedef struct phNxpNciHal_Control {
   phNxpNciHal_control_granted_callback_t* p_control_granted_cback;
 
   /* HAL open status */
-  bool_t hal_open_status;
+  phNxpNci_HalOpenStatus hal_open_status;
 
   /* HAL extensions */
   uint8_t hal_ext_enabled;

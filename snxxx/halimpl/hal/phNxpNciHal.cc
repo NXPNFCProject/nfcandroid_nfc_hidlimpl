@@ -1076,7 +1076,7 @@ static void phNxpNciHal_open_complete(NFCSTATUS status) {
 
   if (status == NFCSTATUS_SUCCESS) {
     msg.eMsgType = NCI_HAL_OPEN_CPLT_MSG;
-    nxpncihal_ctrl.hal_open_status = true;
+    nxpncihal_ctrl.hal_open_status = HAL_OPENED;
     nxpncihal_ctrl.halStatus = HAL_STATUS_OPEN;
   } else {
     msg.eMsgType = NCI_HAL_ERROR_MSG;
@@ -1258,7 +1258,7 @@ retry:
         NXPLOG_NCIHAL_D("NFCC Reset - FAILED\n");
       }
       if (nxpncihal_ctrl.p_nfc_stack_data_cback != NULL &&
-          nxpncihal_ctrl.hal_open_status == true) {
+          nxpncihal_ctrl.hal_open_status != HAL_CLOSED) {
         if (nxpncihal_ctrl.p_rx_data != NULL) {
           NXPLOG_NCIHAL_D(
               "Send the Core Reset NTF to upper layer, which will trigger the "
@@ -1521,6 +1521,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   if (nxpncihal_ctrl.halStatus != HAL_STATUS_OPEN) {
     return NFCSTATUS_FAILED;
   }
+  nxpncihal_ctrl.hal_open_status = HAL_OPEN_CORE_INITIALIZING;
   if (core_init_rsp_params_len >= 1 && (*p_core_init_rsp_params > 0) &&
       (*p_core_init_rsp_params < 4))  // initializing for recovery.
   {
@@ -1534,6 +1535,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
       buffer = NULL;
     }
     if (retry_core_init_cnt > 3) {
+      nxpncihal_ctrl.hal_open_status = HAL_OPENED;
       return NFCSTATUS_FAILED;
     }
     if (IS_CHIP_TYPE_L(sn100u)) {
@@ -1573,6 +1575,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
 
   buffer = (uint8_t*)malloc(bufflen * sizeof(uint8_t));
   if (NULL == buffer) {
+    nxpncihal_ctrl.hal_open_status = HAL_OPENED;
     return NFCSTATUS_FAILED;
   }
   config_access = true;
@@ -2156,6 +2159,7 @@ NFCSTATUS phNxpNciHalRFConfigCmdRecSequence() {
 static void phNxpNciHal_core_initialized_complete(NFCSTATUS status) {
   static phLibNfc_Message_t msg;
 
+  nxpncihal_ctrl.hal_open_status = HAL_OPENED;
   if (status == NFCSTATUS_SUCCESS) {
     msg.eMsgType = NCI_HAL_POST_INIT_CPLT_MSG;
   } else {
@@ -2429,7 +2433,7 @@ void phNxpNciHal_close_complete(NFCSTATUS status) {
   }
   msg.pMsgData = NULL;
   msg.Size = 0;
-  nxpncihal_ctrl.hal_open_status = false;
+  nxpncihal_ctrl.hal_open_status = HAL_CLOSED;
   phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &msg);
 
   return;
