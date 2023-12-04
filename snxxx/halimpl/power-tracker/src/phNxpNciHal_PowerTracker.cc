@@ -141,6 +141,17 @@ NFCSTATUS phNxpNciHal_startPowerTracker(unsigned long pollDuration) {
         NfcProps::ulpdetStateEntryCount().value_or(0);
     gContext.stateData[ULPDET].stateTickCount =
         NfcProps::ulpdetStateTick().value_or(0);
+    NXPLOG_NCIHAL_D(
+        "Cached PowerTracker data "
+        "Active counter = %u, Active Tick = %u "
+        "Standby Counter = %u, Standby Tick = %u "
+        "ULPDET Counter = %u, ULPDET Tick = %u",
+        gContext.stateData[ACTIVE].stateEntryCount,
+        gContext.stateData[ACTIVE].stateTickCount,
+        gContext.stateData[STANDBY].stateEntryCount,
+        gContext.stateData[STANDBY].stateTickCount,
+        gContext.stateData[ULPDET].stateEntryCount,
+        gContext.stateData[ULPDET].stateTickCount);
 
     // Start polling Thread
     gContext.pollDurationMilliSec = pollDuration;
@@ -196,13 +207,9 @@ static void* phNxpNciHal_pollPowerTrackerData(void* pCtx) {
     pContext->event.unlock();
 
     // Sync and cache power tracker data.
-    if (pContext->isRefreshNfccStateOngoing) {
-      status = phNxpNciHal_syncPowerTrackerData();
-      if (NFCSTATUS_SUCCESS != status) {
-        NXPLOG_NCIHAL_E("Failed to fetch PowerTracker data. error = %d",
-                        status);
-        // break;
-      }
+    status = phNxpNciHal_syncPowerTrackerData();
+    if (NFCSTATUS_SUCCESS != status) {
+      NXPLOG_NCIHAL_E("Failed to fetch PowerTracker data. error = %d", status);
     }
   }
   NXPLOG_NCIHAL_D("Stopped polling for PowerTracker data");
@@ -397,16 +404,6 @@ NFCSTATUS phNxpNciHal_stopPowerTracker() {
   phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
   uint8_t power_tracker_disable = 0x00;
 
-  mEEPROM_info.request_mode = SET_EEPROM_DATA;
-  mEEPROM_info.buffer = (uint8_t*)&power_tracker_disable;
-  mEEPROM_info.bufflen = sizeof(power_tracker_disable);
-  mEEPROM_info.request_type = EEPROM_POWER_TRACKER_ENABLE;
-
-  status = request_EEPROM(&mEEPROM_info);
-  if (status != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("%s Failed to disable PowerTracker, error = %d", __func__,
-                    status);
-  }
   if (gContext.isRefreshNfccStateOngoing) {
     // Stop Polling Thread
     gContext.isRefreshNfccStateOngoing = false;
@@ -416,6 +413,16 @@ NFCSTATUS phNxpNciHal_stopPowerTracker() {
     }
   } else {
     NXPLOG_NCIHAL_E("PowerTracker is already disabled");
+  }
+  mEEPROM_info.request_mode = SET_EEPROM_DATA;
+  mEEPROM_info.buffer = (uint8_t*)&power_tracker_disable;
+  mEEPROM_info.bufflen = sizeof(power_tracker_disable);
+  mEEPROM_info.request_type = EEPROM_POWER_TRACKER_ENABLE;
+
+  status = request_EEPROM(&mEEPROM_info);
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("%s Failed to disable PowerTracker, error = %d", __func__,
+                    status);
   }
   if (!gContext.isUlpdetOn) {
     NXPLOG_NCIHAL_I("%s: Stopped PowerTracker", __func__);
