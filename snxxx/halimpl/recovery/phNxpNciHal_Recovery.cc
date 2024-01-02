@@ -531,13 +531,13 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
                              NXP_MAX_CONFIG_STRING_LEN)) {
     NXPLOG_NCIHAL_D(
         "Invalid nfc device node name keeping the default device node "
-        "/dev/pn54x");
-    strlcpy(nfc_dev_node, "/dev/pn54x",
+        "/dev/nxp-nci");
+    strlcpy(nfc_dev_node, "/dev/nxp-nci",
             (NXP_MAX_CONFIG_STRING_LEN * sizeof(char)));
   }
   /* Configure hardware link */
   nxpncihal_ctrl.gDrvCfg.nClientId = phDal4Nfc_msgget(0, 0600);
-  nxpncihal_ctrl.gDrvCfg.nLinkType = ENUM_LINK_TYPE_I2C; /* For PN54X */
+  nxpncihal_ctrl.gDrvCfg.nLinkType = ENUM_LINK_TYPE_I2C; /* For NFCC */
   tTmlConfig.pDevName = (int8_t*)nfc_dev_node;
   tOsalConfig.dwCallbackThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
   tOsalConfig.pLogFile = NULL;

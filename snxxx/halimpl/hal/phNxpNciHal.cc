@@ -488,7 +488,7 @@ static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset,
 /******************************************************************************
  * Function         phNxpNciHal_fw_download
  *
- * Description      This function download the PN54X secure firmware to IC. If
+ * Description      This function download the NFCC secure firmware to IC. If
  *                  firmware version in Android filesystem and firmware in the
  *                  IC is same then firmware download will return with success
  *                  without downloading the firmware.
@@ -740,12 +740,12 @@ int phNxpNciHal_MinOpen() {
   } else if (!GetNxpStrValue(NAME_NXP_NFC_DEV_NODE, nfc_dev_node, max_len)) {
     NXPLOG_NCIHAL_D(
         "Invalid nfc device node name keeping the default device node "
-        "/dev/pn54x");
-    strlcpy(nfc_dev_node, "/dev/pn54x", (max_len * sizeof(char)));
+        "/dev/nxp-nci");
+    strlcpy(nfc_dev_node, "/dev/nxp-nci", (max_len * sizeof(char)));
   }
   /* Configure hardware link */
   nxpncihal_ctrl.gDrvCfg.nClientId = phDal4Nfc_msgget(0, 0600);
-  nxpncihal_ctrl.gDrvCfg.nLinkType = ENUM_LINK_TYPE_I2C; /* For PN54X */
+  nxpncihal_ctrl.gDrvCfg.nLinkType = ENUM_LINK_TYPE_I2C; /* For NFCC */
   tTmlConfig.pDevName = (int8_t*)nfc_dev_node;
   tOsalConfig.dwCallbackThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
   tOsalConfig.pLogFile = NULL;
@@ -922,7 +922,7 @@ int phNxpNciHal_MinOpen() {
  *
  * Description      This function is called by libnfc-nci during the
  *                  initialization of the NFCC. It opens the physical connection
- *                  with NFCC (PN54X) and creates required client thread for
+ *                  with NFCC and creates required client thread for
  *                  operation.
  *                  After open is complete, status is informed to libnfc-nci
  *                  through callback function.
@@ -1095,7 +1095,7 @@ static void phNxpNciHal_open_complete(NFCSTATUS status) {
  * Function         phNxpNciHal_write
  *
  * Description      This function write the data to NFCC through physical
- *                  interface (e.g. I2C) using the PN54X driver interface.
+ *                  interface (e.g. I2C) using the NFCC driver interface.
  *                  Before sending the data to NFCC, phNxpNciHal_write_ext
  *                  is called to check if there is any extension processing
  *                  is required for the NCI packet being sent out.
@@ -1114,7 +1114,7 @@ int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data) {
  * Function         phNxpNciHal_write_internal
  *
  * Description      This function write the data to NFCC through physical
- *                  interface (e.g. I2C) using the PN54X driver interface.
+ *                  interface (e.g. I2C) using the NFCC driver interface.
  *                  Before sending the data to NFCC, phNxpNciHal_write_ext
  *                  is called to check if there is any extension processing
  *                  is required for the NCI packet being sent out.
@@ -1144,7 +1144,7 @@ int phNxpNciHal_write_internal(uint16_t data_len, const uint8_t* p_data) {
       phNxpNciHal_write_ext(&nxpncihal_ctrl.cmd_len, nxpncihal_ctrl.p_cmd_data,
                             &nxpncihal_ctrl.rsp_len, nxpncihal_ctrl.p_rsp_data);
   if (status != NFCSTATUS_SUCCESS) {
-    /* Do not send packet to PN54X, send response directly */
+    /* Do not send packet to NFCC, send response directly */
     msg.eMsgType = NCI_HAL_RX_MSG;
     msg.pMsgData = NULL;
     msg.Size = 0;
@@ -1240,22 +1240,22 @@ retry:
     data_len = 0;
     if (nxpncihal_ctrl.retry_cnt++ < MAX_RETRY_COUNT) {
       NXPLOG_NCIHAL_D(
-          "write_unlocked failed - PN54X Maybe in Standby Mode - Retry");
+          "write_unlocked failed - NFCC Maybe in Standby Mode - Retry");
       /* 10ms delay to give NFCC wake up delay */
       usleep(1000 * 10);
       goto retry;
     } else {
       NXPLOG_NCIHAL_E(
-          "write_unlocked failed - PN54X Maybe in Standby Mode (max count = "
+          "write_unlocked failed - NFCC Maybe in Standby Mode (max count = "
           "0x%x)",
           nxpncihal_ctrl.retry_cnt);
 
       status = phTmlNfc_IoCtl(phTmlNfc_e_ResetDevice);
 
       if (NFCSTATUS_SUCCESS == status) {
-        NXPLOG_NCIHAL_D("PN54X Reset - SUCCESS\n");
+        NXPLOG_NCIHAL_D("NFCC Reset - SUCCESS\n");
       } else {
-        NXPLOG_NCIHAL_D("PN54X Reset - FAILED\n");
+        NXPLOG_NCIHAL_D("NFCC Reset - FAILED\n");
       }
       if (nxpncihal_ctrl.p_nfc_stack_data_cback != NULL &&
           nxpncihal_ctrl.hal_open_status == true) {
@@ -1474,7 +1474,7 @@ NFCSTATUS phNxpNciHal_enableTmlRead() {
  * Function         phNxpNciHal_core_initialized
  *
  * Description      This function is called by libnfc-nci after successful open
- *                  of NFCC. All proprietary setting for PN54X are done here.
+ *                  of NFCC. All proprietary setting for NFCC are done here.
  *                  After completion of proprietary settings notification is
  *                  provided to libnfc-nci through callback function.
  *
@@ -1539,9 +1539,9 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
     if (IS_CHIP_TYPE_L(sn100u)) {
       status = phTmlNfc_IoCtl(phTmlNfc_e_ResetDevice);
       if (NFCSTATUS_SUCCESS == status) {
-        NXPLOG_NCIHAL_D("PN54X Reset - SUCCESS\n");
+        NXPLOG_NCIHAL_D("NFCC Reset - SUCCESS\n");
       } else {
-        NXPLOG_NCIHAL_D("PN54X Reset - FAILED\n");
+        NXPLOG_NCIHAL_D("NFCC Reset - FAILED\n");
       }
     }
 
@@ -2595,9 +2595,9 @@ int phNxpNciHal_power_cycle(void) {
   status = phTmlNfc_IoCtl(phTmlNfc_e_PowerReset);
 
   if (NFCSTATUS_SUCCESS == status) {
-    NXPLOG_NCIHAL_D("PN54X Reset - SUCCESS\n");
+    NXPLOG_NCIHAL_D("NFCC Reset - SUCCESS\n");
   } else {
-    NXPLOG_NCIHAL_D("PN54X Reset - FAILED\n");
+    NXPLOG_NCIHAL_D("NFCC Reset - FAILED\n");
   }
 
   phNxpNciHal_power_cycle_complete(NFCSTATUS_SUCCESS);
@@ -2670,7 +2670,7 @@ int phNxpNciHal_check_ncicmd_write_window(uint16_t cmd_len, uint8_t* p_cmd) {
  * Function         phNxpNciHal_ioctl
  *
  * Description      This function is called by jni when wired mode is
- *                  performed.First Pn54x driver will give the access
+ *                  performed.First NFCC driver will give the access
  *                  permission whether wired mode is allowed or not
  *                  arg (0):
  * Returns          return 0 on success and -1 on fail, On success
