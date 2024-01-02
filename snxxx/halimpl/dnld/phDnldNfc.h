@@ -1,5 +1,5 @@
 /*
- *  Copyright 2010-2023 NXP
+ *  Copyright 2010-2024 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
 
 /*
  *
- * Callback for handling the received data/response from PN54X.
+ * Callback for handling the received data/response from NFCC.
  * Parameters to be passed/registered to download context during respective
  * download function call:
  *      pContext - Upper layer context

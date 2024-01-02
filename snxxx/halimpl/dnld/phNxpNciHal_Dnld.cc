@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 NXP
+ * Copyright 2012-2024 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1823,8 +1823,8 @@ static NFCSTATUS phNxpNciHal_releasePendingRead() {
                       sizeof(nfc_dev_node))) {
     NXPLOG_FWDNLD_D(
         "Invalid nfc device node name keeping the default device node "
-        "/dev/pn54x");
-    strlcpy(nfc_dev_node, "/dev/pn54x", (sizeof(nfc_dev_node)));
+        "/dev/nxp-nci");
+    strlcpy(nfc_dev_node, "/dev/nxp-nci", (sizeof(nfc_dev_node)));
   }
   tTmlConfig.pDevName = (int8_t*)nfc_dev_node;
   gpTransportObj->Close(gpphTmlNfc_Context->pDevHandle);
