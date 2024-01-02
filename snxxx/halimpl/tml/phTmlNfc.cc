@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2023 NXP
+ * Copyright 2010-2024 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -300,7 +300,7 @@ static void* phTmlNfc_TmlThread(void* pParam) {
   /* Initialize Message structure to post message onto Callback Thread */
   static phLibNfc_Message_t tMsg;
   UNUSED_PROP(pParam);
-  NXPLOG_TML_D("PN54X - Tml Reader Thread Started................\n");
+  NXPLOG_TML_D("NFCC - Tml Reader Thread Started................\n");
 
   /* Reader thread loop shall be running till shutdown is invoked */
   while (gpphTmlNfc_Context->bThreadDone) {
@@ -313,7 +313,7 @@ static void* phTmlNfc_TmlThread(void* pParam) {
 
     /* If Tml read is requested */
     if (1 == gpphTmlNfc_Context->tReadInfo.bEnable) {
-      NXPLOG_TML_D("PN54X - Read requested.....\n");
+      NXPLOG_TML_D("NFCC - Read requested.....\n");
       /* Set the variable to success initially */
       wStatus = NFCSTATUS_SUCCESS;
 
@@ -322,12 +322,12 @@ static void* phTmlNfc_TmlThread(void* pParam) {
 
       /* Read the data from the file onto the buffer */
       if (NULL != gpphTmlNfc_Context->pDevHandle) {
-        NXPLOG_TML_D("PN54X - Invoking I2C Read.....\n");
+        NXPLOG_TML_D("NFCC - Invoking Read.....\n");
         dwNoBytesWrRd =
             gpTransportObj->Read(gpphTmlNfc_Context->pDevHandle, temp, 260);
 
         if (-1 == dwNoBytesWrRd) {
-          NXPLOG_TML_E("PN54X - Error in I2C Read.....\n");
+          NXPLOG_TML_E("NFCC - Error in Read.....\n");
           if (readRetryDelay < MAX_READ_RETRY_DELAY_IN_MILLISEC) {
             /*sleep for 30/60/90/120/150 msec between each read trial incase of
              * read error*/
@@ -343,17 +343,17 @@ static void* phTmlNfc_TmlThread(void* pParam) {
           memcpy(gpphTmlNfc_Context->tReadInfo.pBuffer, temp, dwNoBytesWrRd);
           readRetryDelay = 0;
 
-          NXPLOG_TML_D("PN54X - I2C Read successful.....\n");
+          NXPLOG_TML_D("NFCC - Read successful.....\n");
           /* This has to be reset only after a successful read */
           gpphTmlNfc_Context->tReadInfo.bEnable = 0;
           if ((phTmlNfc_e_EnableRetrans == gpphTmlNfc_Context->eConfig) &&
               (0x00 != (gpphTmlNfc_Context->tReadInfo.pBuffer[0] & 0xE0))) {
-            NXPLOG_TML_D("PN54X - Retransmission timer stopped.....\n");
+            NXPLOG_TML_D("NFCC - Retransmission timer stopped.....\n");
             /* Stop Timer to prevent Retransmission */
             uint32_t timerStatus =
                 phOsalNfc_Timer_Stop(gpphTmlNfc_Context->dwTimerId);
             if (NFCSTATUS_SUCCESS != timerStatus) {
-              NXPLOG_TML_E("PN54X - timer stopped returned failure.....\n");
+              NXPLOG_TML_E("NFCC - timer stopped returned failure.....\n");
             } else {
               gpphTmlNfc_Context->bWriteCbInvoked = false;
             }
@@ -381,14 +381,14 @@ static void* phTmlNfc_TmlThread(void* pParam) {
           tMsg.eMsgType = PH_LIBNFC_DEFERREDCALL_MSG;
           tMsg.pMsgData = &tDeferredInfo;
           tMsg.Size = sizeof(tDeferredInfo);
-          NXPLOG_TML_D("PN54X - Posting read message.....\n");
+          NXPLOG_TML_D("NFCC - Posting read message.....\n");
           phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &tMsg);
         }
       } else {
-        NXPLOG_TML_D("PN54X -gpphTmlNfc_Context->pDevHandle is NULL");
+        NXPLOG_TML_D("NFCC -gpphTmlNfc_Context->pDevHandle is NULL");
       }
     } else {
-      NXPLOG_TML_D("PN54X - read request NOT enabled");
+      NXPLOG_TML_D("NFCC - read request NOT enabled");
       usleep(10 * 1000);
     }
   } /* End of While loop */
@@ -420,17 +420,17 @@ static void* phTmlNfc_TmlWriterThread(void* pParam) {
   /* In case of I2C Write Retry */
   static uint16_t retry_cnt;
   UNUSED_PROP(pParam);
-  NXPLOG_TML_D("PN54X - Tml Writer Thread Started................\n");
+  NXPLOG_TML_D("NFCC - Tml Writer Thread Started................\n");
 
   /* Writer thread loop shall be running till shutdown is invoked */
   while (gpphTmlNfc_Context->bThreadDone) {
-    NXPLOG_TML_D("PN54X - Tml Writer Thread Running................\n");
+    NXPLOG_TML_D("NFCC - Tml Writer Thread Running................\n");
     if (-1 == sem_wait(&gpphTmlNfc_Context->txSemaphore)) {
       NXPLOG_TML_E("sem_wait didn't return success \n");
     }
     /* If Tml write is requested */
     if (1 == gpphTmlNfc_Context->tWriteInfo.bEnable) {
-      NXPLOG_TML_D("PN54X - Write requested.....\n");
+      NXPLOG_TML_D("NFCC - Write requested.....\n");
       /* Set the variable to success initially */
       wStatus = NFCSTATUS_SUCCESS;
       if (NULL != gpphTmlNfc_Context->pDevHandle) {
@@ -439,7 +439,7 @@ static void* phTmlNfc_TmlWriterThread(void* pParam) {
         /* Variable to fetch the actual number of bytes written */
         dwNoBytesWrRd = PH_TMLNFC_RESET_VALUE;
         /* Write the data in the buffer onto the file */
-        NXPLOG_TML_D("PN54X - Invoking I2C Write.....\n");
+        NXPLOG_TML_D("NFCC - Invoking Write.....\n");
         /* TML reader writer callback synchronization mutex lock --- START */
         pthread_mutex_lock(&gpphTmlNfc_Context->wait_busy_lock);
         gpphTmlNfc_Context->gWriterCbflag = false;
@@ -450,18 +450,18 @@ static void* phTmlNfc_TmlWriterThread(void* pParam) {
         /* TML reader writer callback synchronization mutex lock --- END */
         pthread_mutex_unlock(&gpphTmlNfc_Context->wait_busy_lock);
 
-        /* Try I2C Write Five Times, if it fails : Raju */
+        /* Try NFCC Write Five Times, if it fails: */
         if (-1 == dwNoBytesWrRd) {
           if (gpTransportObj->IsFwDnldModeEnabled()) {
             if (retry_cnt++ < MAX_WRITE_RETRY_COUNT) {
-              NXPLOG_TML_D("PN54X - Error in I2C Write  - Retry 0x%x",
+              NXPLOG_TML_D("NFCC - Error in Write  - Retry 0x%x",
                            retry_cnt);
               // Add a 10 ms delay to ensure NFCC is not still in stand by mode.
               usleep(10 * 1000);
               goto retry;
             }
           }
-          NXPLOG_TML_D("PN54X - Error in I2C Write.....\n");
+          NXPLOG_TML_D("NFCC - Error in Write.....\n");
           wStatus = PHNFCSTVAL(CID_NFC_TML, NFCSTATUS_FAILED);
         } else {
           phNxpNciHal_print_packet("SEND",
@@ -470,7 +470,7 @@ static void* phTmlNfc_TmlWriterThread(void* pParam) {
         }
         retry_cnt = 0;
         if (NFCSTATUS_SUCCESS == wStatus) {
-          NXPLOG_TML_D("PN54X - I2C Write successful.....\n");
+          NXPLOG_TML_D("NFCC - Write successful.....\n");
           dwNoBytesWrRd = PH_TMLNFC_VALUE_ONE;
         }
         /* Fill the Transaction info structure to be passed to Callback Function
@@ -499,14 +499,14 @@ static void* phTmlNfc_TmlWriterThread(void* pParam) {
             (0x00 != (gpphTmlNfc_Context->tWriteInfo.pBuffer[0] & 0xE0))) {
           if (gpphTmlNfc_Context->bWriteCbInvoked == false) {
             if ((NFCSTATUS_SUCCESS == wStatus) || (bCurrentRetryCount == 0)) {
-              NXPLOG_TML_D("PN54X - Posting Write message.....\n");
+              NXPLOG_TML_D("NFCC - Posting Write message.....\n");
               phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId,
                                     &tMsg);
               gpphTmlNfc_Context->bWriteCbInvoked = true;
             }
           }
         } else {
-          NXPLOG_TML_D("PN54X - Posting Fresh Write message.....\n");
+          NXPLOG_TML_D("NFCC - Posting Fresh Write message.....\n");
           phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &tMsg);
           if (NFCSTATUS_SUCCESS == wStatus) {
             /*TML reader writer thread callback synchronization---START*/
@@ -518,10 +518,10 @@ static void* phTmlNfc_TmlWriterThread(void* pParam) {
           }
         }
       } else {
-        NXPLOG_TML_D("PN54X - gpphTmlNfc_Context->pDevHandle is NULL");
+        NXPLOG_TML_D("NFCC - gpphTmlNfc_Context->pDevHandle is NULL");
       }
     } else {
-      NXPLOG_TML_D("PN54X - Write request NOT enabled");
+      NXPLOG_TML_D("NFCC - Write request NOT enabled");
       usleep(10000);
     }
 
@@ -628,7 +628,7 @@ NFCSTATUS phTmlNfc_Shutdown(void) {
 **                  NOTE:
 **                  * it is important to post a message with id
 **                    PH_TMLNFC_WRITE_MESSAGE to IntegrationThread after data
-**                    has been written to PN54X
+**                    has been written to NFCC
 **                  * if CRC needs to be computed, then input buffer should be
 **                    capable to store two more bytes apart from length of
 **                    packet
@@ -880,7 +880,7 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
 
       {
         if (IS_CHIP_TYPE_L(sn100u)) {
-          /*Reset PN54X*/
+          /*Reset NFCC*/
           gpTransportObj->NfccReset(gpphTmlNfc_Context->pDevHandle,
                                     MODE_POWER_ON);
           usleep(100 * 1000);
@@ -893,7 +893,7 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
         break;
       }
       case phTmlNfc_e_EnableNormalMode: {
-        /*Reset PN54X*/
+        /*Reset NFCC*/
         gpphTmlNfc_Context->tReadInfo.bEnable = 0;
         if (nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_VEN_RESET) {
           NXPLOG_TML_D(" phTmlNfc_e_EnableNormalMode complete with VEN RESET ");

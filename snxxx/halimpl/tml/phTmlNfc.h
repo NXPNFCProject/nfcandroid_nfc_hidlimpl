@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2023 NXP
+ * Copyright 2010-2024 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -197,11 +197,11 @@ typedef struct phTmlNfc_Context {
  * TML Configuration exposed to upper layer.
  */
 typedef struct phTmlNfc_Config {
-  /* Port name connected to PN54X
+  /* Port name connected to NFCC
    *
-   * Platform specific canonical device name to which PN54X is connected.
+   * Platform specific canonical device name to which NFCC is connected.
    *
-   * e.g. On Linux based systems this would be /dev/PN54X
+   * e.g. On Linux based systems this would be /dev/nxp-nci
    */
   int8_t* pDevName;
   /* Callback Thread ID
