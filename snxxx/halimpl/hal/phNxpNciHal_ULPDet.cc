@@ -22,6 +22,7 @@
 #include "phNfcCommon.h"
 #include "phNxpNciHal_IoctlOperations.h"
 #include "phNxpNciHal_PowerTrackerIface.h"
+#include "phNxpNciHal_extOperations.h"
 
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 extern NFCSTATUS phNxpNciHal_ext_send_sram_config_to_flash();
@@ -152,4 +153,27 @@ NFCSTATUS phNxpNciHal_propConfULPDetMode(bool bEnable) {
   NXPLOG_NCIHAL_E("%s: exit. status = %d", __func__, status);
 
   return status;
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_handleULPDetCommand()
+**
+** Description      This handles the ULPDET command and sets the ULPDET flag
+**
+** Returns          It returns number of bytes received.
+*******************************************************************************/
+int phNxpNciHal_handleULPDetCommand(uint16_t data_len, const uint8_t* p_data) {
+  if (data_len <= 4) {
+    return 0;
+  }
+  uint8_t status = NCI_RSP_FAIL;
+  if (phNxpNciHal_isULPDetSupported()) {
+    phNxpNciHal_setULPDetFlag(p_data[NCI_MSG_INDEX_FEATURE_VALUE]);
+    status = NCI_RSP_OK;
+  }
+
+  phNxpNciHal_vendorSpecificCallback(p_data[NCI_OID_INDEX], status);
+
+  return p_data[NCI_MSG_LEN_INDEX];
 }
