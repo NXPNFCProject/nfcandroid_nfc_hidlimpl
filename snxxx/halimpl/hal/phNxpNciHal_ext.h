@@ -58,9 +58,9 @@
 #define NCI_ANDROID_POWER_SAVING_PARAM_DISABLE 0
 #define NCI_ANDROID_POWER_SAVING_PARAM_ENABLE 1
 
-#define NCI_RSP_SIZE 1
+#define NCI_RSP_SIZE 2
 #define NCI_RSP_OK 0
-#define NCI_RSP_FAIL 1
+#define NCI_RSP_FAIL 3
 
 void printNfcMwVersion();
 void phNxpNciHal_ext_init(void);
