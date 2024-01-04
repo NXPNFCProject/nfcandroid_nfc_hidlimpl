@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 NXP
+ * Copyright 2022-2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,3 +62,13 @@ bool phNxpNciHal_getULPDetFlag();
 ** Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS
 *******************************************************************************/
 NFCSTATUS phNxpNciHal_propConfULPDetMode(bool bEnable);
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_handleULPDetCommand()
+**
+** Description      This handles the ULPDET command and sets the ULPDET flag
+**
+** Returns          It returns number of bytes received.
+*******************************************************************************/
+int phNxpNciHal_handleULPDetCommand(uint16_t data_len, const uint8_t* p_data);

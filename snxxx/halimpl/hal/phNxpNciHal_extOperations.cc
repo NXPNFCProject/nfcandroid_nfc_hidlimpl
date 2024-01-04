@@ -21,6 +21,7 @@
 
 #include "phNfcCommon.h"
 #include "phNxpNciHal_IoctlOperations.h"
+#include "phNxpNciHal_ULPDet.h"
 
 #define NCI_HEADER_SIZE 3
 #define NCI_SE_CMD_LEN 4
@@ -29,6 +30,7 @@ static vector<uint8_t> uicc1HciParams(0);
 static vector<uint8_t> uicc2HciParams(0);
 static vector<uint8_t> uiccHciCeParams(0);
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
+extern phTmlNfc_Context_t* gpphTmlNfc_Context;
 extern NFCSTATUS phNxpNciHal_ext_send_sram_config_to_flash();
 
 /*******************************************************************************
@@ -753,4 +755,63 @@ void phNxpNciHal_setDCDCConfig(void) {
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("SetConfig for DCDC failed");
   }
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_isVendorSpecificCommand()
+**
+** Description      this function checks vendor specific command or not
+**
+** Returns          true if the command is vendor specific otherwise false
+*******************************************************************************/
+bool phNxpNciHal_isVendorSpecificCommand(uint16_t data_len,
+                                         const uint8_t* p_data) {
+  if (data_len > 3 && p_data[NCI_GID_INDEX] == (NCI_MT_CMD | NCI_GID_PROP) &&
+      p_data[NCI_OID_INDEX] == NCI_MSG_PROP_ANDROID_OID) {
+    return true;
+  }
+  return false;
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_handleVendorSpecificCommand()
+**
+** Description      This handles the vendor specific command
+**
+** Returns          It returns number of bytes received.
+*******************************************************************************/
+int phNxpNciHal_handleVendorSpecificCommand(uint16_t data_len,
+                                            const uint8_t* p_data) {
+  if (data_len > 4 &&
+      p_data[NCI_MSG_INDEX_FOR_FEATURE] == NCI_ANDROID_POWER_SAVING) {
+    return phNxpNciHal_handleULPDetCommand(data_len, p_data);
+  }
+
+  return 0;
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_vendorSpecificCallback()
+**
+** Params           oid, status
+**
+** Description      This function sends response to Vendor Specific commands
+**
+*******************************************************************************/
+void phNxpNciHal_vendorSpecificCallback(int oid, int status) {
+  static phLibNfc_Message_t msg;
+  nxpncihal_ctrl.p_rsp_data[0] = (uint8_t)(NCI_GID_PROP | NCI_MT_RSP);
+  nxpncihal_ctrl.p_rsp_data[1] = oid;
+  nxpncihal_ctrl.p_rsp_data[2] = NCI_RSP_SIZE;
+  nxpncihal_ctrl.p_rsp_data[3] = status;
+  nxpncihal_ctrl.rsp_len = 4;
+
+  msg.eMsgType = NCI_HAL_RX_MSG;
+  msg.pMsgData = NULL;
+  msg.Size = 0;
+  phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId,
+                        (phLibNfc_Message_t*)&msg);
 }

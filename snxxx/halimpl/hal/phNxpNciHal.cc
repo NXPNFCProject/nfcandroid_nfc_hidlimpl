@@ -1094,8 +1094,10 @@ static void phNxpNciHal_open_complete(NFCSTATUS status) {
  *
  ******************************************************************************/
 int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data) {
-  if (bEnableMfcExtns && p_data[0] == 0x00) {
+  if (bEnableMfcExtns && p_data[NCI_GID_INDEX] == 0x00) {
     return NxpMfcReaderInstance.Write(data_len, p_data);
+  }else if (phNxpNciHal_isVendorSpecificCommand(data_len, p_data)) {
+    return phNxpNciHal_handleVendorSpecificCommand(data_len, p_data);
   }
   return phNxpNciHal_write_internal(data_len, p_data);
 }

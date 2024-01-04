@@ -35,6 +35,33 @@
 // PROTECTED_MIR_USER_AREA_AT_CRC_MISMATCH
 #define CORE_GENERIC_ERR_UA_MIR_CRC_NTF 0xF7
 
+/* NCI GID index*/
+#define NCI_GID_INDEX 0
+/* NCI OID index*/
+#define NCI_OID_INDEX 1
+/* NCI message length index*/
+#define NCI_MSG_LEN_INDEX 2
+/* NCI message index for feature*/
+#define NCI_MSG_INDEX_FOR_FEATURE 3
+/* NCI message index feature value*/
+#define NCI_MSG_INDEX_FEATURE_VALUE 4
+#define NCI_GID_PROP 0x0F
+
+/* Android Power Saving Opcode */
+#define NCI_MSG_PROP_ANDROID_OID 0x0C
+
+/* Android Parameters */
+#define NCI_ANDROID_POWER_SAVING 0x01
+
+/* Android Power Saving Params */
+#define NCI_ANDROID_POWER_SAVING_PARAM_SIZE 2
+#define NCI_ANDROID_POWER_SAVING_PARAM_DISABLE 0
+#define NCI_ANDROID_POWER_SAVING_PARAM_ENABLE 1
+
+#define NCI_RSP_SIZE 1
+#define NCI_RSP_OK 0
+#define NCI_RSP_FAIL 1
+
 void printNfcMwVersion();
 void phNxpNciHal_ext_init(void);
 NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len);
