@@ -229,8 +229,8 @@ int phNxpNciHal_handleVendorSpecificCommand(uint16_t data_len,
 **
 ** Function         phNxpNciHal_vendorSpecificCallback()
 **
-** Params           oid, status
+** Params           oid, opcode, status
 ** Description      This function sends response to Vendor Specific commands
 **
 *******************************************************************************/
-void phNxpNciHal_vendorSpecificCallback(int oid, int status);
+void phNxpNciHal_vendorSpecificCallback(int oid, int opcode, int status);

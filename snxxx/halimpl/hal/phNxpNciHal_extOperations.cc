@@ -796,18 +796,19 @@ int phNxpNciHal_handleVendorSpecificCommand(uint16_t data_len,
 **
 ** Function         phNxpNciHal_vendorSpecificCallback()
 **
-** Params           oid, status
+** Params           oid, opcode, status
 **
 ** Description      This function sends response to Vendor Specific commands
 **
 *******************************************************************************/
-void phNxpNciHal_vendorSpecificCallback(int oid, int status) {
+void phNxpNciHal_vendorSpecificCallback(int oid, int opcode, int status) {
   static phLibNfc_Message_t msg;
   nxpncihal_ctrl.p_rsp_data[0] = (uint8_t)(NCI_GID_PROP | NCI_MT_RSP);
   nxpncihal_ctrl.p_rsp_data[1] = oid;
   nxpncihal_ctrl.p_rsp_data[2] = NCI_RSP_SIZE;
-  nxpncihal_ctrl.p_rsp_data[3] = status;
-  nxpncihal_ctrl.rsp_len = 4;
+  nxpncihal_ctrl.p_rsp_data[3] = opcode;
+  nxpncihal_ctrl.p_rsp_data[4] = status;
+  nxpncihal_ctrl.rsp_len = 5;
 
   msg.eMsgType = NCI_HAL_RX_MSG;
   msg.pMsgData = NULL;
