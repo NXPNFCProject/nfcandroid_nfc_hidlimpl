@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 NXP
+ * Copyright 2019-2024 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,10 @@
 #define SWITCH_OFF_MASK 0x02
 #define NCI_GET_CONFI_MIN_LEN 0x04
 #define NXP_MAX_RETRY_COUNT 0x03
+typedef enum {
+  CONFIG,
+  API,
+} tNFC_requestedBy;
 typedef struct {
   uint8_t autonomous_mode;
   uint8_t guard_timer_value;
@@ -163,11 +167,15 @@ phNxpNciHal_get_uicc_hci_params(vector<uint8_t>& ptr, uint8_t bufflen,
  *
  * Description      This function can be used to set nfcc extended field mode
  *
+ * Params           requestedBy CONFIG to set it from the CONFIGURATION
+ *                              API  to set it from ObserverMode API
+ *
  * Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS or
  *                  NFCSTATUS_FEATURE_NOT_SUPPORTED
  *
  ******************************************************************************/
-NFCSTATUS phNxpNciHal_setExtendedFieldMode();
+NFCSTATUS phNxpNciHal_setExtendedFieldMode(
+    tNFC_requestedBy requestedBy = CONFIG, bool flag = false);
 
 /*******************************************************************************
 **
