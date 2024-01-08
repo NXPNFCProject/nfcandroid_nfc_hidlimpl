@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 NXP
+ * Copyright 2019-2024 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,11 @@
 
 #include "phNxpNciHal_extOperations.h"
 
+#include <phNfcNciConstants.h>
 #include <phNxpLog.h>
 #include <phTmlNfc.h>
 
+#include "ObserveMode.h"
 #include "phNfcCommon.h"
 #include "phNxpNciHal_IoctlOperations.h"
 #include "phNxpNciHal_ULPDet.h"
@@ -580,33 +582,46 @@ NFCSTATUS phNxpNciHal_setSrdtimeout() {
  *
  * Description      This function can be used to set nfcc extended field mode
  *
+ * Params           requestedBy CONFIG to set it from the CONFIGURATION
+ *                              API  to set it from ObserverMode API
+ *
  * Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS or
  *                  NFCSTATUS_FEATURE_NOT_SUPPORTED
  *
  ******************************************************************************/
-NFCSTATUS phNxpNciHal_setExtendedFieldMode() {
+NFCSTATUS phNxpNciHal_setExtendedFieldMode(tNFC_requestedBy requestedBy,
+                                           bool flag) {
+  if (!IS_CHIP_TYPE_GE(sn100u)) {
+    NXPLOG_NCIHAL_E("Extended Field Mode is not supported");
+    return NFCSTATUS_FEATURE_NOT_SUPPORTED;
+  }
   const uint8_t enableWithOutCMAEvents = 0x01;
   const uint8_t enableWithCMAEvents = 0x03;
   const uint8_t disableEvents = 0x00;
   uint8_t extended_field_mode = disableEvents;
-  phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
-  NFCSTATUS status = NFCSTATUS_FEATURE_NOT_SUPPORTED;
 
-  if (IS_CHIP_TYPE_GE(sn100u) &&
-      GetNxpNumValue(NAME_NXP_EXTENDED_FIELD_DETECT_MODE, &extended_field_mode,
-                     sizeof(extended_field_mode))) {
-    if (extended_field_mode == enableWithOutCMAEvents ||
-        extended_field_mode == enableWithCMAEvents ||
-        extended_field_mode == disableEvents) {
-      mEEPROM_info.buffer = &extended_field_mode;
-      mEEPROM_info.bufflen = sizeof(extended_field_mode);
-      mEEPROM_info.request_type = EEPROM_EXT_FIELD_DETECT_MODE;
-      mEEPROM_info.request_mode = SET_EEPROM_DATA;
-      status = request_EEPROM(&mEEPROM_info);
-    } else {
-      NXPLOG_NCIHAL_E("Invalid Extended Field Mode in config");
+  if (requestedBy == API && flag) {
+    extended_field_mode = enableWithCMAEvents;
+  } else if (requestedBy == CONFIG || (requestedBy == API && !flag)) {
+    bool getStatus =
+        GetNxpNumValue(NAME_NXP_EXTENDED_FIELD_DETECT_MODE,
+                       &extended_field_mode, sizeof(extended_field_mode));
+    if (!getStatus || !(extended_field_mode == enableWithOutCMAEvents ||
+                        extended_field_mode == enableWithCMAEvents ||
+                        extended_field_mode == disableEvents)) {
+      if (requestedBy == CONFIG) {
+        NXPLOG_NCIHAL_E("Invalid Extended Field Mode in config");
+        return NFCSTATUS_FEATURE_NOT_SUPPORTED;
+      }
+      extended_field_mode = disableEvents;
     }
   }
+  phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
+  mEEPROM_info.buffer = &extended_field_mode;
+  mEEPROM_info.bufflen = sizeof(extended_field_mode);
+  mEEPROM_info.request_type = EEPROM_EXT_FIELD_DETECT_MODE;
+  mEEPROM_info.request_mode = SET_EEPROM_DATA;
+  NFCSTATUS status = request_EEPROM(&mEEPROM_info);
   return status;
 }
 
@@ -768,7 +783,7 @@ void phNxpNciHal_setDCDCConfig(void) {
 bool phNxpNciHal_isVendorSpecificCommand(uint16_t data_len,
                                          const uint8_t* p_data) {
   if (data_len > 3 && p_data[NCI_GID_INDEX] == (NCI_MT_CMD | NCI_GID_PROP) &&
-      p_data[NCI_OID_INDEX] == NCI_MSG_PROP_ANDROID_OID) {
+      p_data[NCI_OID_INDEX] == NCI_PROP_NTF_ANDROID_OID) {
     return true;
   }
   return false;
@@ -787,6 +802,9 @@ int phNxpNciHal_handleVendorSpecificCommand(uint16_t data_len,
   if (data_len > 4 &&
       p_data[NCI_MSG_INDEX_FOR_FEATURE] == NCI_ANDROID_POWER_SAVING) {
     return phNxpNciHal_handleULPDetCommand(data_len, p_data);
+  } else if (data_len > 4 &&
+             p_data[NCI_MSG_INDEX_FOR_FEATURE] == NCI_ANDROID_OBSERVER_MODE) {
+    return handleObserveMode(data_len, p_data);
   }
 
   return 0;

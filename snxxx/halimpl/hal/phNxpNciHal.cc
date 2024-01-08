@@ -21,6 +21,7 @@
 #include <log/log.h>
 #include <phDal4Nfc_messageQueueLib.h>
 #include <phDnldNfc.h>
+#include <phNfcNciConstants.h>
 #include <phNxpConfig.h>
 #include <phNxpEventLogger.h>
 #include <phNxpLog.h>
@@ -32,8 +33,11 @@
 #include <phTmlNfc.h>
 #include <sys/stat.h>
 
+#include "NciDiscoveryCommandBuilder.h"
 #include "NfccTransportFactory.h"
 #include "NxpNfcThreadMutex.h"
+#include "ObserveMode.h"
+#include "ReaderPollConfigParser.h"
 #include "phNxpNciHal_IoctlOperations.h"
 #include "phNxpNciHal_LxDebug.h"
 #include "phNxpNciHal_PowerTrackerIface.h"
@@ -1098,6 +1102,12 @@ int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data) {
     return NxpMfcReaderInstance.Write(data_len, p_data);
   }else if (phNxpNciHal_isVendorSpecificCommand(data_len, p_data)) {
     return phNxpNciHal_handleVendorSpecificCommand(data_len, p_data);
+  } else if (isObserveModeEnabled() &&
+             p_data[NCI_GID_INDEX] == NCI_RF_DISC_COMMD_GID &&
+             p_data[NCI_OID_INDEX] == NCI_RF_DISC_COMMAND_OID) {
+    NciDiscoveryCommandBuilder builder;
+    vector<uint8_t> v_data = builder.reconfigRFDiscCmd(data_len, p_data);
+    return phNxpNciHal_write_internal(v_data.size(), v_data.data());
   }
   return phNxpNciHal_write_internal(data_len, p_data);
 }
@@ -1390,27 +1400,8 @@ static void phNxpNciHal_read_complete(void* pContext,
       SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
     }
     /* Read successful send the event to higher layer */
-    else if ((nxpncihal_ctrl.p_nfc_stack_data_cback != NULL) &&
-             (status == NFCSTATUS_SUCCESS)) {
-      NxpMfcReaderInstance.MfcNotifyOnAckReceived(nxpncihal_ctrl.p_rx_data);
-      (*nxpncihal_ctrl.p_nfc_stack_data_cback)(nxpncihal_ctrl.rx_data_len,
-                                               nxpncihal_ctrl.p_rx_data);
-      // workaround for sync issue between SPI and NFC
-      if (IS_CHIP_TYPE_EQ(pn557) && nxpncihal_ctrl.p_rx_data[0] == 0x62 &&
-          nxpncihal_ctrl.p_rx_data[1] == 0x00 &&
-          nxpncihal_ctrl.p_rx_data[3] == 0xC0 &&
-          nxpncihal_ctrl.p_rx_data[4] == 0x00) {
-        uint8_t nfcee_notifiations[3][9] = {
-            {0x61, 0x0A, 0x06, 0x01, 0x00, 0x03, 0xC0, 0x80, 0x04},
-            {0x61, 0x0A, 0x06, 0x01, 0x00, 0x03, 0xC0, 0x81, 0x04},
-            {0x61, 0x0A, 0x06, 0x01, 0x00, 0x03, 0xC0, 0x82, 0x03},
-        };
-
-        for (int i = 0; i < 3; i++) {
-          (*nxpncihal_ctrl.p_nfc_stack_data_cback)(
-              sizeof(nfcee_notifiations[i]), nfcee_notifiations[i]);
-        }
-      }
+    else if (status == NFCSTATUS_SUCCESS) {
+      phNxpNciHal_client_data_callback();
     }
     /* Unblock next Write Command Window */
     sem_getvalue(&(nxpncihal_ctrl.syncSpiNfc), &sem_val);
@@ -1441,6 +1432,52 @@ static void phNxpNciHal_read_complete(void* pContext,
     }
   }
   return;
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_client_data_callback
+ *
+ * Description      This will process the data and sends message to lib-nfc
+ *                  client via callback
+ *
+ * Returns          void
+ *
+ ******************************************************************************/
+void phNxpNciHal_client_data_callback() {
+  if (nxpncihal_ctrl.p_nfc_stack_data_cback == NULL) {
+    NXPLOG_NCIHAL_E("callback is NULL");
+    return;
+  }
+  NxpMfcReaderInstance.MfcNotifyOnAckReceived(nxpncihal_ctrl.p_rx_data);
+
+  if (isObserveModeEnabled() &&
+      nxpncihal_ctrl.p_rx_data[NCI_GID_INDEX] == NCI_PROP_NTF_GID &&
+      nxpncihal_ctrl.p_rx_data[NCI_OID_INDEX] == NCI_PROP_LX_NTF_OID) {
+    ReaderPollConfigParser readerPollConfigParser;
+    readerPollConfigParser.setReaderPollCallBack(
+        nxpncihal_ctrl.p_nfc_stack_data_cback);
+    readerPollConfigParser.parseAndSendReaderPollInfo(
+        nxpncihal_ctrl.p_rx_data, nxpncihal_ctrl.rx_data_len);
+  } else {
+    (*nxpncihal_ctrl.p_nfc_stack_data_cback)(nxpncihal_ctrl.rx_data_len,
+                                             nxpncihal_ctrl.p_rx_data);
+  }
+  // workaround for sync issue between SPI and NFC
+  if (IS_CHIP_TYPE_EQ(pn557) && nxpncihal_ctrl.p_rx_data[0] == 0x62 &&
+      nxpncihal_ctrl.p_rx_data[1] == 0x00 &&
+      nxpncihal_ctrl.p_rx_data[3] == 0xC0 &&
+      nxpncihal_ctrl.p_rx_data[4] == 0x00) {
+    uint8_t nfcee_notifiations[3][9] = {
+        {0x61, 0x0A, 0x06, 0x01, 0x00, 0x03, 0xC0, 0x80, 0x04},
+        {0x61, 0x0A, 0x06, 0x01, 0x00, 0x03, 0xC0, 0x81, 0x04},
+        {0x61, 0x0A, 0x06, 0x01, 0x00, 0x03, 0xC0, 0x82, 0x03},
+    };
+
+    for (int i = 0; i < 3; i++) {
+      (*nxpncihal_ctrl.p_nfc_stack_data_cback)(sizeof(nfcee_notifiations[i]),
+                                               nfcee_notifiations[i]);
+    }
+  }
 }
 
 /******************************************************************************

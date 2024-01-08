@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2023 NXP
+ * Copyright 2010-2024 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -420,5 +420,16 @@ NFCSTATUS phNxpNciHal_save_uicc_params();
  *
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_restore_uicc_params();
+
+/******************************************************************************
+ * Function         phNxpNciHal_client_data_callback
+ *
+ * Description      This will process the data and sends message to lib-nfc
+ *                  client via callback
+ *
+ * Returns          void
+ *
+ ******************************************************************************/
+void phNxpNciHal_client_data_callback();
 
 #endif /* _PHNXPNCIHAL_H_ */
