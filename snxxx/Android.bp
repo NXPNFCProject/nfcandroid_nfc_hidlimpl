@@ -15,7 +15,7 @@
 
 //
 //  The original Work has been changed by NXP.
-//  Copyright (C) 2021-2023 NXP
+//  Copyright (C) 2021-2024 NXP
 
 package {
     // See: http://go/android-license-faq
@@ -48,6 +48,7 @@ cc_library_shared {
         "halimpl/dnld/phDnldNfc_Utils.cc",
         "halimpl/dnld/phNxpNciHal_Dnld.cc",
         "halimpl/hal/phNxpNciHal.cc",
+        "halimpl/hal/phNxpNciHal_VendorProp.cc",
         "halimpl/hal/phNxpNciHal_ext.cc",
         "halimpl/log/phNxpLog.cc",
         "halimpl/src/adaptation/EseAdaptation.cc",
