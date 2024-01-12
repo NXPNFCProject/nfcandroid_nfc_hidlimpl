@@ -42,6 +42,7 @@
 #include "phNxpNciHal_LxDebug.h"
 #include "phNxpNciHal_PowerTrackerIface.h"
 #include "phNxpNciHal_ULPDet.h"
+#include "phNxpNciHal_VendorProp.h"
 #include "phNxpNciHal_extOperations.h"
 
 using android::base::StringPrintf;
@@ -53,6 +54,7 @@ using android::base::WriteStringToFile;
 #define MAX_NXP_HAL_EXTN_BYTES 10
 #define DEFAULT_MINIMAL_FW_VERSION 0x0110DE
 #define EOS_FW_SESSION_STATE_LOCKED 0x02
+#define CORE_RESET_NTF_RECOVERY_REQ_COUNT 0x03
 
 bool bEnableMfcExtns = false;
 bool bEnableMfcReader = false;
@@ -67,6 +69,8 @@ static const char* rf_block_num[] = {
     "23", "24", "25", "26", "27", "28", "29", "30", NULL};
 const char* rf_block_name = "NXP_RF_CONF_BLK_";
 static uint8_t read_failed_disable_nfc = false;
+const char* core_reset_ntf_count_prop_name =
+    "vendor.nfc.core_reset_ntf_count";
 /* FW download success flag */
 static uint8_t fw_download_success = 0;
 static uint8_t config_access = false;
@@ -175,6 +179,7 @@ static NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(
 static uint8_t phNxpNciHal_getSessionInfoInFwDnldMode();
 static NFCSTATUS phNxpNciHal_dlResetInFwDnldMode();
 static NFCSTATUS phNxpNciHal_enableTmlRead();
+static void phNxpNciHal_check_and_recover_fw();
 
 /******************************************************************************
  * Function         onLoadLibrary
@@ -798,7 +803,7 @@ int phNxpNciHal_MinOpen() {
   if (GetNxpNumValue(NAME_NXP_NFC_CHIP, &chipInfo, sizeof(chipInfo))) {
     NXPLOG_NCIHAL_D("The chip type is %lx", chipInfo);
   }
-
+  phNxpNciHal_check_and_recover_fw();
   if (gsIsFirstHalMinOpen) {
     /*Skip get version command for pn557*/
     if (chipInfo != pn557) phNxpNciHal_CheckAndHandleFwTearDown();
@@ -904,6 +909,11 @@ int phNxpNciHal_MinOpen() {
 
   if (fpDoAntennaActivity != NULL && (gsIsFirstHalMinOpen || fw_download_success)) {
     fpDoAntennaActivity(ANTENNA_CHECK_STATUS);
+  }
+  /* if MinOpen exit gracefully there is no core reset ntf issue */
+  if (NFCSTATUS_SUCCESS !=
+      phNxpNciHal_setVendorProp(core_reset_ntf_count_prop_name, "0")) {
+    NXPLOG_NCIHAL_E("setting core_reset_ntf_count_prop failed");
   }
   /* Call open complete */
   phNxpNciHal_MinOpen_complete(wConfigStatus);
@@ -4017,3 +4027,36 @@ void phNxpNciHal_setVerboseLogging(bool enable) { nfc_debug_enabled = enable; }
  *****************************************************************************/
 
 bool phNxpNciHal_getVerboseLogging() { return nfc_debug_enabled; }
+
+/******************************************************************************
+ * Function         phNxpNciHal_check_and_recover_fw
+ *
+ * Description      This function  performs fw recovery using force fw download
+ *                  followed by power reset if it requires.
+ *
+ * Returns          void
+ *
+ *****************************************************************************/
+
+static void phNxpNciHal_check_and_recover_fw() {
+  NXPLOG_NCIHAL_D("%s: Entry", __func__);
+  int32_t core_reset_count =
+      phNxpNciHal_getVendorProp_int32(core_reset_ntf_count_prop_name, 0);
+  if (core_reset_count >= CORE_RESET_NTF_RECOVERY_REQ_COUNT) {
+    NXPLOG_NCIHAL_D("FW Recovery is required");
+    if ((phTmlNfc_IoCtl(phTmlNfc_e_PullVenLow) != NFCSTATUS_SUCCESS) ||
+        (phTmlNfc_IoCtl(phTmlNfc_e_PullVenHigh) != NFCSTATUS_SUCCESS)) {
+      NXPLOG_NCIHAL_E("Power reset failed during fw recovery");
+      return;
+    }
+    if (phNxpNciHal_getChipInfoInFwDnldMode(false) != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("phNxpNciHal_getChipInfoInFwDnldMode Failed");
+      return;
+    }
+    if (phNxpNciHal_force_fw_download(0x00, true) != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_D("FW Recovery Failed");
+      return;
+    }
+    NXPLOG_NCIHAL_D("FW Recovery SUCCESS");
+  }
+}

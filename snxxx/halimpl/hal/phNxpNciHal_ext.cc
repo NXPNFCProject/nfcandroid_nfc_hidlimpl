@@ -31,6 +31,7 @@
 #include "phNxpNciHal_IoctlOperations.h"
 #include "phNxpNciHal_LxDebug.h"
 #include "phNxpNciHal_PowerTrackerIface.h"
+#include "phNxpNciHal_VendorProp.h"
 
 #define NXP_EN_SN110U 1
 #define NXP_EN_SN100U 1
@@ -60,6 +61,7 @@ extern PowerTrackerHandle gPowerTrackerHandle;
 extern bool_t gsIsFwRecoveryRequired;
 
 extern bool nfc_debug_enabled;
+extern const char* core_reset_ntf_count_prop_name;
 uint8_t icode_detected = 0x00;
 uint8_t icode_send_eof = 0x00;
 static uint8_t ee_disc_done = 0x00;
@@ -100,6 +102,8 @@ static NFCSTATUS phNxpNciHal_process_screen_state_cmd(uint16_t* cmd_len,
                                                       uint8_t* p_cmd_data,
                                                       uint16_t* rsp_len,
                                                       uint8_t* p_rsp_data);
+static void phNxpNciHal_update_core_reset_ntf_prop();
+
 void printNfcMwVersion() {
   uint32_t validation = (NXP_EN_SN100U << 13);
   validation |= (NXP_EN_SN110U << 14);
@@ -482,6 +486,13 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
       NXPLOG_NCIHAL_D("NxpNci> FW Version: %x.%x.%x", p_ntf[len - 2],
                       p_ntf[len - 1], p_ntf[len]);
     } else {
+      if ((p_ntf[3] == CORE_RESET_TRIGGER_TYPE_WATCHDOG_RESET) ||
+          ((p_ntf[3] == CORE_RESET_TRIGGER_TYPE_UNRECOVERABLE_ERROR) &&
+           (p_ntf[4] == CORE_RESET_TRIGGER_TYPE_WATCHDOG_RESET))) {
+        /* WA : In some cases for Watchdog reset FW sends reset reason code as
+         * unrecoverable error and config status as WATCHDOG_RESET */
+        phNxpNciHal_update_core_reset_ntf_prop();
+      }
       phNxpNciHal_emergency_recovery(p_ntf[3]);
       status = NFCSTATUS_FAILED;
     } /* Parsing CORE_INIT_RSP*/
@@ -1607,4 +1618,29 @@ static NFCSTATUS phNxpNciHal_process_screen_state_cmd(uint16_t* cmd_len,
     status = NFCSTATUS_FAILED;
   }
   return status;
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_update_core_reset_ntf_prop
+ *
+ * Description      This function updates the vendor property which keep track
+ *                  core reset ntf count for fw recovery.
+ *
+ * Returns          void
+ *
+ *****************************************************************************/
+
+static void phNxpNciHal_update_core_reset_ntf_prop() {
+  NXPLOG_NCIHAL_D("%s: Entry", __func__);
+  int32_t core_reset_count =
+      phNxpNciHal_getVendorProp_int32(core_reset_ntf_count_prop_name, 0);
+  ++core_reset_count;
+  std::string ntf_count_str = std::to_string(core_reset_count);
+  NXPLOG_NCIHAL_D("Core reset counter prop value  %d", core_reset_count);
+  if (NFCSTATUS_SUCCESS !=
+      phNxpNciHal_setVendorProp(core_reset_ntf_count_prop_name,
+                                ntf_count_str.c_str())) {
+    NXPLOG_NCIHAL_D("setting core_reset_ntf_count_prop failed");
+  }
+  NXPLOG_NCIHAL_D("%s: Exit", __func__);
 }
