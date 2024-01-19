@@ -20,7 +20,7 @@
  *
  *  The original Work has been changed by NXP.
  *
- *  Copyright 2013-2023 NXP
+ *  Copyright 2013-2024 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -89,6 +89,7 @@ extern char Fw_Lib_Path[256];
 #define NAME_NXP_CHINA_BLK_NUM_CHK_ENABLE "NXP_CN_TRANSIT_BLK_NUM_CHECK_ENABLE"
 #define NAME_NXP_CN_TRANSIT_CMA_BYPASSMODE_ENABLE \
   "NXP_CN_TRANSIT_CMA_BYPASSMODE_ENABLE"
+#define NAME_NXP_MIFARE_MUTE_TO_RATS_ENABLE "NXP_MIFARE_MUTE_TO_RATS_ENABLE"
 #define NAME_NXP_SWP_SWITCH_TIMEOUT "NXP_SWP_SWITCH_TIMEOUT"
 #define NAME_NXP_SWP_FULL_PWR_ON "NXP_SWP_FULL_PWR_ON"
 #define NAME_NXP_CORE_RF_FIELD "NXP_CORE_RF_FIELD"
