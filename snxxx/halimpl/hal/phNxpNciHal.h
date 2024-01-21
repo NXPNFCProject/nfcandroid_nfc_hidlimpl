@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2023 NXP
+ * Copyright 2010-2024 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,6 +79,8 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 #define NXP_CORE_SET_CONFIG_CMD 0x02
 #define NXP_MAX_CONFIG_STRING_LEN 260
 #define NCI_HEADER_SIZE 3
+
+#define CORE_RESET_NTF_RECOVERY_REQ_COUNT 0x03
 
 typedef struct nci_data {
   uint16_t len;
