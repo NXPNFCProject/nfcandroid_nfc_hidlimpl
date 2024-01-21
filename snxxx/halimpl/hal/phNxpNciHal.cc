@@ -54,7 +54,8 @@ using android::base::WriteStringToFile;
 #define MAX_NXP_HAL_EXTN_BYTES 10
 #define DEFAULT_MINIMAL_FW_VERSION 0x0110DE
 #define EOS_FW_SESSION_STATE_LOCKED 0x02
-#define CORE_RESET_NTF_RECOVERY_REQ_COUNT 0x03
+#define NS_PER_S 1000000000
+#define MAX_WAIT_MS_FOR_RESET_NTF 1600
 
 bool bEnableMfcExtns = false;
 bool bEnableMfcReader = false;
@@ -118,7 +119,7 @@ uint8_t fw_dwnld_flag = false;
 #endif
 bool nfc_debug_enabled = true;
 PowerTrackerHandle gPowerTrackerHandle;
-
+sem_t sem_reset_ntf_received;
 /*  Used to send Callback Transceive data during Mifare Write.
  *  If this flag is enabled, no need to send response to Upper layer */
 bool sendRspToUpperLayer = true;
@@ -786,6 +787,10 @@ int phNxpNciHal_MinOpen() {
   }
 
   CONCURRENCY_UNLOCK();
+  if (sem_init(&sem_reset_ntf_received, 0, 0) != 0) {
+    NXPLOG_NCIHAL_E("%s : sem_init for sem_reset_ntf_received failed",
+                    __func__);
+  }
   /* call read pending */
   status = phTmlNfc_Read(
       nxpncihal_ctrl.p_rsp_data, NCI_MAX_DATA_LEN,
@@ -2415,7 +2420,7 @@ close_and_return:
       }
     }
   }
-
+  sem_destroy(&sem_reset_ntf_received);
   sem_destroy(&nxpncihal_ctrl.syncSpiNfc);
 
   if (NULL != gpphTmlNfc_Context->pDevHandle) {
@@ -4040,10 +4045,50 @@ bool phNxpNciHal_getVerboseLogging() { return nfc_debug_enabled; }
 
 static void phNxpNciHal_check_and_recover_fw() {
   NXPLOG_NCIHAL_D("%s: Entry", __func__);
+  uint8_t cmd_reset_nci_rs[] = {0x20, 0x00, 0x01, 0x80};  // switch to DL mode
+  NFCSTATUS status = NFCSTATUS_FAILED;
   int32_t core_reset_count =
       phNxpNciHal_getVendorProp_int32(core_reset_ntf_count_prop_name, 0);
-  if (core_reset_count >= CORE_RESET_NTF_RECOVERY_REQ_COUNT) {
-    NXPLOG_NCIHAL_D("FW Recovery is required");
+  if (core_reset_count < CORE_RESET_NTF_RECOVERY_REQ_COUNT) {
+    return;
+  }
+  NXPLOG_NCIHAL_D("FW Recovery is required");
+  if (core_reset_count <= CORE_RESET_NTF_RECOVERY_REQ_COUNT + 1) {
+    // check if there is a new  reset NTF or time out after 1600ms
+    // as interval b/w 2 consecutive NTF is 1.4 secs
+    struct timespec ts;
+
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    // Normalize timespec
+    ts.tv_sec += MAX_WAIT_MS_FOR_RESET_NTF / 1000;
+    ts.tv_nsec += (MAX_WAIT_MS_FOR_RESET_NTF % 1000) * 1000000;
+    if (ts.tv_nsec >= NS_PER_S) {
+      ts.tv_sec++;
+      ts.tv_nsec -= NS_PER_S;
+    }
+
+    int s;
+    while ((s = sem_timedwait_monotonic_np(&sem_reset_ntf_received, &ts)) ==
+               -1 &&
+           errno == EINTR) {
+      continue; /* Restart if interrupted by handler */
+    }
+    if (s == -1) {
+      NXPLOG_NCIHAL_D("sem_timedwait failed. errno = %d", errno);
+    }
+    if (NFCSTATUS_SUCCESS !=
+        phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci_rs), cmd_reset_nci_rs)) {
+      NXPLOG_NCIHAL_E(
+          "failed to switch in fw download mode through nci core reset");
+    }
+
+    status = phNxpNciHal_getChipInfoInFwDnldMode(false);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("phNxpNciHal_getChipInfoInFwDnldMode Failed");
+      status = NFCSTATUS_FAILED;
+    }
+  }
+  if (status != NFCSTATUS_SUCCESS) {
     if ((phTmlNfc_IoCtl(phTmlNfc_e_PullVenLow) != NFCSTATUS_SUCCESS) ||
         (phTmlNfc_IoCtl(phTmlNfc_e_PullVenHigh) != NFCSTATUS_SUCCESS)) {
       NXPLOG_NCIHAL_E("Power reset failed during fw recovery");
@@ -4053,10 +4098,15 @@ static void phNxpNciHal_check_and_recover_fw() {
       NXPLOG_NCIHAL_E("phNxpNciHal_getChipInfoInFwDnldMode Failed");
       return;
     }
-    if (phNxpNciHal_force_fw_download(0x00, true) != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_D("FW Recovery Failed");
-      return;
-    }
+  }
+  /* entered in recovery mode now reset the counter */
+  if (NFCSTATUS_SUCCESS !=
+      phNxpNciHal_setVendorProp(core_reset_ntf_count_prop_name, "0")) {
+    NXPLOG_NCIHAL_E("setting core_reset_ntf_count_prop failed");
+  }
+  if (phNxpNciHal_force_fw_download(0x00, true) != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_D("FW Recovery Failed");
+  } else {
     NXPLOG_NCIHAL_D("FW Recovery SUCCESS");
   }
 }

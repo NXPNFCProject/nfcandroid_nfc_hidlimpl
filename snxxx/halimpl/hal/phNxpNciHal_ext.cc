@@ -78,6 +78,7 @@ static uint32_t bCoreInitRsp[40];
 static uint32_t iCoreInitRspLen;
 
 extern uint32_t timeoutTimerId;
+extern sem_t sem_reset_ntf_received;
 
 /************** HAL extension functions ***************************************/
 static void hal_extns_write_rsp_timeout_cb(uint32_t TimerId, void* pContext);
@@ -102,7 +103,7 @@ static NFCSTATUS phNxpNciHal_process_screen_state_cmd(uint16_t* cmd_len,
                                                       uint8_t* p_cmd_data,
                                                       uint16_t* rsp_len,
                                                       uint8_t* p_rsp_data);
-static void phNxpNciHal_update_core_reset_ntf_prop();
+static bool phNxpNciHal_update_core_reset_ntf_prop();
 
 void printNfcMwVersion() {
   uint32_t validation = (NXP_EN_SN100U << 13);
@@ -486,14 +487,17 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
       NXPLOG_NCIHAL_D("NxpNci> FW Version: %x.%x.%x", p_ntf[len - 2],
                       p_ntf[len - 1], p_ntf[len]);
     } else {
-      if ((p_ntf[3] == CORE_RESET_TRIGGER_TYPE_WATCHDOG_RESET) ||
+      bool is_abort_req = true;
+      if ((p_ntf[3] == CORE_RESET_TRIGGER_TYPE_WATCHDOG_RESET ||
+           p_ntf[3] == CORE_RESET_TRIGGER_TYPE_FW_ASSERT) ||
           ((p_ntf[3] == CORE_RESET_TRIGGER_TYPE_UNRECOVERABLE_ERROR) &&
-           (p_ntf[4] == CORE_RESET_TRIGGER_TYPE_WATCHDOG_RESET))) {
+           (p_ntf[4] == CORE_RESET_TRIGGER_TYPE_WATCHDOG_RESET ||
+            p_ntf[4] == CORE_RESET_TRIGGER_TYPE_FW_ASSERT))) {
         /* WA : In some cases for Watchdog reset FW sends reset reason code as
          * unrecoverable error and config status as WATCHDOG_RESET */
-        phNxpNciHal_update_core_reset_ntf_prop();
+        is_abort_req = phNxpNciHal_update_core_reset_ntf_prop();
       }
-      phNxpNciHal_emergency_recovery(p_ntf[3]);
+      if (is_abort_req) phNxpNciHal_emergency_recovery(p_ntf[3]);
       status = NFCSTATUS_FAILED;
     } /* Parsing CORE_INIT_RSP*/
   } else if (p_ntf[0] == NCI_MT_RSP &&
@@ -1630,10 +1634,16 @@ static NFCSTATUS phNxpNciHal_process_screen_state_cmd(uint16_t* cmd_len,
  *
  *****************************************************************************/
 
-static void phNxpNciHal_update_core_reset_ntf_prop() {
+static bool phNxpNciHal_update_core_reset_ntf_prop() {
   NXPLOG_NCIHAL_D("%s: Entry", __func__);
+  bool is_abort_req = true;
   int32_t core_reset_count =
       phNxpNciHal_getVendorProp_int32(core_reset_ntf_count_prop_name, 0);
+  if (core_reset_count == CORE_RESET_NTF_RECOVERY_REQ_COUNT) {
+    NXPLOG_NCIHAL_D("%s: Notify main thread of fresh ntf received", __func__);
+    sem_post(&sem_reset_ntf_received);
+    is_abort_req = false;
+  }
   ++core_reset_count;
   std::string ntf_count_str = std::to_string(core_reset_count);
   NXPLOG_NCIHAL_D("Core reset counter prop value  %d", core_reset_count);
@@ -1643,4 +1653,5 @@ static void phNxpNciHal_update_core_reset_ntf_prop() {
     NXPLOG_NCIHAL_D("setting core_reset_ntf_count_prop failed");
   }
   NXPLOG_NCIHAL_D("%s: Exit", __func__);
+  return is_abort_req;
 }
