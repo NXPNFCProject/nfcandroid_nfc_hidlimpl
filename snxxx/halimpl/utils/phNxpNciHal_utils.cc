@@ -433,8 +433,7 @@ void phNxpNciHal_releaseall_cb_data(void) {
 void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
                               uint16_t len) {
   tNFC_printType printType = getPrintType(pString);
-  if (!nfc_debug_enabled && (printType == PRINT_UNKNOWN))
-    return; // logging is disabled
+  if (printType == PRINT_UNKNOWN) return;  // logging is disabled
   uint32_t i;
   char* print_buffer = (char*)calloc((len * 3 + 1), sizeof(char));
   if (NULL != print_buffer) {
@@ -473,13 +472,16 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
 *******************************************************************************/
 tNFC_printType getPrintType(const char* pString) {
   if ((0 == memcmp(pString, "SEND", 0x04)) &&
-      (gLog_level.ncix_log_level >= NXPLOG_LOG_INFO_LOGLEVEL)) {
+      (nfc_debug_enabled ||
+       (gLog_level.ncix_log_level >= NXPLOG_LOG_INFO_LOGLEVEL))) {
     return PRINT_SEND;
   } else if ((0 == memcmp(pString, "RECV", 0x04)) &&
-             (gLog_level.ncir_log_level >= NXPLOG_LOG_INFO_LOGLEVEL)) {
+             (nfc_debug_enabled ||
+              (gLog_level.ncir_log_level >= NXPLOG_LOG_INFO_LOGLEVEL))) {
     return PRINT_RECV;
   } else if ((0 == memcmp(pString, "DEBUG", 0x05)) &&
-             (gLog_level.hal_log_level >= NXPLOG_LOG_DEBUG_LOGLEVEL)) {
+             (nfc_debug_enabled ||
+              (gLog_level.hal_log_level >= NXPLOG_LOG_DEBUG_LOGLEVEL))) {
     return PRINT_DEBUG;
   }
   return PRINT_UNKNOWN;
