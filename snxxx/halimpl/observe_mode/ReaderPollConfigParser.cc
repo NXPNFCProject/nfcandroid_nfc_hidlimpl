@@ -145,49 +145,49 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
         // Modulation detected
         switch ((p_event[INDEX_OF_L2_EVT_TYPE] & LX_EVENT_MASK) >> 4) {
           case EVENT_MOD_A:
-            event_data =
-                getWellKnowModEventData(TYPE_MOD_A, timestamp, lastKnownGain);
+            event_data = getWellKnowModEventData(
+                TYPE_MOD_A, std::move(timestamp), lastKnownGain);
             break;
 
           case EVENT_MOD_B:
-            event_data =
-                getWellKnowModEventData(TYPE_MOD_B, timestamp, lastKnownGain);
+            event_data = getWellKnowModEventData(
+                TYPE_MOD_B, std::move(timestamp), lastKnownGain);
             break;
 
           case EVENT_MOD_F:
-            event_data =
-                getWellKnowModEventData(TYPE_MOD_F, timestamp, lastKnownGain);
+            event_data = getWellKnowModEventData(
+                TYPE_MOD_F, std::move(timestamp), lastKnownGain);
             break;
 
           default:
             event_data = getUnKnowEvent(
                 vector<uint8_t>(p_event.begin() + INDEX_OF_L2_EVT_TYPE,
                                 p_event.end()),
-                timestamp, lastKnownGain);
+                std::move(timestamp), lastKnownGain);
         }
         break;
 
       case EVENT_RF_ON:
         // External RF Field is ON
-        event_data = getRFEventData(timestamp, lastKnownGain, true);
+        event_data = getRFEventData(std::move(timestamp), lastKnownGain, true);
         break;
 
       case EVENT_RF_OFF:
-        event_data = getRFEventData(timestamp, lastKnownGain, false);
+        event_data = getRFEventData(std::move(timestamp), lastKnownGain, false);
         break;
 
       default:
         event_data = getUnKnowEvent(
             vector<uint8_t>(p_event.begin() + INDEX_OF_L2_EVT_TYPE,
                             p_event.end()),
-            timestamp, lastKnownGain);
+            std::move(timestamp), lastKnownGain);
         break;
     }
 
   } else {
     event_data = getUnKnowEvent(
         vector<uint8_t>(p_event.begin() + INDEX_OF_L2_EVT_TYPE, p_event.end()),
-        timestamp, lastKnownGain);
+        std::move(timestamp), lastKnownGain);
   }
 
   return event_data;

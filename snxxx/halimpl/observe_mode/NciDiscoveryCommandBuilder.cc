@@ -155,7 +155,7 @@ vector<uint8_t> NciDiscoveryCommandBuilder::reconfigRFDiscCmd(
   }
 
   vector<uint8_t> discoveryCommand = vector<uint8_t>(p_data, p_data + data_len);
-  bool status = parse(discoveryCommand);
+  bool status = parse(std::move(discoveryCommand));
   if (status) {
     removeListenParams();
     addObserveModeParams();
