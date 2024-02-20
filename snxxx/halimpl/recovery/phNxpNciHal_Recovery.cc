@@ -491,24 +491,27 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
   phTmlNfc_Config_t tTmlConfig;
   char* nfc_dev_node = NULL;
 
+  CONCURRENCY_LOCK();
   NXPLOG_NCIHAL_D("phnxpNciHal_partialOpen(): enter");
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_MIN_OPEN) {
     NXPLOG_NCIHAL_D("phNxpNciHal: already open");
+    CONCURRENCY_UNLOCK();
     return NFCSTATUS_SUCCESS;
   }
   /* initialize trace level */
   phNxpLog_InitializeLogLevel();
   if (phNxpNciHal_init_monitor() == NULL) {
     NXPLOG_NCIHAL_E("Init monitor failed");
+    CONCURRENCY_UNLOCK();
     return NFCSTATUS_FAILED;
   }
   /* Create the local semaphore */
   if (phNxpNciHal_init_cb_data(&nxpncihal_ctrl.ext_cb_data, NULL) !=
       NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_D("Create ext_cb_data failed");
+    CONCURRENCY_UNLOCK();
     return NFCSTATUS_FAILED;
   }
-  CONCURRENCY_LOCK();
   memset(&tOsalConfig, 0x00, sizeof(tOsalConfig));
   memset(&tTmlConfig, 0x00, sizeof(tTmlConfig));
   memset(&nxpprofile_ctrl, 0, sizeof(phNxpNciProfile_Control_t));
