@@ -15,6 +15,7 @@
  */
 
 #include "NciDiscoveryCommandBuilder.h"
+
 #include <phNfcNciConstants.h>
 
 using namespace std;
