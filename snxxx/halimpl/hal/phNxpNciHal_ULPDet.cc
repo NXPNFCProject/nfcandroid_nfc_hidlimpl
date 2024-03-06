@@ -174,8 +174,8 @@ int phNxpNciHal_handleULPDetCommand(uint16_t data_len, const uint8_t* p_data) {
     status = NCI_RSP_OK;
   }
 
-  phNxpNciHal_vendorSpecificCallback(p_data[NCI_OID_INDEX],
-                                     p_data[NCI_MSG_INDEX_FOR_FEATURE],  status);
+  phNxpNciHal_vendorSpecificCallback(
+      p_data[NCI_OID_INDEX], p_data[NCI_MSG_INDEX_FOR_FEATURE], {status});
 
   return p_data[NCI_MSG_LEN_INDEX];
 }

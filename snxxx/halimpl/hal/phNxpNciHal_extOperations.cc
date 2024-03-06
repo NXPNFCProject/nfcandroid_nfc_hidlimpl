@@ -794,6 +794,9 @@ int phNxpNciHal_handleVendorSpecificCommand(uint16_t data_len,
   } else if (data_len > 4 &&
              p_data[NCI_MSG_INDEX_FOR_FEATURE] == NCI_ANDROID_OBSERVER_MODE) {
     return handleObserveMode(data_len, p_data);
+  } else if (data_len > 4 && p_data[NCI_MSG_INDEX_FOR_FEATURE] ==
+                                 NCI_ANDROID_GET_OBSERVER_MODE_STATUS) {
+    return handleGetObserveModeStatus(data_len, p_data);
   }
 
   return 0;
@@ -803,19 +806,23 @@ int phNxpNciHal_handleVendorSpecificCommand(uint16_t data_len,
 **
 ** Function         phNxpNciHal_vendorSpecificCallback()
 **
-** Params           oid, opcode, status
+** Params           oid, opcode, data
 **
 ** Description      This function sends response to Vendor Specific commands
 **
 *******************************************************************************/
-void phNxpNciHal_vendorSpecificCallback(int oid, int opcode, int status) {
+void phNxpNciHal_vendorSpecificCallback(int oid, int opcode,
+                                        vector<uint8_t> data) {
   static phLibNfc_Message_t msg;
   nxpncihal_ctrl.p_rsp_data[0] = (uint8_t)(NCI_GID_PROP | NCI_MT_RSP);
   nxpncihal_ctrl.p_rsp_data[1] = oid;
-  nxpncihal_ctrl.p_rsp_data[2] = NCI_RSP_SIZE;
+  nxpncihal_ctrl.p_rsp_data[2] = 1 + (int)data.size();
   nxpncihal_ctrl.p_rsp_data[3] = opcode;
-  nxpncihal_ctrl.p_rsp_data[4] = status;
-  nxpncihal_ctrl.rsp_len = 5;
+  if ((int)data.size() > 0) {
+    memcpy(&nxpncihal_ctrl.p_rsp_data[4], data.data(),
+           data.size() * sizeof(uint8_t));
+  }
+  nxpncihal_ctrl.rsp_len = 4 + (int)data.size();
 
   msg.eMsgType = NCI_HAL_RX_MSG;
   msg.pMsgData = NULL;

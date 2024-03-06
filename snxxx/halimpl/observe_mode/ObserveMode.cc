@@ -15,7 +15,11 @@
  */
 #include <ObserveMode.h>
 #include <phNfcNciConstants.h>
+
+#include <vector>
 #include "phNxpNciHal_extOperations.h"
+
+using namespace std;
 
 bool bIsObserveModeEnabled;
 
@@ -66,8 +70,31 @@ int handleObserveMode(uint16_t data_len, const uint8_t* p_data) {
     status = NCI_RSP_OK;
   }
 
-  phNxpNciHal_vendorSpecificCallback(p_data[NCI_OID_INDEX],
-                                     p_data[NCI_MSG_INDEX_FOR_FEATURE], status);
+  phNxpNciHal_vendorSpecificCallback(
+      p_data[NCI_OID_INDEX], p_data[NCI_MSG_INDEX_FOR_FEATURE], {status});
+
+  return p_data[NCI_MSG_LEN_INDEX];
+}
+
+/*******************************************************************************
+ *
+ * Function         handleGetObserveModeStatus()
+ *
+ * Description      Handles the Get Observe mode command and gives the observe
+ *                  mode status
+ *
+ * Returns          It returns number of bytes received.
+ *
+ ******************************************************************************/
+int handleGetObserveModeStatus(uint16_t data_len, const uint8_t* p_data) {
+  if (data_len <= 4) {
+    return 0;
+  }
+  vector<uint8_t> response;
+  response.push_back(0x00);
+  response.push_back(isObserveModeEnabled() ? 0x00 : 0x01);
+  phNxpNciHal_vendorSpecificCallback(
+      p_data[NCI_OID_INDEX], p_data[NCI_MSG_INDEX_FOR_FEATURE], response);
 
   return p_data[NCI_MSG_LEN_INDEX];
 }

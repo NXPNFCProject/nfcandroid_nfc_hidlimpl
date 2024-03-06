@@ -103,6 +103,13 @@ class NciDiscoveryCommandBuilder {
    ****************************************************************************/
   bool isDiscoveryCommand(vector<uint8_t> data);
 
+#if (NXP_UNIT_TEST == TRUE)
+  /*
+    Friend class is used to test private function's of
+    NciDiscoveryCommandBuilder
+  */
+  friend class NciDiscoveryCommandBuilderTest;
+#endif
  public:
   /*****************************************************************************
    *

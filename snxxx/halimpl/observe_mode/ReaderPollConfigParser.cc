@@ -15,6 +15,7 @@
  */
 
 #include "ReaderPollConfigParser.h"
+
 #include <phNfcNciConstants.h>
 
 using namespace std;
@@ -33,17 +34,16 @@ using namespace std;
  *
  ****************************************************************************/
 vector<uint8_t> ReaderPollConfigParser::getWellKnownModEventData(
-    uint8_t event, vector<uint8_t> timeStamp, uint8_t gain) {
+    uint8_t event, vector<uint8_t> timeStamp, uint8_t gain,
+    vector<uint8_t> data = vector<uint8_t>()) {
   vector<uint8_t> eventData;
-  eventData.push_back(NCI_PROP_NTF_GID);
-  eventData.push_back(NCI_PROP_NTF_ANDROID_OID);
-  eventData.push_back(OP_CODE_FIELD_LENGTH + EVENT_TYPE_FIELD_LENGTH +
-                      timeStamp.size() + GAIN_FIELD_LENGTH);
-  eventData.push_back(OBSERVE_MODE_OP_CODE);
   eventData.push_back(event);
+  eventData.push_back(SHORT_FLAG);  // Always short frame
+  eventData.push_back(timeStamp.size() + GAIN_FIELD_LENGTH + data.size());
   eventData.insert(std::end(eventData), std::begin(timeStamp),
                    std::end(timeStamp));
   eventData.push_back(gain);
+  eventData.insert(std::end(eventData), std::begin(data), std::end(data));
   return eventData;
 }
 
@@ -62,14 +62,11 @@ vector<uint8_t> ReaderPollConfigParser::getWellKnownModEventData(
  ***************************************************************************/
 vector<uint8_t> ReaderPollConfigParser::getUnknownEvent(
     vector<uint8_t> data, vector<uint8_t> timeStamp, uint8_t gain) {
-  uint8_t eventLength = OP_CODE_FIELD_LENGTH + EVENT_TYPE_FIELD_LENGTH +
-                        timeStamp.size() + GAIN_FIELD_LENGTH + (int)data.size();
+  uint8_t eventLength = timeStamp.size() + GAIN_FIELD_LENGTH + (int)data.size();
   vector<uint8_t> eventData;
-  eventData.push_back(NCI_PROP_NTF_GID);
-  eventData.push_back(NCI_PROP_NTF_ANDROID_OID);
-  eventData.push_back(eventLength);
-  eventData.push_back(OBSERVE_MODE_OP_CODE);
   eventData.push_back(TYPE_UNKNOWN);
+  eventData.push_back(SHORT_FLAG);  // Always short frame
+  eventData.push_back(eventLength);
   eventData.insert(std::end(eventData), std::begin(timeStamp),
                    std::end(timeStamp));
   eventData.push_back(gain);
@@ -92,15 +89,12 @@ vector<uint8_t> ReaderPollConfigParser::getUnknownEvent(
  ****************************************************************************/
 vector<uint8_t> ReaderPollConfigParser::getRFEventData(
     vector<uint8_t> timeStamp, uint8_t gain, bool rfState) {
-  uint8_t eventLength = OP_CODE_FIELD_LENGTH + EVENT_TYPE_FIELD_LENGTH +
-                        timeStamp.size() + GAIN_FIELD_LENGTH +
-                        RF_STATE_FIELD_LENGTH;
+  uint8_t eventLength =
+      timeStamp.size() + GAIN_FIELD_LENGTH + RF_STATE_FIELD_LENGTH;
   vector<uint8_t> eventData;
-  eventData.push_back(NCI_PROP_NTF_GID);
-  eventData.push_back(NCI_PROP_NTF_ANDROID_OID);
-  eventData.push_back(eventLength);
-  eventData.push_back(OBSERVE_MODE_OP_CODE);
   eventData.push_back(TYPE_RF_FLAG);
+  eventData.push_back(SHORT_FLAG);  // Always short frame
+  eventData.push_back(eventLength);
   eventData.insert(std::end(eventData), std::begin(timeStamp),
                    std::end(timeStamp));
   eventData.push_back(gain);
@@ -145,16 +139,19 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
         // Modulation detected
         switch ((p_event[INDEX_OF_L2_EVT_TYPE] & LX_EVENT_MASK) >> 4) {
           case EVENT_MOD_A:
+            lastKnownModEvent = EVENT_MOD_A;
             event_data = getWellKnownModEventData(
                 TYPE_MOD_A, std::move(timestamp), lastKnownGain);
             break;
 
           case EVENT_MOD_B:
+            lastKnownModEvent = EVENT_MOD_B;
             event_data = getWellKnownModEventData(
                 TYPE_MOD_B, std::move(timestamp), lastKnownGain);
             break;
 
           case EVENT_MOD_F:
+            lastKnownModEvent = EVENT_MOD_F;
             event_data = getWellKnownModEventData(
                 TYPE_MOD_F, std::move(timestamp), lastKnownGain);
             break;
@@ -185,12 +182,87 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
     }
 
   } else {
-    event_data = getUnknownEvent(
-        vector<uint8_t>(p_event.begin() + INDEX_OF_L2_EVT_TYPE, p_event.end()),
-        std::move(timestamp), lastKnownGain);
+    switch (p_event[INDEX_OF_CMA_EVT_TYPE]) {
+      // Trigger Type
+      case CMA_EVENT_TRIGGER_TYPE:
+        switch (p_event[INDEX_OF_CMA_EVT_DATA]) {
+          case REQ_A:
+            event_data = getWellKnownModEventData(
+                TYPE_MOD_A, std::move(timestamp), lastKnownGain, {REQ_A});
+            break;
+
+          case WUP_A:
+            event_data = getWellKnownModEventData(
+                TYPE_MOD_A, std::move(timestamp), lastKnownGain, {WUP_A});
+            break;
+          default:
+            event_data = getUnknownEvent(
+                vector<uint8_t>(p_event.begin() + INDEX_OF_CMA_EVT_DATA,
+                                p_event.end()),
+                std::move(timestamp), lastKnownGain);
+        }
+        break;
+      case CMA_DATA_TRIGGER_TYPE: {
+        uint8_t entryLength = p_event[INDEX_OF_CMA_EVT_DATA];
+        if (p_event.size() >= INDEX_OF_CMA_EVT_DATA + entryLength) {
+          vector<uint8_t> payloadData = vector<uint8_t>(
+              p_event.begin() + INDEX_OF_CMA_DATA, p_event.end());
+
+          if (lastKnownModEvent == EVENT_MOD_B &&
+              payloadData[0] == TYPE_B_APF) {  // Type B Apf value is 0x05
+            event_data = getWellKnownModEventData(
+                TYPE_MOD_B, std::move(timestamp), lastKnownGain, payloadData);
+            break;
+          } else if (lastKnownModEvent == EVENT_MOD_F &&
+                     payloadData[0] == TYPE_F_CMD_LENGH &&
+                     payloadData[2] == TYPE_F_ID &&
+                     payloadData[3] == TYPE_F_ID) {
+            event_data = getWellKnownModEventData(
+                TYPE_MOD_F, std::move(timestamp), lastKnownGain, payloadData);
+            break;
+          } else {
+            event_data = getUnknownEvent(payloadData, std::move(timestamp),
+                                         lastKnownGain);
+            break;
+          }
+        }
+        [[fallthrough]];
+      }
+      default:
+        vector<uint8_t> payloadData = vector<uint8_t>(
+            p_event.begin() + INDEX_OF_CMA_EVT_TYPE, p_event.end());
+        event_data =
+            getUnknownEvent(payloadData, std::move(timestamp), lastKnownGain);
+    }
   }
 
   return event_data;
+}
+
+/*****************************************************************************
+ *
+ * Function         notifyPollingLoopInfoEvent
+ *
+ * Description      It sends polling info notification to upper layer
+ *
+ * Parameters       p_data - Polling loop info notification
+ *
+ * Returns          void
+ *
+ ****************************************************************************/
+void ReaderPollConfigParser::notifyPollingLoopInfoEvent(
+    vector<uint8_t> p_data) {
+  if (this->callback == NULL) return;
+
+  vector<uint8_t> readerPollInfoNotifications;
+  readerPollInfoNotifications.push_back(NCI_PROP_NTF_GID);
+  readerPollInfoNotifications.push_back(NCI_PROP_NTF_ANDROID_OID);
+  readerPollInfoNotifications.push_back((int)p_data.size() + 1);
+  readerPollInfoNotifications.push_back(OBSERVE_MODE_OP_CODE);
+  readerPollInfoNotifications.insert(std::end(readerPollInfoNotifications),
+                                     std::begin(p_data), std::end(p_data));
+  this->callback((int)readerPollInfoNotifications.size(),
+                 readerPollInfoNotifications.data());
 }
 
 /*****************************************************************************
@@ -214,23 +286,38 @@ bool ReaderPollConfigParser::parseAndSendReaderPollInfo(uint8_t* p_ntf,
   }
   vector<uint8_t> lxNotification = vector<uint8_t>(p_ntf, p_ntf + p_len);
   uint16_t idx = NCI_MESSAGE_OFFSET;
+
+  vector<uint8_t> readerPollInfoNotifications;
   while (idx < p_len) {
     uint8_t entryTag = ((lxNotification[idx] & LX_TAG_MASK) >> 4);
     uint8_t entryLength = (lxNotification[idx] & LX_LENGTH_MASK);
 
     idx++;
-    if (entryTag == L2_EVT_TAG || entryTag == CMA_EVT_TAG) {
+    if ((entryTag == L2_EVT_TAG || entryTag == CMA_EVT_TAG) &&
+        lxNotification.size() >= (idx + entryLength)) {
       vector<uint8_t> readerPollInfo =
           getEvent(vector<uint8_t>(lxNotification.begin() + idx,
                                    lxNotification.begin() + idx + entryLength),
                    entryTag == CMA_EVT_TAG);
-      if (this->callback != NULL) {
-        this->callback((int)readerPollInfo.size(), readerPollInfo.data());
+      if ((int)(readerPollInfoNotifications.size() + readerPollInfo.size()) >=
+          0xFF) {
+        notifyPollingLoopInfoEvent(readerPollInfoNotifications);
+        readerPollInfoNotifications.clear();
       }
+      readerPollInfoNotifications.insert(std::end(readerPollInfoNotifications),
+                                         std::begin(readerPollInfo),
+                                         std::end(readerPollInfo));
     }
 
     idx += entryLength;
   }
+
+  if (readerPollInfoNotifications.size() <= 0 ||
+      readerPollInfoNotifications.size() >= 0xFF) {
+    return false;
+  }
+
+  notifyPollingLoopInfoEvent(readerPollInfoNotifications);
 
   return true;
 }

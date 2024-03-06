@@ -52,3 +52,15 @@ bool isObserveModeEnabled();
  *
  ******************************************************************************/
 int handleObserveMode(uint16_t data_len, const uint8_t* p_data);
+
+/*******************************************************************************
+ *
+ * Function         handleGetObserveModeStatus()
+ *
+ * Description      Handles the Get Observe mode command and gives the observe
+ *                  mode status
+ *
+ * Returns          It returns number of bytes received.
+ *
+ ******************************************************************************/
+int handleGetObserveModeStatus(uint16_t data_len, const uint8_t* p_data);
