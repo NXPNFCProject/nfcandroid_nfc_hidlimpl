@@ -176,3 +176,27 @@ cc_binary {
         "extns/impl/nxpnfc/aidl",
     ],
 }
+
+filegroup {
+    name: "nxp_gtest_filegroup",
+
+    srcs: [
+        "halimpl/observe_mode/NciDiscoveryCommandBuilder.cc",
+        "halimpl/observe_mode/ReaderPollConfigParser.cc",
+    ],
+    visibility: [
+        "//hardware/nxp/nfc/snxxx/tests/gtest",
+    ],
+}
+
+cc_library_headers {
+    name: "nxp_gtest_headers",
+    host_supported: true,
+    export_include_dirs:[
+        "halimpl/common",
+        "halimpl/observe_mode",
+    ],
+    visibility: [
+        "//hardware/nxp/nfc/snxxx/tests/gtest",
+    ],
+}
