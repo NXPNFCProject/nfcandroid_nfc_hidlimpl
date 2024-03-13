@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 NXP
+ * Copyright 2019-2024 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -339,14 +339,6 @@ bool phNxpNciHal_setSystemProperty(string key, string value) {
   } else if (strcmp(key.c_str(), "nfc.cmd_timeout") == 0) {
     NXPLOG_NCIHAL_E("%s : nci_timeout, sem post", __func__);
     sem_post(&(nxpncihal_ctrl.syncSpiNfc));
-  } else if (strcmp(key.c_str(), "nfc.ulpdet") == 0) {
-    NXPLOG_NCIHAL_E("%s : set ulpdet", __func__);
-    if (!phNxpNciHal_isULPDetSupported()) return false;
-    bool flag = false;
-    if (strcmp(value.c_str(), "1") == 0) {
-      flag = true;
-    }
-    phNxpNciHal_setULPDetFlag(flag);
   }
   gsystemProperty[key] = std::move(value);
   return stat;
