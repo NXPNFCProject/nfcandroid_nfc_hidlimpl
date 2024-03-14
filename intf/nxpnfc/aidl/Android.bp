@@ -32,6 +32,10 @@ aidl_interface {
             vndk: {
                 enabled: false,
             },
+            apex_available: [
+                "//apex_available:platform",
+                "com.android.nfcservices",
+            ],
         },
 
     },
