@@ -44,7 +44,7 @@ static void GetCurrentTimestamp(char* timestamp) {
   char buffer[TIMESTAMP_BUFFER_SIZE];
 
   timeinfo = localtime(&rawtime);
-  // Need to calcualte millisec separately as timeinfo doesn't
+  // Need to calculate millisec separately as timeinfo doesn't
   // have milliseconds field
   int milliseconds = tv.tv_nsec / 1000000;
 
