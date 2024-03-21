@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2022,2023 NXP
+ *  Copyright 2022-2024 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -124,7 +124,6 @@ typedef struct {
   uint8_t _NFCC_SPI_FW_DOWNLOAD_SYNC : 1;
   uint8_t _NFCEE_REMOVED_NTF_RECOVERY : 1;
   uint8_t _NFCC_FORCE_FW_DOWNLOAD : 1;
-  uint8_t _NFA_EE_MAX_EE_SUPPORTED : 3;
   uint8_t _NFCC_DWNLD_MODE : 1;
 } tNfc_nfccFeatureList;
 
@@ -205,30 +204,18 @@ extern tNfc_featureList nfcFL;
       case pn81T:                                                         \
         CONFIGURE_FEATURELIST_NFCC(pn557)                                 \
         nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true;                   \
-        nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED =                           \
-            EE_T4T_SUPPORTED + EE_UICC1_SUPPORTED + EE_UICC2_SUPPORTED +  \
-            EE_ESE_SUPPORTED;                                             \
         break;                                                            \
       case sn100u:                                                        \
         CONFIGURE_FEATURELIST_NFCC(sn100u)                                \
         nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true;                   \
-        nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED =                           \
-            EE_T4T_SUPPORTED + EE_UICC1_SUPPORTED + EE_UICC2_SUPPORTED +  \
-            EE_UICC3_SUPPORTED + EE_ESE_SUPPORTED;                        \
         break;                                                            \
       case sn220u:                                                        \
         CONFIGURE_FEATURELIST_NFCC(sn220u)                                \
         nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true;                   \
-        nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED =                           \
-            EE_T4T_SUPPORTED + EE_UICC1_SUPPORTED + EE_UICC2_SUPPORTED +  \
-            EE_ESE_SUPPORTED;                                             \
         break;                                                            \
       case sn300u:                                                        \
         CONFIGURE_FEATURELIST_NFCC(sn300u)                                \
         nfcFL.nfccFL._NFCC_SPI_FW_DOWNLOAD_SYNC = true;                   \
-        nfcFL.nfccFL._NFA_EE_MAX_EE_SUPPORTED =                           \
-            EE_T4T_SUPPORTED + EE_UICC1_SUPPORTED + EE_UICC2_SUPPORTED +  \
-            EE_ESE_SUPPORTED + EE_EUICC1_SUPPORTED + EE_EUICC2_SUPPORTED; \
         break;                                                            \
       default:                                                            \
         break;                                                            \
