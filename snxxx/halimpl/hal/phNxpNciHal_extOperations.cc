@@ -589,39 +589,28 @@ NFCSTATUS phNxpNciHal_setSrdtimeout() {
  *                  NFCSTATUS_FEATURE_NOT_SUPPORTED
  *
  ******************************************************************************/
-NFCSTATUS phNxpNciHal_setExtendedFieldMode(tNFC_requestedBy requestedBy,
-                                           bool flag) {
-  if (!IS_CHIP_TYPE_GE(sn100u)) {
-    NXPLOG_NCIHAL_E("Extended Field Mode is not supported");
-    return NFCSTATUS_FEATURE_NOT_SUPPORTED;
-  }
+NFCSTATUS phNxpNciHal_setExtendedFieldMode() {
   const uint8_t enableWithOutCMAEvents = 0x01;
   const uint8_t enableWithCMAEvents = 0x03;
   const uint8_t disableEvents = 0x00;
   uint8_t extended_field_mode = disableEvents;
+  NFCSTATUS status = NFCSTATUS_FEATURE_NOT_SUPPORTED;
 
-  if (requestedBy == API && flag) {
-    extended_field_mode = enableWithCMAEvents;
-  } else if (requestedBy == CONFIG || (requestedBy == API && !flag)) {
-    bool getStatus =
-        GetNxpNumValue(NAME_NXP_EXTENDED_FIELD_DETECT_MODE,
-                       &extended_field_mode, sizeof(extended_field_mode));
-    if (!getStatus || !(extended_field_mode == enableWithOutCMAEvents ||
-                        extended_field_mode == enableWithCMAEvents ||
-                        extended_field_mode == disableEvents)) {
-      if (requestedBy == CONFIG) {
-        NXPLOG_NCIHAL_E("Invalid Extended Field Mode in config");
-        return NFCSTATUS_FEATURE_NOT_SUPPORTED;
-      }
-      extended_field_mode = disableEvents;
+  if (IS_CHIP_TYPE_GE(sn100u) &&
+      GetNxpNumValue(NAME_NXP_EXTENDED_FIELD_DETECT_MODE, &extended_field_mode,
+                     sizeof(extended_field_mode))) {
+    if (extended_field_mode == enableWithOutCMAEvents ||
+        extended_field_mode == enableWithCMAEvents ||
+        extended_field_mode == disableEvents) {
+      phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = SET_EEPROM_DATA};
+      mEEPROM_info.buffer = &extended_field_mode;
+      mEEPROM_info.bufflen = sizeof(extended_field_mode);
+      mEEPROM_info.request_type = EEPROM_EXT_FIELD_DETECT_MODE;
+      status = request_EEPROM(&mEEPROM_info);
+    } else {
+      NXPLOG_NCIHAL_E("Invalid Extended Field Mode in config");
     }
   }
-  phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
-  mEEPROM_info.buffer = &extended_field_mode;
-  mEEPROM_info.bufflen = sizeof(extended_field_mode);
-  mEEPROM_info.request_type = EEPROM_EXT_FIELD_DETECT_MODE;
-  mEEPROM_info.request_mode = SET_EEPROM_DATA;
-  NFCSTATUS status = request_EEPROM(&mEEPROM_info);
   return status;
 }
 
@@ -833,4 +822,29 @@ void phNxpNciHal_vendorSpecificCallback(int oid, int opcode, int status) {
   msg.Size = 0;
   phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId,
                         (phLibNfc_Message_t*)&msg);
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_isObserveModeSupported()
+**
+** Description      check's the observe mode supported or not based on the
+**                  config value
+**
+** Returns          bool: true if supported, otherwise false
+*******************************************************************************/
+bool phNxpNciHal_isObserveModeSupported() {
+  const uint8_t enableWithCMAEvents = 0x03;
+  const uint8_t disableEvents = 0x00;
+  uint8_t extended_field_mode = disableEvents;
+  if (IS_CHIP_TYPE_GE(sn100u) &&
+      GetNxpNumValue(NAME_NXP_EXTENDED_FIELD_DETECT_MODE, &extended_field_mode,
+                     sizeof(extended_field_mode))) {
+    if (extended_field_mode == enableWithCMAEvents) {
+      return true;
+    } else {
+      NXPLOG_NCIHAL_E("Invalid Extended Field Mode in config");
+    }
+  }
+  return false;
 }

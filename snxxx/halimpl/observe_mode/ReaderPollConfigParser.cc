@@ -21,7 +21,7 @@ using namespace std;
 
 /*****************************************************************************
  *
- * Function         getWellKnowModEventData
+ * Function         getWellKnownModEventData
  *
  * Description      Frames Well known type reader poll info notification
  *
@@ -32,7 +32,7 @@ using namespace std;
  * Returns          Returns Well known type reader poll info notification
  *
  ****************************************************************************/
-vector<uint8_t> ReaderPollConfigParser::getWellKnowModEventData(
+vector<uint8_t> ReaderPollConfigParser::getWellKnownModEventData(
     uint8_t event, vector<uint8_t> timeStamp, uint8_t gain) {
   vector<uint8_t> eventData;
   eventData.push_back(NCI_PROP_NTF_GID);
@@ -49,18 +49,18 @@ vector<uint8_t> ReaderPollConfigParser::getWellKnowModEventData(
 
 /*****************************************************************************
  *
- * Function         getUnKnowEvent
+ * Function         getUnknownEvent
  *
- * Description      Frames unknow event type reader poll info notification
+ * Description      Frames Unknown event type reader poll info notification
  *
- * Parameters       data - Data bytes of unknow event
+ * Parameters       data - Data bytes of Unknown event
  *                  timeStamp - time stamp of the event
  *                  gain - RSSI value
  *
- * Returns          Returns unknown type reader poll info notification
+ * Returns          Returns Unknown type reader poll info notification
  *
  ***************************************************************************/
-vector<uint8_t> ReaderPollConfigParser::getUnKnowEvent(
+vector<uint8_t> ReaderPollConfigParser::getUnknownEvent(
     vector<uint8_t> data, vector<uint8_t> timeStamp, uint8_t gain) {
   uint8_t eventLength = OP_CODE_FIELD_LENGTH + EVENT_TYPE_FIELD_LENGTH +
                         timeStamp.size() + GAIN_FIELD_LENGTH + (int)data.size();
@@ -145,22 +145,22 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
         // Modulation detected
         switch ((p_event[INDEX_OF_L2_EVT_TYPE] & LX_EVENT_MASK) >> 4) {
           case EVENT_MOD_A:
-            event_data = getWellKnowModEventData(
+            event_data = getWellKnownModEventData(
                 TYPE_MOD_A, std::move(timestamp), lastKnownGain);
             break;
 
           case EVENT_MOD_B:
-            event_data = getWellKnowModEventData(
+            event_data = getWellKnownModEventData(
                 TYPE_MOD_B, std::move(timestamp), lastKnownGain);
             break;
 
           case EVENT_MOD_F:
-            event_data = getWellKnowModEventData(
+            event_data = getWellKnownModEventData(
                 TYPE_MOD_F, std::move(timestamp), lastKnownGain);
             break;
 
           default:
-            event_data = getUnKnowEvent(
+            event_data = getUnknownEvent(
                 vector<uint8_t>(p_event.begin() + INDEX_OF_L2_EVT_TYPE,
                                 p_event.end()),
                 std::move(timestamp), lastKnownGain);
@@ -177,7 +177,7 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
         break;
 
       default:
-        event_data = getUnKnowEvent(
+        event_data = getUnknownEvent(
             vector<uint8_t>(p_event.begin() + INDEX_OF_L2_EVT_TYPE,
                             p_event.end()),
             std::move(timestamp), lastKnownGain);
@@ -185,7 +185,7 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
     }
 
   } else {
-    event_data = getUnKnowEvent(
+    event_data = getUnknownEvent(
         vector<uint8_t>(p_event.begin() + INDEX_OF_L2_EVT_TYPE, p_event.end()),
         std::move(timestamp), lastKnownGain);
   }

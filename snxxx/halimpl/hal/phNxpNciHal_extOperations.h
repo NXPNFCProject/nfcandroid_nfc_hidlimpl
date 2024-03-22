@@ -167,15 +167,11 @@ phNxpNciHal_get_uicc_hci_params(vector<uint8_t>& ptr, uint8_t bufflen,
  *
  * Description      This function can be used to set nfcc extended field mode
  *
- * Params           requestedBy CONFIG to set it from the CONFIGURATION
- *                              API  to set it from ObserverMode API
- *
  * Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS or
  *                  NFCSTATUS_FEATURE_NOT_SUPPORTED
  *
  ******************************************************************************/
-NFCSTATUS phNxpNciHal_setExtendedFieldMode(
-    tNFC_requestedBy requestedBy = CONFIG, bool flag = false);
+NFCSTATUS phNxpNciHal_setExtendedFieldMode();
 
 /*******************************************************************************
 **
@@ -242,3 +238,14 @@ int phNxpNciHal_handleVendorSpecificCommand(uint16_t data_len,
 **
 *******************************************************************************/
 void phNxpNciHal_vendorSpecificCallback(int oid, int opcode, int status);
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_isObserveModeSupported()
+**
+** Description      check's the observe mode supported or not based on the
+**                  config value
+**
+** Returns          bool: true if supported, otherwise false
+*******************************************************************************/
+bool phNxpNciHal_isObserveModeSupported();

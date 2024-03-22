@@ -59,15 +59,11 @@ int handleObserveMode(uint16_t data_len, const uint8_t* p_data) {
   if (data_len <= 4) {
     return 0;
   }
+
   uint8_t status = NCI_RSP_FAIL;
-  if (p_data[NCI_MSG_INDEX_FEATURE_VALUE] == 0x01)
-    status = phNxpNciHal_setExtendedFieldMode(API, true);
-  else
-    status = phNxpNciHal_setExtendedFieldMode(API);
-  if (status == NFCSTATUS_OK) {
+  if (phNxpNciHal_isObserveModeSupported()) {
     setObserveModeFlag(p_data[NCI_MSG_INDEX_FEATURE_VALUE]);
-  } else {
-    setObserveModeFlag(false);
+    status = NCI_RSP_OK;
   }
 
   phNxpNciHal_vendorSpecificCallback(p_data[NCI_OID_INDEX],
