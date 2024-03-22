@@ -24,7 +24,7 @@ typedef void(reader_poll_info_callback_t)(uint16_t data_len, uint8_t* p_data);
  * @brief This class handles the parsing of Lx notifications and
  * send reader poll info notification's. It identifis A, B and F
  * Modulation event's and RF ON & OFF event's, all the other
- * notifications it considers it as Unknow event's
+ * notifications it considers it as Unknown event's
  *
  */
 class ReaderPollConfigParser {
@@ -34,7 +34,7 @@ class ReaderPollConfigParser {
 
   /*****************************************************************************
    *
-   * Function         getWellKnowModEventData
+   * Function         getWellKnownModEventData
    *
    * Description      Frames Well known type reader poll info notification
    *
@@ -45,9 +45,9 @@ class ReaderPollConfigParser {
    * Returns          Returns Well known type reader poll info notification
    *
    ****************************************************************************/
-  vector<uint8_t> getWellKnowModEventData(uint8_t event,
-                                          vector<uint8_t> timeStamp,
-                                          uint8_t gain);
+  vector<uint8_t> getWellKnownModEventData(uint8_t event,
+                                           vector<uint8_t> timeStamp,
+                                           uint8_t gain);
 
   /*****************************************************************************
    *
@@ -67,19 +67,19 @@ class ReaderPollConfigParser {
 
   /*****************************************************************************
    *
-   * Function         getUnKnowEvent
+   * Function         getUnknownEvent
    *
-   * Description      Frames unknow event type reader poll info notification
+   * Description      Frames Unknown event type reader poll info notification
    *
-   * Parameters       data - Data bytes of unknow event
+   * Parameters       data - Data bytes of Unknown event
    *                  timeStamp - time stamp of the event
    *                  gain - RSSI value
    *
-   * Returns          Returns unknown type reader poll info notification
+   * Returns          Returns Unknown type reader poll info notification
    *
    ***************************************************************************/
-  vector<uint8_t> getUnKnowEvent(vector<uint8_t> data,
-                                 vector<uint8_t> timeStamp, uint8_t gain);
+  vector<uint8_t> getUnknownEvent(vector<uint8_t> data,
+                                  vector<uint8_t> timeStamp, uint8_t gain);
 
   /*****************************************************************************
    *
