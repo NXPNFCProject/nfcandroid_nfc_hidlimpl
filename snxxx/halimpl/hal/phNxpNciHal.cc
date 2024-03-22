@@ -71,7 +71,7 @@ static const char* rf_block_num[] = {
 const char* rf_block_name = "NXP_RF_CONF_BLK_";
 static uint8_t read_failed_disable_nfc = false;
 const char* core_reset_ntf_count_prop_name =
-    "vendor.nfc.core_reset_ntf_count";
+    "nfc.core_reset_ntf_count";
 /* FW download success flag */
 static uint8_t fw_download_success = 0;
 static uint8_t config_access = false;
