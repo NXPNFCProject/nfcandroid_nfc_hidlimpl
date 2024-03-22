@@ -71,7 +71,7 @@ class NciDiscoveryCommandBuilder {
    *
    * Function         addObserveModeParams
    *
-   * Description      Add's Observe mode to the config list
+   * Description      Adds Observe mode to the config list
    *
    * Returns          void
    *
@@ -84,7 +84,7 @@ class NciDiscoveryCommandBuilder {
    *
    * Description      It frames the RF discovery command from the config list
    *
-   * Returns          return the discovey command
+   * Returns          return the discovery command
    *
    ****************************************************************************/
   vector<uint8_t> build();
@@ -97,7 +97,7 @@ class NciDiscoveryCommandBuilder {
    *
    * Parameters       data - Any command
    *
-   * Returns          return true if the command is RF discovery cmmand
+   * Returns          return true if the command is RF discovery command
    *                  otherwise false
    *
    ****************************************************************************/
@@ -106,15 +106,15 @@ class NciDiscoveryCommandBuilder {
  public:
   /*****************************************************************************
    *
-   * Function         reconfigRFDiscCmd
+   * Function         reConfigRFDiscCmd
    *
-   * Description      It parse the discovery command and alter the configration
+   * Description      It parse the discovery command and alter the configuration
    *                  to enable Observe Mode
    *
    * Parameters       data - RF discovery command
    *
-   * Returns          return the discovey command for Observe mode
+   * Returns          return the discovery command for Observe mode
    *
    ****************************************************************************/
-  vector<uint8_t> reconfigRFDiscCmd(uint16_t data_len, const uint8_t* p_data);
+  vector<uint8_t> reConfigRFDiscCmd(uint16_t data_len, const uint8_t* p_data);
 };

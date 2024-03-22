@@ -1121,7 +1121,7 @@ int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data) {
              p_data[NCI_GID_INDEX] == NCI_RF_DISC_COMMD_GID &&
              p_data[NCI_OID_INDEX] == NCI_RF_DISC_COMMAND_OID) {
     NciDiscoveryCommandBuilder builder;
-    vector<uint8_t> v_data = builder.reconfigRFDiscCmd(data_len, p_data);
+    vector<uint8_t> v_data = builder.reConfigRFDiscCmd(data_len, p_data);
     return phNxpNciHal_write_internal(v_data.size(), v_data.data());
   }
   return phNxpNciHal_write_internal(data_len, p_data);

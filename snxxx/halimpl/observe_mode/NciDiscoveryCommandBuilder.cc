@@ -16,7 +16,6 @@
 
 #include "NciDiscoveryCommandBuilder.h"
 #include <phNfcNciConstants.h>
-#include <phNxpNciHal_ext.h>
 
 using namespace std;
 
@@ -61,7 +60,7 @@ bool NciDiscoveryCommandBuilder::parse(vector<uint8_t> data) {
  *
  * Parameters       data - Any command
  *
- * Returns          return true if the command is RF discovery cmmand
+ * Returns          return true if the command is RF discovery command
  *                  otherwise false
  *
  ****************************************************************************/
@@ -102,7 +101,7 @@ void NciDiscoveryCommandBuilder::removeListenParams() {
  *
  * Function         addObserveModeParams
  *
- * Description      Add's Observe mode to the config list
+ * Description      Adds Observe mode to the config list
  *
  * Returns          void
  *
@@ -118,7 +117,7 @@ void NciDiscoveryCommandBuilder::addObserveModeParams() {
  *
  * Description      It frames the RF discovery command from the config list
  *
- * Returns          return the discovey command
+ * Returns          return the discovery command
  *
  ****************************************************************************/
 vector<uint8_t> NciDiscoveryCommandBuilder::build() {
@@ -138,17 +137,17 @@ vector<uint8_t> NciDiscoveryCommandBuilder::build() {
 
 /*****************************************************************************
  *
- * Function         reconfigRFDiscCmd
+ * Function         reConfigRFDiscCmd
  *
- * Description      It parse the discovery command and alter the configration
+ * Description      It parse the discovery command and alter the configuration
  *                  to enable Observe Mode
  *
  * Parameters       data - RF discovery command
  *
- * Returns          return the discovey command for Observe mode
+ * Returns          return the discovery command for Observe mode
  *
  ****************************************************************************/
-vector<uint8_t> NciDiscoveryCommandBuilder::reconfigRFDiscCmd(
+vector<uint8_t> NciDiscoveryCommandBuilder::reConfigRFDiscCmd(
     uint16_t data_len, const uint8_t* p_data) {
   if (!p_data) {
     return vector<uint8_t>();
