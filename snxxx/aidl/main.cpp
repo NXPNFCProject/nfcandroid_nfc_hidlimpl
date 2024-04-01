@@ -17,10 +17,8 @@
  ******************************************************************************/
 
 #include <android-base/logging.h>
-#include <android-base/properties.h>
 #include <android/binder_manager.h>
 #include <android/binder_process.h>
-#include <dlfcn.h>
 
 #include <thread>
 
@@ -33,8 +31,6 @@ using ::aidl::android::hardware::nfc::Nfc;
 using ::aidl::vendor::nxp::nxpnfc_aidl::INxpNfc;
 using ::aidl::vendor::nxp::nxpnfc_aidl::NxpNfc;
 using namespace std;
-
-typedef int (*NXPEsePreProcess)(void);
 
 void startNxpNfcAidlService() {
   ALOGI("NXP NFC Extn Service is starting.");
@@ -50,18 +46,6 @@ void startNxpNfcAidlService() {
 }
 
 int main() {
-  // Ignore this dlopen if you don't need it.
-  std::string valueStr =
-      android::base::GetProperty("persist.vendor.nfc.nxppreprocess", "Done");
-  if (valueStr.compare("Done") != 0) {
-    void* nxpdll = dlopen(valueStr.c_str(), RTLD_NOW);
-    if (nxpdll) {
-      NXPEsePreProcess fn = (NXPEsePreProcess)dlsym(nxpdll, "pre_process");
-      if (fn)
-        ALOGD("%s: Preprocess %s", __func__, fn() == 0 ? "Done" : "Error");
-    }
-  }
-
   ALOGI("NFC AIDL HAL starting up");
   if (!ABinderProcess_setThreadPoolMaxThreadCount(1)) {
     ALOGE("failed to set thread pool max thread count");
