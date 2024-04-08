@@ -31,6 +31,7 @@ class ReaderPollConfigParser {
  private:
   reader_poll_info_callback_t* callback = nullptr;
   uint8_t lastKnownGain = 0x00;
+  uint8_t lastKnownModEvent = 0x00;
 
   /*****************************************************************************
    *
@@ -41,13 +42,14 @@ class ReaderPollConfigParser {
    * Parameters       event - Event type A, B & F
    *                  timeStamp - time stamp of the event
    *                  gain - RSSI value
+   *                  data - data contains REQ, WUP and AFI
    *
    * Returns          Returns Well known type reader poll info notification
    *
    ****************************************************************************/
   vector<uint8_t> getWellKnownModEventData(uint8_t event,
                                            vector<uint8_t> timeStamp,
-                                           uint8_t gain);
+                                           uint8_t gain, vector<uint8_t> data);
 
   /*****************************************************************************
    *
@@ -96,6 +98,26 @@ class ReaderPollConfigParser {
    *
    ****************************************************************************/
   vector<uint8_t> getEvent(vector<uint8_t> p_event, bool isCmaEvent);
+
+  /*****************************************************************************
+   *
+   * Function         notifyPollingLoopInfoEvent
+   *
+   * Description      It sends polling info notification to upper layer
+   *
+   * Parameters       p_data - Polling loop info notification
+   *
+   * Returns          void
+   *
+   ****************************************************************************/
+  void notifyPollingLoopInfoEvent(vector<uint8_t> p_data);
+
+#if (NXP_UNIT_TEST == TRUE)
+  /*
+    Friend class is used to test private function's of ReaderPollConfigParser
+  */
+  friend class ReaderPollConfigParserTest;
+#endif
 
  public:
   /*****************************************************************************
