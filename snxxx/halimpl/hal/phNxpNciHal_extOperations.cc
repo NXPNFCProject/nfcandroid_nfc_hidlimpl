@@ -20,6 +20,7 @@
 #include <phNxpLog.h>
 #include <phTmlNfc.h>
 
+#include <phNxpNciHal_Adaptation.h>
 #include "ObserveMode.h"
 #include "phNfcCommon.h"
 #include "phNxpNciHal_IoctlOperations.h"
@@ -797,9 +798,9 @@ int phNxpNciHal_handleVendorSpecificCommand(uint16_t data_len,
   } else if (data_len > 4 && p_data[NCI_MSG_INDEX_FOR_FEATURE] ==
                                  NCI_ANDROID_GET_OBSERVER_MODE_STATUS) {
     return handleGetObserveModeStatus(data_len, p_data);
+  } else {
+    return phNxpNciHal_write_internal(data_len, p_data);
   }
-
-  return 0;
 }
 
 /*******************************************************************************
