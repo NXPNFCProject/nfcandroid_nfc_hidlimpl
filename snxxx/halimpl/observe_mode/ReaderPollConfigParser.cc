@@ -210,19 +210,21 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
 
           if (lastKnownModEvent == EVENT_MOD_B &&
               payloadData[0] == TYPE_B_APF) {  // Type B Apf value is 0x05
-            event_data = getWellKnownModEventData(
-                TYPE_MOD_B, std::move(timestamp), lastKnownGain, payloadData);
+            event_data =
+                getWellKnownModEventData(TYPE_MOD_B, std::move(timestamp),
+                                         lastKnownGain, std::move(payloadData));
             break;
           } else if (lastKnownModEvent == EVENT_MOD_F &&
                      payloadData[0] == TYPE_F_CMD_LENGH &&
                      payloadData[2] == TYPE_F_ID &&
                      payloadData[3] == TYPE_F_ID) {
-            event_data = getWellKnownModEventData(
-                TYPE_MOD_F, std::move(timestamp), lastKnownGain, payloadData);
+            event_data =
+                getWellKnownModEventData(TYPE_MOD_F, std::move(timestamp),
+                                         lastKnownGain, std::move(payloadData));
             break;
           } else {
-            event_data = getUnknownEvent(payloadData, std::move(timestamp),
-                                         lastKnownGain);
+            event_data = getUnknownEvent(std::move(payloadData),
+                                         std::move(timestamp), lastKnownGain);
             break;
           }
         }
@@ -231,8 +233,8 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
       default:
         vector<uint8_t> payloadData = vector<uint8_t>(
             p_event.begin() + INDEX_OF_CMA_EVT_TYPE, p_event.end());
-        event_data =
-            getUnknownEvent(payloadData, std::move(timestamp), lastKnownGain);
+        event_data = getUnknownEvent(std::move(payloadData),
+                                     std::move(timestamp), lastKnownGain);
     }
   }
 
@@ -301,7 +303,7 @@ bool ReaderPollConfigParser::parseAndSendReaderPollInfo(uint8_t* p_ntf,
                    entryTag == CMA_EVT_TAG);
       if ((int)(readerPollInfoNotifications.size() + readerPollInfo.size()) >=
           0xFF) {
-        notifyPollingLoopInfoEvent(readerPollInfoNotifications);
+        notifyPollingLoopInfoEvent(std::move(readerPollInfoNotifications));
         readerPollInfoNotifications.clear();
       }
       readerPollInfoNotifications.insert(std::end(readerPollInfoNotifications),
@@ -317,7 +319,7 @@ bool ReaderPollConfigParser::parseAndSendReaderPollInfo(uint8_t* p_ntf,
     return false;
   }
 
-  notifyPollingLoopInfoEvent(readerPollInfoNotifications);
+  notifyPollingLoopInfoEvent(std::move(readerPollInfoNotifications));
 
   return true;
 }
