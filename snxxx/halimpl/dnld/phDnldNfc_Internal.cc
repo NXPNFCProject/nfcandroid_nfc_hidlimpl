@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2023 NXP
+ * Copyright (C) 2010-2024 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -984,6 +984,25 @@ static NFCSTATUS phDnldNfc_SetupResendTimer(pphDnldNfc_DlContext_t pDlContext) {
 
 /*******************************************************************************
 **
+** Function         phDnldNfc_accessStatusWithLock
+**
+** Description      This function setting timer status after specific mutex lock
+**                  based on current event.
+**
+** Parameters       pDlContext - pointer to the download context structure
+**                  seqStateLock - Mutex to lock based on event.
+**
+** Returns          None
+**
+*******************************************************************************/
+static void phDnldNfc_accessStatusWithLock(pphDnldNfc_DlContext_t pDlCtxt,
+                                          NfcHalThreadMutex seqStateLock) {
+  NfcHalAutoThreadMutex a(seqStateLock);
+  (pDlCtxt->TimerInfo.wTimerExpStatus) = NFCSTATUS_RF_TIMEOUT;
+}
+
+/*******************************************************************************
+**
 ** Function         phDnldNfc_RspTimeOutCb
 **
 ** Description      Callback function in case of timer expiration
@@ -1016,12 +1035,12 @@ static void phDnldNfc_RspTimeOutCb(uint32_t TimerId, void* pContext) {
       }
 #endif
 
-      (pDlCtxt->TimerInfo.wTimerExpStatus) = NFCSTATUS_RF_TIMEOUT;
-
       if ((phDnldNfc_EventRead == pDlCtxt->tCurrEvent) ||
           (phDnldNfc_EventWrite == pDlCtxt->tCurrEvent)) {
+        phDnldNfc_accessStatusWithLock(pDlCtxt,sProcessRwSeqStateLock);
         phDnldNfc_ProcessRWSeqState(pDlCtxt, NULL);
       } else {
+        phDnldNfc_accessStatusWithLock(pDlCtxt,sProcessSeqStateLock);
         phDnldNfc_ProcessSeqState(pDlCtxt, NULL);
       }
     }
@@ -1052,10 +1071,12 @@ static void phDnldNfc_ResendTimeOutCb(uint32_t TimerId, void* pContext) {
     if (1 == pDlCtxt->TimerInfo.TimerStatus) {
       /* No response received and the timer expired */
       pDlCtxt->TimerInfo.TimerStatus = 0; /* Reset timer status flag */
+      {
+        NfcHalAutoThreadMutex a(sProcessRwSeqStateLock);
+        (pDlCtxt->TimerInfo.wTimerExpStatus) = 0;
 
-      (pDlCtxt->TimerInfo.wTimerExpStatus) = 0;
-
-      pDlCtxt->tCurrState = phDnldNfc_StateSend;
+        pDlCtxt->tCurrState = phDnldNfc_StateSend;
+      }
 
       /* set the flag to trigger last frame re-transmission */
       pDlCtxt->bResendLastFrame = true;
