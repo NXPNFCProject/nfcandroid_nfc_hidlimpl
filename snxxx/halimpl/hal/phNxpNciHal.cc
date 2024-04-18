@@ -76,6 +76,7 @@ const char* core_reset_ntf_count_prop_name =
 static uint8_t fw_download_success = 0;
 static uint8_t config_access = false;
 static uint8_t config_success = true;
+static bool sIsHalOpenErrorRecovery = false;
 NfcHalThreadMutex sHalFnLock;
 
 /* NCI HAL Control structure */
@@ -693,6 +694,7 @@ int phNxpNciHal_MinOpen() {
   NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   int dnld_retry_cnt = 0;
+  sIsHalOpenErrorRecovery = false;
   NXPLOG_NCIHAL_D("phNxpNci_MinOpen(): enter");
 
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_MIN_OPEN) {
@@ -867,9 +869,13 @@ int phNxpNciHal_MinOpen() {
         phDnldNfc_ReSetHwDevHandle();
       }
     }
-  } else if (bVenResetRequired) {
-    if (NFCSTATUS_SUCCESS == phNxpNciHal_getChipInfoInFwDnldMode(true))
-      bIsNfccDlState = true;
+  } else {
+    NXPLOG_NCIHAL_E("Communication error, Need FW Recovery and Config Update");
+    sIsHalOpenErrorRecovery = true;
+    if (bVenResetRequired) {
+      if (NFCSTATUS_SUCCESS == phNxpNciHal_getChipInfoInFwDnldMode(true))
+        bIsNfccDlState = true;
+    }
   }
 
   if (gsIsFirstHalMinOpen && gsIsFwRecoveryRequired) {
@@ -902,6 +908,12 @@ int phNxpNciHal_MinOpen() {
     } else if (status != NFCSTATUS_SUCCESS) {
       return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
     } else {
+      if (sIsHalOpenErrorRecovery) {
+        NXPLOG_NCIHAL_D(
+            "Applying config settings as FW download recovery done");
+        phNxpNciHal_core_initialized();
+        sIsHalOpenErrorRecovery = false;
+      }
       break;
     }
 
@@ -2117,7 +2129,10 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   gRecFWDwnld = 0;
   gRecFwRetryCount = 0;
 
-  phNxpNciHal_core_initialized_complete(status);
+  // Callback not needed for config applying in error recovery
+  if (!sIsHalOpenErrorRecovery) {
+    phNxpNciHal_core_initialized_complete(status);
+  }
   if (isNxpConfigModified()) {
     updateNxpConfigTimestamp();
   }
