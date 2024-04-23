@@ -29,6 +29,7 @@
 #define PHTMLNFC_H
 
 #include <phNfcCommon.h>
+#include <errno.h>
 
 /*
  * Message posted by Reader thread upon
@@ -62,6 +63,15 @@
 #else
 #define PH_TMLNFC_FRGMENT_SIZE_SN300 (0x22A)
 #endif
+
+/*
+ * Value indicates to NFCC Max read length.
+ */
+#define PH_TMLNFC_MAX_READ_NCI_BUFF_LEN (260)
+/*
+ * Value indicates to NFCC recovery from vbat low.
+ */
+#define PH_TMNFC_VBAT_LOW_ERROR (-ENOTCONN)
 /*
 ***************************Globals,Structure and Enumeration ******************
 */

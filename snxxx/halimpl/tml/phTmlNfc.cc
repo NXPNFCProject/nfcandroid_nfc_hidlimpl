@@ -290,7 +290,7 @@ static NFCSTATUS phTmlNfc_StartThread(void) {
 static void* phTmlNfc_TmlThread(void* pParam) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   int32_t dwNoBytesWrRd = PH_TMLNFC_RESET_VALUE;
-  uint8_t temp[260];
+  uint8_t temp[PH_TMLNFC_MAX_READ_NCI_BUFF_LEN];
   uint8_t readRetryDelay = 0;
   /* Transaction info buffer to be passed to Callback Thread */
   static phTmlNfc_TransactInfo_t tTransactionInfo;
@@ -324,7 +324,8 @@ static void* phTmlNfc_TmlThread(void* pParam) {
       if (NULL != gpphTmlNfc_Context->pDevHandle) {
         NXPLOG_TML_D("NFCC - Invoking Read.....\n");
         dwNoBytesWrRd =
-            gpTransportObj->Read(gpphTmlNfc_Context->pDevHandle, temp, 260);
+            gpTransportObj->Read(gpphTmlNfc_Context->pDevHandle,
+              temp, PH_TMLNFC_MAX_READ_NCI_BUFF_LEN);
 
         if (-1 == dwNoBytesWrRd) {
           NXPLOG_TML_E("NFCC - Error in Read.....\n");
@@ -335,7 +336,11 @@ static void* phTmlNfc_TmlThread(void* pParam) {
           }
           usleep(readRetryDelay * 1000);
           sem_post(&gpphTmlNfc_Context->rxSemaphore);
-        } else if (dwNoBytesWrRd > 260) {
+        } else if (dwNoBytesWrRd == PH_TMNFC_VBAT_LOW_ERROR) {
+          NXPLOG_TML_E("Platform VBAT Error detected by NFCC "
+            "NFC restart... : %d\n", dwNoBytesWrRd);
+          abort();
+        } else if (dwNoBytesWrRd > PH_TMLNFC_MAX_READ_NCI_BUFF_LEN) {
           NXPLOG_TML_E("Numer of bytes read exceeds the limit 260.....\n");
           readRetryDelay = 0;
           sem_post(&gpphTmlNfc_Context->rxSemaphore);
