@@ -1136,6 +1136,16 @@ int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data) {
     vector<uint8_t> v_data = builder.reConfigRFDiscCmd(data_len, p_data);
     return phNxpNciHal_write_internal(v_data.size(), v_data.data());
   }
+  long value = 0;
+  /* NXP Removal Detection timeout Config */
+  if (GetNxpNumValue(NAME_NXP_REMOVAL_DETECTION_TIMEOUT, (void*)&value,
+                     sizeof(value))) {
+    // Change the timeout value as per config file
+    uint8_t* wait_time = (uint8_t*)&p_data[3];
+    if ((data_len == 0x04) && (p_data[0] == 0x21 && p_data[1] == 0x12)) {
+      *wait_time = value;
+    }
+  }
   return phNxpNciHal_write_internal(data_len, p_data);
 }
 
