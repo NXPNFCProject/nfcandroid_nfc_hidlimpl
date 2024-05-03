@@ -93,7 +93,8 @@ typedef enum phDnldNfc_ClkFreq {
   phDnldNfc_ClkFreq_38_4Mhz = 4U, /* 38.4Mhz Clk Frequency */
   phDnldNfc_ClkFreq_52Mhz = 5U,    /* 52Mhz Clk Frequency */
   phDnldNfc_ClkFreq_32Mhz = 6U,   /* 32Mhz Clk Frequency */
-  phDnldNfc_ClkFreq_48Mhz = 0x0AU    /* 48Mhz Clk Frequency */
+  phDnldNfc_ClkFreq_48Mhz = 0x0AU,    /* 48Mhz Clk Frequency */
+  phDnldNfc_ClkFreq_76_8Mhz = 0x0BU    /* 76.8Mhz Clk Frequency */
 } phDnldNfc_ClkFreq_t;
 
 /*

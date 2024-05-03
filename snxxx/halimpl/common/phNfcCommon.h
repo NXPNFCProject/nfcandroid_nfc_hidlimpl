@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2010-2018, 2021-2022 NXP
+ *  Copyright 2010-2018, 2021-2022, 2024 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -92,6 +92,7 @@
 #define CLK_FREQ_52MHZ 6
 #define CLK_FREQ_32MHZ 7
 #define CLK_FREQ_48MHZ 8
+#define CLK_FREQ_76_8MHZ 9
 
 static const uint8_t PN557_SET_CONFIG_CMD_PLL_13MHZ[] = {
     0x20, 0x02, 0x0C, 0x01, 0xA0, 0x20, 0x08, 0x08,
