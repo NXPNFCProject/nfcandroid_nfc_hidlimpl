@@ -2545,6 +2545,14 @@ int phNxpNciHal_configDiscShutdown(void) {
       NXPLOG_NCIHAL_E("Updation of the SRAM contents failed");
     }
   }
+  if (IS_CHIP_TYPE_GE(sn220u)) {
+    if (phNxpNciHal_isULPDetSupported() &&
+        phNxpNciHal_getULPDetFlag() == false) {
+      NXPLOG_NCIHAL_D("Ulpdet supported");
+      status = phNxpNciHal_propConfULPDetMode(true);
+      return status;
+    }
+  }
   status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_disc_nci), cmd_ce_disc_nci);
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("CMD_CE_DISC_NCI: Failed");
