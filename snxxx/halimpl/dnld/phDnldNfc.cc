@@ -1,5 +1,5 @@
 /*
- *  Copyright 2010-2023 NXP
+ *  Copyright 2010-2024 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -576,6 +576,8 @@ NFCSTATUS phDnldNfc_Force(pphDnldNfc_Buff_t pInputs, pphDnldNfc_RspCb_t pNotify,
             bClkFreq = phDnldNfc_ClkFreq_32Mhz;
           } else if (CLK_FREQ_48MHZ == (pInputs->pBuff[1])) {
             bClkFreq = phDnldNfc_ClkFreq_48Mhz;
+          } else if (CLK_FREQ_76_8MHZ == (pInputs->pBuff[1])) {
+            bClkFreq = phDnldNfc_ClkFreq_76_8Mhz;
           } else {
             NXPLOG_FWDNLD_E(
                 "Invalid Clk Frequency !! Using default value of 19.2Mhz..");
