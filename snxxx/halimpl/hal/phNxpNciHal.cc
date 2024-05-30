@@ -56,6 +56,7 @@ using android::base::WriteStringToFile;
 #define EOS_FW_SESSION_STATE_LOCKED 0x02
 #define NS_PER_S 1000000000
 #define MAX_WAIT_MS_FOR_RESET_NTF 1600
+#define INVALID_PARAM 0x09
 
 bool bEnableMfcExtns = false;
 bool bEnableMfcReader = false;
@@ -1944,13 +1945,17 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
         if (status == NFCSTATUS_SUCCESS) {
           status = phNxpNciHal_CheckRFCmdRespStatus();
           /*STATUS INVALID PARAM 0x09*/
-          if (status == 0x09) {
+          if (status == INVALID_PARAM) {
             phNxpNciHalRFConfigCmdRecSequence();
             retry_core_init_cnt++;
             goto retry_core_init;
           }
         } else if (status != NFCSTATUS_SUCCESS) {
           NXPLOG_NCIHAL_E("RF Settings BLK %ld failed", loopcnt);
+          /*STATUS INVALID PARAM 0x09*/
+          if (status == INVALID_PARAM) {
+            phNxpNciHalRFConfigCmdRecSequence();
+          }
           retry_core_init_cnt++;
           goto retry_core_init;
         }
@@ -1980,13 +1985,16 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
     if (status == NFCSTATUS_SUCCESS) {
       status = phNxpNciHal_CheckRFCmdRespStatus();
       /*STATUS INVALID PARAM 0x09*/
-      if (status == 0x09) {
+      if (status == INVALID_PARAM) {
         phNxpNciHalRFConfigCmdRecSequence();
         retry_core_init_cnt++;
         goto retry_core_init;
       }
     } else if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("Setting NXP_CORE_RF_FIELD status failed");
+      if (status == INVALID_PARAM) {
+        phNxpNciHalRFConfigCmdRecSequence();
+      }
       retry_core_init_cnt++;
       goto retry_core_init;
     }
@@ -2164,7 +2172,6 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_CheckRFCmdRespStatus() {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
-  static uint16_t INVALID_PARAM = 0x09;
   if ((nxpncihal_ctrl.rx_data_len > 0) && (nxpncihal_ctrl.p_rx_data[2] > 0)) {
     if (nxpncihal_ctrl.p_rx_data[3] == 0x09) {
       status = INVALID_PARAM;
