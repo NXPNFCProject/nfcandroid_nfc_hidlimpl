@@ -124,15 +124,15 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
     return event_data;
   }
 
-  int idx = 0;
+  // Timestamp should be in Big Endian format
+  int idx = 3;
   vector<uint8_t> timestamp;
-  timestamp.push_back(p_event[idx++]);
-  timestamp.push_back(p_event[idx++]);
-  timestamp.push_back(p_event[idx++]);
+  timestamp.push_back(p_event[idx--]);
+  timestamp.push_back(p_event[idx--]);
+  timestamp.push_back(p_event[idx--]);
   timestamp.push_back(p_event[idx]);
   if (!isCmaEvent) {
-    idx += 2;
-    lastKnownGain = p_event[idx];
+    lastKnownGain = p_event[INDEX_OF_L2_EVT_GAIN];
     switch (p_event[INDEX_OF_L2_EVT_TYPE] & LX_TYPE_MASK) {
       // Trigger Type
       case L2_EVENT_TRIGGER_TYPE:
