@@ -795,8 +795,9 @@ int phNxpNciHal_handleVendorSpecificCommand(uint16_t data_len,
   } else if (data_len > 4 &&
              p_data[NCI_MSG_INDEX_FOR_FEATURE] == NCI_ANDROID_OBSERVER_MODE) {
     return handleObserveMode(data_len, p_data);
-  } else if (data_len > 4 && p_data[NCI_MSG_INDEX_FOR_FEATURE] ==
+  } else if (data_len >= 4 && p_data[NCI_MSG_INDEX_FOR_FEATURE] ==
                                  NCI_ANDROID_GET_OBSERVER_MODE_STATUS) {
+    // 2F 0C 01 04 => ObserveMode Status Command length is 4 Bytes
     return handleGetObserveModeStatus(data_len, p_data);
   } else {
     return phNxpNciHal_write_internal(data_len, p_data);
