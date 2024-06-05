@@ -187,4 +187,5 @@ extern char Fw_Lib_Path[256];
 #define default_storage_location "/data/vendor/nfc"
 #define NAME_NXP_AUTH_TIMEOUT_CFG "NXP_AUTH_TIMEOUT_CFG"
 #define NAME_NXP_REMOVAL_DETECTION_TIMEOUT "NXP_REMOVAL_DETECTION_TIMEOUT"
+#define NAME_NXP_4K_FWDNLD_SUPPORT "NXP_4K_FWDNLD_SUPPORT"
 #endif

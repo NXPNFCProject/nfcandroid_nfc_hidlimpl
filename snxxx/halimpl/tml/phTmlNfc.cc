@@ -952,7 +952,7 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
       }
       case phTmlNfc_e_setFragmentSize: {
         if (IS_CHIP_TYPE_EQ(sn300u)) {
-          if (phTmlNfc_IsFwDnldModeEnabled()) {
+          if (phTmlNfc_IsFwDnldModeEnabled() && IS_4K_SUPPORT) {
             gpphTmlNfc_Context->fragment_len = PH_TMLNFC_FRGMENT_SIZE_SN300;
           } else {
             gpphTmlNfc_Context->fragment_len = PH_TMLNFC_FRGMENT_SIZE_SNXXX;

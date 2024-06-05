@@ -3884,8 +3884,18 @@ NFCSTATUS phNxpNciHal_send_get_cfgs() {
 void phNxpNciHal_configFeatureList(uint8_t* init_rsp, uint16_t rsp_len) {
   nxpncihal_ctrl.chipType = pConfigFL->processChipType(init_rsp, rsp_len);
   tNFC_chipType chipType = nxpncihal_ctrl.chipType;
+  bool is4KFragementSupported = false;
   NXPLOG_NCIHAL_D("%s chipType = %s", __func__, pConfigFL->product[chipType]);
   CONFIGURE_FEATURELIST(chipType);
+  if (IS_CHIP_TYPE_EQ(sn300u)) {
+    if (!GetNxpNumValue(NAME_NXP_4K_FWDNLD_SUPPORT, &is4KFragementSupported,
+                        sizeof(is4KFragementSupported))) {
+      is4KFragementSupported = false;
+    }
+  }
+  NXPLOG_NCIHAL_D("%s 4K FW download support = %x", __func__,
+                  is4KFragementSupported);
+  CONFIGURE_4K_SUPPORT(is4KFragementSupported);
   /* update fragment len based on the chip type.*/
   phTmlNfc_IoCtl(phTmlNfc_e_setFragmentSize);
 }
