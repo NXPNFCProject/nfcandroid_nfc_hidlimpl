@@ -1715,6 +1715,12 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   request_EEPROM(&mEEPROM_info);
 
   if (IS_CHIP_TYPE_GE(sn100u)) {
+    unsigned long num = 0;
+    if ((GetNxpNumValue(NAME_NXP_T4T_NFCEE_NFCOFF_PHONEOFF_ENABLE, &num, sizeof(num)))) {
+      if ((IS_CHIP_TYPE_EQ(sn300u)) && uint8_t(num)) {
+        enable_ce_in_phone_off = 0x03;
+      }
+    }
     mEEPROM_info.buffer = &enable_ce_in_phone_off;
     mEEPROM_info.bufflen = sizeof(enable_ce_in_phone_off);
     mEEPROM_info.request_type = EEPROM_CE_PHONE_OFF_CFG;
@@ -2339,7 +2345,7 @@ int phNxpNciHal_close(bool bShutdown) {
     sem_post(&(nxpncihal_ctrl.syncSpiNfc));
   }
   if (!bShutdown && phNxpNciHal_getULPDetFlag() == false) {
-    if (IS_CHIP_TYPE_GE(sn100u)) {
+    if (IS_CHIP_TYPE_GE(sn100u) && IS_CHIP_TYPE_L(sn300u)) {
       status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_in_phone_off),
                                         cmd_ce_in_phone_off);
       if (status != NFCSTATUS_SUCCESS) {
@@ -2350,7 +2356,7 @@ int phNxpNciHal_close(bool bShutdown) {
       if (status != NFCSTATUS_SUCCESS) {
         NXPLOG_NCIHAL_E("Autonomous mode Disable: Failed");
       }
-    } else {
+    } else if (IS_CHIP_TYPE_EQ(pn557)) {
       status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_in_phone_off_pn557),
                                         cmd_ce_in_phone_off_pn557);
       if (status != NFCSTATUS_SUCCESS) {
