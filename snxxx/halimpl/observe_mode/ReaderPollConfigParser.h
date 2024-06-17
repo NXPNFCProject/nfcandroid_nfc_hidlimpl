@@ -85,6 +85,20 @@ class ReaderPollConfigParser {
 
   /*****************************************************************************
    *
+   * Function         parseCmaEvent
+   *
+   * Description      This function parses the unknown frames
+   *
+   * Parameters       p_event - Data bytes of type Unknown event
+   *
+   * Returns          Filters Type-B/Type-F data frames
+   *                  and converts other frame to  unknown frame
+   *
+   ***************************************************************************/
+  vector<uint8_t> parseCmaEvent(vector<uint8_t> p_event);
+
+  /*****************************************************************************
+   *
    * Function         getEvent
    *
    * Description      It identifies the type of event and gets the reader poll
@@ -92,12 +106,12 @@ class ReaderPollConfigParser {
    *                  notification
    *
    * Parameters       p_event - Vector Lx Notification
-   *                  isCmaEvent - true if it CMA event otherwise false
+   *                  cmaEventType - CMA event type
    *
    * Returns          This function return reader poll info notification
    *
    ****************************************************************************/
-  vector<uint8_t> getEvent(vector<uint8_t> p_event, bool isCmaEvent);
+  vector<uint8_t> getEvent(vector<uint8_t> p_event, uint8_t cmaEventType);
 
   /*****************************************************************************
    *
@@ -120,6 +134,10 @@ class ReaderPollConfigParser {
 #endif
 
  public:
+  bool readExtraBytesForUnknownEvent = false;
+  uint8_t extraByteLength = 0;
+  vector<uint8_t> unknownEventTimeStamp;
+  vector<uint8_t> extraBytes = vector<uint8_t>();
   /*****************************************************************************
    *
    * Function         parseAndSendReaderPollInfo
@@ -163,4 +181,17 @@ class ReaderPollConfigParser {
    *
    ****************************************************************************/
   void setReaderPollCallBack(reader_poll_info_callback_t* callback);
+
+  /*****************************************************************************
+   *
+   * Function         resetExtraBytesInfo
+   *
+   * Description      Function to reset the extra bytes info of UnknownEvent
+   *
+   * Parameters       None
+   *
+   * Returns          void
+   *
+   ****************************************************************************/
+  void resetExtraBytesInfo();
 };

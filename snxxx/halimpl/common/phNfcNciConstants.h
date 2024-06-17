@@ -61,6 +61,7 @@
 // Observe mode constants
 #define L2_EVT_TAG 0x01
 #define CMA_EVT_TAG 0x0A
+#define CMA_EVT_EXTRA_DATA_TAG 0x07
 #define MIN_LEN_NON_CMA_EVT 7
 #define MIN_LEN_CMA_EVT 6
 #define INDEX_OF_L2_EVT_TYPE 6
@@ -70,9 +71,10 @@
 #define INDEX_OF_CMA_DATA 7
 #define MIN_LEN_NON_CMA_EVT 7
 #define MIN_LEN_CMA_EVT 6
+#define MIN_LEN_CMA_EXTRA_DATA_EVT 1
 #define L2_EVENT_TRIGGER_TYPE 0x1
 #define CMA_EVENT_TRIGGER_TYPE 0x02
-#define CMA_DATA_TRIGGER_TYPE 0x0C
+#define CMA_DATA_TRIGGER_TYPE 0x0E
 // Event types to send upper layer
 #define TYPE_RF_FLAG 0x00
 #define TYPE_MOD_A 0x01
