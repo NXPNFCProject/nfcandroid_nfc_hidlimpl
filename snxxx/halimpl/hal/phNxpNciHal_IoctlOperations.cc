@@ -192,7 +192,6 @@ std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
                                 "NXP_DISCONNECT_TAG_IN_SCRN_OFF",
                                 "NXP_CE_PRIORITY_ENABLED",
                                 "NXP_RDR_REQ_GUARD_TIME",
-                                "OFF_HOST_SIM2_PIPE_ID",
                                 "NXP_ENABLE_DISABLE_LOGS",
                                 "NXP_RDR_DISABLE_ENABLE_LPCD",
                                 "NXP_SUPPORT_NON_STD_CARD",
@@ -207,9 +206,7 @@ std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
                                 "NXP_NFCC_RECOVERY_SUPPORT",
                                 "NXP_AGC_DEBUG_ENABLE",
                                 "NXP_EXTENDED_FIELD_DETECT_MODE",
-                                "NXP_SE_SMB_TERMINAL_TYPE",
-                                "OFF_HOST_ESIM_PIPE_ID",
-                                "OFF_HOST_ESIM2_PIPE_ID"};
+                                "NXP_SE_SMB_TERMINAL_TYPE"};
 
 /****************************************************************
  * Local Functions
