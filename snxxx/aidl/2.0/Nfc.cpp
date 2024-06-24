@@ -26,6 +26,9 @@
 #include "phNxpNciHal_Adaptation.h"
 #include "phNxpNciHal_ext.h"
 
+#define CHK_STATUS(x) \
+  ((x) == NFCSTATUS_SUCCESS) ? (NfcStatus::OK) : (NfcStatus::FAILED)
+
 namespace aidl {
 namespace android {
 namespace hardware {
@@ -172,6 +175,12 @@ void OnDeath(void* cookie) {
 
 ::ndk::ScopedAStatus Nfc::isVerboseLoggingEnabled(bool* _aidl_return) {
   *_aidl_return = phNxpNciHal_getVerboseLogging();
+  return ndk::ScopedAStatus::ok();
+}
+
+::ndk::ScopedAStatus Nfc::controlGranted(NfcStatus* _aidl_return) {
+  LOG(INFO) << "controlGranted";
+  *_aidl_return = CHK_STATUS(status);
   return ndk::ScopedAStatus::ok();
 }
 

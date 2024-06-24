@@ -60,12 +60,28 @@ struct Nfc : public BnNfc {
                              int32_t* _aidl_return) override;
   ::ndk::ScopedAStatus setEnableVerboseLogging(bool enable) override;
   ::ndk::ScopedAStatus isVerboseLoggingEnabled(bool* _aidl_return) override;
+  ::ndk::ScopedAStatus controlGranted(NfcStatus* _aidl_return_) override;
+
+  static uint8_t mapToAidlIfRequired(uint8_t event) {
+    switch (event) {
+      case HAL_HCI_NETWORK_RESET_EVT:
+        event = (uint8_t)NfcEvent::HCI_NETWORK_RESET;
+        break;
+      case HAL_NFC_REQUEST_CONTROL_EVT:
+        event = (uint8_t)NfcEvent::REQUEST_CONTROL;
+        break;
+      case HAL_NFC_RELEASE_CONTROL_EVT:
+        event = (uint8_t)NfcEvent::RELEASE_CONTROL;
+        break;
+      default:
+        break;
+    }
+    return event;
+  }
 
   static void eventCallback(uint8_t event, uint8_t status) {
     if (mCallback != nullptr) {
-      if (event == HAL_HCI_NETWORK_RESET_EVT) {
-        event = (uint8_t)NfcEvent::HCI_NETWORK_RESET;
-      }
+      event = mapToAidlIfRequired(event);
       auto ret = mCallback->sendEvent((NfcEvent)event, (NfcStatus)status);
       if (!ret.isOk()) {
         LOG(ERROR) << "Failed to send event!";
