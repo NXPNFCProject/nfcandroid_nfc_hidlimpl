@@ -23,6 +23,10 @@
 #define NCI_MT_NTF 0x60
 #define NCI_MSG_CORE_RESET 0x00
 #define NCI_MSG_CORE_INIT 0x01
+
+/* libnfc_nci -> AIDL Mapping Support */
+#define HAL_NFC_REQUEST_CONTROL_EVT 0x04
+#define HAL_NFC_RELEASE_CONTROL_EVT 0x05
 #define HAL_HCI_NETWORK_RESET_EVT 0x07
 
 #define NXP_NFC_SET_CONFIG_PARAM_EXT 0xA0
