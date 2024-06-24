@@ -53,6 +53,7 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 #define UICC1_ID 0x02
 #define UICC2_ID 0x04
 #define UICC3_ID 0x08
+#define ENABLE_T4T_CE 0x03
 /* NCI Data */
 
 //#define NCI_MT_CMD 0x20

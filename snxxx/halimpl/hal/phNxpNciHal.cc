@@ -1716,10 +1716,10 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
 
   if (IS_CHIP_TYPE_GE(sn100u)) {
     unsigned long num = 0;
-    if ((GetNxpNumValue(NAME_NXP_T4T_NFCEE_NFCOFF_PHONEOFF_ENABLE, &num, sizeof(num)))) {
-      if ((IS_CHIP_TYPE_EQ(sn300u)) && uint8_t(num)) {
-        enable_ce_in_phone_off = 0x03;
-      }
+    if ((GetNxpNumValue(NAME_NXP_CE_SUPPORT_IN_NFC_OFF_PHONE_OFF, &num,
+                        sizeof(num))) &&
+        (IS_CHIP_TYPE_EQ(sn300u))) {
+      if (num == ENABLE_T4T_CE) enable_ce_in_phone_off = num;
     }
     mEEPROM_info.buffer = &enable_ce_in_phone_off;
     mEEPROM_info.bufflen = sizeof(enable_ce_in_phone_off);
@@ -2314,6 +2314,7 @@ int phNxpNciHal_close(bool bShutdown) {
   unsigned long uiccListenMask = 0x00;
   unsigned long eseListenMask = 0x00;
   uint8_t retry = 0;
+  uint8_t num = 0x00;
 
   phNxpNciHal_deinitializeRegRfFwDnld();
   NfcHalAutoThreadMutex a(sHalFnLock);
@@ -2344,8 +2345,13 @@ int phNxpNciHal_close(bool bShutdown) {
   if (sem_val == 0) {
     sem_post(&(nxpncihal_ctrl.syncSpiNfc));
   }
+
   if (!bShutdown && phNxpNciHal_getULPDetFlag() == false) {
-    if (IS_CHIP_TYPE_GE(sn100u) && IS_CHIP_TYPE_L(sn300u)) {
+    if ((IS_CHIP_TYPE_GE(sn100u) && IS_CHIP_TYPE_L(sn300u)) ||
+        ((IS_CHIP_TYPE_EQ(sn300u)) &&
+         (GetNxpNumValue(NAME_NXP_CE_SUPPORT_IN_NFC_OFF_PHONE_OFF, &num,
+                         sizeof(num))) &&
+         (num == 0x00))) {
       status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_in_phone_off),
                                         cmd_ce_in_phone_off);
       if (status != NFCSTATUS_SUCCESS) {
