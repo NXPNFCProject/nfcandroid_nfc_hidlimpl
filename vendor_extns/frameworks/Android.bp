@@ -1,0 +1,10 @@
+java_library {
+    name: "com.nxp.nfc",
+    srcs: [
+        "com/**/I*.aidl",
+        "com/**/*.java",
+    ],
+    libs: [
+        "framework-nfc",
+    ]
+}
