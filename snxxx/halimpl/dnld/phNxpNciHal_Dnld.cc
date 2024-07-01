@@ -37,7 +37,7 @@
 #define PHLIBNFC_IOCTL_DNLD_SN300U_GETVERLEN MAX_GET_VER_RESP_LEN
 #define IS_EQUAL(ExpectedHwVer, HwVerFromChip) (ExpectedHwVer ==              \
                                  (HwVerFromChip & PHDNLDNFC_UPPER_NIBBLE_MASK))
-#define CRC_SN300 (0xCFFC001F)
+#define CRC_SN300 (0xCFF4001F)
 /* External global variable to get FW version */
 extern uint16_t wFwVer;
 extern uint16_t wMwVer;
@@ -1776,7 +1776,7 @@ static NFCSTATUS phLibNfc_VerifySNxxxU_CrcStatus(uint8_t* bCrcStatus) {
     acceptable_crc_values = CRC_SN300;
   } else if (IS_CHIP_TYPE_EQ(sn220u)) {
     /* Accepted CRC value according to SN220 integrity bit mapping */
-    acceptable_crc_values = 0xFBFFC00F;
+    acceptable_crc_values = 0xFBF7C00F;
   }
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   phDnldChkIntegrityRsp_Buff_t chkIntgRspBuf;
