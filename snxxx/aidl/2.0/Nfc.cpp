@@ -180,6 +180,7 @@ void OnDeath(void* cookie) {
 
 ::ndk::ScopedAStatus Nfc::controlGranted(NfcStatus* _aidl_return) {
   LOG(INFO) << "controlGranted";
+  int status = phNxpNciHal_control_granted();
   *_aidl_return = CHK_STATUS(status);
   return ndk::ScopedAStatus::ok();
 }
