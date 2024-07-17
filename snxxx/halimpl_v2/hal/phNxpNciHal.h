@@ -130,13 +130,12 @@ typedef struct phNxpNciGpioInfo {
 typedef struct phNxpNciInfo {
   uint8_t nci_version;
   bool_t wait_for_ntf;
+  bool_t wait_for_rsp;
   uint8_t lastResetNtfReason;
 } phNxpNciInfo_t;
 /* NCI Control structure */
 typedef struct phNxpNciHal_Control {
   phNxpNci_HalStatus halStatus; /* Indicate if hal is open or closed */
-  pthread_t client_thread;      /* Integration thread handle */
-  uint8_t thread_running;       /* Thread running if set to 1, else set to 0 */
   phLibNfc_sConfig_t gDrvCfg;   /* Driver config data */
 
   /* Rx data */
@@ -321,6 +320,7 @@ typedef struct phNxpNciProfile_Control {
 #define NCI_HAL_PRE_DISCOVER_CPLT_MSG 0x414
 #define NCI_HAL_ERROR_MSG 0x415
 #define NCI_HAL_HCI_NETWORK_RESET_MSG 0x416
+#define NCI_HAL_TML_WRITE_MSG 0x417
 #define NCI_HAL_RX_MSG 0xF01
 #define HAL_NFC_FW_UPDATE_STATUS_EVT 0x0A
 
@@ -328,7 +328,6 @@ typedef struct phNxpNciProfile_Control {
 #define NCIHAL_CMD_CODE_BYTE_LEN (3U)
 
 /******************** NCI HAL exposed functions *******************************/
-int phNxpNciHal_check_ncicmd_write_window(uint16_t cmd_len, uint8_t* p_cmd);
 void phNxpNciHal_request_control(void);
 void phNxpNciHal_release_control(void);
 NFCSTATUS phNxpNciHal_send_get_cfgs();
@@ -345,6 +344,8 @@ NFCSTATUS phNxpNciHal_CheckValidFwVersion(void);
 
 NFCSTATUS phNxpNciHal_send_nfcee_pwr_cntl_cmd(uint8_t type);
 NFCSTATUS phNxpNciHal_nfccClockCfgApply(void);
+NFCSTATUS phNxpNciHal_enableTmlRead();
+void phNxpNciHal_enqueue_write(const uint8_t* pBuffer, uint16_t wLength);
 /*******************************************************************************
 **
 ** Function         phNxpNciHal_configFeatureList

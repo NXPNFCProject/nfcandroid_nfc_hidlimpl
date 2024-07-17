@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2019, 2023 NXP
+ * Copyright 2010-2019, 2023-2024 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -125,7 +125,10 @@ intptr_t phDal4Nfc_msgsnd(intptr_t msqid, phLibNfc_Message_t* msg, int msgflg) {
   pQueue = (phDal4Nfc_message_queue_t*)msqid;
   pNew = (phDal4Nfc_message_queue_item_t*)malloc(
       sizeof(phDal4Nfc_message_queue_item_t));
-  if (pNew == NULL) return -1;
+  if (pNew == NULL) {
+    NXPLOG_TML_E("Failed to malloc pNew errno = %d", errno);
+    return -1;
+  }
   memset(pNew, 0, sizeof(phDal4Nfc_message_queue_item_t));
   memcpy(&pNew->nMsg, msg, sizeof(phLibNfc_Message_t));
   pthread_mutex_lock(&pQueue->nCriticalSectionMutex);
@@ -176,7 +179,7 @@ int phDal4Nfc_msgrcv(intptr_t msqid, phLibNfc_Message_t* msg, long msgtyp,
   pQueue = (phDal4Nfc_message_queue_t*)msqid;
 
   if (-1 == sem_wait(&pQueue->nProcessSemaphore)) {
-    NXPLOG_TML_E("sem_wait didn't return success\n");
+    NXPLOG_TML_E("sem_wait didn't return success errno = %d", errno);
   }
 
   pthread_mutex_lock(&pQueue->nCriticalSectionMutex);

@@ -1,0 +1,330 @@
+/*
+ * Copyright 2024 NXP
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#include "NfcWriter.h"
+#include <phNfcNciConstants.h>
+#include <phNxpConfig.h>
+#include <phNxpNciHal.h>
+#include <phNxpNciHal_ext.h>
+#include <phNxpTempMgr.h>
+#include <type_traits>
+#include "NciDiscoveryCommandBuilder.h"
+#include "ObserveMode.h"
+#include "phNxpNciHal_extOperations.h"
+
+#define MAX_NXP_HAL_EXTN_BYTES 10
+
+bool bEnableMfcExtns = false;
+
+/* NCI HAL Control structure */
+extern phNxpNciHal_Control_t nxpncihal_ctrl;
+
+/* Processing of ISO 15693 EOF */
+extern uint8_t icode_send_eof;
+extern uint8_t write_unlocked_status;
+
+/* TML Context */
+extern phTmlNfc_Context_t* gpphTmlNfc_Context;
+
+/******************************************************************************
+ * Function         Default constructor
+ *
+ * Description      Default constructor of NfcWriter singleton class
+ *
+ ******************************************************************************/
+NfcWriter::NfcWriter() {}
+
+/******************************************************************************
+ * Function         getInstance
+ *
+ * Description      This function is to provide the instance of NfcWriter
+ *                  singleton class
+ *
+ * Returns          It returns instance of NfcWriter singleton class.
+ *
+ ******************************************************************************/
+NfcWriter& NfcWriter::getInstance() {
+  static NfcWriter instance;
+  return instance;
+}
+/******************************************************************************
+ * Function         write
+ *
+ * Description      This function write the data to NFCC through physical
+ *                  interface (e.g. I2C) using the NFCC driver interface.
+ *                  Before sending the data to NFCC, phNxpNciHal_write_ext
+ *                  is called to check if there is any extension processing
+ *                  is required for the NCI packet being sent out.
+ *
+ * Returns          It returns number of bytes successfully written to NFCC.
+ *
+ ******************************************************************************/
+int NfcWriter::write(uint16_t data_len, const uint8_t* p_data) {
+  if (bEnableMfcExtns && p_data[NCI_GID_INDEX] == 0x00) {
+    return NxpMfcReaderInstance.Write(data_len, p_data);
+  } else if (phNxpNciHal_isVendorSpecificCommand(data_len, p_data)) {
+    return phNxpNciHal_handleVendorSpecificCommand(data_len, p_data);
+  } else if (isObserveModeEnabled() &&
+             p_data[NCI_GID_INDEX] == NCI_RF_DISC_COMMD_GID &&
+             p_data[NCI_OID_INDEX] == NCI_RF_DISC_COMMAND_OID) {
+    NciDiscoveryCommandBuilder builder;
+    vector<uint8_t> v_data = builder.reConfigRFDiscCmd(data_len, p_data);
+    return this->direct_write(v_data.size(), v_data.data());
+  }
+  long value = 0;
+  /* NXP Removal Detection timeout Config */
+  if (GetNxpNumValue(NAME_NXP_REMOVAL_DETECTION_TIMEOUT, (void*)&value,
+                     sizeof(value))) {
+    // Change the timeout value as per config file
+    uint8_t* wait_time = (uint8_t*)&p_data[3];
+    if ((data_len == 0x04) && (p_data[0] == 0x21 && p_data[1] == 0x12)) {
+      *wait_time = value;
+    }
+  }
+  return this->direct_write(data_len, p_data);
+}
+
+/******************************************************************************
+ * Function         direct_write
+ *
+ * Description      This function write the data to NFCC through physical
+ *                  interface (e.g. I2C) using the NFCC driver interface.
+ *                  Before sending the data to NFCC, phNxpNciHal_write_ext
+ *                  is called to check if there is any extension processing
+ *                  is required for the NCI packet being sent out.
+ *
+ * Returns          It returns number of bytes successfully written to NFCC.
+ *
+ ******************************************************************************/
+int NfcWriter::direct_write(uint16_t data_len, const uint8_t* p_data) {
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  uint8_t cmd_icode_eof[] = {0x00, 0x00, 0x00};
+  static phLibNfc_Message_t msg;
+  if (nxpncihal_ctrl.halStatus != HAL_STATUS_OPEN) {
+    return NFCSTATUS_FAILED;
+  }
+  if ((data_len + MAX_NXP_HAL_EXTN_BYTES) > NCI_MAX_DATA_LEN) {
+    NXPLOG_NCIHAL_D("cmd_len exceeds limit NCI_MAX_DATA_LEN");
+    android_errorWriteLog(0x534e4554, "121267042");
+    goto clean_and_return;
+  }
+
+  CONCURRENCY_LOCK();
+  /* Check for NXP ext before sending write */
+  status =
+      phNxpNciHal_write_ext(&data_len, (uint8_t*)p_data,
+                            &nxpncihal_ctrl.rsp_len, nxpncihal_ctrl.p_rsp_data);
+  if (status != NFCSTATUS_SUCCESS) {
+    /* Do not send packet to NFCC, send response directly */
+    msg.eMsgType = NCI_HAL_RX_MSG;
+    msg.pMsgData = NULL;
+    msg.Size = 0;
+
+    phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId,
+                          (phLibNfc_Message_t*)&msg);
+    NXPLOG_NCIHAL_E("NXP ext check failed 0x%x", status);
+    goto clean_and_return;
+  }
+
+  data_len = this->write_unlocked(data_len, p_data, ORIG_LIBNFC);
+
+  if (IS_CHIP_TYPE_L(sn100u) && IS_CHIP_TYPE_NE(pn557) && icode_send_eof == 1) {
+    usleep(10000);
+    icode_send_eof = 2;
+    status = phNxpNciHal_send_ext_cmd(3, cmd_icode_eof);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("ICODE end of frame command failed");
+    }
+  }
+
+clean_and_return:
+  /* No data written */
+  CONCURRENCY_UNLOCK();
+  return data_len;
+}
+
+/******************************************************************************
+ * Function         enqueue_write
+ *
+ * Description      This is the actual function which is being called by
+ *                  nxp_nfc_extn_lib. This function writes the data to queue.
+ *
+ ******************************************************************************/
+
+void NfcWriter::enqueue_write(const uint8_t* pBuffer, uint16_t wLength) {
+  static phLibNfc_DeferredCall_t tDeferredInfo;
+  static phLibNfc_Message_t tMsg;
+  static phTmlNfc_TransactInfo_t tTransactionInfo;
+
+  if ((pBuffer == NULL) || (wLength == 0x00) || (wLength > NCI_MAX_DATA_LEN)) {
+    NXPLOG_NCIHAL_E("Invalid Parameter");
+    return;
+  }
+
+  tTransactionInfo.wStatus = NFCSTATUS_SUCCESS;
+  tTransactionInfo.cmd_len = wLength;
+  memcpy(tTransactionInfo.p_cmd_data, pBuffer, wLength);
+  tDeferredInfo.pCallback = NULL;
+  tDeferredInfo.pParameter = &tTransactionInfo;
+  tMsg.eMsgType = NCI_HAL_TML_WRITE_MSG;
+  tMsg.pMsgData = &tDeferredInfo;
+  tMsg.Size = sizeof(tDeferredInfo);
+  phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &tMsg);
+}
+
+/******************************************************************************
+ * Function         write_unlocked
+ *
+ * Description      This is the actual function which is being called by
+ *                  write. This function writes the data to NFCC.
+ *                  It waits till write callback provide the result of write
+ *                  process.
+ *
+ * Returns          It returns number of bytes successfully written to NFCC.
+ *
+ ******************************************************************************/
+int NfcWriter::write_unlocked(uint16_t data_len, const uint8_t* p_data,
+                              int origin) {
+  NFCSTATUS status = NFCSTATUS_INVALID_PARAMETER;
+  phNxpNciHal_Sem_t cb_data;
+  nxpncihal_ctrl.retry_cnt = 0;
+  int sem_val = 0;
+  write_unlocked_status = NFCSTATUS_FAILED;
+
+  /* check for write synchronyztion */
+  if (this->check_ncicmd_write_window(data_len, (uint8_t*)p_data) !=
+      NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_D("NfcWriter::write_unlocked  CMD window  check failed");
+    data_len = 0;
+    goto clean_and_return;
+  }
+
+  if (origin == ORIG_NXPHAL) HAL_ENABLE_EXT();
+
+  do {
+    if (!phNxpTempMgr::GetInstance().IsICTempOk()) {
+      phNxpTempMgr::GetInstance().Wait();
+    }
+
+    status = phTmlNfc_Write(
+        (uint8_t*)p_data, (uint16_t)data_len,
+        (pphTmlNfc_TransactCompletionCb_t)&NfcWriter::write_complete,
+        (void*)&cb_data);
+    if (status == NFCSTATUS_SUCCESS) {
+      write_unlocked_status = NFCSTATUS_SUCCESS;
+      break;
+    }
+
+    if (nxpncihal_ctrl.retry_cnt++ < MAX_RETRY_COUNT) {
+      NXPLOG_NCIHAL_D(
+          "write_unlocked failed - NFCC Maybe in Standby Mode - Retry");
+      /* 10ms delay to give NFCC wake up delay */
+      usleep(1000 * 10);
+    } else {
+      data_len = 0;
+      NXPLOG_NCIHAL_E(
+          "write_unlocked failed - NFCC Maybe in Standby Mode (max count = "
+          "0x%x)",
+          nxpncihal_ctrl.retry_cnt);
+
+      status = phTmlNfc_IoCtl(phTmlNfc_e_ResetDevice);
+
+      if (NFCSTATUS_SUCCESS == status) {
+        NXPLOG_NCIHAL_D("NFCC Reset - SUCCESS\n");
+      } else {
+        NXPLOG_NCIHAL_D("NFCC Reset - FAILED\n");
+      }
+      if (nxpncihal_ctrl.p_nfc_stack_data_cback != NULL &&
+          nxpncihal_ctrl.hal_open_status != HAL_CLOSED) {
+        if (nxpncihal_ctrl.p_rx_data != NULL) {
+          NXPLOG_NCIHAL_D("Doing abort which will trigger the recovery\n");
+          // abort which will trigger the recovery.
+          abort();
+        } else {
+          (*nxpncihal_ctrl.p_nfc_stack_data_cback)(0x00, NULL);
+        }
+        write_unlocked_status = NFCSTATUS_FAILED;
+      }
+      break;
+    }
+  } while (true);
+
+clean_and_return:
+  if (write_unlocked_status == NFCSTATUS_FAILED) {
+    sem_getvalue(&(nxpncihal_ctrl.syncSpiNfc), &sem_val);
+    if (((p_data[0] & NCI_MT_MASK) == NCI_MT_CMD) && sem_val == 0) {
+      sem_post(&(nxpncihal_ctrl.syncSpiNfc));
+      NXPLOG_NCIHAL_D("HAL write  failed CMD window check releasing \n");
+    }
+  }
+  return data_len;
+}
+
+/******************************************************************************
+ * Function         check_ncicmd_write_window
+ *
+ * Description      This function is called to check the write synchroniztion
+ *                  status if write already acquired then wait for corresponding
+                    read to complete.
+ *
+ * Returns          return 0x00 on success and 0xFF on fail.
+ *
+ ******************************************************************************/
+
+int NfcWriter::check_ncicmd_write_window(uint16_t cmd_len, uint8_t* p_cmd) {
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  int sem_timedout = 2, s;
+  struct timespec ts;
+
+  if (cmd_len < 1) {
+    android_errorWriteLog(0x534e4554, "153880357");
+    return NFCSTATUS_FAILED;
+  }
+
+  if ((p_cmd[0] & 0xF0) == 0x20) {
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    ts.tv_sec += sem_timedout;
+    while ((s = sem_timedwait_monotonic_np(&nxpncihal_ctrl.syncSpiNfc, &ts)) ==
+               -1 &&
+           errno == EINTR) {
+      continue; /* Restart if interrupted by handler */
+    }
+    if (s != -1) {
+      status = NFCSTATUS_SUCCESS;
+    }
+  } else {
+    /* cmd window check not required for writing data packet */
+    status = NFCSTATUS_SUCCESS;
+  }
+  return status;
+}
+/******************************************************************************
+ * Function         write_complete
+ *
+ * Description      This function handles write callback.
+ *
+ * Returns          void.
+ *
+ ******************************************************************************/
+void NfcWriter::write_complete(void* pContext, phTmlNfc_TransactInfo_t* pInfo) {
+  phNxpNciHal_Sem_t* p_cb_data = (phNxpNciHal_Sem_t*)pContext;
+  if (pInfo->wStatus == NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_D("write successful status = 0x%x", pInfo->wStatus);
+  } else {
+    NXPLOG_NCIHAL_D("write error status = 0x%x", pInfo->wStatus);
+  }
+  p_cb_data->status = pInfo->wStatus;
+  return;
+}

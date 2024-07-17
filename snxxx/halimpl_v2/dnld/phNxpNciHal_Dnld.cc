@@ -275,7 +275,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_reset(void* pContext, NFCSTATUS status,
   wStatus = phDnldNfc_Reset((pphDnldNfc_RspCb_t)&phNxpNciHal_fw_dnld_reset_cb,
                             (void*)&cb_data);
 
-  if (wStatus != NFCSTATUS_PENDING) {
+  if (wStatus != NFCSTATUS_SUCCESS) {
     NXPLOG_FWDNLD_E("phDnldNfc_Reset failed");
     wStatus = NFCSTATUS_FAILED;
     goto clean_and_return;
@@ -377,7 +377,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_force(void* pContext, NFCSTATUS status,
                               (pphDnldNfc_RspCb_t)&phNxpNciHal_fw_dnld_force_cb,
                               (void*)&cb_data);
 
-    if (NFCSTATUS_PENDING != wStatus) {
+    if (NFCSTATUS_SUCCESS != wStatus) {
       NXPLOG_FWDNLD_E("phDnldNfc_Force failed");
       (gphNxpNciHal_fw_IoctlCtx.bSkipForce) = false;
       (gphNxpNciHal_fw_IoctlCtx.bRetryDnld) = false;
@@ -604,7 +604,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_get_version(void* pContext,
   wStatus = phDnldNfc_GetVersion(
       &tDnldBuff, (pphDnldNfc_RspCb_t)&phNxpNciHal_fw_dnld_get_version_cb,
       (void*)&cb_data);
-  if (wStatus != NFCSTATUS_PENDING) {
+  if (wStatus != NFCSTATUS_SUCCESS) {
     NXPLOG_FWDNLD_E("phNxpNciHal_fw_dnld_get_version failed");
     wStatus = NFCSTATUS_FAILED;
     goto clean_and_return;
@@ -738,7 +738,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_get_sessn_state(void* pContext,
 
   wStatus = phDnldNfc_GetSessionState(
       &tDnldBuff, &phNxpNciHal_fw_dnld_get_sessn_state_cb, (void*)&cb_data);
-  if (wStatus != NFCSTATUS_PENDING) {
+  if (wStatus != NFCSTATUS_SUCCESS) {
     NXPLOG_FWDNLD_E("phNxpNciHal_fw_dnld_get_sessn_state failed");
     wStatus = NFCSTATUS_FAILED;
     goto clean_and_return;
@@ -831,7 +831,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_log_read(void* pContext, NFCSTATUS status,
   wStatus = phDnldNfc_ReadLog(
       &Data, (pphDnldNfc_RspCb_t)&phNxpNciHal_fw_dnld_log_read_cb,
       (void*)&cb_data);
-  if (wStatus != NFCSTATUS_PENDING) {
+  if (wStatus != NFCSTATUS_SUCCESS) {
     NXPLOG_FWDNLD_E("phNxpNciHal_fw_dnld_log_read failed");
     wStatus = NFCSTATUS_FAILED;
     goto clean_and_return;
@@ -956,7 +956,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_write(void* pContext, NFCSTATUS status,
                             (pphDnldNfc_RspCb_t)&phNxpNciHal_fw_dnld_write_cb,
                             (void*)&cb_data);
   if ((gphNxpNciHal_fw_IoctlCtx.bForceDnld) == false) {
-    if (wStatus != NFCSTATUS_PENDING) {
+    if (wStatus != NFCSTATUS_SUCCESS) {
       NXPLOG_FWDNLD_E("phNxpNciHal_fw_dnld_write failed");
       wStatus = NFCSTATUS_FAILED;
       (gphNxpNciHal_fw_IoctlCtx.tLogParams.wNumDnldFail) += 1;
@@ -1080,7 +1080,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_chk_integrity(void* pContext,
   wStatus = phDnldNfc_CheckIntegrity(
       (gphNxpNciHal_fw_IoctlCtx.bChipVer), &tDnldBuff,
       &phNxpNciHal_fw_dnld_chk_integrity_cb, (void*)&cb_data);
-  if (wStatus != NFCSTATUS_PENDING) {
+  if (wStatus != NFCSTATUS_SUCCESS) {
     NXPLOG_FWDNLD_E("phNxpNciHal_fw_dnld_chk_integrity failed");
     wStatus = NFCSTATUS_FAILED;
     goto clean_and_return;
@@ -1138,7 +1138,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_recover(void* pContext, NFCSTATUS status,
         true, NULL, (pphDnldNfc_RspCb_t)&phNxpNciHal_fw_dnld_recover_cb,
         (void*)&cb_data);
 
-    if (NFCSTATUS_PENDING != wStatus) {
+    if (NFCSTATUS_SUCCESS != wStatus) {
       (gphNxpNciHal_fw_IoctlCtx.bSkipForce) = false;
       (gphNxpNciHal_fw_IoctlCtx.bRetryDnld) = false;
       goto clean_and_return;
@@ -1308,7 +1308,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_send_ncicmd(void* pContext,
           &tsData, &trData,
           (pphDnldNfc_RspCb_t)&phNxpNciHal_fw_dnld_send_ncicmd_cb,
           (void*)&cb_data);
-      if (NFCSTATUS_PENDING != wStatus) {
+      if (NFCSTATUS_SUCCESS != wStatus) {
         goto clean_and_return;
       }
       /* Wait for callback response */
@@ -1400,7 +1400,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_log(void* pContext, NFCSTATUS status,
         phDnldNfc_Log(&tData, (pphDnldNfc_RspCb_t)&phNxpNciHal_fw_dnld_log_cb,
                       (void*)&cb_data);
 
-    if (wStatus != NFCSTATUS_PENDING) {
+    if (wStatus != NFCSTATUS_SUCCESS) {
       NXPLOG_FWDNLD_E("phDnldNfc_Log failed");
       (gphNxpNciHal_fw_IoctlCtx.bDnldInitiated) = false;
       wStatus = NFCSTATUS_FAILED;

@@ -27,6 +27,7 @@
 #include <phNxpNciHal_ext.h>
 #include <phOsalNfc_Timer.h>
 #include <phTmlNfc.h>
+#include "phNxpNciHal_WorkerThread.h"
 #undef property_set
 #undef PROPERTY_VALUE_MAX
 #undef property_get
@@ -36,7 +37,6 @@
 extern phNxpNciProfile_Control_t nxpprofile_ctrl;
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 extern phTmlNfc_Context_t* gpphTmlNfc_Context;
-extern void* phNxpNciHal_client_thread(void* arg);
 
 static void phnxpNciHal_partialClose();
 static NFCSTATUS phnxpNciHal_partialOpen();
@@ -44,6 +44,8 @@ static NFCSTATUS phnxpNciHal_partialOpen();
 // property name for storing boot time init status
 const char* halInitProperty = "vendor.nfc.min_firmware";
 
+phNxpNciHal_WorkerThread& g_workerThread_rcvr =
+    phNxpNciHal_WorkerThread::getInstance();
 /******************************************************************************
  * Function         getHalInitStatus
  *
@@ -193,7 +195,7 @@ static NFCSTATUS phNxpNciHal_writeCmd(uint16_t data_len, const uint8_t* p_data,
       (uint8_t*)nxpncihal_ctrl.p_cmd_data, (uint16_t)nxpncihal_ctrl.cmd_len,
       (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_write_callback,
       (void*)context);
-  if (status == NFCSTATUS_PENDING) {
+  if (status == NFCSTATUS_SUCCESS) {
     return phNxpNciHal_semWaitTimeout(timeout);
   }
   NXPLOG_NCIHAL_E("tml write request failed");
@@ -556,8 +558,7 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
     }
   }
   /* Create the client thread */
-  if (pthread_create(&nxpncihal_ctrl.client_thread, NULL,
-                     phNxpNciHal_client_thread, &nxpncihal_ctrl) != 0) {
+  if (g_workerThread_rcvr.Start() != false) {
     NXPLOG_NCIHAL_E("pthread_create failed");
     if (phTmlNfc_Shutdown_CleanUp() != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("phTmlNfc_Shutdown_CleanUp: Failed");
@@ -591,10 +592,9 @@ static void phnxpNciHal_partialClose(void) {
     phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &msg);
     /* Abort any pending read and write */
     phTmlNfc_ReadAbort();
-    phTmlNfc_WriteAbort();
     phTmlNfc_Shutdown();
-    if (0 != pthread_join(nxpncihal_ctrl.client_thread, (void**)NULL)) {
-      NXPLOG_TML_E("Fail to kill client thread!");
+    if (true != g_workerThread_rcvr.Stop()) {
+      NXPLOG_TML_E("Fail to kill Worker thread!");
     }
     phTmlNfc_CleanUp();
     phDal4Nfc_msgrelease(nxpncihal_ctrl.gDrvCfg.nClientId);

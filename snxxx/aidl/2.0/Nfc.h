@@ -1,7 +1,7 @@
 
 /******************************************************************************
  *
- *  Copyright 2022-2023 NXP
+ *  Copyright 2022-2024 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -60,6 +60,7 @@ struct Nfc : public BnNfc {
                              int32_t* _aidl_return) override;
   ::ndk::ScopedAStatus setEnableVerboseLogging(bool enable) override;
   ::ndk::ScopedAStatus isVerboseLoggingEnabled(bool* _aidl_return) override;
+  binder_status_t dump(int fd, const char** args, uint32_t num_args) override;
   ::ndk::ScopedAStatus controlGranted(NfcStatus* _aidl_return_) override;
 
   static uint8_t mapToAidlIfRequired(uint8_t event) {

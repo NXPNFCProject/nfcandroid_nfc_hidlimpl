@@ -77,7 +77,7 @@ NFCSTATUS phDnldNfc_Reset(pphDnldNfc_RspCb_t pNotify, void* pContext) {
 
       wStatus = phDnldNfc_CmdHandler(gpphDnldContext, phDnldNfc_EventReset);
 
-      if (NFCSTATUS_PENDING == wStatus) {
+      if (NFCSTATUS_SUCCESS == wStatus) {
         NXPLOG_FWDNLD_D("Reset Request submitted successfully");
       } else {
         NXPLOG_FWDNLD_E("Reset Request Failed!!");
@@ -133,7 +133,7 @@ NFCSTATUS phDnldNfc_GetVersion(pphDnldNfc_Buff_t pVersionInfo,
 
         wStatus = phDnldNfc_CmdHandler(gpphDnldContext, phDnldNfc_EventGetVer);
 
-        if (NFCSTATUS_PENDING == wStatus) {
+        if (NFCSTATUS_SUCCESS == wStatus) {
           NXPLOG_FWDNLD_D("GetVersion Request submitted successfully");
         } else {
           NXPLOG_FWDNLD_E("GetVersion Request Failed!!");
@@ -194,7 +194,7 @@ NFCSTATUS phDnldNfc_GetSessionState(pphDnldNfc_Buff_t pSession,
         wStatus =
             phDnldNfc_CmdHandler(gpphDnldContext, phDnldNfc_EventGetSesnSt);
 
-        if (NFCSTATUS_PENDING == wStatus) {
+        if (NFCSTATUS_SUCCESS == wStatus) {
           NXPLOG_FWDNLD_D("GetSessionState Request submitted successfully");
         } else {
           NXPLOG_FWDNLD_E("GetSessionState Request Failed!!");
@@ -277,7 +277,7 @@ NFCSTATUS phDnldNfc_CheckIntegrity(uint8_t bChipVer, pphDnldNfc_Buff_t pCRCData,
         wStatus =
             phDnldNfc_CmdHandler(gpphDnldContext, phDnldNfc_EventIntegChk);
 
-        if (NFCSTATUS_PENDING == wStatus) {
+        if (NFCSTATUS_SUCCESS == wStatus) {
           NXPLOG_FWDNLD_D("CheckIntegrity Request submitted successfully");
         } else {
           NXPLOG_FWDNLD_E("CheckIntegrity Request Failed!!");
@@ -337,7 +337,7 @@ NFCSTATUS phDnldNfc_ReadLog(pphDnldNfc_Buff_t pData, pphDnldNfc_RspCb_t pNotify,
 
         wStatus = phDnldNfc_CmdHandler(gpphDnldContext, phDnldNfc_EventRead);
 
-        if (NFCSTATUS_PENDING == wStatus) {
+        if (NFCSTATUS_SUCCESS == wStatus) {
           NXPLOG_FWDNLD_D("Read Request submitted successfully");
         } else {
           NXPLOG_FWDNLD_E("Read Request Failed!!");
@@ -438,7 +438,7 @@ NFCSTATUS phDnldNfc_Write(bool_t bRecoverSeq, pphDnldNfc_Buff_t pData,
 
         wStatus = phDnldNfc_CmdHandler(gpphDnldContext, phDnldNfc_EventWrite);
 
-        if (NFCSTATUS_PENDING == wStatus) {
+        if (NFCSTATUS_SUCCESS == wStatus) {
           NXPLOG_FWDNLD_D("Write Request submitted successfully");
         } else {
           NXPLOG_FWDNLD_E("Write Request Failed!!");
@@ -499,7 +499,7 @@ NFCSTATUS phDnldNfc_Log(pphDnldNfc_Buff_t pData, pphDnldNfc_RspCb_t pNotify,
 
         wStatus = phDnldNfc_CmdHandler(gpphDnldContext, phDnldNfc_EventLog);
 
-        if (NFCSTATUS_PENDING == wStatus) {
+        if (NFCSTATUS_SUCCESS == wStatus) {
           NXPLOG_FWDNLD_D("Log Request submitted successfully");
         } else {
           NXPLOG_FWDNLD_E("Log Request Failed!!");
@@ -606,7 +606,7 @@ NFCSTATUS phDnldNfc_Force(pphDnldNfc_Buff_t pInputs, pphDnldNfc_RspCb_t pNotify,
 
       wStatus = phDnldNfc_CmdHandler(gpphDnldContext, phDnldNfc_EventForce);
 
-      if (NFCSTATUS_PENDING == wStatus) {
+      if (NFCSTATUS_SUCCESS == wStatus) {
         NXPLOG_FWDNLD_D("Force Command Request submitted successfully");
       } else {
         NXPLOG_FWDNLD_E("Force Command Request Failed!!");
@@ -728,7 +728,7 @@ NFCSTATUS phDnldNfc_RawReq(pphDnldNfc_Buff_t pFrameData,
 
         wStatus = phDnldNfc_CmdHandler(gpphDnldContext, phDnldNfc_EventRaw);
 
-        if (NFCSTATUS_PENDING == wStatus) {
+        if (NFCSTATUS_SUCCESS == wStatus) {
           NXPLOG_FWDNLD_D("RawFrame Request submitted successfully");
         } else {
           NXPLOG_FWDNLD_E("RawFrame Request Failed!!");
