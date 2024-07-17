@@ -20,12 +20,12 @@
 
 #include <android-base/logging.h>
 
+#include <memunreachable/memunreachable.h>
 #include "NfcExtns.h"
 #include "phNfcStatus.h"
 #include "phNxpConfig.h"
 #include "phNxpNciHal_Adaptation.h"
 #include "phNxpNciHal_ext.h"
-
 #define CHK_STATUS(x) \
   ((x) == NFCSTATUS_SUCCESS) ? (NfcStatus::OK) : (NfcStatus::FAILED)
 
@@ -176,6 +176,12 @@ void OnDeath(void* cookie) {
 ::ndk::ScopedAStatus Nfc::isVerboseLoggingEnabled(bool* _aidl_return) {
   *_aidl_return = phNxpNciHal_getVerboseLogging();
   return ndk::ScopedAStatus::ok();
+}
+binder_status_t Nfc::dump(int /* fd */, const char** /* p */,
+                          uint32_t /* q */) {
+  LOG(INFO) << "\n NFC AIDL HAL MemoryLeak Info = \n"
+            << ::android::GetUnreachableMemoryString(true, 10000).c_str();
+  return STATUS_OK;
 }
 
 ::ndk::ScopedAStatus Nfc::controlGranted(NfcStatus* _aidl_return) {
