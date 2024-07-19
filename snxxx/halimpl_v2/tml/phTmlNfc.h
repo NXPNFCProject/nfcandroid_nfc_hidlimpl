@@ -29,18 +29,13 @@
 #define PHTMLNFC_H
 
 #include <phNfcCommon.h>
+#include <phNxpNciHal.h>
 
 /*
  * Message posted by Reader thread upon
  * completion of requested operation
  */
 #define PH_TMLNFC_READ_MESSAGE (0xAA)
-
-/*
- * Message posted by Writer thread upon
- * completion of requested operation
- */
-#define PH_TMLNFC_WRITE_MESSAGE (0x55)
 
 /*
  * Value indicates to reset device
@@ -89,6 +84,8 @@ typedef struct phTmlNfc_TransactInfo {
   NFCSTATUS wStatus;       /* Status of the Transaction Completion*/
   uint8_t* pBuff;          /* Response Data of the Transaction*/
   uint16_t wLength;        /* Data size of the Transaction*/
+  uint8_t p_cmd_data[NCI_MAX_DATA_LEN];
+  uint16_t cmd_len;
 } phTmlNfc_TransactInfo_t; /* Instance of Transaction structure */
 
 /*
@@ -134,16 +131,6 @@ typedef enum {
 } phTmlNfc_ControlCode_t; /* Control code for IOCTL call */
 
 /*
- * Enable / Disable Re-Transmission of Packets
- *
- * phTmlNfc_ConfigNciPktReTx
- */
-typedef enum {
-  phTmlNfc_e_EnableRetrans = 0x00, /*Enable retransmission of Nci packet */
-  phTmlNfc_e_DisableRetrans = 0x01 /*Disable retransmission of Nci packet */
-} phTmlNfc_ConfigRetrans_t;        /* Configuration for Retransmission */
-
-/*
  * Structure containing details related to read and write operations
  *
  */
@@ -166,25 +153,16 @@ typedef struct phTmlNfc_ReadWriteInfo {
 typedef struct phTmlNfc_Context {
   pthread_t readerThread; /*Handle to the thread which handles write and read
                              operations */
-  pthread_t writerThread;
   volatile uint8_t
       bThreadDone; /*Flag to decide whether to run or abort the thread */
-  phTmlNfc_ConfigRetrans_t
-      eConfig;             /*Retransmission of Nci Packet during timeout */
-  uint8_t bRetryCount;     /*Number of times retransmission shall happen */
-  uint8_t bWriteCbInvoked; /* Indicates whether write callback is invoked during
-                              retransmission */
   uint32_t dwTimerId;      /* Timer used to retransmit nci packet */
   phTmlNfc_ReadWriteInfo_t tReadInfo;  /*Pointer to Reader Thread Structure */
-  phTmlNfc_ReadWriteInfo_t tWriteInfo; /*Pointer to Writer Thread Structure */
+  phTmlNfc_ReadWriteInfo_t tWriteInfo; /*Pointer to Writer context */
   void* pDevHandle;                    /* Pointer to Device Handle */
   uintptr_t dwCallbackThreadId; /* Thread ID to which message to be posted */
   uint8_t bEnableCrc;           /*Flag to validate/not CRC for input buffer */
   sem_t rxSemaphore;
-  sem_t txSemaphore;      /* Lock/Acquire txRx Semaphore */
-  sem_t postMsgSemaphore; /* Semaphore to post message atomically by Reader &
-                             writer thread */
-  pthread_cond_t wait_busy_condition; /*Condition to wait reader thread*/
+  sem_t postMsgSemaphore; /* Semaphore to post message atomically by Reader */
   pthread_mutex_t wait_busy_lock;     /*Condition lock to wait reader thread*/
   volatile uint8_t wait_busy_flag;    /*Condition flag to wait reader thread*/
   volatile uint8_t gWriterCbflag; /* flag to indicate write callback message is
@@ -244,13 +222,10 @@ NFCSTATUS phTmlNfc_Write(uint8_t* pBuffer, uint16_t wLength,
 NFCSTATUS phTmlNfc_Read(uint8_t* pBuffer, uint16_t wLength,
                         pphTmlNfc_TransactCompletionCb_t pTmlReadComplete,
                         void* pContext);
-NFCSTATUS phTmlNfc_WriteAbort(void);
 NFCSTATUS phTmlNfc_ReadAbort(void);
 NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode);
 void phTmlNfc_DeferredCall(uintptr_t dwThreadId,
                            phLibNfc_Message_t* ptWorkerMsg);
-void phTmlNfc_ConfigNciPktReTx(phTmlNfc_ConfigRetrans_t eConfig,
-                               uint8_t bRetryCount);
 void phTmlNfc_set_fragmentation_enabled(phTmlNfc_i2cfragmentation_t enable);
 NFCSTATUS phTmlNfc_ConfigTransport();
 void phTmlNfc_EnableFwDnldMode(bool mode);

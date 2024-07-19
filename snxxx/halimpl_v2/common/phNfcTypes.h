@@ -47,6 +47,7 @@ typedef uint16_t NFCSTATUS; /* Return values */
 #define PHNFC_MAX_ATR_LENGTH 0x30U
 #define PHNFC_NFCID_LENGTH 0x0AU /* Maximum length of NFCID 1.3*/
 #define PHNFC_ATQA_LENGTH 0x02U  /* ATQA length */
+#define PHNCI_MAX_DATA_LEN 300
 
 /*
  * Possible Hardware Configuration exposed to upper layer.
@@ -112,6 +113,9 @@ typedef struct phLibNfc_Message {
   uint32_t eMsgType; /* Type of the message to be posted*/
   void* pMsgData;    /* Pointer to message specific data block in case any*/
   uint32_t Size;     /* Size of the datablock*/
+  uint8_t data[PHNCI_MAX_DATA_LEN]; /* Message data maintained with MAX*/
+  NFCSTATUS w_status;               /* Status of the Transaction Completion*/
+  ;
 } phLibNfc_Message_t, *pphLibNfc_Message_t;
 
 /*

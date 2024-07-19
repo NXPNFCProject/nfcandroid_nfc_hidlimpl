@@ -184,6 +184,8 @@ cc_library_shared {
         "halimpl_v2/mifare/NxpMfcReader.cc",
         "halimpl_v2/recovery/phNxpNciHal_Recovery.cc",
         "halimpl_v2/hal/phNxpNciHal_PowerTrackerIface.cc",
+        "halimpl_v2/nfc_comm/NfcWriter.cc",
+        "halimpl_v2/hal/phNxpNciHal_WorkerThread.cc"
     ],
 
     local_include_dirs: [
@@ -200,9 +202,11 @@ cc_library_shared {
         "halimpl_v2/mifare",
         "halimpl_v2/recovery",
         "halimpl_v2/observe_mode",
+        "halimpl_v2/nfc_comm",
     ],
 
     include_dirs: [
+        "hardware/nxp/nfc/snxxx/aidl",
         "hardware/nxp/secure_element/snxxx/extns/impl",
         "hardware/nxp/secure_element_extns/inc",
     ],
@@ -241,6 +245,7 @@ cc_library_headers {
         "halimpl_v2/mifare",
         "extns/impl/nxpnfc/2.0",
         "halimpl_v2/recovery",
+        "halimpl_v2/nfc_comm",
     ],
 }
 
@@ -265,6 +270,7 @@ cc_binary {
         "nfc_nci_nxp_snxxx_v2",
         "libhardware",
         "vendor.nxp.nxpnfc_aidl-V1-ndk",
+        "libmemunreachable",
     ],
     srcs: [
         "aidl/2.0/main.cpp",
@@ -283,6 +289,7 @@ cc_binary {
         "halimpl_v2/recovery",
         "halimpl_v2/eseclients_extns/inc/",
         "extns/impl/nxpnfc/aidl",
+        "halimpl_v2/nfc_comm",
     ],
 }
 
