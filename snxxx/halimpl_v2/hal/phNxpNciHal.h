@@ -83,23 +83,12 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 
 #define CORE_RESET_NTF_RECOVERY_REQ_COUNT 0x03
 
-typedef struct nci_data {
-  uint16_t len;
-  uint8_t p_data[NCI_MAX_DATA_LEN];
-} nci_data_t;
-
 typedef enum {
   HAL_STATUS_CLOSE = 0,
   HAL_STATUS_OPEN,
-  HAL_STATUS_MIN_OPEN
+  HAL_STATUS_MIN_OPEN,
+  HAL_OPEN_CORE_INITIALIZING
 } phNxpNci_HalStatus;
-
-typedef enum {
-  HAL_CLOSED, /* Either hal_close() done or hal_open() is on going */
-  HAL_OPENED, /* hal_open() is done */
-  HAL_OPEN_CORE_INITIALIZING /* core_initialized() ongoing. will be set back to
-                                HAL_OPENED once done. */
-} phNxpNci_HalOpenStatus;
 
 typedef enum {
   HAL_NFC_FW_UPDATE_INVALID = 0x00,
@@ -116,6 +105,60 @@ typedef enum {
   GPIO_RESTORE_DONE = 0x20,
   GPIO_CLEAR = 0xFF
 } phNxpNciHal_GpioInfoState;
+
+/******************************************************************************
+ * Enum         phNxpNciHal_OpType
+ *
+ * Description  This enumeration defines various NCI HAL operations that
+ *              the `phNxpNciHal_complete` function can handle and report
+ *              the status of. Each value represents a specific operation
+ *              performed by the NCI HAL.
+ ******************************************************************************/
+typedef enum phNxpNciHal_OpType {
+
+  /******************************************************************************
+   * PHNXP_NCIHAL_OP_OPEN
+   *
+   * Description   This operation type represents the completion of a full
+   *               open operation. It is used when the NCI HAL is fully opened.
+   ******************************************************************************/
+  PHNXP_NCIHAL_OP_OPEN,
+
+  /******************************************************************************
+   * PHNXP_NCIHAL_OP_CLOSE
+   *
+   * Description   This operation type represents the completion of a close
+   *               operation. It is used when the NCI HAL is being closed.
+   ******************************************************************************/
+  PHNXP_NCIHAL_OP_CLOSE,
+
+  /******************************************************************************
+   * PHNXP_NCIHAL_OP_MIN_OPEN
+   *
+   * Description   This operation type represents the initializes the least
+   *               required resources to communicate to NFCC.
+   ******************************************************************************/
+  PHNXP_NCIHAL_OP_MIN_OPEN,
+
+  /******************************************************************************
+   * PHNXP_NCIHAL_OP_POWER_CYCLE
+   *
+   * Description   This operation type represents the completion of a power
+   *               cycle operation. It is used to notify to libnfc-nci.
+   ******************************************************************************/
+  PHNXP_NCIHAL_OP_POWER_CYCLE,
+
+  /******************************************************************************
+   * PHNXP_NCIHAL_OP_CORE_INIT
+   *
+   * Description   This operation type represents the completion of the core
+   *               initialization process. After completion of proprietary
+   *               settings notification is provided to libnfc-nci.
+   ******************************************************************************/
+  PHNXP_NCIHAL_OP_CORE_INIT
+
+} phNxpNciHal_OpType_t;
+
 #ifdef NXP_BOOTTIME_UPDATE
 extern ese_update_state_t ese_update;
 #endif
@@ -152,9 +195,6 @@ typedef struct phNxpNciHal_Control {
 
   /* control granted callback */
   phNxpNciHal_control_granted_callback_t* p_control_granted_cback;
-
-  /* HAL open status */
-  phNxpNci_HalOpenStatus hal_open_status;
 
   /* HAL extensions */
   uint8_t hal_ext_enabled;

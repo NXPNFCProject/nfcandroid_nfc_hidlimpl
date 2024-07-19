@@ -115,7 +115,8 @@ void phNxpNciHal_WorkerThread::Run() {
           ptransact_info->wStatus = msg.w_status;
           deferCall->pCallback(ptransact_info);
         } else {
-          NXPLOG_NCIHAL_E("TransInfo is invalid");
+          NXPLOG_NCIHAL_D("Processing the response timeout");
+          deferCall->pCallback(deferCall->pParameter);
         }
         REENTRANCE_UNLOCK();
         break;

@@ -146,13 +146,9 @@ fpDoAntennaActivity_t fpDoAntennaActivity = NULL;
 static bool sCmdenabled = false;
 
 /**************** local methods used in this file only ************************/
-static void phNxpNciHal_open_complete(NFCSTATUS status);
-static void phNxpNciHal_MinOpen_complete(NFCSTATUS status);
+static void phNxpNciHal_complete(NFCSTATUS status, phNxpNciHal_OpType_t opType);
 static void phNxpNciHal_read_complete(void* pContext,
                                       phTmlNfc_TransactInfo_t* pInfo);
-static void phNxpNciHal_close_complete(NFCSTATUS status);
-static void phNxpNciHal_core_initialized_complete(NFCSTATUS status);
-static void phNxpNciHal_power_cycle_complete(NFCSTATUS status);
 static void phNxpNciHal_nfccClockCfgRead(void);
 static void phNxpNciHal_hci_network_reset(void);
 static NFCSTATUS phNxpNciHal_do_swp_session_reset(void);
@@ -774,7 +770,7 @@ int phNxpNciHal_MinOpen() {
     NXPLOG_NCIHAL_E("setting core_reset_ntf_count_prop failed");
   }
   /* Call open complete */
-  phNxpNciHal_MinOpen_complete(wConfigStatus);
+  phNxpNciHal_complete(wConfigStatus, PHNXP_NCIHAL_OP_MIN_OPEN);
   NXPLOG_NCIHAL_D("phNxpNciHal_MinOpen(): exit");
   return wConfigStatus;
 }
@@ -811,7 +807,7 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
   NfcHalAutoThreadMutex a(sHalFnLock);
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_OPEN) {
     NXPLOG_NCIHAL_D("phNxpNciHal_open already open");
-    phNxpNciHal_open_complete(wConfigStatus);
+    phNxpNciHal_complete(wConfigStatus, PHNXP_NCIHAL_OP_OPEN);
     return wConfigStatus;
   } else if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
     PhNxpEventLogger::GetInstance().Initialize();
@@ -829,7 +825,7 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
     nxpncihal_ctrl.p_nfc_stack_data_cback = p_data_cback;
   }
   /* Call open complete */
-  phNxpNciHal_open_complete(wConfigStatus);
+  phNxpNciHal_complete(wConfigStatus, PHNXP_NCIHAL_OP_OPEN);
 
   return wConfigStatus;
 
@@ -906,51 +902,59 @@ int phNxpNciHal_fw_mw_ver_check() {
   }
   return status;
 }
-/******************************************************************************
- * Function         phNxpNciHal_MinOpen_complete
- *
- * Description      This function updates the status of
- *phNxpNciHal_MinOpen_complete to halstatus.
- *
- * Returns          void.
- *
- ******************************************************************************/
-static void phNxpNciHal_MinOpen_complete(NFCSTATUS status) {
-  gsIsFirstHalMinOpen = false;
-  if (status == NFCSTATUS_SUCCESS) {
-    nxpncihal_ctrl.halStatus = HAL_STATUS_MIN_OPEN;
-  }
-
-  return;
-}
 
 /******************************************************************************
- * Function         phNxpNciHal_open_complete
+ * Function      phNxpNciHal_complete
  *
- * Description      This function inform the status of phNxpNciHal_open
- *                  function to libnfc-nci.
+ * Description   This function is called to handle the completion of various
+ *               NCI HAL operations and to provide their status to libnfc-nci
+ *               through a callback. It handles different operations such as
+ *               close, power cycle, open, core initialization, HCI network.
  *
- * Returns          void.
- *
+ * Returns       void
  ******************************************************************************/
-static void phNxpNciHal_open_complete(NFCSTATUS status) {
+
+static void phNxpNciHal_complete(NFCSTATUS status,
+                                 phNxpNciHal_OpType_t opType) {
   static phLibNfc_Message_t msg;
-
-  if (status == NFCSTATUS_SUCCESS) {
-    msg.eMsgType = NCI_HAL_OPEN_CPLT_MSG;
-    nxpncihal_ctrl.hal_open_status = HAL_OPENED;
-    nxpncihal_ctrl.halStatus = HAL_STATUS_OPEN;
-  } else {
-    msg.eMsgType = NCI_HAL_ERROR_MSG;
-  }
-
   msg.pMsgData = NULL;
   msg.Size = 0;
 
-  phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId,
-                        (phLibNfc_Message_t*)&msg);
+  switch (opType) {
+    case PHNXP_NCIHAL_OP_OPEN:
+      msg.eMsgType = (status == NFCSTATUS_SUCCESS) ? NCI_HAL_OPEN_CPLT_MSG
+                                                   : NCI_HAL_ERROR_MSG;
+      if (status == NFCSTATUS_SUCCESS) {
+        nxpncihal_ctrl.halStatus = HAL_STATUS_OPEN;
+      }
+      break;
 
-  return;
+    case PHNXP_NCIHAL_OP_MIN_OPEN:
+      gsIsFirstHalMinOpen = false;
+      if (status == NFCSTATUS_SUCCESS) {
+        nxpncihal_ctrl.halStatus = HAL_STATUS_MIN_OPEN;
+      }
+      return;
+
+    case PHNXP_NCIHAL_OP_CLOSE:
+      msg.eMsgType = (status == NFCSTATUS_SUCCESS) ? NCI_HAL_CLOSE_CPLT_MSG
+                                                   : NCI_HAL_ERROR_MSG;
+      nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
+      break;
+
+    case PHNXP_NCIHAL_OP_POWER_CYCLE:
+      msg.eMsgType = (status == NFCSTATUS_SUCCESS) ? NCI_HAL_OPEN_CPLT_MSG
+                                                   : NCI_HAL_ERROR_MSG;
+      break;
+
+    case PHNXP_NCIHAL_OP_CORE_INIT:
+      nxpncihal_ctrl.halStatus = HAL_STATUS_OPEN;
+      msg.eMsgType = (status == NFCSTATUS_SUCCESS) ? NCI_HAL_POST_INIT_CPLT_MSG
+                                                   : NCI_HAL_ERROR_MSG;
+      break;
+  }
+
+  phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &msg);
 }
 
 /******************************************************************************
@@ -1216,7 +1220,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   if (nxpncihal_ctrl.halStatus != HAL_STATUS_OPEN) {
     return NFCSTATUS_FAILED;
   }
-  nxpncihal_ctrl.hal_open_status = HAL_OPEN_CORE_INITIALIZING;
+  nxpncihal_ctrl.halStatus = HAL_OPEN_CORE_INITIALIZING;
   if (core_init_rsp_params_len >= 1 && (*p_core_init_rsp_params > 0) &&
       (*p_core_init_rsp_params < 4))  // initializing for recovery.
   {
@@ -1230,7 +1234,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
       buffer = NULL;
     }
     if (retry_core_init_cnt > 3) {
-      nxpncihal_ctrl.hal_open_status = HAL_OPENED;
+      nxpncihal_ctrl.halStatus = HAL_STATUS_OPEN;
       return NFCSTATUS_FAILED;
     }
     if (IS_CHIP_TYPE_L(sn100u)) {
@@ -1270,7 +1274,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
 
   buffer = (uint8_t*)malloc(bufflen * sizeof(uint8_t));
   if (NULL == buffer) {
-    nxpncihal_ctrl.hal_open_status = HAL_OPENED;
+    nxpncihal_ctrl.halStatus = HAL_STATUS_OPEN;
     return NFCSTATUS_FAILED;
   }
   config_access = true;
@@ -1770,7 +1774,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
 
   // Callback not needed for config applying in error recovery
   if (!sIsHalOpenErrorRecovery) {
-    phNxpNciHal_core_initialized_complete(status);
+    phNxpNciHal_complete(status, PHNXP_NCIHAL_OP_CORE_INIT);
   }
   if (isNxpConfigModified()) {
     updateNxpConfigTimestamp();
@@ -1841,34 +1845,6 @@ NFCSTATUS phNxpNciHalRFConfigCmdRecSequence() {
   } while (recFWState--);
   gRecFWDwnld = false;
   return status;
-}
-
-/******************************************************************************
- * Function         phNxpNciHal_core_initialized_complete
- *
- * Description      This function is called when phNxpNciHal_core_initialized
- *                  complete all proprietary command exchanges. This function
- *                  informs libnfc-nci about completion of core initialize
- *                  and result of that through callback.
- *
- * Returns          void.
- *
- ******************************************************************************/
-static void phNxpNciHal_core_initialized_complete(NFCSTATUS status) {
-  static phLibNfc_Message_t msg;
-
-  nxpncihal_ctrl.hal_open_status = HAL_OPENED;
-  if (status == NFCSTATUS_SUCCESS) {
-    msg.eMsgType = NCI_HAL_POST_INIT_CPLT_MSG;
-  } else {
-    msg.eMsgType = NCI_HAL_ERROR_MSG;
-  }
-  msg.pMsgData = NULL;
-  msg.Size = 0;
-
-  phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId,
-                        (phLibNfc_Message_t*)&msg);
-  return;
 }
 
 /******************************************************************************
@@ -2079,7 +2055,7 @@ close_and_return:
   sem_destroy(&nxpncihal_ctrl.syncSpiNfc);
 
   if (NULL != gpphTmlNfc_Context->pDevHandle) {
-    phNxpNciHal_close_complete(NFCSTATUS_SUCCESS);
+    phNxpNciHal_complete(NFCSTATUS_SUCCESS, PHNXP_NCIHAL_OP_CLOSE);
     /* Abort any pending read and write */
     status = phTmlNfc_ReadAbort();
     phOsalNfc_Timer_Cleanup();
@@ -2109,31 +2085,6 @@ close_and_return:
   resetNxpConfig();
   /* Return success always */
   return NFCSTATUS_SUCCESS;
-}
-
-/******************************************************************************
- * Function         phNxpNciHal_close_complete
- *
- * Description      This function inform libnfc-nci about result of
- *                  phNxpNciHal_close.
- *
- * Returns          void.
- *
- ******************************************************************************/
-void phNxpNciHal_close_complete(NFCSTATUS status) {
-  static phLibNfc_Message_t msg;
-
-  if (status == NFCSTATUS_SUCCESS) {
-    msg.eMsgType = NCI_HAL_CLOSE_CPLT_MSG;
-  } else {
-    msg.eMsgType = NCI_HAL_ERROR_MSG;
-  }
-  msg.pMsgData = NULL;
-  msg.Size = 0;
-  nxpncihal_ctrl.hal_open_status = HAL_CLOSED;
-  phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &msg);
-
-  return;
 }
 
 /******************************************************************************
@@ -2291,7 +2242,7 @@ void phNxpNciHal_release_control(void) {
  *
  * Description      This function is called by libnfc-nci when power cycling is
  *                  performed. When processing is complete it is notified to
- *                  libnfc-nci through phNxpNciHal_power_cycle_complete.
+ *                  libnfc-nci through PHNXP_NCIHAL_OP_POWER_CYCLE.
  *
  * Returns          Always return NFCSTATUS_SUCCESS (0).
  *
@@ -2312,33 +2263,8 @@ int phNxpNciHal_power_cycle(void) {
     NXPLOG_NCIHAL_D("NFCC Reset - FAILED\n");
   }
 
-  phNxpNciHal_power_cycle_complete(NFCSTATUS_SUCCESS);
+  phNxpNciHal_complete(NFCSTATUS_SUCCESS, PHNXP_NCIHAL_OP_POWER_CYCLE);
   return NFCSTATUS_SUCCESS;
-}
-
-/******************************************************************************
- * Function         phNxpNciHal_power_cycle_complete
- *
- * Description      This function is called to provide the status of
- *                  phNxpNciHal_power_cycle to libnfc-nci through callback.
- *
- * Returns          void.
- *
- ******************************************************************************/
-static void phNxpNciHal_power_cycle_complete(NFCSTATUS status) {
-  static phLibNfc_Message_t msg;
-
-  if (status == NFCSTATUS_SUCCESS) {
-    msg.eMsgType = NCI_HAL_OPEN_CPLT_MSG;
-  } else {
-    msg.eMsgType = NCI_HAL_ERROR_MSG;
-  }
-  msg.pMsgData = NULL;
-  msg.Size = 0;
-
-  phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &msg);
-
-  return;
 }
 
 /******************************************************************************
