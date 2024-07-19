@@ -473,7 +473,7 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
       }
       NXPLOG_NCIHAL_D("CORE_RESET_NTF NCI2.0 reason CORE_RESET_CMD received !");
       nxpncihal_ctrl.nci_info.nci_version = p_ntf[5];
-      if (!nxpncihal_ctrl.hal_open_status)
+      if (!nxpncihal_ctrl.halStatus)
         phNxpNciHal_configFeatureList(p_ntf, *p_len);
       int len = p_ntf[2] + 2; /*include 2 byte header*/
       if (len != *p_len - 1) {
@@ -508,7 +508,7 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
       RemoveNfcDepIntfFromInitResp(p_ntf, p_len);
     } else {
       NXPLOG_NCIHAL_D("CORE_INIT_RSP NCI1.0 received !");
-      if (!nxpncihal_ctrl.hal_open_status &&
+      if (!nxpncihal_ctrl.halStatus &&
           nxpncihal_ctrl.nci_info.nci_version != NCI_VERSION_2_0) {
         phNxpNciHal_configFeatureList(p_ntf, *p_len);
       }
@@ -651,7 +651,7 @@ static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
 
   /*Response check for Set config, Core Reset & Core init command sent part of
    * HAL_EXT*/
-  if (nxpncihal_ctrl.hal_open_status == HAL_OPEN_CORE_INITIALIZING &&
+  if (nxpncihal_ctrl.halStatus == HAL_OPEN_CORE_INITIALIZING &&
       nxpncihal_ctrl.p_rx_data[0] == 0x40 &&
       nxpncihal_ctrl.p_rx_data[1] <= 0x02 &&
       nxpncihal_ctrl.p_rx_data[2] != 0x00) {
