@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 NXP
+ * Copyright 2019-2024 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,30 @@
 #include "phNfcStatus.h"
 #include "phNxpConfig.h"
 #include "phNxpLog.h"
+
+#define NCI_PACKET_LEN_INDEX 2
+#define NCI_PACKET_TLV_INDEX 3
+/*Below are NCI get config response index values for each RF register*/
+#define DLMA_ID_TX_ENTRY_INDEX 12
+#define RF_CM_TX_UNDERSHOOT_INDEX 5
+#define PHONEOFF_TECH_DISABLE_INDEX 8
+#define ISO_DEP_MERGE_SAK_INDEX 8
+#define INITIAL_TX_PHASE_INDEX 8
+#define LPDET_THRESHOLD_INDEX 11
+#define NFCLD_THRESHOLD_INDEX 13
+#define RF_PATTERN_CHK_INDEX 8
+#define GUARD_TIMEOUT_TX2RX_INDEX 8
+#define REG_A085_DATA_INDEX 8
+
+/*Below are A085 RF register bitpostions*/
+#define CN_TRANSIT_BLK_NUM_CHECK_ENABLE_BIT_POS 6
+#define MIFARE_NACK_TO_RATS_ENABLE_BIT_POS 9
+#define MIFARE_MUTE_TO_RATS_ENABLE_BIT_POS 13
+#define CN_TRANSIT_CMA_BYPASSMODE_ENABLE_BIT_POS 23
+#define CHINA_TIANJIN_RF_ENABLE_BIT_POS 28
+
+#define NCI_GET_CMD_TLV_INDEX1 4
+#define NCI_GET_CMD_TLV_INDEX2 5
 
 /******************************************************************************
  ** Function         phNxpNciHal_ioctlIf
