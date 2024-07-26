@@ -126,8 +126,6 @@ extern size_t readConfigFile(const char* fileName, uint8_t** p_data);
 static string phNxpNciHal_parseBytesString(string in);
 static bool phNxpNciHal_parseValueFromString(string& in);
 static bool phNxpNciHal_CheckKeyNeeded(string key);
-static string phNxpNciHal_UpdatePwrStateConfigs(string& config);
-static bool phNxpNciHal_IsAutonmousModeSet(string config);
 static string phNxpNciHal_extractConfig(string& config);
 static void phNxpNciHal_getFilteredConfig(string& config);
 
@@ -157,19 +155,11 @@ std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
                                 "NXP_SWP_RD_TAG_OP_TIMEOUT",
                                 "NXP_DUAL_UICC_ENABLE",
                                 "DEFAULT_AID_ROUTE",
-                                "DEFAULT_MIFARE_CLT_ROUTE",
-                                "DEFAULT_FELICA_CLT_ROUTE",
-                                "DEFAULT_AID_PWR_STATE",
-                                "DEFAULT_DESFIRE_PWR_STATE",
-                                "DEFAULT_MIFARE_CLT_PWR_STATE",
-                                "DEFAULT_FELICA_CLT_PWR_STATE",
                                 "HOST_LISTEN_TECH_MASK",
-                                "FORWARD_FUNCTIONALITY_ENABLE",
                                 "DEFAULT_GSMA_PWR_STATE",
                                 "NXP_DEFAULT_UICC2_SELECT",
                                 "NXP_SMB_TRANSCEIVE_TIMEOUT",
                                 "NXP_SMB_ERROR_RETRY",
-                                "NXP_CHECK_DEFAULT_PROTO_SE_ID",
                                 "NXPLOG_NCIHAL_LOGLEVEL",
                                 "NXPLOG_EXTNS_LOGLEVEL",
                                 "NXPLOG_TML_LOGLEVEL",
@@ -190,7 +180,6 @@ std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
                                 "NFA_CONFIG_FORMAT",
                                 "NXP_T4T_NFCEE_ENABLE",
                                 "NXP_DISCONNECT_TAG_IN_SCRN_OFF",
-                                "NXP_CE_PRIORITY_ENABLED",
                                 "NXP_RDR_REQ_GUARD_TIME",
                                 "NXP_ENABLE_DISABLE_LOGS",
                                 "NXP_RDR_DISABLE_ENABLE_LPCD",
@@ -377,9 +366,6 @@ string phNxpNciHal_getNxpConfigIf() {
 *******************************************************************************/
 static void phNxpNciHal_getFilteredConfig(string& config) {
   config = phNxpNciHal_extractConfig(config);
-  if (phNxpNciHal_IsAutonmousModeSet(config)) {
-    config = phNxpNciHal_UpdatePwrStateConfigs(config);
-  }
 }
 
 /*******************************************************************************
@@ -445,83 +431,6 @@ static string phNxpNciHal_extractConfig(string& config) {
     }
   }
 
-  return result;
-}
-
-/*******************************************************************************
-**
-** Function         phNxpNciHal_IsAutonmousModeSet
-**
-** Description      It check whether autonomous mode is enabled
-*                   in config file
-**
-** Parameters       string config
-**
-** Returns          boolean(TRUE/FALSE)
-*******************************************************************************/
-static bool phNxpNciHal_IsAutonmousModeSet(string config) {
-  stringstream ss(config);
-  string line;
-  unsigned tmp = 0;
-  while (getline(ss, line)) {
-    auto search = line.find('=');
-    if (search == string::npos) continue;
-
-    string key(Trim(line.substr(0, search)));
-    if (key == "NXP_AUTONOMOUS_ENABLE") {
-      string value(Trim(line.substr(search + 1, string::npos)));
-      if (ParseUint(value.c_str(), &tmp)) {
-        if (tmp == 1) {
-          return true;
-        } else {
-          NXPLOG_NCIHAL_D("Autonomous flag disabled");
-          return false;
-        }
-      }
-    } else {
-      continue;
-    }
-  }
-  NXPLOG_NCIHAL_D("Autonomous flag disabled");
-  return false;
-}
-
-/*******************************************************************************
-**
-** Function         phNxpNciHal_UpdatePwrStateConfigs
-**
-** Description      Updates default pwr state accordingly if autonomous mode
-*                   is enabled
-**
-** Parameters       string config
-**
-** Returns          Resultant string
-*******************************************************************************/
-static string phNxpNciHal_UpdatePwrStateConfigs(string& config) {
-  stringstream ss(config);
-  string line;
-  string result;
-  unsigned tmp = 0;
-  while (getline(ss, line)) {
-    auto search = line.find('=');
-    if (search == string::npos) continue;
-
-    string key(Trim(line.substr(0, search)));
-    if ((key == "DEFAULT_AID_PWR_STATE" || key == "DEFAULT_DESFIRE_PWR_STATE" ||
-         key == "DEFAULT_MIFARE_CLT_PWR_STATE" ||
-         key == "DEFAULT_FELICA_CLT_PWR_STATE")) {
-      string value(Trim(line.substr(search + 1, string::npos)));
-      if (ParseUint(value.c_str(), &tmp)) {
-        tmp = phNxpNciHal_updateAutonomousPwrState(tmp);
-        value = to_string(tmp);
-        line = key + "=" + value + "\n";
-        result += line;
-      }
-    } else {
-      result += (line + "\n");
-      continue;
-    }
-  }
   return result;
 }
 
