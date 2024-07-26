@@ -2044,6 +2044,10 @@ close_and_return:
 
     if (IS_CHIP_TYPE_GE(sn220u) && !bShutdown) {
       nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
+      nxpncihal_ctrl.nci_info.wait_for_rsp = true;
+      if (phNxpNciHal_enableTmlRead() != NFCSTATUS_PENDING) {
+        NXPLOG_NCIHAL_E("%s Failed to keep the read as pending", __FUNCTION__);
+      }
       status = phNxpNciHal_send_ext_cmd(sizeof(cmd_system_set_service_status),
                                         cmd_system_set_service_status);
       if (status != NFCSTATUS_SUCCESS) {
