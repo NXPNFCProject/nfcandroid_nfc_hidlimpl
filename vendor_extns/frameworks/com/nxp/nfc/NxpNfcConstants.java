@@ -29,4 +29,7 @@ public final class NxpNfcConstants {
   public static final int TIMEOUT_ERR_CODE             = 0xB2;
   public static final int RF_UNEXPECTED_DATA_ERR_CODE  = 0xB3;
 
+  public static final int NFC_NCI_PROP_GID = 0x2F;
+  public static final int NXP_NFC_PROP_OID = 0x3E;
+
 }

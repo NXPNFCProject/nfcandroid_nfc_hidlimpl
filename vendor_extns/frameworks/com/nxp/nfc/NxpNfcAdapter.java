@@ -17,8 +17,9 @@
 package com.nxp.nfc;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.nfc.NfcAdapter;
+
+import com.nxp.nfc.oem.NxpNfcExtras;
 
 /**
  * @class NxpNfcAdapter
@@ -28,31 +29,33 @@ import android.nfc.NfcAdapter;
 public final class NxpNfcAdapter implements INxpNfcAdapter {
     private static final String TAG = "NxpNfcAdapter";
 
-    private static NxpNfcAdapter mNxpNfcAdapter;
+    private static NxpNfcAdapter sNxpNfcAdapter;
 
     private NfcAdapter mNfcAdapter;
     private NxpNfcExtras mNxpNfcExtras;
-    private NxpNciMessageHandler mNciMessageHandler;
 
-    private NxpNfcAdapter(NfcAdapter nfcAdapter) {
+    private NxpNfcAdapter(NfcAdapter nfcAdapter, Activity activity) {
         mNfcAdapter = nfcAdapter;
-        mNciMessageHandler = new NxpNciMessageHandler(mNfcAdapter);
-        mNxpNfcExtras = new NxpNfcExtras(mNciMessageHandler);
+        mNxpNfcExtras = new NxpNfcExtras(mNfcAdapter, activity);
     }
 
     /**
-     * Returns the NxpNfcAdapter for application context,
+     * @brief Returns the NxpNfcAdapter for application context,
      * or throws UnsupportedOperationException nfcAdapter is null.
+     *
+     * @param nfcAdapter
+     * @param activity
      */
-    public static synchronized NxpNfcAdapter getNxpNfcAdapter(NfcAdapter nfcAdapter) {
-        if (mNxpNfcAdapter == null) {
+    public static synchronized NxpNfcAdapter getNxpNfcAdapter(NfcAdapter nfcAdapter,
+        Activity activity) {
+        if (sNxpNfcAdapter == null) {
             if (nfcAdapter == null) {
                 NxpNfcLogger.e(TAG, "nfcAdapter is null");
                 throw new UnsupportedOperationException();
             }
-            mNxpNfcAdapter = new NxpNfcAdapter(nfcAdapter);
+            sNxpNfcAdapter = new NxpNfcAdapter(nfcAdapter, activity);
         }
-        return mNxpNfcAdapter;
+        return sNxpNfcAdapter;
     }
 
     public INxpNfcAdapter getNxpNfcAdapterInterface() {

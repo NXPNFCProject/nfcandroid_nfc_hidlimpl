@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-package com.nxp.nfc;
+ package com.nxp.nfc;
 
 /**
- * @class INxpNfcAdapter
- * @brief Interface to perform the NFC Extension functionality.
+ * @class INxpNfcNtfHandler
+ * @brief Interface to get vendor nci ntf to be notified.
  *
  * @hide
  */
-public interface INxpNfcAdapter {
+public interface INxpNfcNtfHandler {
 
-    /**
-     * @brief gets the OEM Extension interface
-     *
-     * @return OEM Extension interface
-     */
-    INxpNfcExtras getNxpNfcExtrasInterface();
+    void onVendorNciNotification(int gid, int oid, byte[] payload);
 }

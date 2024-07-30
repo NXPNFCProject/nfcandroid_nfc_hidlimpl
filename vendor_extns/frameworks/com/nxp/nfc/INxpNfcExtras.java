@@ -21,7 +21,7 @@ package com.nxp.nfc;
  * @brief Interface to perform the OEM Extension functionality.
  *
  */
-interface INxpNfcExtras {
+public interface INxpNfcExtras {
 
     /**
      * @brief Updates the RF configuration when cover state is changed
@@ -32,4 +32,27 @@ interface INxpNfcExtras {
      * @return void
      */
     void coverAttached(boolean attached, int coverType);
+
+    /**
+     * @brief starts the cover auth
+     *
+     * @return response
+     */
+    byte[] startCoverAuth();
+
+    /**
+     * @brief stops the cover auth
+     *
+     * @return true on success else false
+     */
+    boolean stopCoverAuth();
+
+    /**
+     * @brief trans the passed  data
+     *
+     * @param data
+     *
+     * @return response
+     */
+    byte[] transceiveAuthData(byte[] data);
 }

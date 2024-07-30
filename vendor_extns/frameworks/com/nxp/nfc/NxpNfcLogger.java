@@ -23,8 +23,9 @@ import android.util.Log;
  * @brief A wrapper class for logging functionality.
  *
  * This interface provides methods for logging messages of various security levels.
+ * @hide
  */
-class NxpNfcLogger {
+public class NxpNfcLogger {
 
     private static final String TAG = "ComNxpNfc";
     private static int sLogLevel = Log.VERBOSE;

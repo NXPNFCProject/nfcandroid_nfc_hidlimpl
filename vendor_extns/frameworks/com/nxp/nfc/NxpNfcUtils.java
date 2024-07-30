@@ -23,17 +23,17 @@ package com.nxp.nfc;
  * This class contains static methods for common utility operations
  */
 public final class NxpNfcUtils {
-    private static String digits = "0123456789abcdef";
+    private static String sDigits = "0123456789abcdef";
 
-    public static String toHexString( byte[] data) {
+    public static String toHexString(byte[] data) {
         StringBuffer buf = new StringBuffer();
         if (data == null) {
             return null;
         }
         for (int i = 0; i != data.length; i++) {
             int v = data[i] & 0xff;
-            buf.append(digits.charAt(v >> 4));
-            buf.append(digits.charAt(v & 0xf));
+            buf.append(sDigits.charAt(v >> 4));
+            buf.append(sDigits.charAt(v & 0xf));
         }
         return buf.toString();
     }

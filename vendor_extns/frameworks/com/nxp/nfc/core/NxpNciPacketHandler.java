@@ -14,56 +14,69 @@
  * limitations under the License.
  */
 
-package com.nxp.nfc;
+package com.nxp.nfc.core;
 
 import android.nfc.NfcAdapter;
 import android.nfc.NfcAdapter.NfcVendorNciCallback;
-import android.nfc.NfcOemExtension;
-import android.nfc.Tag;
+
+import com.nxp.nfc.INxpNfcNtfHandler;
+import com.nxp.nfc.NxpNfcConstants;
+import com.nxp.nfc.NxpNfcLogger;
+import com.nxp.nfc.NxpNfcUtils;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @class NxpNciMessageHandler
+ * @class NxpNciPacketHandler
  * @brief Responsible for Sending VendorNciCmd's,
  *        Listening the to the NfcState Changes etc..
- *
+ * @hide
  */
-public class NxpNciMessageHandler {
+public class NxpNciPacketHandler {
 
-    private static final String TAG = "NxpNciMessageHandler";
+    private static final String TAG = "NxpNciPacketHandler";
+
+    private static NxpNciPacketHandler sNxpNciPacketHandler;
 
     private NfcAdapter mNfcAdapter;
-    private NfcOemExtension mNfcOemExtension;
+    private INxpNfcNtfHandler mINxpNfcNtfHandler;
 
     private byte[] mVendorNcirsp;
+    private byte mCurrentCmdSubGidOid;
     private CountDownLatch mResCountDownLatch;
 
-    protected NxpNciMessageHandler(NfcAdapter nfcAdapter) {
+    private NxpNciPacketHandler(NfcAdapter nfcAdapter, INxpNfcNtfHandler nxpNfcNtfHandler) {
         this.mNfcAdapter = nfcAdapter;
-        mNfcOemExtension = mNfcAdapter.getNfcOemExtension();
+        this.mINxpNfcNtfHandler = nxpNfcNtfHandler;
         mNfcAdapter.registerNfcVendorNciCallback(Executors.newSingleThreadExecutor(),
                             mNfcVendorNciCallback);
-        mNfcOemExtension.registerCallback(Executors.newSingleThreadExecutor(),
-                            mOemExtensionCallback);
+    }
+
+    public static NxpNciPacketHandler getInstance(NfcAdapter nfcAdapter,
+            INxpNfcNtfHandler nxpNfcNtfHandler) {
+        if (sNxpNciPacketHandler == null) {
+            sNxpNciPacketHandler = new NxpNciPacketHandler(nfcAdapter, nxpNfcNtfHandler);
+        }
+        return sNxpNciPacketHandler;
     }
 
     public synchronized byte[] sendVendorNciMessage(int gid, int oid, byte[] payload) {
         NxpNfcLogger.d(TAG,
                     "sendVendorNciMessage API  gid: " + gid
-                        + ", oid: "+ oid + ", " + NxpNfcUtils.toHexString(payload));
+                        + ", oid: " + oid + ", " + NxpNfcUtils.toHexString(payload));
         int status = NfcAdapter.SEND_VENDOR_NCI_STATUS_FAILED;
         try {
             if (mNfcAdapter != null) {
-                status = mNfcAdapter.sendVendorNciMessage(NfcAdapter.MESSAGE_TYPE_COMMAND, 
+                mCurrentCmdSubGidOid = payload[0];
+                status = mNfcAdapter.sendVendorNciMessage(NfcAdapter.MESSAGE_TYPE_COMMAND,
                             gid, oid, payload);
+                mResCountDownLatch = new CountDownLatch(1);
                 if (status != NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
                     mVendorNcirsp = new byte[] { (byte) status };
                     NxpNfcLogger.e(TAG, "sendVendorNciMessage: error " + status);
                 } else {
-                    mResCountDownLatch = new CountDownLatch(1);
                     if (!mResCountDownLatch.await(NxpNfcConstants.SEND_RAW_WAIT_TIME_OUT_VAL,
                                             TimeUnit.MILLISECONDS)) {
                         NxpNfcLogger.d(TAG, "sendVendorNciMessage: error in wait " + status);
@@ -78,45 +91,30 @@ public class NxpNciMessageHandler {
         return mVendorNcirsp;
     }
 
-    private NfcOemExtension.Callback mOemExtensionCallback = new NfcOemExtension.Callback() {
-
-        @Override
-        public void onTagConnected(boolean connected, Tag tag) {
-            NxpNfcLogger.d(TAG, "onTagConnected: " + connected);
-        }
-
-        @Override
-        public void onRfDiscoveryStarted(boolean isDiscoveryStarted) {
-            NxpNfcLogger.d(TAG, "onRfDiscoveryStarted: " + isDiscoveryStarted);
-        }
-
-        @Override
-        public void onCardEmulationActivated(boolean isActivated) {
-            NxpNfcLogger.d(TAG, "onCardEmulationActivated: " + isActivated);
-        }
-
-        @Override
-        public void onRfFieldActivated(boolean isActivated) {
-            NxpNfcLogger.d(TAG, "onRfFieldActivated: " + isActivated);
-        }
-
-    };
-
     NfcVendorNciCallback mNfcVendorNciCallback = new NfcVendorNciCallback() {
 
         @Override
         public void onVendorNciResponse(int gid, int oid, byte[] payload) {
             NxpNfcLogger.d(TAG, "onVendorNciResponse Gid " + gid + " Oid " + oid
                             + ",payload: " + NxpNfcUtils.toHexString(payload));
-            mVendorNcirsp = payload;
-            mResCountDownLatch.countDown();
+            if (mCurrentCmdSubGidOid == payload[0]) {
+                NxpNfcLogger.d(TAG, "Expected Response received!");
+                mVendorNcirsp = payload;
+                mResCountDownLatch.countDown();
+            } else {
+                NxpNfcLogger.e(TAG, "UnExpected Response received!");
+            }
         }
 
         @Override
         public void onVendorNciNotification(int gid, int oid, byte[] payload) {
             NxpNfcLogger.d(TAG, "onVendorNciNotification Gid " + gid + " Oid " + oid
                             + ", payload: " + NxpNfcUtils.toHexString(payload));
+            if (mINxpNfcNtfHandler != null) {
+                mINxpNfcNtfHandler.onVendorNciNotification(gid, oid, payload);
+            }
         }
 
     };
+
 }
