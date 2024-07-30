@@ -118,15 +118,19 @@ vector<uint8_t> ReaderPollConfigParser::parseCmaEvent(vector<uint8_t> p_event) {
   vector<uint8_t> event_data = vector<uint8_t>();
   if (lastKnownModEvent == EVENT_MOD_B && p_event.size() > 0 &&
       p_event[0] == TYPE_B_APF) {  // Type B Apf value is 0x05
-    event_data =
-        getWellKnownModEventData(TYPE_MOD_B, std::move(unknownEventTimeStamp),
-                                 lastKnownGain, std::move(p_event));
+    if (this->notificationType != TYPE_ONLY_MOD_EVENTS) {
+      event_data =
+          getWellKnownModEventData(TYPE_MOD_B, std::move(unknownEventTimeStamp),
+                                   lastKnownGain, std::move(p_event));
+    }
   } else if (lastKnownModEvent == EVENT_MOD_F &&
              p_event[0] == TYPE_F_CMD_LENGH && p_event[2] == TYPE_F_ID &&
              p_event[3] == TYPE_F_ID) {
-    event_data =
-        getWellKnownModEventData(TYPE_MOD_F, std::move(unknownEventTimeStamp),
-                                 lastKnownGain, std::move(p_event));
+    if (this->notificationType != TYPE_ONLY_MOD_EVENTS) {
+      event_data =
+          getWellKnownModEventData(TYPE_MOD_F, std::move(unknownEventTimeStamp),
+                                   lastKnownGain, std::move(p_event));
+    }
   } else {
     event_data = getUnknownEvent(
         std::move(p_event), std::move(unknownEventTimeStamp), lastKnownGain);
@@ -175,20 +179,26 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
         switch ((p_event[INDEX_OF_L2_EVT_TYPE] & LX_EVENT_MASK) >> 4) {
           case EVENT_MOD_A:
             lastKnownModEvent = EVENT_MOD_A;
-            event_data = getWellKnownModEventData(
-                TYPE_MOD_A, std::move(timestamp), lastKnownGain);
+            if (this->notificationType != TYPE_ONLY_CMA_EVENTS) {
+              event_data = getWellKnownModEventData(
+                  TYPE_MOD_A, std::move(timestamp), lastKnownGain);
+            }
             break;
 
           case EVENT_MOD_B:
             lastKnownModEvent = EVENT_MOD_B;
-            event_data = getWellKnownModEventData(
-                TYPE_MOD_B, std::move(timestamp), lastKnownGain);
+            if (this->notificationType != TYPE_ONLY_CMA_EVENTS) {
+              event_data = getWellKnownModEventData(
+                  TYPE_MOD_B, std::move(timestamp), lastKnownGain);
+            }
             break;
 
           case EVENT_MOD_F:
             lastKnownModEvent = EVENT_MOD_F;
-            event_data = getWellKnownModEventData(
-                TYPE_MOD_F, std::move(timestamp), lastKnownGain);
+            if (this->notificationType != TYPE_ONLY_CMA_EVENTS) {
+              event_data = getWellKnownModEventData(
+                  TYPE_MOD_F, std::move(timestamp), lastKnownGain);
+            }
             break;
 
           default:
@@ -229,13 +239,17 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
       case CMA_EVENT_TRIGGER_TYPE:
         switch (p_event[INDEX_OF_CMA_EVT_DATA]) {
           case REQ_A:
-            event_data = getWellKnownModEventData(
-                TYPE_MOD_A, std::move(timestamp), lastKnownGain, {REQ_A});
+            if (this->notificationType != TYPE_ONLY_MOD_EVENTS) {
+              event_data = getWellKnownModEventData(
+                  TYPE_MOD_A, std::move(timestamp), lastKnownGain, {REQ_A});
+            }
             break;
 
           case WUP_A:
-            event_data = getWellKnownModEventData(
-                TYPE_MOD_A, std::move(timestamp), lastKnownGain, {WUP_A});
+            if (this->notificationType != TYPE_ONLY_MOD_EVENTS) {
+              event_data = getWellKnownModEventData(
+                  TYPE_MOD_A, std::move(timestamp), lastKnownGain, {WUP_A});
+            }
             break;
           default:
             event_data = getUnknownEvent(
@@ -416,4 +430,20 @@ void ReaderPollConfigParser::resetExtraBytesInfo() {
   extraByteLength = 0;
   extraBytes = vector<uint8_t>();
   unknownEventTimeStamp = vector<uint8_t>();
+}
+
+/*****************************************************************************
+ *
+ * Function         setNotificationType
+ *
+ * Description      Function to select the Notification type for Observe mode
+ *                  By default all type of notification enabled if not set
+ *
+ * Parameters       None
+ *
+ * Returns          void
+ *
+ ****************************************************************************/
+void ReaderPollConfigParser::setNotificationType(uint8_t notificationType) {
+  this->notificationType = notificationType;
 }

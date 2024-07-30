@@ -1491,7 +1491,14 @@ void phNxpNciHal_client_data_callback() {
   if (isObserveModeEnabled() &&
       nxpncihal_ctrl.p_rx_data[NCI_GID_INDEX] == NCI_PROP_NTF_GID &&
       nxpncihal_ctrl.p_rx_data[NCI_OID_INDEX] == NCI_PROP_LX_NTF_OID) {
+    unsigned long notificationType = 0;
     ReaderPollConfigParser readerPollConfigParser;
+    int isFound = GetNxpNumValue(NAME_NXP_OBSERVE_MODE_REQ_NOTIFICATION_TYPE,
+                                 &notificationType, sizeof(notificationType));
+    if (isFound == 0) {
+      notificationType = 0;
+    }
+    readerPollConfigParser.setNotificationType(notificationType);
     readerPollConfigParser.setReaderPollCallBack(
         nxpncihal_ctrl.p_nfc_stack_data_cback);
     readerPollConfigParser.parseAndSendReaderPollInfo(
