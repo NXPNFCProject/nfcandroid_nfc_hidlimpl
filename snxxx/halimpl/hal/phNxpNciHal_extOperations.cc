@@ -816,17 +816,17 @@ int phNxpNciHal_handleVendorSpecificCommand(uint16_t data_len,
 void phNxpNciHal_vendorSpecificCallback(int oid, int opcode,
                                         vector<uint8_t> data) {
   static phLibNfc_Message_t msg;
-  nxpncihal_ctrl.p_rsp_data[0] = (uint8_t)(NCI_GID_PROP | NCI_MT_RSP);
-  nxpncihal_ctrl.p_rsp_data[1] = oid;
-  nxpncihal_ctrl.p_rsp_data[2] = 1 + (int)data.size();
-  nxpncihal_ctrl.p_rsp_data[3] = opcode;
+  nxpncihal_ctrl.vendor_msg[0] = (uint8_t)(NCI_GID_PROP | NCI_MT_RSP);
+  nxpncihal_ctrl.vendor_msg[1] = oid;
+  nxpncihal_ctrl.vendor_msg[2] = 1 + (int)data.size();
+  nxpncihal_ctrl.vendor_msg[3] = opcode;
   if ((int)data.size() > 0) {
-    memcpy(&nxpncihal_ctrl.p_rsp_data[4], data.data(),
+    memcpy(&nxpncihal_ctrl.vendor_msg[4], data.data(),
            data.size() * sizeof(uint8_t));
   }
-  nxpncihal_ctrl.rsp_len = 4 + (int)data.size();
+  nxpncihal_ctrl.vendor_msg_len = 4 + (int)data.size();
 
-  msg.eMsgType = NCI_HAL_RX_MSG;
+  msg.eMsgType = NCI_HAL_VENDOR_MSG;
   msg.pMsgData = NULL;
   msg.Size = 0;
   phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId,
