@@ -1125,7 +1125,7 @@ bool phNxpNciHal_checkUpdateRfTransitConfig(const char* config) {
     string key(Trim(single_key_value.substr(0, search)));
     string value(Trim(single_key_value.substr(search + 1, string::npos)));
     ParseUint(value.c_str(), &new_value);
-    update_mode = BYTEWISE;
+    update_mode = BITWISE;
     NXPLOG_NCIHAL_D("%s : Update Key = %s Value: %02x", __FUNCTION__,
                     key.c_str(), new_value);
     auto it = tokenMap.find(key);
