@@ -93,7 +93,7 @@ int handleGetObserveModeStatus(uint16_t data_len, const uint8_t* p_data) {
   }
   vector<uint8_t> response;
   response.push_back(0x00);
-  response.push_back(isObserveModeEnabled() ? 0x00 : 0x01);
+  response.push_back(isObserveModeEnabled() ? 0x01 : 0x00);
   phNxpNciHal_vendorSpecificCallback(p_data[NCI_OID_INDEX],
                                      p_data[NCI_MSG_INDEX_FOR_FEATURE],
                                      std::move(response));
