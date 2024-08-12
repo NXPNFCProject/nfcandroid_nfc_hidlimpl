@@ -43,6 +43,13 @@
 
 #define NCI_GET_CMD_TLV_INDEX1 4
 #define NCI_GET_CMD_TLV_INDEX2 5
+#define NCI_GET_RES_STATUS_INDEX 3
+#define NCI_GET_RES_TLV_INDEX 4
+
+#define BYTE0_SHIFT_MASK 0x000000FF
+#define BYTE1_SHIFT_MASK 0x0000FF00
+#define BYTE2_SHIFT_MASK 0x00FF0000
+#define BYTE3_SHIFT_MASK 0xFF000000
 
 /******************************************************************************
  ** Function         phNxpNciHal_ioctlIf

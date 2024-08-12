@@ -44,6 +44,11 @@ using namespace ::android::base;
 /* HAL_NFC_STATUS_REFUSED sent to restart NFC service */
 #define HAL_NFC_STATUS_RESTART HAL_NFC_STATUS_REFUSED
 
+#define GET_RES_STATUS_CHECK(len, data)                           \
+  (((len) < NCI_HEADER_SIZE) ||                                   \
+   ((len) != ((data[NCI_PACKET_LEN_INDEX]) + NCI_HEADER_SIZE)) || \
+   (NFCSTATUS_SUCCESS != (data[NCI_GET_RES_STATUS_INDEX])))
+
 typedef enum {
   UPDATE_DLMA_ID_TX_ENTRY,
   UPDATE_RF_CM_TX_UNDERSHOOT_CONFIG,
@@ -971,15 +976,22 @@ void phNxpNciHal_txNfccClockSetCmd(void) {
 ** Description      Update the set RF settings.
 **
 ** Parameters       setConfCmd - Udpate the set config buffer based on getConfig
-**                  p_res_data - Response data.
+**                  getResData - Response data.
 ** Returns          True/False
 *******************************************************************************/
 bool phNxpNciHal_updateRfSetConfig(vector<uint8_t>& setConfCmd,
-                                   uint8_t* p_res_data) {
-  uint8_t res_data_packet_len = p_res_data[2] - 2;
-  uint8_t res_data_no_tlv = p_res_data[4];
-  setConfCmd.insert(setConfCmd.end(), &p_res_data[5],
-                    (&p_res_data[5] + res_data_packet_len));
+                                   vector<uint8_t>& getResData) {
+  uint8_t res_data_packet_len = 0;
+  if ((getResData.size() <= 5) ||
+      (getResData.size() !=
+       (getResData[NCI_PACKET_LEN_INDEX] + NCI_HEADER_SIZE))) {
+    NXPLOG_NCIHAL_E("%s : Invalid res data length", __FUNCTION__);
+    return false;
+  }
+  /*Updating the actual TLV packet length by excluding the status & tlv bytes */
+  res_data_packet_len = getResData[NCI_PACKET_LEN_INDEX] - 2;
+  /*Copying the TLV packet and excluding  NCI header, status & tlv bytes*/
+  setConfCmd.insert(setConfCmd.end(), getResData.begin() + 5, getResData.end());
   if (setConfCmd.size() >= 0xFF) {
     if (NFCSTATUS_SUCCESS !=
         phNxpNciHal_send_ext_cmd((setConfCmd.size() - res_data_packet_len),
@@ -995,7 +1007,7 @@ bool phNxpNciHal_updateRfSetConfig(vector<uint8_t>& setConfCmd,
     setConfCmd[NCI_PACKET_TLV_INDEX] = 0x00;
   }
   setConfCmd[NCI_PACKET_LEN_INDEX] += res_data_packet_len;
-  setConfCmd[NCI_PACKET_TLV_INDEX] += res_data_no_tlv;
+  setConfCmd[NCI_PACKET_TLV_INDEX] += getResData[NCI_GET_RES_TLV_INDEX];
 
   return true;
 }
@@ -1023,17 +1035,16 @@ bool phNxpNciHal_getUpdatePropRfSetConfig(unsigned newValue,
       NXPLOG_NCIHAL_E("%s : Get config failed for A00D", __FUNCTION__);
       return false;
     }
-    if (NFCSTATUS_SUCCESS != nxpncihal_ctrl.p_rx_data[3]) {
+    if (GET_RES_STATUS_CHECK(nxpncihal_ctrl.rx_data_len,
+                             nxpncihal_ctrl.p_rx_data)) {
       NXPLOG_NCIHAL_E("%s : Get reponse failed", __FUNCTION__);
       return false;
     }
-    if (nxpncihal_ctrl.p_rx_data[RF_CM_TX_UNDERSHOOT_INDEX] == newValue) {
-      return false;
-    }
-    nxpncihal_ctrl.p_rx_data[RF_CM_TX_UNDERSHOOT_INDEX] =
-        (uint8_t)(newValue & 0x000000FF);
+    if (nxpncihal_ctrl.p_rx_data[RF_CM_TX_UNDERSHOOT_INDEX] == newValue)
+      return true;
+
     // Mapping Prop command response to NCI command response.
-    propCmdresData[index] = nxpncihal_ctrl.p_rx_data[RF_CM_TX_UNDERSHOOT_INDEX];
+    propCmdresData[index] = (uint8_t)(newValue & BYTE0_SHIFT_MASK);
     propCmdresData[index + 1] =
         nxpncihal_ctrl.p_rx_data[RF_CM_TX_UNDERSHOOT_INDEX + 1];
     propCmdresData[index + 2] =
@@ -1044,7 +1055,7 @@ bool phNxpNciHal_getUpdatePropRfSetConfig(unsigned newValue,
     getPropRfCount++;
     if (getPropRfCount == 1) {
       index = 19;  // Index for RF register 6732
-      prop_cmd_get_rftxval[3] = 0x67;
+      prop_cmd_get_rftxval[NCI_PACKET_TLV_INDEX] = 0x67;
     }
   } while (getPropRfCount < 2);
 
@@ -1065,6 +1076,7 @@ bool phNxpNciHal_checkUpdateRfTransitConfig(const char* config) {
   vector<uint8_t> cmd_get_rfconfval{0x20, 0x03, 0x03, 0x01, 0xA0, 0x85};
   vector<uint8_t> cmd_response{};
   vector<uint8_t> lpdet_cmd_response{};
+  vector<uint8_t> get_cmd_response{};
   vector<uint8_t> cmd_set_rfconfval{0x20, 0x02, 0x01, 0x00};
   vector<uint8_t> prop_Cmd_Response{
       /*Preset get config response for A00D register*/
@@ -1089,14 +1101,16 @@ bool phNxpNciHal_checkUpdateRfTransitConfig(const char* config) {
     NXPLOG_NCIHAL_E("%s : Get config failed for A085", __FUNCTION__);
     return false;
   }
-  if (NFCSTATUS_SUCCESS != nxpncihal_ctrl.p_rx_data[3]) {
+  if (GET_RES_STATUS_CHECK(nxpncihal_ctrl.rx_data_len,
+                           nxpncihal_ctrl.p_rx_data)) {
     NXPLOG_NCIHAL_E("%s : Get config failed", __FUNCTION__);
     return false;
   }
   // Updating the A085 get config command response to vector.
-  cmd_response.insert(cmd_response.end(), &nxpncihal_ctrl.p_rx_data[0],
-                      (&nxpncihal_ctrl.p_rx_data[0] +
-                       (nxpncihal_ctrl.p_rx_data[2] + NCI_HEADER_SIZE)));
+  cmd_response.insert(
+      cmd_response.end(), &nxpncihal_ctrl.p_rx_data[0],
+      (&nxpncihal_ctrl.p_rx_data[0] +
+       (nxpncihal_ctrl.p_rx_data[NCI_PACKET_LEN_INDEX] + NCI_HEADER_SIZE)));
   rf_reg_A085_value = (unsigned)((cmd_response[REG_A085_DATA_INDEX + 3] << 24) |
                                  (cmd_response[REG_A085_DATA_INDEX + 2] << 16) |
                                  (cmd_response[REG_A085_DATA_INDEX + 1] << 8) |
@@ -1108,15 +1122,16 @@ bool phNxpNciHal_checkUpdateRfTransitConfig(const char* config) {
     NXPLOG_NCIHAL_E("%s : Get config failed for A09E", __FUNCTION__);
     return false;
   }
-  if (NFCSTATUS_SUCCESS != nxpncihal_ctrl.p_rx_data[3]) {
+  if (GET_RES_STATUS_CHECK(nxpncihal_ctrl.rx_data_len,
+                           nxpncihal_ctrl.p_rx_data)) {
     NXPLOG_NCIHAL_E("%s : Get config failed", __FUNCTION__);
     return false;
   }
   // Updating the A09E get config command response to vector.
-  lpdet_cmd_response.insert(lpdet_cmd_response.end(),
-                            &nxpncihal_ctrl.p_rx_data[0],
-                            (&nxpncihal_ctrl.p_rx_data[0] +
-                             (nxpncihal_ctrl.p_rx_data[2] + NCI_HEADER_SIZE)));
+  lpdet_cmd_response.insert(
+      lpdet_cmd_response.end(), &nxpncihal_ctrl.p_rx_data[0],
+      (&nxpncihal_ctrl.p_rx_data[0] +
+       (nxpncihal_ctrl.p_rx_data[NCI_PACKET_LEN_INDEX] + NCI_HEADER_SIZE)));
 
   while (getline(key_value_pairs, single_key_value)) {
     auto search = single_key_value.find('=');
@@ -1143,9 +1158,13 @@ bool phNxpNciHal_checkUpdateRfTransitConfig(const char* config) {
       case UPDATE_RF_CM_TX_UNDERSHOOT_CONFIG:
         if (!phNxpNciHal_getUpdatePropRfSetConfig(new_value, prop_Cmd_Response))
           return false;
-        if (!phNxpNciHal_updateRfSetConfig(cmd_set_rfconfval,
-                                           &prop_Cmd_Response[0]))
-          return false;
+
+        if ((nxpncihal_ctrl.rx_data_len > RF_CM_TX_UNDERSHOOT_INDEX) &&
+            (nxpncihal_ctrl.p_rx_data[RF_CM_TX_UNDERSHOOT_INDEX] != new_value)) {
+          if (!phNxpNciHal_updateRfSetConfig(cmd_set_rfconfval,
+                                             prop_Cmd_Response))
+            return false;
+        }
         break;
       case UPDATE_INITIAL_TX_PHASE:
         cmd_get_rfconfval[NCI_GET_CMD_TLV_INDEX1] = 0xA0;
@@ -1161,9 +1180,9 @@ bool phNxpNciHal_checkUpdateRfTransitConfig(const char* config) {
                         read_value, new_value);
         if (read_value != new_value) {
           lpdet_cmd_response[LPDET_THRESHOLD_INDEX] =
-              (uint8_t)(new_value & 0x000000FF);
+              (uint8_t)(new_value & BYTE0_SHIFT_MASK);
           lpdet_cmd_response[LPDET_THRESHOLD_INDEX + 1] =
-              (uint8_t)((new_value & 0x0000FF00) >> 8);
+              (uint8_t)((new_value & BYTE1_SHIFT_MASK) >> 8);
           is_lpdet_threshold_required = true;
         }
         break;
@@ -1175,9 +1194,9 @@ bool phNxpNciHal_checkUpdateRfTransitConfig(const char* config) {
                         read_value, new_value);
         if (read_value != new_value) {
           lpdet_cmd_response[NFCLD_THRESHOLD_INDEX] =
-              (uint8_t)(new_value & 0x000000FF);
+              (uint8_t)(new_value & BYTE0_SHIFT_MASK);
           lpdet_cmd_response[NFCLD_THRESHOLD_INDEX + 1] =
-              (uint8_t)((new_value & 0x0000FF00) >> 8);
+              (uint8_t)((new_value & BYTE1_SHIFT_MASK) >> 8);
           is_lpdet_threshold_required = true;
         }
         break;
@@ -1230,7 +1249,8 @@ bool phNxpNciHal_checkUpdateRfTransitConfig(const char* config) {
                         key.c_str());
         return false;
       }
-      if (NFCSTATUS_SUCCESS != nxpncihal_ctrl.p_rx_data[3]) {
+      if (GET_RES_STATUS_CHECK(nxpncihal_ctrl.rx_data_len,
+                               nxpncihal_ctrl.p_rx_data)) {
         NXPLOG_NCIHAL_E("%s : Get confing response failed ", __FUNCTION__);
         return false;
       }
@@ -1243,40 +1263,48 @@ bool phNxpNciHal_checkUpdateRfTransitConfig(const char* config) {
         continue;
       }
       nxpncihal_ctrl.p_rx_data[index_to_value] =
-          (uint8_t)(new_value & 0x000000FF);
+          (uint8_t)(new_value & BYTE0_SHIFT_MASK);
       if (update_mode == BYTEWISE)
         nxpncihal_ctrl.p_rx_data[index_to_value + 1] =
-            (uint8_t)((new_value & 0x0000FF00) >> 8);
-      if (!phNxpNciHal_updateRfSetConfig(cmd_set_rfconfval,
-                                         nxpncihal_ctrl.p_rx_data))
+            (uint8_t)((new_value & BYTE1_SHIFT_MASK) >> 8);
+
+      // Updating the get config command response to vector.
+      get_cmd_response.insert(
+          get_cmd_response.end(), &nxpncihal_ctrl.p_rx_data[0],
+          (&nxpncihal_ctrl.p_rx_data[0] +
+           (nxpncihal_ctrl.p_rx_data[NCI_PACKET_LEN_INDEX] + NCI_HEADER_SIZE)));
+      if (!phNxpNciHal_updateRfSetConfig(cmd_set_rfconfval, get_cmd_response))
         return false;
 
+      get_cmd_response.clear();
       index_to_value = 0;
     }
   }
   if (is_feature_update_required) {
     // Updating the A085 response to set config command.
     cmd_response[REG_A085_DATA_INDEX + 3] =
-        (uint8_t)((rf_reg_A085_value & 0xFF000000) >> 24);
+        (uint8_t)((rf_reg_A085_value & BYTE3_SHIFT_MASK) >> 24);
     cmd_response[REG_A085_DATA_INDEX + 2] =
-        (uint8_t)((rf_reg_A085_value & 0x00FF0000) >> 16);
+        (uint8_t)((rf_reg_A085_value & BYTE2_SHIFT_MASK) >> 16);
     cmd_response[REG_A085_DATA_INDEX + 1] =
-        (uint8_t)((rf_reg_A085_value & 0x0000FF00) >> 8);
+        (uint8_t)((rf_reg_A085_value & BYTE1_SHIFT_MASK) >> 8);
     cmd_response[REG_A085_DATA_INDEX] =
-        (uint8_t)(rf_reg_A085_value & 0x000000FF);
-    if (!phNxpNciHal_updateRfSetConfig(cmd_set_rfconfval, &cmd_response[0]))
+        (uint8_t)(rf_reg_A085_value & BYTE0_SHIFT_MASK);
+    if (!phNxpNciHal_updateRfSetConfig(cmd_set_rfconfval, cmd_response))
       return false;
   }
   if (is_lpdet_threshold_required) {
     // Updating the A09E response to set config command.
-    if (!phNxpNciHal_updateRfSetConfig(cmd_set_rfconfval,
-                                       &lpdet_cmd_response[0]))
+    if (!phNxpNciHal_updateRfSetConfig(cmd_set_rfconfval, lpdet_cmd_response))
       return false;
   }
-  /*If update require do set-config in NFCC otherwise skip */
-  if (cmd_set_rfconfval[NCI_PACKET_TLV_INDEX] != 0x00) {
-    NXPLOG_NCIHAL_D("%s : setConfCmd size after delete = %zu", __FUNCTION__,
+  if (cmd_set_rfconfval.size() <= NCI_HEADER_SIZE) {
+    NXPLOG_NCIHAL_E("%s : Invalid NCI Command length = %zu", __FUNCTION__,
                     cmd_set_rfconfval.size());
+    return false;
+  }
+  if (cmd_set_rfconfval[NCI_PACKET_TLV_INDEX] != 0x00) {
+    /*If update require do set-config in NFCC otherwise skip */
     if (NFCSTATUS_SUCCESS == phNxpNciHal_send_ext_cmd(cmd_set_rfconfval.size(),
                                                       &cmd_set_rfconfval[0])) {
       if (is_feature_update_required) {
