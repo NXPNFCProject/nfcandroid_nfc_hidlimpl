@@ -203,6 +203,15 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
     NXPLOG_NCIHAL_D("FelicaReaderMode:Activity 1.1");
   }
 
+  if (*p_len > 15 && p_ntf[0] == 0x61 && p_ntf[1] == 0x03 &&
+      p_ntf[4] == T2T_RF_PROTOCOL && p_ntf[15] == NXP_NON_STD_SAK_VALUE) {
+    /*When RF DISCOVERY NTF contains T2T protocol & 0x13 as SAK value
+      then updating to ISO_DEP protocol & 0x53 SAK value respectively*/
+    p_ntf[4] = ISO_DEP_RF_PROTOCOL;
+    p_ntf[15] = NXP_STD_SAK_VALUE;
+    NXPLOG_NCIHAL_D("Updated protocol to ISO_DEP & SAK value to 0x53");
+  }
+
   if (bEnableMfcExtns && p_ntf[0] == 0) {
     if (*p_len < NCI_HEADER_SIZE) {
       android_errorWriteLog(0x534e4554, "169258743");
