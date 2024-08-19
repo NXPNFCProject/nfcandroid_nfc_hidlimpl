@@ -25,6 +25,7 @@
 #include <phNxpNciHal.h>
 #include <phNxpNciHal_ext.h>
 #include <phTmlNfc.h>
+#include "NfcExtension.h"
 
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 
@@ -97,8 +98,20 @@ void phNxpNciHal_WorkerThread::Run() {
             (phLibNfc_DeferredCall_t*)(msg.pMsgData);
         phTmlNfc_TransactInfo_t* pInfo =
             (phTmlNfc_TransactInfo_t*)deferCall->pParameter;
-        phNxpNciHal_write_unlocked((uint16_t)pInfo->cmd_len,
-                                   (uint8_t*)pInfo->p_cmd_data, ORIG_LIBNFC);
+        int bytesWritten = phNxpNciHal_write_unlocked(
+            (uint16_t)pInfo->cmd_len, (uint8_t*)pInfo->p_cmd_data, ORIG_LIBNFC);
+        if (bytesWritten == pInfo->cmd_len) {
+          phNxpExtn_WriteCompleteStatusUpdate(NFCSTATUS_SUCCESS);
+        } else {
+          phNxpExtn_WriteCompleteStatusUpdate(NFCSTATUS_FAILED);
+        }
+        REENTRANCE_UNLOCK();
+        break;
+      }
+      case HAL_CTRL_GRANTED_MSG: {
+        NXPLOG_NCIHAL_D("Processing HAL_CTRL_GRANTED_MSG");
+        REENTRANCE_LOCK();
+        phNxpExtn_NfcHalControlGranted();
         REENTRANCE_UNLOCK();
         break;
       }

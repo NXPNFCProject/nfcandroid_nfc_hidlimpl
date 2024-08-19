@@ -157,7 +157,6 @@ typedef struct phTmlNfc_Context {
       bThreadDone; /*Flag to decide whether to run or abort the thread */
   uint32_t dwTimerId;      /* Timer used to retransmit nci packet */
   phTmlNfc_ReadWriteInfo_t tReadInfo;  /*Pointer to Reader Thread Structure */
-  phTmlNfc_ReadWriteInfo_t tWriteInfo; /*Pointer to Writer context */
   void* pDevHandle;                    /* Pointer to Device Handle */
   uintptr_t dwCallbackThreadId; /* Thread ID to which message to be posted */
   uint8_t bEnableCrc;           /*Flag to validate/not CRC for input buffer */
@@ -216,9 +215,7 @@ NFCSTATUS phTmlNfc_Init(pphTmlNfc_Config_t pConfig);
 NFCSTATUS phTmlNfc_Shutdown(void);
 NFCSTATUS phTmlNfc_Shutdown_CleanUp();
 void phTmlNfc_CleanUp(void);
-NFCSTATUS phTmlNfc_Write(uint8_t* pBuffer, uint16_t wLength,
-                         pphTmlNfc_TransactCompletionCb_t pTmlWriteComplete,
-                         void* pContext);
+NFCSTATUS phTmlNfc_Write(uint8_t* pBuffer, uint16_t wLength);
 NFCSTATUS phTmlNfc_Read(uint8_t* pBuffer, uint16_t wLength,
                         pphTmlNfc_TransactCompletionCb_t pTmlReadComplete,
                         void* pContext);

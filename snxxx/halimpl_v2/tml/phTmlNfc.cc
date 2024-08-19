@@ -48,7 +48,6 @@ phTmlNfc_Context_t* gpphTmlNfc_Context = NULL;
 /* Local Function prototypes */
 static NFCSTATUS phTmlNfc_StartThread(void);
 static void phTmlNfc_ReadDeferredCb(void* pParams);
-static void phTmlNfc_WriteDeferredCb(void* pParams);
 static void* phTmlNfc_TmlThread(void* pParam);
 static int phTmlNfc_WaitReadInit(void);
 
@@ -414,10 +413,6 @@ NFCSTATUS phTmlNfc_Shutdown(void) {
 **
 ** Parameters       pBuffer - data to be sent
 **                  wLength - length of data buffer
-**                  pTmlWriteComplete - pointer to the function to be invoked
-**                                      upon completion
-**                  pContext - context provided by upper layer
-**
 ** Returns          NFC status:
 **                  NFCSTATUS_SUCCESS - if command is processed successfully
 **                  NFCSTATUS_INVALID_PARAMETER - at least one parameter is
@@ -425,33 +420,16 @@ NFCSTATUS phTmlNfc_Shutdown(void) {
 **                  NFCSTATUS_BUSY - write request is already in progress
 **
 *******************************************************************************/
-NFCSTATUS phTmlNfc_Write(uint8_t* pBuffer, uint16_t wLength,
-                         pphTmlNfc_TransactCompletionCb_t pTmlWriteComplete,
-                         void* pContext) {
+NFCSTATUS phTmlNfc_Write(uint8_t* pBuffer, uint16_t wLength) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   int32_t dwNoBytesWrRd = PH_TMLNFC_RESET_VALUE;
-  /* Transaction info buffer to be passed to Callback Thread */
-  static phTmlNfc_TransactInfo_t tTransactionInfo;
-  /* Structure containing Tml callback function and parameters to be invoked
-     by the callback thread */
-  static phLibNfc_DeferredCall_t tDeferredInfo;
-  /* Initialize Message structure to post message onto Callback Thread */
-  static phLibNfc_Message_t tMsg;
   /* In case of I2C Write Retry */
   static uint16_t retry_cnt = 0x00;
   /* Check whether TML is Initialized */
 
   if (NULL != gpphTmlNfc_Context) {
     if ((NULL != gpphTmlNfc_Context->pDevHandle) && (NULL != pBuffer) &&
-        (PH_TMLNFC_RESET_VALUE != wLength) && (NULL != pTmlWriteComplete)) {
-      /* Copy the buffer, length and Callback function,
-         This shall be utilized while invoking the Callback function in thread
-         */
-      gpphTmlNfc_Context->tWriteInfo.pBuffer = pBuffer;
-      gpphTmlNfc_Context->tWriteInfo.wLength = wLength;
-      gpphTmlNfc_Context->tWriteInfo.pThread_Callback = pTmlWriteComplete;
-      gpphTmlNfc_Context->tWriteInfo.pContext = pContext;
-
+        (PH_TMLNFC_RESET_VALUE != wLength)) {
       NXPLOG_TML_D("NFCC - Write requested.....\n");
       do {
         /* Variable to fetch the actual number of bytes written */
@@ -461,10 +439,8 @@ NFCSTATUS phTmlNfc_Write(uint8_t* pBuffer, uint16_t wLength,
         /* TML reader writer callback synchronization mutex lock --- START */
         pthread_mutex_lock(&gpphTmlNfc_Context->wait_busy_lock);
         gpphTmlNfc_Context->gWriterCbflag = false;
-        dwNoBytesWrRd =
-            gpTransportObj->Write(gpphTmlNfc_Context->pDevHandle,
-                                  gpphTmlNfc_Context->tWriteInfo.pBuffer,
-                                  gpphTmlNfc_Context->tWriteInfo.wLength);
+        dwNoBytesWrRd = gpTransportObj->Write(gpphTmlNfc_Context->pDevHandle,
+                                              pBuffer, wLength);
         /* TML reader writer callback synchronization mutex lock --- END */
         pthread_mutex_unlock(&gpphTmlNfc_Context->wait_busy_lock);
 
@@ -481,33 +457,13 @@ NFCSTATUS phTmlNfc_Write(uint8_t* pBuffer, uint16_t wLength,
             break;
           }
         } else {
-          phNxpNciHal_print_packet("SEND",
-                                   gpphTmlNfc_Context->tWriteInfo.pBuffer,
-                                   gpphTmlNfc_Context->tWriteInfo.wLength);
+          phNxpNciHal_print_packet("SEND", pBuffer, wLength);
           retry_cnt = 0;
           NXPLOG_TML_D("NFCC - Write successful.....\n");
           dwNoBytesWrRd = PH_TMLNFC_VALUE_ONE;
           break;
         }
       } while (true);
-      /* Fill the Transaction info structure to be passed to Callback Function
-       */
-      tTransactionInfo.wStatus = wStatus;
-      tTransactionInfo.pBuff = gpphTmlNfc_Context->tWriteInfo.pBuffer;
-      /* Actual number of bytes written is filled in the structure */
-      tTransactionInfo.wLength = (uint16_t)dwNoBytesWrRd;
-
-      /* Prepare the message to be posted on the User thread */
-      tDeferredInfo.pCallback = &phTmlNfc_WriteDeferredCb;
-      tDeferredInfo.pParameter = &tTransactionInfo;
-      /* Write operation completed successfully. Post a Message onto Callback
-       * Thread*/
-      tMsg.eMsgType = PH_LIBNFC_DEFERREDCALL_MSG;
-      tMsg.pMsgData = &tDeferredInfo;
-      tMsg.Size = sizeof(tDeferredInfo);
-      NXPLOG_TML_D("NFCC - Posting Fresh Write message.....\n");
-      phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &tMsg);
-
     } else {
       wStatus = PHNFCSTVAL(CID_NFC_TML, NFCSTATUS_INVALID_PARAMETER);
     }
@@ -835,28 +791,6 @@ static void phTmlNfc_ReadDeferredCb(void* pParams) {
 
   gpphTmlNfc_Context->tReadInfo.pThread_Callback(
       gpphTmlNfc_Context->tReadInfo.pContext, pTransactionInfo);
-
-  return;
-}
-
-/*******************************************************************************
-**
-** Function         phTmlNfc_WriteDeferredCb
-**
-** Description      Write thread call back function
-**
-** Parameters       pParams - context provided by upper layer
-**
-** Returns          None
-**
-*******************************************************************************/
-static void phTmlNfc_WriteDeferredCb(void* pParams) {
-  /* Transaction info buffer to be passed to Callback Function */
-  phTmlNfc_TransactInfo_t* pTransactionInfo = (phTmlNfc_TransactInfo_t*)pParams;
-
-  /* Reset the flag to accept another Write Request */
-  gpphTmlNfc_Context->tWriteInfo.pThread_Callback(
-      gpphTmlNfc_Context->tWriteInfo.pContext, pTransactionInfo);
 
   return;
 }

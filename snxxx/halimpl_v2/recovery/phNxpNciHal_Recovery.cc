@@ -109,32 +109,6 @@ static void phNxpNciHal_read_callback(void* pContext,
 }
 
 /******************************************************************************
- * Function         phNxpNciHal_write_callback
- *
- * Description      Callback function for write request to tml writer thread
- *
- * Parameters       pContext - context value passed while callback register
- *                  pInfo    - Information which contains status and response
- *                             buffers.
- *
- * Returns          void
- *
- ******************************************************************************/
-static void phNxpNciHal_write_callback(void* pContext,
-                                       phTmlNfc_TransactInfo_t* pInfo) {
-  UNUSED_PROP(pContext);
-  if (pInfo != NULL) {
-    if (pInfo->wStatus != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("write error status = 0x%x", pInfo->wStatus);
-    }
-    nxpncihal_ctrl.ext_cb_data.status = pInfo->wStatus;
-  } else {
-    nxpncihal_ctrl.ext_cb_data.status = NFCSTATUS_FAILED;
-  }
-  SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
-}
-
-/******************************************************************************
  * Function         phNxpNciHal_semWaitTimeout
  *
  * Description      Helper function for global sem wait with timeout value
@@ -191,14 +165,8 @@ static NFCSTATUS phNxpNciHal_writeCmd(uint16_t data_len, const uint8_t* p_data,
   /* Create local copy of cmd_data */
   memcpy(nxpncihal_ctrl.p_cmd_data, p_data, data_len);
   nxpncihal_ctrl.cmd_len = data_len;
-  status = phTmlNfc_Write(
-      (uint8_t*)nxpncihal_ctrl.p_cmd_data, (uint16_t)nxpncihal_ctrl.cmd_len,
-      (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_write_callback,
-      (void*)context);
-  if (status == NFCSTATUS_SUCCESS) {
-    return phNxpNciHal_semWaitTimeout(timeout);
-  }
-  NXPLOG_NCIHAL_E("tml write request failed");
+  status = phTmlNfc_Write((uint8_t*)nxpncihal_ctrl.p_cmd_data,
+                          (uint16_t)nxpncihal_ctrl.cmd_len);
   return status;
 }
 

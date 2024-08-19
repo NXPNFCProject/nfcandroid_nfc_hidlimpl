@@ -21,6 +21,7 @@
 #include <phNxpTempMgr.h>
 #include <type_traits>
 #include "NciDiscoveryCommandBuilder.h"
+#include "NfcExtension.h"
 #include "ObserveMode.h"
 #include "phNxpNciHal_extOperations.h"
 
@@ -218,10 +219,7 @@ int NfcWriter::write_unlocked(uint16_t data_len, const uint8_t* p_data,
       phNxpTempMgr::GetInstance().Wait();
     }
 
-    status = phTmlNfc_Write(
-        (uint8_t*)p_data, (uint16_t)data_len,
-        (pphTmlNfc_TransactCompletionCb_t)&NfcWriter::write_complete,
-        (void*)&cb_data);
+    status = phTmlNfc_Write((uint8_t*)p_data, (uint16_t)data_len);
     if (status == NFCSTATUS_SUCCESS) {
       write_unlocked_status = NFCSTATUS_SUCCESS;
       break;
@@ -309,22 +307,4 @@ int NfcWriter::check_ncicmd_write_window(uint16_t cmd_len, uint8_t* p_cmd) {
     status = NFCSTATUS_SUCCESS;
   }
   return status;
-}
-/******************************************************************************
- * Function         write_complete
- *
- * Description      This function handles write callback.
- *
- * Returns          void.
- *
- ******************************************************************************/
-void NfcWriter::write_complete(void* pContext, phTmlNfc_TransactInfo_t* pInfo) {
-  phNxpNciHal_Sem_t* p_cb_data = (phNxpNciHal_Sem_t*)pContext;
-  if (pInfo->wStatus == NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_D("write successful status = 0x%x", pInfo->wStatus);
-  } else {
-    NXPLOG_NCIHAL_D("write error status = 0x%x", pInfo->wStatus);
-  }
-  p_cb_data->status = pInfo->wStatus;
-  return;
 }

@@ -390,4 +390,14 @@
  */
 #define NFCSTATUS_FORCE_FWDWNLD (0x0049)
 
+/*
+ * Indicates, it is handled as part of extenstion feature
+ */
+#define NFCSTATUS_EXTN_FEATURE_SUCCESS (0x0050)
+
+/*
+ * Indicates, it is not handled as part of extenstion feature
+ */
+#define NFCSTATUS_EXTN_FEATURE_FAILURE (0x0051)
+
 #endif /* PHNFCSTATUS_H */

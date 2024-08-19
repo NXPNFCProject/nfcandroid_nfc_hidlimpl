@@ -360,6 +360,7 @@ typedef struct phNxpNciProfile_Control {
 #define NCI_HAL_ERROR_MSG 0x415
 #define NCI_HAL_HCI_NETWORK_RESET_MSG 0x416
 #define NCI_HAL_TML_WRITE_MSG 0x417
+#define HAL_CTRL_GRANTED_MSG 0x418
 #define NCI_HAL_RX_MSG 0xF01
 #define HAL_NFC_FW_UPDATE_STATUS_EVT 0x0A
 
@@ -384,7 +385,7 @@ NFCSTATUS phNxpNciHal_CheckValidFwVersion(void);
 NFCSTATUS phNxpNciHal_send_nfcee_pwr_cntl_cmd(uint8_t type);
 NFCSTATUS phNxpNciHal_nfccClockCfgApply(void);
 NFCSTATUS phNxpNciHal_enableTmlRead();
-void phNxpNciHal_enqueue_write(const uint8_t* pBuffer, uint16_t wLength);
+void phNxpHal_EnqueueWrite(const uint8_t* pBuffer, uint16_t wLength);
 /*******************************************************************************
 **
 ** Function         phNxpNciHal_configFeatureList
