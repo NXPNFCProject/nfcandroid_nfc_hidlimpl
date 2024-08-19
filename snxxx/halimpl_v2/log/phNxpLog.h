@@ -45,7 +45,6 @@ extern bool nfc_debug_enabled;
 
 /* ####################### Set the log module name in .conf file
  * ########################## */
-#define NAME_NXPLOG_EXTNS_LOGLEVEL "NXPLOG_EXTNS_LOGLEVEL"
 #define NAME_NXPLOG_NCIHAL_LOGLEVEL "NXPLOG_NCIHAL_LOGLEVEL"
 #define NAME_NXPLOG_NCIX_LOGLEVEL "NXPLOG_NCIX_LOGLEVEL"
 #define NAME_NXPLOG_NCIR_LOGLEVEL "NXPLOG_NCIR_LOGLEVEL"
@@ -112,28 +111,28 @@ extern const char* NXPLOG_ITEM_HCPR; /* Android logging tag for NxpHcpR   */
  */
 /* Logging APIs used by NxpExtns module */
 #if (ENABLE_EXTNS_TRACES == TRUE)
-#define NXPLOG_EXTNS_D(...)                                        \
+#define NXPLOG_EXTNS_D(COMP, ...)                                  \
   {                                                                \
     if ((nfc_debug_enabled) ||                                     \
         (gLog_level.extns_log_level >= NXPLOG_LOG_DEBUG_LOGLEVEL)) \
-      LOG_PRI(ANDROID_LOG_DEBUG, NXPLOG_ITEM_EXTNS, __VA_ARGS__);  \
+      LOG_PRI(ANDROID_LOG_DEBUG, COMP, __VA_ARGS__);               \
   }
-#define NXPLOG_EXTNS_I(...)                                       \
+#define NXPLOG_EXTNS_I(COMP, ...)                                 \
   {                                                               \
     if ((nfc_debug_enabled) ||                                    \
         (gLog_level.extns_log_level >= NXPLOG_LOG_INFO_LOGLEVEL)) \
-      LOG_PRI(ANDROID_LOG_INFO, NXPLOG_ITEM_EXTNS, __VA_ARGS__);  \
+      LOG_PRI(ANDROID_LOG_INFO, COMP, __VA_ARGS__);               \
   }
-#define NXPLOG_EXTNS_W(...)                                       \
+#define NXPLOG_EXTNS_W(COMP, ...)                                 \
   {                                                               \
     if ((nfc_debug_enabled) ||                                    \
         (gLog_level.extns_log_level >= NXPLOG_LOG_WARN_LOGLEVEL)) \
-      LOG_PRI(ANDROID_LOG_WARN, NXPLOG_ITEM_EXTNS, __VA_ARGS__);  \
+      LOG_PRI(ANDROID_LOG_WARN, COMP, __VA_ARGS__);               \
   }
-#define NXPLOG_EXTNS_E(...)                                       \
-  {                                                               \
-    if (gLog_level.extns_log_level >= NXPLOG_LOG_ERROR_LOGLEVEL)  \
-      LOG_PRI(ANDROID_LOG_ERROR, NXPLOG_ITEM_EXTNS, __VA_ARGS__); \
+#define NXPLOG_EXTNS_E(COMP, ...)                                \
+  {                                                              \
+    if (gLog_level.extns_log_level >= NXPLOG_LOG_ERROR_LOGLEVEL) \
+      LOG_PRI(ANDROID_LOG_ERROR, COMP, __VA_ARGS__);             \
   }
 #else
 #define NXPLOG_EXTNS_D(...)

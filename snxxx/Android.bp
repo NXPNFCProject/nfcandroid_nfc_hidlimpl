@@ -185,7 +185,8 @@ cc_library_shared {
         "halimpl_v2/recovery/phNxpNciHal_Recovery.cc",
         "halimpl_v2/hal/phNxpNciHal_PowerTrackerIface.cc",
         "halimpl_v2/nfc_comm/NfcWriter.cc",
-        "halimpl_v2/hal/phNxpNciHal_WorkerThread.cc"
+        "halimpl_v2/hal/phNxpNciHal_WorkerThread.cc",
+        "halimpl_v2/nfc_extn/NfcExtension.cc",
     ],
 
     local_include_dirs: [
@@ -203,10 +204,11 @@ cc_library_shared {
         "halimpl_v2/recovery",
         "halimpl_v2/observe_mode",
         "halimpl_v2/nfc_comm",
+        "halimpl_v2/nfc_extn",
     ],
 
     include_dirs: [
-        "hardware/nxp/nfc/snxxx/aidl",
+        "hardware/nxp/nfc/snxxx/aidl/2.0",
         "hardware/nxp/secure_element/snxxx/extns/impl",
         "hardware/nxp/secure_element_extns/inc",
     ],

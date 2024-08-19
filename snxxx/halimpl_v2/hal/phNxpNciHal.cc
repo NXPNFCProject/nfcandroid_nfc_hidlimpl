@@ -34,6 +34,7 @@
 #include <sys/stat.h>
 
 #include "NciDiscoveryCommandBuilder.h"
+#include "NfcExtension.h"
 #include "NfcWriter.h"
 #include "NfccTransportFactory.h"
 #include "NxpNfcThreadMutex.h"
@@ -142,8 +143,6 @@ fpVerInfoStoreInEeprom_t fpVerInfoStoreInEeprom = NULL;
 fpRegRfFwDndl_t fpRegRfFwDndl = NULL;
 fpPropConfCover_t fpPropConfCover = NULL;
 fpDoAntennaActivity_t fpDoAntennaActivity = NULL;
-
-static bool sCmdenabled = false;
 
 /**************** local methods used in this file only ************************/
 static void phNxpNciHal_complete(NFCSTATUS status, phNxpNciHal_OpType_t opType);
@@ -541,6 +540,8 @@ int phNxpNciHal_MinOpen() {
     NXPLOG_NCIHAL_D("phNxpNciHal_MinOpen(): already open");
     return NFCSTATUS_SUCCESS;
   }
+  phNxpExtn_LibSetup();
+
   phNxpNciHal_initializeRegRfFwDnld();
 
   phNxpNciHal_initialize_debug_enabled_flag();
@@ -989,7 +990,7 @@ int phNxpNciHal_write_internal(uint16_t data_len, const uint8_t* p_data) {
   return nfcData.direct_write(data_len, p_data);
 }
 
-void phNxpNciHal_enqueue_write(const uint8_t* pBuffer, uint16_t wLength) {
+void phNxpHal_EnqueueWrite(const uint8_t* pBuffer, uint16_t wLength) {
   nfcData.enqueue_write(pBuffer, wLength);
 }
 
@@ -1006,7 +1007,7 @@ void phNxpNciHal_enqueue_write(const uint8_t* pBuffer, uint16_t wLength) {
  ******************************************************************************/
 int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t* p_data,
                                int origin) {
-  return nfcData.write_unlocked(data_len, p_data, ORIG_NXPHAL);
+  return nfcData.write_unlocked(data_len, p_data, origin);
 }
 /******************************************************************************
  * Function         phNxpNciHal_read_complete
@@ -1090,7 +1091,14 @@ static void phNxpNciHal_read_complete(void* pContext,
     }
     /* Read successful send the event to higher layer */
     else if (status == NFCSTATUS_SUCCESS) {
-      phNxpNciHal_client_data_callback();
+      bool isExtensionHandled = phNxpExtn_HandleNciRspNtf(
+          nxpncihal_ctrl.rx_data_len, nxpncihal_ctrl.p_rx_data);
+      NXPLOG_NCIHAL_D("isExtensionHandled = 0x%d", isExtensionHandled);
+      // Send the response to upper layer, if it is not handled by Nfc extension
+      // library
+      if (false == isExtensionHandled) {
+        phNxpNciHal_client_data_callback();
+      }
     }
     /* Unblock next Write Command Window */
     sem_getvalue(&(nxpncihal_ctrl.syncSpiNfc), &sem_val);
@@ -1912,6 +1920,7 @@ int phNxpNciHal_close(bool bShutdown) {
     NXPLOG_NCIHAL_D("phNxpNciHal_close is already closed, ignoring close");
     return NFCSTATUS_FAILED;
   }
+  phNxpExtn_LibClose();
   if (gPowerTrackerHandle.stop != NULL) {
     gPowerTrackerHandle.stop();
   }
@@ -2188,13 +2197,18 @@ int phNxpNciHal_control_granted(void) {
    * will be allowed
    */
   CONCURRENCY_LOCK();
-
-  if (NULL != nxpncihal_ctrl.p_control_granted_cback) {
-    (*nxpncihal_ctrl.p_control_granted_cback)();
+  if (NULL != gpphTmlNfc_Context) {
+    static phLibNfc_Message_t msg;
+    msg.eMsgType = HAL_CTRL_GRANTED_MSG;
+    msg.pMsgData = NULL;
+    msg.Size = 0;
+    phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &msg);
+    /* At the end concurrency unlock so calls from upper layer will
+     * be allowed
+     */
+  } else {
+    NXPLOG_NCIHAL_E("Failed to send control granted!!");
   }
-  /* At the end concurrency unlock so calls from upper layer will
-   * be allowed
-   */
   CONCURRENCY_UNLOCK();
   return NFCSTATUS_SUCCESS;
 }

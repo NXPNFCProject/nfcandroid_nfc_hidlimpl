@@ -21,6 +21,7 @@
 #include <phTmlNfc.h>
 
 #include <phNxpNciHal_Adaptation.h>
+#include "NfcExtension.h"
 #include "ObserveMode.h"
 #include "phNfcCommon.h"
 #include "phNxpNciHal_IoctlOperations.h"
@@ -773,7 +774,8 @@ void phNxpNciHal_setDCDCConfig(void) {
 bool phNxpNciHal_isVendorSpecificCommand(uint16_t data_len,
                                          const uint8_t* p_data) {
   if (data_len > 3 && p_data[NCI_GID_INDEX] == (NCI_MT_CMD | NCI_GID_PROP) &&
-      p_data[NCI_OID_INDEX] == NCI_PROP_NTF_ANDROID_OID) {
+      (p_data[NCI_OID_INDEX] == NCI_PROP_NTF_ANDROID_OID ||
+       p_data[NCI_OID_INDEX] == NCI_OEM_MAINLINE_OID)) {
     return true;
   }
   return false;
@@ -798,6 +800,15 @@ int phNxpNciHal_handleVendorSpecificCommand(uint16_t data_len,
   } else if (data_len > 4 && p_data[NCI_MSG_INDEX_FOR_FEATURE] ==
                                  NCI_ANDROID_GET_OBSERVER_MODE_STATUS) {
     return handleGetObserveModeStatus(data_len, p_data);
+  } else if (data_len >= 4 && p_data[NCI_OID_INDEX] == NCI_OEM_MAINLINE_OID) {
+    bool isExtnLibHandled = phNxpExtn_HandleNciMsg(data_len, p_data);
+    NXPLOG_NCIHAL_D("isExtnLibHandled:%d", isExtnLibHandled);
+    if (!isExtnLibHandled) {
+      // TODO: send UN_SUPPORTED_FEATURE error code in this case
+      return 0;  // Zero bytes written to controller, as it is not handled by
+                 // extension library.
+    }
+    return data_len;
   } else {
     return phNxpNciHal_write_internal(data_len, p_data);
   }

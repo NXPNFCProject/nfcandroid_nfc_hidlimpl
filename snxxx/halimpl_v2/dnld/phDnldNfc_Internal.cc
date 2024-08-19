@@ -231,21 +231,20 @@ static void phDnldNfc_ProcessSeqState(void* pContext,
         [[fallthrough]];
       case phDnldNfc_StateSend: {
         wStatus = phDnldNfc_BuildFramePkt(pDlCtxt);
-
         if (NFCSTATUS_SUCCESS == wStatus) {
           pDlCtxt->tCurrState = phDnldNfc_StateRecv;
           wStatus = phTmlNfc_Write(
               (pDlCtxt->tCmdRspFrameInfo.aFrameBuff),
-              (uint16_t)(pDlCtxt->tCmdRspFrameInfo.dwSendlength),
-              (pphTmlNfc_TransactCompletionCb_t)&phDnldNfc_ProcessSeqState,
-              pDlCtxt);
+              (uint16_t)(pDlCtxt->tCmdRspFrameInfo.dwSendlength));
         }
         pDlCtxt->wCmdSendStatus = wStatus;
-        break;
+        if (NFCSTATUS_SUCCESS != wStatus) {
+          NXPLOG_FWDNLD_E("Tml Write error!!");
+          wStatus = PHNFCSTVAL(CID_NFC_DNLD, NFCSTATUS_FAILED);
+        }
       }
+        [[fallthrough]];
       case phDnldNfc_StateRecv: {
-        wStatus = phDnldNfc_ProcessRecvInfo(pContext, pInfo);
-
         if (NFCSTATUS_SUCCESS == wStatus) {
           wStatus = phOsalNfc_Timer_Start((pDlCtxt->TimerInfo.dwRspTimerId),
                                           pDlCtxt->TimerInfo.rspTimeout,
@@ -385,16 +384,17 @@ static void phDnldNfc_ProcessRWSeqState(void* pContext,
 
           wStatus = phTmlNfc_Write(
               (pDlCtxt->tCmdRspFrameInfo.aFrameBuff),
-              (uint16_t)(pDlCtxt->tCmdRspFrameInfo.dwSendlength),
-              (pphTmlNfc_TransactCompletionCb_t)&phDnldNfc_ProcessRWSeqState,
-              pDlCtxt);
+              (uint16_t)(pDlCtxt->tCmdRspFrameInfo.dwSendlength));
         }
         pDlCtxt->wCmdSendStatus = wStatus;
-        break;
+        if (NFCSTATUS_SUCCESS != wStatus) {
+          NXPLOG_FWDNLD_E("Tml Write error!!");
+          wStatus = PHNFCSTVAL(CID_NFC_DNLD, NFCSTATUS_FAILED);
+        }
+        [[fallthrough]];
       }
       case phDnldNfc_StateRecv: {
-        wStatus = phDnldNfc_ProcessRecvInfo(pContext, pInfo);
-
+      case_phDnldNfc_StateRecv:
         if (NFCSTATUS_SUCCESS == wStatus) {
           /* processing For Pipelined write before calling timer below */
           wStatus = phOsalNfc_Timer_Start((pDlCtxt->TimerInfo.dwRspTimerId),
@@ -468,15 +468,12 @@ static void phDnldNfc_ProcessRWSeqState(void* pContext,
           }
 
           wStatus = phDnldNfc_BuildFramePkt(pDlCtxt);
-
           if (NFCSTATUS_SUCCESS == wStatus) {
             pDlCtxt->tCurrState = phDnldNfc_StateRecv;
             wStatus = phTmlNfc_Write(
                 (pDlCtxt->tCmdRspFrameInfo.aFrameBuff),
-                (uint16_t)(pDlCtxt->tCmdRspFrameInfo.dwSendlength),
-                (pphTmlNfc_TransactCompletionCb_t)&phDnldNfc_ProcessRWSeqState,
-                pDlCtxt);
-
+                (uint16_t)(pDlCtxt->tCmdRspFrameInfo.dwSendlength));
+            goto case_phDnldNfc_StateRecv;
             /* TODO:- Verify here if TML_Write returned NFC_PENDING status &
                take appropriate
                   action otherwise ?? */

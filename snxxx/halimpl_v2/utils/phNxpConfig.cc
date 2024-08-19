@@ -68,7 +68,7 @@ const int transport_config_path_size =
 #define extra_config_base "libnfc-"
 #define extra_config_ext ".conf"
 #define IsStringValue 0x80000000
-
+#define NAME_NXPLOG_EXTNS_LOGLEVEL "NXPLOG_EXTNS_LOGLEVEL"
 typedef enum {
   CONF_FILE_NXP = 0x00,
   CONF_FILE_NXP_RF,
@@ -499,14 +499,16 @@ CNfcConfig& CNfcConfig::GetInstance() {
             android::base::GetProperty("persist.vendor.nfc.config_file_name",
                                        ""),
             strPath)) {
-      NXPLOG_EXTNS_D("%s load %s\n", __func__, strPath.c_str());
+      NXPLOG_EXTNS_D(NAME_NXPLOG_EXTNS_LOGLEVEL, "%s load %s\n", __func__,
+                     strPath.c_str());
     } else if (findConfigFilePathFromTransportConfigPaths(
                    extra_config_base +
                        android::base::GetProperty(
                            "ro.boot.product.hardware.sku", "") +
                        +extra_config_ext,
                    strPath)) {
-      NXPLOG_EXTNS_D("%s load %s\n", __func__, strPath.c_str());
+      NXPLOG_EXTNS_D(NAME_NXPLOG_EXTNS_LOGLEVEL, "%s load %s\n", __func__,
+                     strPath.c_str());
     } else {
       findConfigFilePathFromTransportConfigPaths(config_name, strPath);
     }
@@ -618,11 +620,11 @@ const CNfcParam* CNfcConfig::find(const char* p_name) const {
       continue;
     } else if (**it == p_name) {
       if ((*it)->str_len() > 0) {
-        NXPLOG_EXTNS_D("%s found %s=%s\n", __func__, p_name,
-                       (*it)->str_value());
+        NXPLOG_EXTNS_D(NAME_NXPLOG_EXTNS_LOGLEVEL, "%s found %s=%s\n", __func__,
+                       p_name, (*it)->str_value());
       } else {
-        NXPLOG_EXTNS_D("%s found %s=(0x%lx)\n", __func__, p_name,
-                       (*it)->numValue());
+        NXPLOG_EXTNS_D(NAME_NXPLOG_EXTNS_LOGLEVEL, "%s found %s=(0x%lx)\n",
+                       __func__, p_name, (*it)->numValue());
       }
       return *it;
     } else

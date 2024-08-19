@@ -83,7 +83,7 @@ void PhNxpEventLogger::Initialize() {
   }
 }
 void PhNxpEventLogger::Log(uint8_t* p_ntf, uint16_t p_len, LogEventType event) {
-  NXPLOG_NCIHAL_D("EventLogger: event is %d", event);
+  NXPLOG_NCIHAL_D("EventLogger: event is %d", static_cast<int>(event));
   switch (event) {
     case LogEventType::kLogSMBEvent:
       if (!logging_enabled_) return;

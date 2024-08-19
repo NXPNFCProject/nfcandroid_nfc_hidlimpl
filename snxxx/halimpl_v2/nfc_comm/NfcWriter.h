@@ -120,16 +120,6 @@ class NfcWriter {
    *
    ******************************************************************************/
   NfcWriter();
-
-  /******************************************************************************
-   * Function         write_complete
-   *
-   * Description      This function handles write callback.
-   *
-   * Returns          void.
-   *
-   ******************************************************************************/
-  static void write_complete(void* pContext, phTmlNfc_TransactInfo_t* pInfo);
 };
 
 #endif  // NFC_WRITER_H
