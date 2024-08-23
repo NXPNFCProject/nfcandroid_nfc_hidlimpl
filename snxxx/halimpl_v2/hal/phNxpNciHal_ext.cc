@@ -510,7 +510,7 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
       /* If NDEF T4T is enabled, then change Max Logical Connections to 5
       By default FW will return 0x01 but nfc_alloc_conn_cb will fail this way*/
       uint8_t retlen = 0;
-      if (GetNxpNumValue(NAME_NXP_T4T_NFCEE_ENABLE, (void*)&retlen,
+      if (GetNxpNumValue(NAME_T4T_NFCEE_ENABLE, (void*)&retlen,
                          sizeof(retlen))) {
         if (retlen > 0 && *p_len > 8) {
           p_ntf[8] = NXP_NDEF_TAG_EMULATION_LOGICAL_CHANNEL;

@@ -1500,7 +1500,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
     NXPLOG_NCIHAL_D("Performing ndef nfcee config settings");
     uint8_t cmd_t4t_nfcee_cfg;
 
-    if (!GetNxpNumValue(NAME_NXP_T4T_NFCEE_ENABLE, (void*)&retlen,
+    if (!GetNxpNumValue(NAME_T4T_NFCEE_ENABLE, (void*)&retlen,
                         sizeof(retlen))) {
       retlen = 0x00;
       NXPLOG_NCIHAL_D(
