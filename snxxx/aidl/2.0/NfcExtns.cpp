@@ -65,6 +65,9 @@ void NfcExtns::getConfig(NfcConfig& config) {
   if (GetNxpNumValue(NAME_OFF_HOST_ESE_PIPE_ID, &num, sizeof(num))) {
     config.offHostESEPipeId = (uint8_t)num;
   }
+  if (GetNxpNumValue(NAME_T4T_NFCEE_ENABLE, &num, sizeof(num))) {
+    config.t4tNfceeEnable = (uint8_t)num;
+  }
   if (GetNxpByteArrayValue(NAME_OFF_HOST_SIM_PIPE_IDS, (char*)buffer.data(),
                            buffer.size(), &retlen)) {
     config.offHostSIMPipeIds.resize(retlen);
