@@ -1066,7 +1066,6 @@ static void phNxpNciHal_read_complete(void* pContext,
       if ((nxpncihal_ctrl.p_rx_data[0x00] & NCI_MT_MASK) == NCI_MT_RSP ||
           (IS_CHIP_TYPE_L(sn100u) && (icode_detected == true) &&
            (icode_send_eof == 3))) {
-        nxpncihal_ctrl.nci_info.wait_for_rsp = false;
         /* Unlock semaphore */
         SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
       }
@@ -2015,7 +2014,6 @@ close_and_return:
       NXPLOG_NCIHAL_E("ese power cycle failed");
     }
   }
-  nxpncihal_ctrl.nci_info.wait_for_rsp = true;
   if (IS_CHIP_TYPE_L(sn220u) || bShutdown) {
     nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
   }
@@ -2044,7 +2042,6 @@ close_and_return:
 
     if (IS_CHIP_TYPE_GE(sn220u) && !bShutdown) {
       nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
-      nxpncihal_ctrl.nci_info.wait_for_rsp = true;
       if (phNxpNciHal_enableTmlRead() != NFCSTATUS_PENDING) {
         NXPLOG_NCIHAL_E("%s Failed to keep the read as pending", __FUNCTION__);
       }

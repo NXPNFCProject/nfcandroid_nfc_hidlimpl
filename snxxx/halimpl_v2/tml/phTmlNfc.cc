@@ -827,10 +827,12 @@ static void phTmlNfc_ReadDeferredCb(void* pParams) {
 
   /* Reset the flag to accept another Read Request */
   gpphTmlNfc_Context->tReadInfo.bThreadBusy = false;
-  if ((nxpncihal_ctrl.halStatus != HAL_STATUS_CLOSE) ||
-      (nxpncihal_ctrl.nci_info.wait_for_rsp == true)) {
+
+  /* Read again because read must be pending always except FWDNLD.*/
+  if (!phTmlNfc_IsFwDnldModeEnabled()) {
     phNxpNciHal_enableTmlRead();
   }
+
   gpphTmlNfc_Context->tReadInfo.pThread_Callback(
       gpphTmlNfc_Context->tReadInfo.pContext, pTransactionInfo);
 

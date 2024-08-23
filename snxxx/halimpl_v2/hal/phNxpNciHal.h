@@ -173,7 +173,6 @@ typedef struct phNxpNciGpioInfo {
 typedef struct phNxpNciInfo {
   uint8_t nci_version;
   bool_t wait_for_ntf;
-  bool_t wait_for_rsp;
   uint8_t lastResetNtfReason;
 } phNxpNciInfo_t;
 /* NCI Control structure */
