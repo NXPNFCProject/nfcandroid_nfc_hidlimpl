@@ -132,8 +132,12 @@ vector<uint8_t> ReaderPollConfigParser::parseCmaEvent(vector<uint8_t> p_event) {
                                    lastKnownGain, std::move(p_event));
     }
   } else {
-    event_data = getUnknownEvent(
-        std::move(p_event), std::move(unknownEventTimeStamp), lastKnownGain);
+    bool invalidData = std::all_of(p_event.begin(), p_event.end(),
+                                   [](int i) { return i == 0; });
+    if (!invalidData) {
+      event_data = getUnknownEvent(
+          std::move(p_event), std::move(unknownEventTimeStamp), lastKnownGain);
+    }
   }
   return event_data;
 }
