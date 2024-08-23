@@ -250,3 +250,15 @@ void phNxpNciHal_vendorSpecificCallback(int oid, int opcode,
 ** Returns          bool: true if supported, otherwise false
 *******************************************************************************/
 bool phNxpNciHal_isObserveModeSupported();
+
+/*******************************************************************************
+ *
+ * Function         handleGetCapability()
+ *
+ * Description      Get Capability command is not supported, hence returning
+ *                  failure
+ *
+ * Returns          It returns number of bytes received.
+ *
+ ******************************************************************************/
+int handleGetCapability(uint16_t data_len, const uint8_t* p_data);

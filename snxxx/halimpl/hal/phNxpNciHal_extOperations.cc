@@ -799,6 +799,10 @@ int phNxpNciHal_handleVendorSpecificCommand(uint16_t data_len,
                                  NCI_ANDROID_GET_OBSERVER_MODE_STATUS) {
     // 2F 0C 01 04 => ObserveMode Status Command length is 4 Bytes
     return handleGetObserveModeStatus(data_len, p_data);
+  } else if (data_len >= 4 && p_data[NCI_MSG_INDEX_FOR_FEATURE] ==
+                                 NCI_ANDROID_GET_CAPABILITY) {
+    // 2F 0C 01 00 => GetCapability Command length is 4 Bytes
+    return handleGetCapability(data_len, p_data);
   } else {
     return phNxpNciHal_write_internal(data_len, p_data);
   }
@@ -856,4 +860,28 @@ bool phNxpNciHal_isObserveModeSupported() {
     }
   }
   return false;
+}
+
+/*******************************************************************************
+ *
+ * Function         handleGetCapability()
+ *
+ * Description      Get Capability command is not supported, hence returning
+ *                  failure
+ *
+ * Returns          It returns number of bytes received.
+ *
+ ******************************************************************************/
+int handleGetCapability(uint16_t data_len, const uint8_t* p_data) {
+  // 2F 0C 01 00 => GetCapability Command length is 4 Bytes
+  if (data_len < 4) {
+    return 0;
+  }
+  vector<uint8_t> response;
+  response.push_back(NCI_RSP_FAIL);
+  phNxpNciHal_vendorSpecificCallback(p_data[NCI_OID_INDEX],
+                                     p_data[NCI_MSG_INDEX_FOR_FEATURE],
+                                     std::move(response));
+
+  return p_data[NCI_MSG_LEN_INDEX];
 }
