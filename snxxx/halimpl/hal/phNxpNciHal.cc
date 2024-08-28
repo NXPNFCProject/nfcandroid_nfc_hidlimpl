@@ -3751,18 +3751,22 @@ static NFCSTATUS phNxpNciHal_do_swp_session_reset(void) {
  ******************************************************************************/
 void phNxpNciHal_do_factory_reset(void) {
   NFCSTATUS status = NFCSTATUS_FAILED;
+  bool isHalOpenRequested = false;
   // After factory reset phone will turnoff so mutex not required here.
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
+    isHalOpenRequested = true;
     status = phNxpNciHal_MinOpen();
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("%s: NXP Nfc Open failed", __func__);
       return;
     }
-    phNxpNciHal_deinitializeRegRfFwDnld();
   }
   status = phNxpNciHal_do_swp_session_reset();
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("%s failed. status = %x ", __func__, status);
+  }
+  if (nxpncihal_ctrl.halStatus == HAL_STATUS_MIN_OPEN && isHalOpenRequested) {
+    phNxpNciHal_close(false);
   }
 }
 /******************************************************************************
@@ -4109,6 +4113,7 @@ void phNxpNciHal_deinitializeRegRfFwDnld() {
     fpPropConfCover = NULL;
     dlclose(RfFwRegionDnld_handle);
     RfFwRegionDnld_handle = NULL;
+    fpDoAntennaActivity = NULL;
   }
 }
 
