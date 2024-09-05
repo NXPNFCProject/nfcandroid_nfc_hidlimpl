@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2019, 2022-2023 NXP
+ * Copyright 2010-2019, 2022-2024 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ const char* NXPLOG_ITEM_EXTNS = "NxpExtns";
 const char* NXPLOG_ITEM_NCIHAL = "NxpHal";
 const char* NXPLOG_ITEM_NCIX = "NxpNciX";
 const char* NXPLOG_ITEM_NCIR = "NxpNciR";
+const char* NXPAVCLOG_ITEM_NCIX = "NxpAvcNciX";
+const char* NXPAVCLOG_ITEM_NCIR = "NxpAvcNciR";
 const char* NXPLOG_ITEM_FWDNLD = "NxpFwDnld";
 const char* NXPLOG_ITEM_TML = "NxpTml";
 const char* NXPLOG_ITEM_ONEBIN = "NxpOneBinary";
@@ -85,7 +87,6 @@ static void phNxpLog_SetHALLogLevel(uint8_t level) {
   if (GetNxpNumValue(NAME_NXPLOG_NCIHAL_LOGLEVEL, &num, sizeof(num))) {
     gLog_level.hal_log_level =
         (level > (unsigned char)num) ? level : (unsigned char)num;
-    ;
   }
 
   len = property_get(PROP_NAME_NXPLOG_NCIHAL_LOGLEVEL, valueStr, "");
@@ -93,6 +94,26 @@ static void phNxpLog_SetHALLogLevel(uint8_t level) {
     /* let Android property override .conf variable */
     int ret = sscanf(valueStr, "%lu", &num);
     if (ret) gLog_level.hal_log_level = (unsigned char)num;
+  }
+}
+
+/*******************************************************************************
+ *
+ * Function         phNxpLog_SetAvcLogLevel
+ *
+ * Description      Sets the Android Vendor GID OID log level.
+ *
+ * Returns          void
+ *
+ ******************************************************************************/
+static void phNxpLog_SetAvcLogLevel(uint8_t level) {
+  unsigned long num = 0;
+  int len;
+  char valueStr[PROPERTY_VALUE_MAX] = {0};
+
+  if (GetNxpNumValue(NAME_NXPLOG_AVCNCI_LOGLEVEL, &num, sizeof(num))) {
+    gLog_level.avc_log_level =
+        (level > (unsigned char)num) ? level : (unsigned char)num;
   }
 }
 
@@ -247,6 +268,7 @@ static void phNxpLog_SetNciTxLogLevel(uint8_t level) {
 void phNxpLog_InitializeLogLevel(void) {
   uint8_t level = phNxpLog_SetGlobalLogLevel();
   phNxpLog_SetHALLogLevel(level);
+  phNxpLog_SetAvcLogLevel(level);
   phNxpLog_SetExtnsLogLevel(level);
   phNxpLog_SetTmlLogLevel(level);
   phNxpLog_SetDnldLogLevel(level);
@@ -255,11 +277,11 @@ void phNxpLog_InitializeLogLevel(void) {
   ALOGD_IF(nfc_debug_enabled,
            "%s: global =%u, Fwdnld =%u, extns =%u, \
                 hal =%u, tml =%u, ncir =%u, \
-                ncix =%u",
+                ncix =%u, avc = %u",
            __func__, gLog_level.global_log_level, gLog_level.dnld_log_level,
            gLog_level.extns_log_level, gLog_level.hal_log_level,
            gLog_level.tml_log_level, gLog_level.ncir_log_level,
-           gLog_level.ncix_log_level);
+           gLog_level.ncix_log_level, gLog_level.avc_log_level);
 }
 /******************************************************************************
  * Function         phNxpLog_EnableDisableLogLevel

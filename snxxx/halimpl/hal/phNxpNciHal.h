@@ -458,4 +458,16 @@ void phNxpNciHal_client_data_callback();
  ******************************************************************************/
 bool phNxpNciHal_UpdateRfMiscSettings();
 
+/******************************************************************************
+ * Function         phNxpNciHal_notifyPollingFrame
+ *
+ * Description      Send polling info notification to send to upper layer
+ *
+ * Parameters       p_data - Polling loop info notification
+ *
+ * Returns          void
+ *
+ ******************************************************************************/
+void phNxpNciHal_notifyPollingFrame(uint16_t data_len, uint8_t* p_data);
+
 #endif /* _PHNXPNCIHAL_H_ */

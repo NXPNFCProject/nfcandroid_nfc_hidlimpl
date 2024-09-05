@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2013-2018, 2021-2022 NXP
+ *  Copyright (C) 2013-2018, 2021-2022, 2024 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -97,7 +97,7 @@ NFCSTATUS phNxpNciHal_init_cb_data(phNxpNciHal_Sem_t* pCallbackData,
 void phNxpNciHal_cleanup_cb_data(phNxpNciHal_Sem_t* pCallbackData);
 void phNxpNciHal_releaseall_cb_data(void);
 void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
-                              uint16_t len);
+                              uint16_t len, bool isNxpAvcNciPrint = false);
 void phNxpNciHal_emergency_recovery(uint8_t status);
 tNFC_printType getPrintType(const char* pString);
 
