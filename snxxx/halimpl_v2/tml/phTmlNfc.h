@@ -84,8 +84,11 @@ typedef struct phTmlNfc_TransactInfo {
   NFCSTATUS wStatus;       /* Status of the Transaction Completion*/
   uint8_t* pBuff;          /* Response Data of the Transaction*/
   uint16_t wLength;        /* Data size of the Transaction*/
-  uint8_t p_cmd_data[NCI_MAX_DATA_LEN];
-  uint16_t cmd_len;
+  // TODO: need to reuse pBuff & wLength instead of creating new var
+  uint8_t p_oem_cmd_data[NCI_MAX_DATA_LEN];
+  uint16_t oem_cmd_len;
+  uint8_t p_oem_rsp_ntf_data[NCI_MAX_DATA_LEN];
+  uint16_t oem_rsp_ntf_len;
 } phTmlNfc_TransactInfo_t; /* Instance of Transaction structure */
 
 /*

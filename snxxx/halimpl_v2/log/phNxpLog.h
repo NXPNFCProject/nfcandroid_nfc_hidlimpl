@@ -423,4 +423,6 @@ extern const char* NXPLOG_ITEM_HCPR; /* Android logging tag for NxpHcpR   */
 
 void phNxpLog_InitializeLogLevel(void);
 
+uint8_t phNxpLog_EnableDisableLogLevel(uint8_t enable);
+
 #endif /* NXPLOG__H_INCLUDED */

@@ -100,6 +100,8 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
                               uint16_t len);
 void phNxpNciHal_emergency_recovery(uint8_t status);
 tNFC_printType getPrintType(const char* pString);
+void phNxpNciHal_Memcpy(void* pDest, size_t destSize, const void* pSrc,
+                        size_t srcSize);
 
 /* Lock unlock helper macros */
 /* Lock unlock helper macros */
