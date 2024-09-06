@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2019-2023 NXP
+ *  Copyright 2019-2024 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -81,10 +81,7 @@ Return<V1_0::NfcStatus> Nfc::coreInitialized(const hidl_vec<uint8_t>& data) {
   return CHK_STATUS(status);
 }
 
-Return<V1_0::NfcStatus> Nfc::prediscover() {
-  NFCSTATUS status = phNxpNciHal_pre_discover();
-  return CHK_STATUS(status);
-}
+Return<V1_0::NfcStatus> Nfc::prediscover() { return V1_0::NfcStatus::OK; }
 
 Return<V1_0::NfcStatus> Nfc::close() {
   if (mCallbackV1_1 == nullptr && mCallbackV1_0 == nullptr) {
