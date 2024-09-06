@@ -28,6 +28,7 @@
 #include "NfccTransportFactory.h"
 #include "phDnldNfc_Internal.h"
 #include "phNfcCommon.h"
+#include "phNxpLog.h"
 #include "phNxpNciHal_Adaptation.h"
 #include "phNxpNciHal_ULPDet.h"
 #include "phNxpNciHal_ext.h"
@@ -61,7 +62,6 @@ extern uint8_t fw_dwnld_flag;
 /* TML Context */
 extern phTmlNfc_Context_t* gpphTmlNfc_Context;
 extern bool nfc_debug_enabled;
-extern NFCSTATUS phNxpLog_EnableDisableLogLevel(uint8_t enable);
 extern phNxpNciClock_t phNxpNciClock;
 extern NfcHalThreadMutex sHalFnLock;
 

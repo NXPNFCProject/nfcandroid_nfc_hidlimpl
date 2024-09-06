@@ -101,6 +101,16 @@ void phNxpExtn_NfcHalStateUpdate(uint8_t state);
 NFCSTATUS phNxpHal_EnqueueWrite(uint8_t* pBuffer, uint16_t wLength);
 
 /**
+ * @brief Adds the resopnse message to queue and
+ *        worker thread sends it to controller
+ * @param  pBuffer pointer to write buffer
+ * @param  wLength length of the write buffer
+ * @return void
+ *
+ */
+NFCSTATUS phNxpHal_EnqueueRsp(uint8_t* pBuffer, uint16_t wLength);
+
+/**
  * @brief updates the HAL control granted event
  *        to extension library
  * \note  called by Nfc HAL to notify HAL control
@@ -170,4 +180,26 @@ void phNxpHal_ReleaseControl();
  */
 void phNxpHal_NfcDataCallback(uint16_t dataLen, const uint8_t* pData);
 
+/**
+ * @brief Read byte array value from the config file.
+ * @param name name of the config param to read.
+ * @param pValue pointer to input buffer.
+ * @param bufflen input buffer length.
+ * @param len out parameter to return the number of bytes read from
+ *            config file, return -1 in case bufflen is not enough.
+ * @return 1 if config param name is found in the config file, else 0
+ *
+ */
+uint8_t phNxpHal_GetNxpByteArrayValue(const char* name, char* pValue,
+                                      long bufflen, long* len);
+
+/**
+ * @brief API function for getting a numerical value of a setting
+ * @param name - name of the config param to read.
+ * @param pValue - pointer to input buffer.
+ * @param len - sizeof required pValue
+ * @return 1 if config param name is found in the config file, else 0
+ */
+uint8_t phNxpHal_GetNxpNumValue(const char* name, void* pValue,
+                                unsigned long len);
 #endif  // NFC_EXTENSION_H

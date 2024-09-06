@@ -165,9 +165,9 @@ clean_and_return:
  ******************************************************************************/
 
 void NfcWriter::enqueue_write(const uint8_t* pBuffer, uint16_t wLength) {
-  static phLibNfc_DeferredCall_t tDeferredInfo;
-  static phLibNfc_Message_t tMsg;
-  static phTmlNfc_TransactInfo_t tTransactionInfo;
+  phLibNfc_DeferredCall_t tDeferredInfo;
+  phLibNfc_Message_t tMsg;
+  phTmlNfc_TransactInfo_t tTransactionInfo;
 
   if ((pBuffer == NULL) || (wLength == 0x00) || (wLength > NCI_MAX_DATA_LEN)) {
     NXPLOG_NCIHAL_E("Invalid Parameter");
@@ -175,8 +175,9 @@ void NfcWriter::enqueue_write(const uint8_t* pBuffer, uint16_t wLength) {
   }
 
   tTransactionInfo.wStatus = NFCSTATUS_SUCCESS;
-  tTransactionInfo.cmd_len = wLength;
-  memcpy(tTransactionInfo.p_cmd_data, pBuffer, wLength);
+  tTransactionInfo.oem_cmd_len = wLength;
+  phNxpNciHal_Memcpy(tTransactionInfo.p_oem_cmd_data, wLength, pBuffer,
+                     wLength);
   tDeferredInfo.pCallback = NULL;
   tDeferredInfo.pParameter = &tTransactionInfo;
   tMsg.eMsgType = NCI_HAL_TML_WRITE_MSG;

@@ -112,6 +112,22 @@ void NfcHalThreadCondVar::timedWait(struct timespec* time) {
 
 /*******************************************************************************
 **
+** Function:    NfcHalThreadCondVar::timedWait()
+**
+** Description: wait on the mCondVar or till timeout happens
+**
+** Returns:     none
+**
+*******************************************************************************/
+void NfcHalThreadCondVar::timedWait(uint8_t sec) {
+  struct timespec timeout_spec;
+  clock_gettime(CLOCK_REALTIME, &timeout_spec);
+  timeout_spec.tv_sec += sec;
+  pthread_cond_timedwait(&mCondVar, *this, &timeout_spec);
+}
+
+/*******************************************************************************
+**
 ** Function:    NfcHalThreadCondVar::signal()
 **
 ** Description: signal the mCondVar

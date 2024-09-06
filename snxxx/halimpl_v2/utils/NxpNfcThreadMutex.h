@@ -37,6 +37,7 @@ class NfcHalThreadCondVar : public NfcHalThreadMutex {
   virtual ~NfcHalThreadCondVar();
   void signal();
   void timedWait(struct timespec* time);
+  void timedWait(uint8_t sec);
   operator pthread_cond_t*() { return &mCondVar; }
   operator pthread_mutex_t*() {
     return NfcHalThreadMutex::operator pthread_mutex_t*();

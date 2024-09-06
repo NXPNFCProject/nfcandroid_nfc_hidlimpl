@@ -152,19 +152,38 @@ void phNxpExtn_NfcHalControlGranted() {
 /* HAL API's Start */
 NFCSTATUS phNxpHal_EnqueueWrite(uint8_t* pBuffer, uint16_t wLength) {
   NXPLOG_NCIHAL_D("%s Enter wLength:%d", __func__, wLength);
-  static phLibNfc_DeferredCall_t tDeferredInfo;
-  static phLibNfc_Message_t tMsg;
-  static phTmlNfc_TransactInfo_t tTransactionInfo;
+  phLibNfc_DeferredCall_t tDeferredInfo;
+  phLibNfc_Message_t tMsg;
+  phTmlNfc_TransactInfo_t tTransactionInfo;
 
   tTransactionInfo.wStatus = NFCSTATUS_SUCCESS;
-  tTransactionInfo.cmd_len = wLength;
-  memcpy(tTransactionInfo.p_cmd_data, pBuffer, wLength);
+  tTransactionInfo.oem_cmd_len = wLength;
+  phNxpNciHal_Memcpy(tTransactionInfo.p_oem_cmd_data, wLength, pBuffer,
+                     wLength);
   tDeferredInfo.pParameter = &tTransactionInfo;
   tMsg.pMsgData = &tDeferredInfo;
   tMsg.Size = sizeof(tDeferredInfo);
   tMsg.eMsgType = NCI_HAL_TML_WRITE_MSG;
   phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &tMsg);
 
+  return NFCSTATUS_SUCCESS;
+}
+
+NFCSTATUS phNxpHal_EnqueueRsp(uint8_t* pBuffer, uint16_t wLength) {
+  NXPLOG_NCIHAL_D("%s Enter wLength:%d", __func__, wLength);
+  phLibNfc_DeferredCall_t tDeferredInfo;
+  phLibNfc_Message_t tMsg;
+  phTmlNfc_TransactInfo_t tTransactionInfo;
+
+  tTransactionInfo.wStatus = NFCSTATUS_SUCCESS;
+  tTransactionInfo.oem_rsp_ntf_len = wLength;
+  phNxpNciHal_Memcpy(tTransactionInfo.p_oem_rsp_ntf_data, wLength, pBuffer,
+                     wLength);
+  tDeferredInfo.pParameter = &tTransactionInfo;
+  tMsg.pMsgData = &tDeferredInfo;
+  tMsg.Size = sizeof(tDeferredInfo);
+  tMsg.eMsgType = NCI_HAL_OEM_RSP_NTF_MSG;
+  phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &tMsg);
   return NFCSTATUS_SUCCESS;
 }
 
@@ -183,6 +202,16 @@ void phNxpHal_NfcDataCallback(uint16_t dataLen, const uint8_t* pData) {
   if (nxpncihal_ctrl.p_nfc_stack_data_cback != NULL) {
     (*nxpncihal_ctrl.p_nfc_stack_data_cback)(dataLen, (uint8_t*)pData);
   }
+}
+
+uint8_t phNxpHal_GetNxpByteArrayValue(const char* name, char* pValue,
+                                      long bufflen, long* len) {
+  return GetNxpByteArrayValue(name, pValue, bufflen, len);
+}
+
+uint8_t phNxpHal_GetNxpNumValue(const char* name, void* pValue,
+                                unsigned long len) {
+  return GetNxpNumValue(name, pValue, len);
 }
 
 /* HAL API's End */

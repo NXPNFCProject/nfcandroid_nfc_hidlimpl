@@ -361,6 +361,7 @@ typedef struct phNxpNciProfile_Control {
 #define NCI_HAL_HCI_NETWORK_RESET_MSG 0x416
 #define NCI_HAL_TML_WRITE_MSG 0x417
 #define HAL_CTRL_GRANTED_MSG 0x418
+#define NCI_HAL_OEM_RSP_NTF_MSG 0x419
 #define NCI_HAL_RX_MSG 0xF01
 #define HAL_NFC_FW_UPDATE_STATUS_EVT 0x0A
 
