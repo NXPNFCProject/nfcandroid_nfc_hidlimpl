@@ -1091,12 +1091,12 @@ static void phNxpNciHal_read_complete(void* pContext,
     }
     /* Read successful send the event to higher layer */
     else if (status == NFCSTATUS_SUCCESS) {
-      bool isExtensionHandled = phNxpExtn_HandleNciRspNtf(
+      NFCSTATUS extStatus = phNxpExtn_HandleNciRspNtf(
           nxpncihal_ctrl.rx_data_len, nxpncihal_ctrl.p_rx_data);
-      NXPLOG_NCIHAL_D("isExtensionHandled = 0x%d", isExtensionHandled);
+      NXPLOG_NCIHAL_D("extStatus = 0x%d", extStatus);
       // Send the response to upper layer, if it is not handled by Nfc extension
       // library
-      if (false == isExtensionHandled) {
+      if (NFCSTATUS_EXTN_FEATURE_SUCCESS != extStatus) {
         phNxpNciHal_client_data_callback();
       }
     }

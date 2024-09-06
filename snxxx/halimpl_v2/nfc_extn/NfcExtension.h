@@ -58,7 +58,7 @@ typedef enum {
 
 typedef void (*fp_extn_init_t)();
 typedef void (*fp_extn_deinit_t)();
-typedef bool (*fp_extn_handle_nfc_event_t)(NfcExtEvent_t, NfcExtEventData_t);
+typedef NFCSTATUS (*fp_extn_handle_nfc_event_t)(NfcExtEvent_t, NfcExtEventData_t);
 
 /**
  * @brief This function sets up and initialize the extension feature
@@ -124,19 +124,25 @@ void phNxpExtn_WriteCompleteStatusUpdate(NFCSTATUS status);
  * @brief sends the NCI packet to handle extension feature
  * @param  dataLen length of the NCI packet
  * @param  pData data buffer pointer
- * @return void
+ * @return returns NFCSTATUS_EXTN_FEATURE_SUCCESS, if it is vendor specific
+ * feature and handled by extension library otherwise
+ * NFCSTATUS_EXTN_FEATURE_FAILURE.
  *
  */
-bool phNxpExtn_HandleNciMsg(uint16_t dataLen, const uint8_t* pData);
+NFCSTATUS phNxpExtn_HandleNciMsg(uint16_t dataLen, const uint8_t* pData);
 
 /**
  * @brief sends the NCI packet to handle extension feature
  * @param  dataLen length of the NCI packet
  * @param  pData data buffer pointer
- * @return void
+ * @return returns NFCSTATUS_EXTN_FEATURE_SUCCESS, if it is vendor specific
+ * feature and handled by extension library otherwise
+ * NFCSTATUS_EXTN_FEATURE_FAILURE.
+ * \Note Handler implements this function is responsible to
+ * stop the response timer.
  *
  */
-bool phNxpExtn_HandleNciRspNtf(uint16_t dataLen, const uint8_t* pData);
+NFCSTATUS phNxpExtn_HandleNciRspNtf(uint16_t dataLen, const uint8_t* pData);
 
 /**
  * @brief  requests control of NFCC to libnfc-nci.

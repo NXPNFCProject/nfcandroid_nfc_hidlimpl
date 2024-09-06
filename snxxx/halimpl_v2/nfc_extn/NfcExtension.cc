@@ -88,7 +88,7 @@ void phNxpExtn_LibClose() {
   }
 }
 
-bool phNxpExtn_HandleNciMsg(uint16_t dataLen, const uint8_t* pData) {
+NFCSTATUS phNxpExtn_HandleNciMsg(uint16_t dataLen, const uint8_t* pData) {
   NXPLOG_NCIHAL_D("%s Enter dataLen:%d", __func__, dataLen);
   nci_data_t nci_data;
   nci_data.data_len = dataLen;
@@ -96,9 +96,10 @@ bool phNxpExtn_HandleNciMsg(uint16_t dataLen, const uint8_t* pData) {
   nfc_ext_event_data.nci_msg = nci_data;
 
   if (fp_extn_handle_nfc_event != NULL) {
-    fp_extn_handle_nfc_event(HANDLE_VENDOR_NCI_MSG, nfc_ext_event_data);
+    return fp_extn_handle_nfc_event(HANDLE_VENDOR_NCI_MSG, nfc_ext_event_data);
+  } else {
+    return NFCSTATUS_EXTN_FEATURE_FAILURE;
   }
-  return false;
 }
 
 void phNxpExtn_WriteCompleteStatusUpdate(NFCSTATUS status) {
@@ -109,7 +110,7 @@ void phNxpExtn_WriteCompleteStatusUpdate(NFCSTATUS status) {
   }
 }
 
-bool phNxpExtn_HandleNciRspNtf(uint16_t dataLen, const uint8_t* pData) {
+NFCSTATUS phNxpExtn_HandleNciRspNtf(uint16_t dataLen, const uint8_t* pData) {
   NXPLOG_NCIHAL_D("%s Enter dataLen:%d", __func__, dataLen);
   nci_data_t nci_data;
   nci_data.data_len = dataLen;
@@ -117,20 +118,22 @@ bool phNxpExtn_HandleNciRspNtf(uint16_t dataLen, const uint8_t* pData) {
   nfc_ext_event_data.nci_rsp_ntf = nci_data;
 
   if (fp_extn_handle_nfc_event != NULL) {
-    fp_extn_handle_nfc_event(HANDLE_VENDOR_NCI_RSP_NTF, nfc_ext_event_data);
+    return fp_extn_handle_nfc_event(HANDLE_VENDOR_NCI_RSP_NTF,
+                                    nfc_ext_event_data);
+  } else {
+    return NFCSTATUS_EXTN_FEATURE_FAILURE;
   }
-  return false;
 }
 
 // TODO: Shall it be directly maintained in Extension library
-void phNxpExtn_NfcRfStateUpdate(int state) {
+void phNxpExtn_NfcRfStateUpdate(uint8_t state) {
   NXPLOG_NCIHAL_D("%s Enter state:%d", __func__, state);
   nfc_ext_event_data.rf_state = state;
   if (fp_extn_handle_nfc_event != NULL) {
     fp_extn_handle_nfc_event(HANDLE_RF_HAL_STATE_UPDATE, nfc_ext_event_data);
   }
 }
-void phNxpExtn_NfcHalStateUpdate(int state) {
+void phNxpExtn_NfcHalStateUpdate(uint8_t state) {
   NXPLOG_NCIHAL_D("%s Enter state:%d", __func__, state);
   nfc_ext_event_data.hal_state = state;
   if (fp_extn_handle_nfc_event != NULL) {
