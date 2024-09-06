@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2018,2023 NXP
+ *  Copyright 2018 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -99,7 +99,6 @@ struct Nfc : public V1_1::INfc, public hidl_death_recipient {
   }
 
  private:
-  bool mIsServiceStarted;
   static sp<V1_1::INfcClientCallback> mCallbackV1_1;
   static sp<V1_0::INfcClientCallback> mCallbackV1_0;
 };
