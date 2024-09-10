@@ -24,9 +24,9 @@
  *
  */
 typedef struct {
-  uint16_t data_len;
+  uint16_t* data_len;
   uint8_t* p_data;
-} nci_data_t;
+} NciData_t;
 
 /**
  * @brief Holds functional event datas to support
@@ -34,8 +34,8 @@ typedef struct {
  */
 
 typedef union {
-  nci_data_t nci_msg;
-  nci_data_t nci_rsp_ntf;
+  NciData_t nci_msg;
+  NciData_t nci_rsp_ntf;
   uint8_t write_status;
   uint8_t hal_state;
   uint8_t rf_state;
@@ -54,11 +54,13 @@ typedef enum {
   HANDLE_NFC_HAL_STATE_UPDATE,
   HANDLE_RF_HAL_STATE_UPDATE,
   HANDLE_EVENT,
+  HANDLE_WRITE_EXTN_MSG,
 } NfcExtEvent_t;
 
 typedef void (*fp_extn_init_t)();
 typedef void (*fp_extn_deinit_t)();
-typedef NFCSTATUS (*fp_extn_handle_nfc_event_t)(NfcExtEvent_t, NfcExtEventData_t);
+typedef NFCSTATUS (*fp_extn_handle_nfc_event_t)(NfcExtEvent_t,
+                                                NfcExtEventData_t);
 
 /**
  * @brief This function sets up and initialize the extension feature
@@ -153,6 +155,17 @@ NFCSTATUS phNxpExtn_HandleNciMsg(uint16_t dataLen, const uint8_t* pData);
  *
  */
 NFCSTATUS phNxpExtn_HandleNciRspNtf(uint16_t dataLen, const uint8_t* pData);
+
+/**
+ * @brief sends the NCI packet to handle extension feature and update NCI
+ * packet if feature is enabled.
+ * @param dataLen Length of NCI packet
+ * @param pData data buffer pointer
+ * @return returns NFCSTATUS_EXTN_FEATURE_SUCCESS, if it is vendor specific
+ * feature and handled by extension library otherwise
+ * NFCSTATUS_EXTN_FEATURE_FAILURE.
+ */
+NFCSTATUS phNxpExtn_WriteExt(uint16_t* dataLen, uint8_t* pData);
 
 /**
  * @brief  requests control of NFCC to libnfc-nci.
