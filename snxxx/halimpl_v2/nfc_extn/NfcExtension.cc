@@ -102,8 +102,8 @@ void phNxpExtn_LibClose() {
 
 NFCSTATUS phNxpExtn_HandleNciMsg(uint16_t dataLen, const uint8_t* pData) {
   NXPLOG_NCIHAL_D("%s Enter dataLen:%d", __func__, dataLen);
-  nci_data_t nci_data;
-  nci_data.data_len = dataLen;
+  NciData_t nci_data;
+  nci_data.data_len = &dataLen;
   nci_data.p_data = (uint8_t*)pData;
   nfc_ext_event_data.nci_msg = nci_data;
 
@@ -122,10 +122,24 @@ void phNxpExtn_WriteCompleteStatusUpdate(NFCSTATUS status) {
   }
 }
 
+NFCSTATUS phNxpExtn_WriteExt(uint16_t* dataLen, uint8_t* pData) {
+  NXPLOG_NCIHAL_D("%s Enter dataLen:%d", __func__, *dataLen);
+  NciData_t nci_data;
+  nci_data.data_len = dataLen;
+  nci_data.p_data = (uint8_t*)pData;
+  nfc_ext_event_data.nci_msg = nci_data;
+
+  if (fp_extn_handle_nfc_event != NULL) {
+    return fp_extn_handle_nfc_event(HANDLE_WRITE_EXTN_MSG, nfc_ext_event_data);
+  } else {
+    return NFCSTATUS_EXTN_FEATURE_FAILURE;
+  }
+}
+
 NFCSTATUS phNxpExtn_HandleNciRspNtf(uint16_t dataLen, const uint8_t* pData) {
   NXPLOG_NCIHAL_D("%s Enter dataLen:%d", __func__, dataLen);
-  nci_data_t nci_data;
-  nci_data.data_len = dataLen;
+  NciData_t nci_data;
+  nci_data.data_len = &dataLen;
   nci_data.p_data = (uint8_t*)pData;
   nfc_ext_event_data.nci_rsp_ntf = nci_data;
 

@@ -26,6 +26,7 @@
 
 #include <vector>
 
+#include "NfcExtension.h"
 #include "phNxpEventLogger.h"
 #include "phNxpNciHal.h"
 #include "phNxpNciHal_IoctlOperations.h"
@@ -778,6 +779,12 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
     p_cmd_data[5] = 0x01;
     *cmd_len = 6;
     mfc_mode = false;
+  }
+
+  //Return if proprietary command received in Proprietary state
+  if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
+      phNxpExtn_WriteExt(cmd_len, p_cmd_data)) {
+    return status;
   }
 
   if (*cmd_len <= (NCI_MAX_DATA_LEN - 3) && bEnableMfcReader &&
