@@ -28,6 +28,7 @@ import com.nxp.nfc.NxpNfcLogger;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
  /**
  * @class NfcOperations
  * @brief A wrapper class for Nfc functionality.
@@ -199,6 +200,49 @@ public class NfcOperations {
         public void onRfFieldActivated(boolean isActivated) {
             NfcOperations.this.mIsRfFieldActivated = isActivated;
             NxpNfcLogger.d(TAG, "onRfFieldActivated: " + isActivated);
+        }
+
+        @Override
+        public void onStateUpdated(int state){
+        }
+        @Override
+        public void onApplyRouting(Consumer<Boolean> isSkipped){
+        }
+        @Override
+        public void onNdefRead(Consumer<Boolean> isSkipped){
+        }
+        @Override
+        public void onEnable(Consumer<Boolean> isAllowed){
+        }
+        @Override
+        public void onDisable(Consumer<Boolean> isAllowed){
+        }
+        @Override
+        public void onBootStarted(){
+        }
+        @Override
+        public void onEnableStarted(){
+        }
+        @Override
+        public void onDisableStarted(){
+        }
+        @Override
+        public void onBootFinished(int status){
+        }
+        @Override
+        public void onEnableFinished(int status){
+        }
+        @Override
+        public void onDisableFinished(int status){
+        }
+        @Override
+        public void onTagDispatch(Consumer<Boolean> isSkipped){
+        }
+        @Override
+        public void onRoutingChanged(){
+        }
+        @Override
+        public void onHceEventReceived(int action){
         }
 
     };
