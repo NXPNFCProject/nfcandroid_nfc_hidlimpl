@@ -996,7 +996,7 @@ static NFCSTATUS phDnldNfc_SetupResendTimer(pphDnldNfc_DlContext_t pDlContext) {
 **
 *******************************************************************************/
 static void phDnldNfc_accessStatusWithLock(pphDnldNfc_DlContext_t pDlCtxt,
-                                          NfcHalThreadMutex seqStateLock) {
+                                           NfcHalThreadMutex seqStateLock) {
   NfcHalAutoThreadMutex a(seqStateLock);
   (pDlCtxt->TimerInfo.wTimerExpStatus) = NFCSTATUS_RF_TIMEOUT;
 }
@@ -1037,10 +1037,10 @@ static void phDnldNfc_RspTimeOutCb(uint32_t TimerId, void* pContext) {
 
       if ((phDnldNfc_EventRead == pDlCtxt->tCurrEvent) ||
           (phDnldNfc_EventWrite == pDlCtxt->tCurrEvent)) {
-        phDnldNfc_accessStatusWithLock(pDlCtxt,sProcessRwSeqStateLock);
+        phDnldNfc_accessStatusWithLock(pDlCtxt, sProcessRwSeqStateLock);
         phDnldNfc_ProcessRWSeqState(pDlCtxt, NULL);
       } else {
-        phDnldNfc_accessStatusWithLock(pDlCtxt,sProcessSeqStateLock);
+        phDnldNfc_accessStatusWithLock(pDlCtxt, sProcessSeqStateLock);
         phDnldNfc_ProcessSeqState(pDlCtxt, NULL);
       }
     }

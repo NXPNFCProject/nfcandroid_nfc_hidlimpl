@@ -70,8 +70,7 @@ static const char* rf_block_num[] = {
     "23", "24", "25", "26", "27", "28", "29", "30", NULL};
 const char* rf_block_name = "NXP_RF_CONF_BLK_";
 static uint8_t read_failed_disable_nfc = false;
-const char* core_reset_ntf_count_prop_name =
-    "nfc.core_reset_ntf_count";
+const char* core_reset_ntf_count_prop_name = "nfc.core_reset_ntf_count";
 /* FW download success flag */
 static uint8_t fw_download_success = 0;
 static uint8_t config_access = false;
@@ -924,7 +923,8 @@ int phNxpNciHal_MinOpen() {
 
   } while (status != NFCSTATUS_SUCCESS || gsIsFwRecoveryRequired);
 
-  if (fpDoAntennaActivity != NULL && (gsIsFirstHalMinOpen || fw_download_success)) {
+  if (fpDoAntennaActivity != NULL &&
+      (gsIsFirstHalMinOpen || fw_download_success)) {
     fpDoAntennaActivity(ANTENNA_CHECK_STATUS);
   }
   /* if MinOpen exit gracefully there is no core reset ntf issue */
@@ -1127,7 +1127,7 @@ static void phNxpNciHal_open_complete(NFCSTATUS status) {
 int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data) {
   if (bEnableMfcExtns && p_data[NCI_GID_INDEX] == 0x00) {
     return NxpMfcReaderInstance.Write(data_len, p_data);
-  }else if (phNxpNciHal_isVendorSpecificCommand(data_len, p_data)) {
+  } else if (phNxpNciHal_isVendorSpecificCommand(data_len, p_data)) {
     return phNxpNciHal_handleVendorSpecificCommand(data_len, p_data);
   } else if (isObserveModeEnabled() &&
              p_data[NCI_GID_INDEX] == NCI_RF_DISC_COMMD_GID &&
@@ -2405,7 +2405,7 @@ int phNxpNciHal_close(bool bShutdown) {
 close_and_return:
   if (IS_CHIP_TYPE_EQ(sn100u) && bShutdown) {
     status = phNxpNciHal_send_ext_cmd(sizeof(cmd_system_ese_power_cycle),
-        cmd_system_ese_power_cycle);
+                                      cmd_system_ese_power_cycle);
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("ese power cycle failed");
     }
@@ -3884,8 +3884,18 @@ NFCSTATUS phNxpNciHal_send_get_cfgs() {
 void phNxpNciHal_configFeatureList(uint8_t* init_rsp, uint16_t rsp_len) {
   nxpncihal_ctrl.chipType = pConfigFL->processChipType(init_rsp, rsp_len);
   tNFC_chipType chipType = nxpncihal_ctrl.chipType;
+  bool is4KFragementSupported = false;
   NXPLOG_NCIHAL_D("%s chipType = %s", __func__, pConfigFL->product[chipType]);
   CONFIGURE_FEATURELIST(chipType);
+  if (IS_CHIP_TYPE_EQ(sn300u)) {
+    if (!GetNxpNumValue(NAME_NXP_4K_FWDNLD_SUPPORT, &is4KFragementSupported,
+                        sizeof(is4KFragementSupported))) {
+      is4KFragementSupported = false;
+    }
+  }
+  NXPLOG_NCIHAL_D("%s 4K FW download support = %x", __func__,
+                  is4KFragementSupported);
+  CONFIGURE_4K_SUPPORT(is4KFragementSupported);
   /* update fragment len based on the chip type.*/
   phTmlNfc_IoCtl(phTmlNfc_e_setFragmentSize);
 }

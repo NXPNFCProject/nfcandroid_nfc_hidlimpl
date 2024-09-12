@@ -15,15 +15,16 @@
  **
  */
 #include "phNxpEventLogger.h"
+
 #include <errno.h>
+#include <phNxpConfig.h>
+#include <phNxpLog.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <unistd.h>
+
 #include <fstream>
 #include <iomanip>
-
-#include <phNxpConfig.h>
-#include <phNxpLog.h>
 
 #define TIMESTAMP_BUFFER_SIZE 64
 

@@ -21,7 +21,7 @@
  *
  * Description      This function will read and return property
  *                  value of input key as integer.
- * Parameters       key - property string for which vaue to be read.
+ * Parameters       key - property string for which value to be read.
  *                  default_value - default value to be return if property not
  *                  set.
  *
@@ -36,7 +36,7 @@ int32_t phNxpNciHal_getVendorProp_int32(const char* key, int32_t default_value);
  *
  * Description      This function will set the value for input property.
  *
- * Parameters       key - property string for which vaue to be set.
+ * Parameters       key - property string for which value to be set.
  *                  value - value of key property be set.
  *
  * Returns          returns 0 on success and, < 0 on failure

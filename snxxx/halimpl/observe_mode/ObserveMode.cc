@@ -17,6 +17,7 @@
 #include <phNfcNciConstants.h>
 
 #include <vector>
+
 #include "phNxpNciHal_extOperations.h"
 
 using namespace std;
@@ -87,7 +88,8 @@ int handleObserveMode(uint16_t data_len, const uint8_t* p_data) {
  *
  ******************************************************************************/
 int handleGetObserveModeStatus(uint16_t data_len, const uint8_t* p_data) {
-  if (data_len <= 4) {
+  // 2F 0C 01 04 => ObserveMode Status Command length is 4 Bytes
+  if (data_len < 4) {
     return 0;
   }
   vector<uint8_t> response;
