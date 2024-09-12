@@ -18,7 +18,9 @@
 
 #include <hardware/nfc.h>
 #include <phNxpNciHal_utils.h>
+
 #include <vector>
+
 #include "NxpMfcReader.h"
 #include "NxpNfcCapability.h"
 #ifdef NXP_BOOTTIME_UPDATE

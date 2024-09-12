@@ -1,5 +1,5 @@
 /******************************************************************************
- *  Copyright 2020-2023 NXP
+ *  Copyright 2020-2024 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -190,6 +190,9 @@ int NfccI2cTransport::Read(void* pDevHandle, uint8_t* pBuffer,
     } else if (ret_Read == 0) {
       NXPLOG_TML_E("%s [hdr]EOF", __func__);
       return -1;
+    } else if (errno == ENOTCONN) {
+      NXPLOG_TML_E("%s [hdr] errno : %x", __func__, errno);
+      return -ENOTCONN;
     } else {
       NXPLOG_TML_E("%s [hdr] errno : %x", __func__, errno);
       NXPLOG_TML_E(" %s pBuffer[0] = %x pBuffer[1]= %x", __func__, pBuffer[0],

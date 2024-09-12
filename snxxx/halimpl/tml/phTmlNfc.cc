@@ -290,7 +290,7 @@ static NFCSTATUS phTmlNfc_StartThread(void) {
 static void* phTmlNfc_TmlThread(void* pParam) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   int32_t dwNoBytesWrRd = PH_TMLNFC_RESET_VALUE;
-  uint8_t temp[260];
+  uint8_t temp[PH_TMLNFC_MAX_READ_NCI_BUFF_LEN];
   uint8_t readRetryDelay = 0;
   /* Transaction info buffer to be passed to Callback Thread */
   static phTmlNfc_TransactInfo_t tTransactionInfo;
@@ -324,7 +324,8 @@ static void* phTmlNfc_TmlThread(void* pParam) {
       if (NULL != gpphTmlNfc_Context->pDevHandle) {
         NXPLOG_TML_D("NFCC - Invoking Read.....\n");
         dwNoBytesWrRd =
-            gpTransportObj->Read(gpphTmlNfc_Context->pDevHandle, temp, 260);
+            gpTransportObj->Read(gpphTmlNfc_Context->pDevHandle, temp,
+                                 PH_TMLNFC_MAX_READ_NCI_BUFF_LEN);
 
         if (-1 == dwNoBytesWrRd) {
           NXPLOG_TML_E("NFCC - Error in Read.....\n");
@@ -335,7 +336,13 @@ static void* phTmlNfc_TmlThread(void* pParam) {
           }
           usleep(readRetryDelay * 1000);
           sem_post(&gpphTmlNfc_Context->rxSemaphore);
-        } else if (dwNoBytesWrRd > 260) {
+        } else if (dwNoBytesWrRd == PH_TMNFC_VBAT_LOW_ERROR) {
+          NXPLOG_TML_E(
+              "Platform VBAT Error detected by NFCC "
+              "NFC restart... : %d\n",
+              dwNoBytesWrRd);
+          abort();
+        } else if (dwNoBytesWrRd > PH_TMLNFC_MAX_READ_NCI_BUFF_LEN) {
           NXPLOG_TML_E("Numer of bytes read exceeds the limit 260.....\n");
           readRetryDelay = 0;
           sem_post(&gpphTmlNfc_Context->rxSemaphore);
@@ -454,8 +461,7 @@ static void* phTmlNfc_TmlWriterThread(void* pParam) {
         if (-1 == dwNoBytesWrRd) {
           if (gpTransportObj->IsFwDnldModeEnabled()) {
             if (retry_cnt++ < MAX_WRITE_RETRY_COUNT) {
-              NXPLOG_TML_D("NFCC - Error in Write  - Retry 0x%x",
-                           retry_cnt);
+              NXPLOG_TML_D("NFCC - Error in Write  - Retry 0x%x", retry_cnt);
               // Add a 10 ms delay to ensure NFCC is not still in stand by mode.
               usleep(10 * 1000);
               goto retry;
@@ -947,7 +953,7 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
       }
       case phTmlNfc_e_setFragmentSize: {
         if (IS_CHIP_TYPE_EQ(sn300u)) {
-          if (phTmlNfc_IsFwDnldModeEnabled()) {
+          if (phTmlNfc_IsFwDnldModeEnabled() && IS_4K_SUPPORT) {
             gpphTmlNfc_Context->fragment_len = PH_TMLNFC_FRGMENT_SIZE_SN300;
           } else {
             gpphTmlNfc_Context->fragment_len = PH_TMLNFC_FRGMENT_SIZE_SNXXX;
@@ -1067,7 +1073,6 @@ static void phTmlNfc_WriteDeferredCb(void* pParams) {
 void phTmlNfc_set_fragmentation_enabled(phTmlNfc_i2cfragmentation_t result) {
   fragmentation_enabled = result;
 }
-
 
 /*******************************************************************************
 **

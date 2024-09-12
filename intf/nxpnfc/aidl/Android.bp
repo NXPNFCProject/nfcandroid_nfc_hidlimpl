@@ -15,7 +15,6 @@ aidl_interface {
     srcs: ["vendor/nxp/nxpnfc_aidl/*.aidl"],
     stability: "vintf",
     frozen: true,
-    vndk_use_version: "1",
     backend: {
         cpp: {
             // FIXME should this be disabled?

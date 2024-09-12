@@ -169,7 +169,7 @@ class NfccTransport {
    **                  -1   - operation failure
    **
    ****************************************************************************/
-  virtual int NfcGetGpioStatus(void* pDevHandle, uint32_t *status);
+  virtual int NfcGetGpioStatus(void* pDevHandle, uint32_t* status);
 
   /*****************************************************************************
    **

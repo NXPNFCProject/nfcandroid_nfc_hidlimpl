@@ -26,10 +26,6 @@
 #define SWITCH_OFF_MASK 0x02
 #define NCI_GET_CONFI_MIN_LEN 0x04
 #define NXP_MAX_RETRY_COUNT 0x03
-typedef enum {
-  CONFIG,
-  API,
-} tNFC_requestedBy;
 typedef struct {
   uint8_t autonomous_mode;
   uint8_t guard_timer_value;

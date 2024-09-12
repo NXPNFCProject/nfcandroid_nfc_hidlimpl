@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 NXP
+ * Copyright 2012-2023 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@
 #define NXP_EN_SN300U 1
 #define NXP_EN_SN330U 1
 #define NFC_NXP_MW_ANDROID_VER (15U)  /* Android version used by NFC MW */
-#define NFC_NXP_MW_VERSION_MAJ (0x07) /* MW Major Version */
+#define NFC_NXP_MW_VERSION_MAJ (0x08) /* MW Major Version */
 #define NFC_NXP_MW_VERSION_MIN (0x00) /* MW Minor Version */
 #define NFC_NXP_MW_CUSTOMER_ID (0x00) /* MW Customer Id */
 #define NFC_NXP_MW_RC_VERSION (0x00)  /* MW RC Version */
@@ -948,9 +948,8 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
                                                   p_rsp_data);
   }
   /* CORE_SET_POWER_SUB_STATE */
-  if (p_cmd_data[0] == 0x20 && p_cmd_data[1] == 0x09 &&
-           p_cmd_data[2] == 0x01 &&
-           (p_cmd_data[3] == 0x00 || p_cmd_data[3] == 0x02)) {
+  if (p_cmd_data[0] == 0x20 && p_cmd_data[1] == 0x09 && p_cmd_data[2] == 0x01 &&
+      (p_cmd_data[3] == 0x00 || p_cmd_data[3] == 0x02)) {
     // Sync power tracker data for screen on transition.
     if (gPowerTrackerHandle.stateChange != NULL) {
       gPowerTrackerHandle.stateChange(SCREEN_ON);
@@ -1550,7 +1549,6 @@ void RemoveNfcDepIntfFromInitResp(uint8_t* coreInitResp,
   /* Get the index of Supported RF Interface for NFC-DEP interface in CORE_INIT
    * Response*/
   for (int i = 0; i < noOfSupportedInterface; i++) {
-
     if (*supportedRfInterfaces == NCI_NFC_DEP_RF_INTF) {
       removeNfcDepRequired = true;
       break;

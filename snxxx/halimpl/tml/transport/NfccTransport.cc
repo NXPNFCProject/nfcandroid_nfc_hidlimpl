@@ -28,8 +28,7 @@ int NfccTransport::UpdateReadPending(__attribute__((unused)) void* pDevHandle,
   return NFCSTATUS_SUCCESS;
 }
 int NfccTransport::NfcGetGpioStatus(__attribute__((unused)) void* pDevHandle,
-                                     __attribute__((unused))
-                                     uint32_t *status) {
+                                    __attribute__((unused)) uint32_t* status) {
   return NFCSTATUS_SUCCESS;
 }
 int NfccTransport::EseReset(__attribute__((unused)) void* pDevHandle,

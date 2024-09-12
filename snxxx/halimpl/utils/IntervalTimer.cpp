@@ -38,10 +38,9 @@
  */
 #define LOG_TAG "IntervalTimer"
 
+#include <IntervalTimer.h>
 #include <android-base/logging.h>
 #include <android-base/stringprintf.h>
-
-#include <IntervalTimer.h>
 
 using android::base::StringPrintf;
 

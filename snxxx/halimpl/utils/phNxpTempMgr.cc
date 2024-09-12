@@ -15,12 +15,13 @@
  **
  */
 #include "phNxpTempMgr.h"
-#include <unistd.h>
-#include <mutex>
 
 #include <phNxpConfig.h>
 #include <phNxpLog.h>
 #include <phOsalNfc_Timer.h>
+#include <unistd.h>
+
+#include <mutex>
 
 #define PH_NFC_TIMER_ID_INVALID (0xFFFF)
 #define PH_NXP_TEMPMGR_TOTAL_DELAY (11)

@@ -18,6 +18,7 @@
  ******************************************************************************/
 #define LOG_TAG "EseAdaptation"
 #include "EseAdaptation.h"
+
 #include <hwbinder/ProcessState.h>
 #include <log/log.h>
 
