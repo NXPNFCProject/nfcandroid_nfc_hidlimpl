@@ -156,6 +156,25 @@ public class NfcOperations {
         }
     }
 
+    /**
+     * @brief sets discover Technology
+     * @param pollTechnology Flags indicating poll technologies.
+     * @param listenTechnology Flags indicating listen technologies.
+     * @return None
+     */
+    public void setDiscoveryTech(int pollTechnology, int listenTechnology) {
+      NxpNfcLogger.d(TAG, "setDiscoveryTech");
+      mDisCountDownLatch = new CountDownLatch(1);
+      mNfcAdapter.setDiscoveryTechnology(mActivity, pollTechnology,
+                                         listenTechnology);
+      try {
+        mDisCountDownLatch.await(NxpNfcConstants.SEND_RAW_WAIT_TIME_OUT_VAL,
+                                 TimeUnit.MILLISECONDS);
+      } catch (InterruptedException e) {
+        NxpNfcLogger.e(TAG, "Error disabling discovery");
+      }
+    }
+
     private NfcOemExtension.Callback mOemExtensionCallback = new NfcOemExtension.Callback() {
 
         @Override

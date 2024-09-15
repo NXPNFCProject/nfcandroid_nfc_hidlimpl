@@ -16,6 +16,8 @@
 
 package com.nxp.nfc;
 
+import java.io.IOException;
+
 /**
  * @class INxpNfcAdapter
  * @brief Interface to perform the NFC Extension functionality.
@@ -24,4 +26,31 @@ package com.nxp.nfc;
  */
 public interface INxpNfcAdapter {
 
+  /**
+   * This is the first API to be called to start or stop the mPOS mode
+   * <li>This api shall be called only Nfcservice is enabled.
+   * <li>This api shall be called only when there are no NFC transactions
+   * ongoing
+   * </ul>
+   * @param  pkg package name of the caller
+   * @param  on Sets/Resets the mPOS state.
+   * @return whether the update of state is
+   *          MPOS_STATUS_SUCCESS,
+   *          MPOS_STATUS_FAILED,
+   * @throws IOException If a failure occurred during reader mode set or reset
+   */
+  public int mPOSSetReaderMode(String pkg, boolean on) throws IOException;
+
+  /**
+   * This is provides the info whether mPOS mode is activated or not
+   * <li>This api shall be called only Nfcservice is enabled.
+   * <li>This api shall be called only when there are no NFC transactions
+   * ongoing
+   * </ul>
+   * @param  pkg package name of the caller
+   * @return TRUE if reader mode is started
+   *         FALSE if reader mode is not started
+   * @throws IOException If a failure occurred during reader mode set or reset
+   */
+  public boolean mPOSGetReaderMode(String pkg) throws IOException;
 }

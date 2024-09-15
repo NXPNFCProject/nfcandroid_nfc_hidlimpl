@@ -18,6 +18,8 @@ package com.nxp.nfc;
 
 import android.app.Activity;
 import android.nfc.NfcAdapter;
+import com.nxp.nfc.vendor.mpos.MposHandler;
+import java.io.IOException;
 
 /**
  * @class NxpNfcAdapter
@@ -33,6 +35,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     private static NxpNfcAdapter sNxpNfcAdapter;
 
     private NfcAdapter mNfcAdapter;
+    private MposHandler mMposHandler;
 
     /**
      * @brief private constructor to create the instance of {@link NxpNfcAdapter}
@@ -41,6 +44,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
      */
     private NxpNfcAdapter(NfcAdapter nfcAdapter, Activity activity) {
         mNfcAdapter = nfcAdapter;
+        mMposHandler = new MposHandler(nfcAdapter, activity);
     }
 
     /**
@@ -69,5 +73,23 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
      */
     public INxpNfcAdapter getNxpNfcAdapterInterface() {
         return ((INxpNfcAdapter) this);
+    }
+
+    /**
+     * @brief To be called to start or stop the mPOS reader mode
+     * @return {@link INxpNfcAdapter.mPOSSetReaderMode} instance
+     */
+    @Override
+    public int mPOSSetReaderMode(String pkg, boolean on) throws IOException {
+      return mMposHandler.mPOSSetReaderMode(pkg, on);
+    }
+
+    /**
+     * @brief This is provides the info whether mPOS mode is activated or not
+     * @return {@link INxpNfcAdapter.mPOSGetReaderMode} instance
+     */
+    @Override
+    public boolean mPOSGetReaderMode(String pkg) throws IOException {
+      return mMposHandler.mPOSGetReaderMode(pkg);
     }
 }

@@ -47,20 +47,22 @@ public class NxpNciPacketHandler {
     private byte mCurrentCmdSubGidOid;
     private CountDownLatch mResCountDownLatch;
 
-    private NxpNciPacketHandler(NfcAdapter nfcAdapter, INxpNfcNtfHandler nxpNfcNtfHandler) {
-        this.mNfcAdapter = nfcAdapter;
-        this.mINxpNfcNtfHandler = nxpNfcNtfHandler;
-        NxpNfcLogger.d(TAG, "registerNfcVendorNciCallback");
-        mNfcAdapter.registerNfcVendorNciCallback(Executors.newSingleThreadExecutor(),
-                            mNfcVendorNciCallback);
+    private NxpNciPacketHandler(NfcAdapter nfcAdapter) {
+      this.mNfcAdapter = nfcAdapter;
+      NxpNfcLogger.d(TAG, "registerNfcVendorNciCallback");
+      mNfcAdapter.registerNfcVendorNciCallback(
+          Executors.newSingleThreadExecutor(), mNfcVendorNciCallback);
     }
 
-    public static NxpNciPacketHandler getInstance(NfcAdapter nfcAdapter,
-            INxpNfcNtfHandler nxpNfcNtfHandler) {
-        if (sNxpNciPacketHandler == null) {
-            sNxpNciPacketHandler = new NxpNciPacketHandler(nfcAdapter, nxpNfcNtfHandler);
-        }
-        return sNxpNciPacketHandler;
+    public static NxpNciPacketHandler getInstance(NfcAdapter nfcAdapter) {
+      if (sNxpNciPacketHandler == null) {
+        sNxpNciPacketHandler = new NxpNciPacketHandler(nfcAdapter);
+      }
+      return sNxpNciPacketHandler;
+    }
+
+    public void setCurrentNtfHandler(INxpNfcNtfHandler nxpNfcNtfHandler) {
+      this.mINxpNfcNtfHandler = nxpNfcNtfHandler;
     }
 
     /**
