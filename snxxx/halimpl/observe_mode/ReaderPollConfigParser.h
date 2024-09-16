@@ -209,4 +209,18 @@ class ReaderPollConfigParser {
    *
    ****************************************************************************/
   void setNotificationType(uint8_t notificationType);
+
+  /*****************************************************************************
+   *
+   * Function         getTimestampInMicroSeconds
+   *
+   * Description      Function to convert Timestamp in microseconds and gives it
+   *in Big endian format
+   *
+   * Parameters       rawFrame
+   *
+   * Returns          vector<uint8_t>
+   *
+   ****************************************************************************/
+  vector<uint8_t> getTimestampInMicroSeconds(vector<uint8_t> rawFrame);
 };
