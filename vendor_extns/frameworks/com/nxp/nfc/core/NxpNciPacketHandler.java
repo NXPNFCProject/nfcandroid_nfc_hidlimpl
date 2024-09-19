@@ -62,7 +62,11 @@ public class NxpNciPacketHandler {
     }
 
     public void setCurrentNtfHandler(INxpNfcNtfHandler nxpNfcNtfHandler) {
-      this.mINxpNfcNtfHandler = nxpNfcNtfHandler;
+        this.mINxpNfcNtfHandler = nxpNfcNtfHandler;
+    }
+
+    public void resetCurrentNtfHandler() {
+        this.mINxpNfcNtfHandler = null;
     }
 
     /**
