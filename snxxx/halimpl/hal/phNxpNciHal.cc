@@ -2412,16 +2412,31 @@ int phNxpNciHal_close(bool bShutdown) {
     sem_post(&(nxpncihal_ctrl.syncSpiNfc));
   }
 
+  /**
+   * @brief Incase of chipset greater than or equal to SN110,
+   * If Chipset is SN300 &
+   *    - NAME_NXP_CE_SUPPORT_IN_NFC_OFF_PHONE_OFF is 0x00,
+   *      then CE support in Phone off NFC off is not supported &
+   *      Autonomous mode is disabled.
+   *    - NAME_NXP_CE_SUPPORT_IN_NFC_OFF_PHONE_OFF is 0x03,
+   *      then CE support for T4T in Phone off NFC off is supported &
+   *      Autonomous mode is disabled.
+   * otherwise, CE support in Phone off NFC off is not supported &
+   * Autonomous mode is disabled.
+   */
   if (!bShutdown && phNxpNciHal_getULPDetFlag() == false) {
     if ((IS_CHIP_TYPE_GE(sn100u) && IS_CHIP_TYPE_L(sn300u)) ||
         ((IS_CHIP_TYPE_EQ(sn300u)) &&
          (GetNxpNumValue(NAME_NXP_CE_SUPPORT_IN_NFC_OFF_PHONE_OFF, &num,
                          sizeof(num))) &&
-         (num == 0x00))) {
-      status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_in_phone_off),
-                                        cmd_ce_in_phone_off);
-      if (status != NFCSTATUS_SUCCESS) {
-        NXPLOG_NCIHAL_E("CMD_CE_IN_PHONE_OFF: Failed");
+         ((num == NXP_PHONE_OFF_NFC_OFF_CE_NOT_SUPPORTED) ||
+          (num == NXP_PHONE_OFF_NFC_OFF_T4T_CE_SUPPORTED)))) {
+      if (num == NXP_PHONE_OFF_NFC_OFF_CE_NOT_SUPPORTED) {
+        status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_in_phone_off),
+                                          cmd_ce_in_phone_off);
+        if (status != NFCSTATUS_SUCCESS) {
+          NXPLOG_NCIHAL_E("CMD_CE_IN_PHONE_OFF: Failed");
+        }
       }
       config_ext.autonomous_mode = 0x00;
       status = phNxpNciHal_setAutonomousMode();
