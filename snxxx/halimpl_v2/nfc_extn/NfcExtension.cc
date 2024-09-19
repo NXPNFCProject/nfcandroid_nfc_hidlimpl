@@ -39,6 +39,12 @@ NfcExtEventData_t nfc_ext_event_data;
  */
 static void phNxpExtn_Init();
 
+/**
+ * TODO: Will be removed once fp_extn_deinit() is functional
+ * @brief global flag to initialize extention lib only once
+ */
+static bool initalized = false;
+
 void phNxpExtn_LibSetup() {
   NXPLOG_NCIHAL_D("%s Enter", __func__);
   p_oem_extn_handle =
@@ -72,7 +78,13 @@ void phNxpExtn_LibSetup() {
 void phNxpExtn_Init() {
   NXPLOG_NCIHAL_D("%s Enter", __func__);
   if (fp_extn_init != NULL) {
-    fp_extn_init();
+    if (!initalized) {
+      fp_extn_init();
+      NXPLOG_NCIHAL_D("%s Initialized!", __func__);
+      initalized = true;
+    } else {
+      NXPLOG_NCIHAL_D("%s Already Initialized!", __func__);
+    }
   }
 }
 
