@@ -23,6 +23,7 @@
 
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 extern phTmlNfc_Context_t* gpphTmlNfc_Context;
+extern tNfc_featureList nfcFL;
 fp_extn_init_t fp_extn_init = NULL;
 fp_extn_deinit_t fp_extn_deinit = NULL;
 fp_extn_handle_nfc_event_t fp_extn_handle_nfc_event = NULL;
@@ -238,6 +239,13 @@ uint8_t phNxpHal_GetNxpByteArrayValue(const char* name, char* pValue,
 uint8_t phNxpHal_GetNxpNumValue(const char* name, void* pValue,
                                 unsigned long len) {
   return GetNxpNumValue(name, pValue, len);
+}
+
+tNFC_chipType phNxpHal_GetChipType() {
+  NXPLOG_NCIHAL_D("%s Enter nfcFL.chipType %d", __func__,
+                  static_cast<int>(nfcFL.chipType));
+
+  return nfcFL.chipType;
 }
 
 /* HAL API's End */

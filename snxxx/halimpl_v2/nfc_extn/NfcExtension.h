@@ -17,6 +17,7 @@
 #ifndef NFC_EXTENSION_H
 #define NFC_EXTENSION_H
 #include <cstdint>
+#include "Nxp_Features.h"
 #include "phNfcStatus.h"
 
 /**
@@ -215,4 +216,13 @@ uint8_t phNxpHal_GetNxpByteArrayValue(const char* name, char* pValue,
  */
 uint8_t phNxpHal_GetNxpNumValue(const char* name, void* pValue,
                                 unsigned long len);
+
+/**
+ * @brief this function returns the chip type
+ * @param  void
+ * @return return the chip type version
+ *
+ */
+tNFC_chipType phNxpHal_GetChipType();
+
 #endif  // NFC_EXTENSION_H
