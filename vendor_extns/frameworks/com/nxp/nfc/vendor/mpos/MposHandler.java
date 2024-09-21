@@ -111,7 +111,9 @@ public class MposHandler implements INxpNfcNtfHandler {
       break;
     case SE_READER_TAG_ACTIVATED:
       NxpNfcLogger.d(TAG, "ACTION_NFC_MPOS_READER_MODE_ACTIVATED");
-      isCardActivated = true;
+      synchronized (lock) {
+        isCardActivated = true;
+      }
       break;
     case SE_READER_STOP_RF_DISCOVERY:
       NxpNfcLogger.d(TAG, "ACTION_NFC_MPOS_READER_MODE_STOP_RF_DISCOVERY");
