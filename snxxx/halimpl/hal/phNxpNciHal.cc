@@ -2325,8 +2325,10 @@ static void phNxpNciHal_core_initialized_complete(NFCSTATUS status) {
  *
  ******************************************************************************/
 int phNxpNciHal_pre_discover(void) {
-  phNxpNciHal_WiredSeDispatchEvent(&gWiredSeHandle, NFC_STATE_CHANGE,
-                                   (WiredSeEvtData)NfcState::NFC_ON);
+  if (nxpncihal_ctrl.halStatus != HAL_STATUS_CLOSE) {
+    phNxpNciHal_WiredSeDispatchEvent(&gWiredSeHandle, NFC_STATE_CHANGE,
+                                     (WiredSeEvtData)NfcState::NFC_ON);
+  }
   /* Nothing to do here for initial version */
   // This is set to return Failed as no vendor specific pre-discovery action is
   // needed in case of HalPrediscover
