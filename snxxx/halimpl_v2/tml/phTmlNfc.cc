@@ -21,6 +21,7 @@
 #include <phDal4Nfc_messageQueueLib.h>
 #include <phNxpConfig.h>
 #include <phNxpLog.h>
+#include <phNxpNciHal.h>
 #include <phNxpNciHal_utils.h>
 #include <phOsalNfc_Timer.h>
 #include <phTmlNfc.h>
