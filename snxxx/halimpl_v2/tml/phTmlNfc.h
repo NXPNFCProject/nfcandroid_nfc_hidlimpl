@@ -29,7 +29,6 @@
 #define PHTMLNFC_H
 
 #include <phNfcCommon.h>
-#include <phNxpNciHal.h>
 
 /*
  * Message posted by Reader thread upon

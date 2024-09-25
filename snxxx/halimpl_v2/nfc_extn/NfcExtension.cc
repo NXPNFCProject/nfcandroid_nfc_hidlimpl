@@ -18,7 +18,6 @@
 #include <dlfcn.h>
 #include <phNxpLog.h>
 #include <phNxpNciHal.h>
-#include <phTmlNfc.h>
 #include "NxpNfcThreadMutex.h"
 
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
@@ -179,38 +178,33 @@ void phNxpExtn_NfcHalControlGranted() {
 /* HAL API's Start */
 NFCSTATUS phNxpHal_EnqueueWrite(uint8_t* pBuffer, uint16_t wLength) {
   NXPLOG_NCIHAL_D("%s Enter wLength:%d", __func__, wLength);
-  phLibNfc_DeferredCall_t tDeferredInfo;
-  phLibNfc_Message_t tMsg;
-  phTmlNfc_TransactInfo_t tTransactionInfo;
-
-  tTransactionInfo.wStatus = NFCSTATUS_SUCCESS;
-  tTransactionInfo.oem_cmd_len = wLength;
-  phNxpNciHal_Memcpy(tTransactionInfo.p_oem_cmd_data, wLength, pBuffer,
-                     wLength);
-  tDeferredInfo.pParameter = &tTransactionInfo;
-  tMsg.pMsgData = &tDeferredInfo;
-  tMsg.Size = sizeof(tDeferredInfo);
-  tMsg.eMsgType = NCI_HAL_TML_WRITE_MSG;
-  phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &tMsg);
-
+  nciMsgDeferredData.tTransactionInfo.wStatus = NFCSTATUS_SUCCESS;
+  nciMsgDeferredData.tTransactionInfo.oem_cmd_len = wLength;
+  phNxpNciHal_Memcpy(nciMsgDeferredData.tTransactionInfo.p_oem_cmd_data,
+                     wLength, pBuffer, wLength);
+  nciMsgDeferredData.tDeferredInfo.pParameter =
+      &nciMsgDeferredData.tTransactionInfo;
+  nciMsgDeferredData.tMsg.pMsgData = &nciMsgDeferredData.tDeferredInfo;
+  nciMsgDeferredData.tMsg.Size = sizeof(nciMsgDeferredData.tDeferredInfo);
+  nciMsgDeferredData.tMsg.eMsgType = NCI_HAL_TML_WRITE_MSG;
+  phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId,
+                        &nciMsgDeferredData.tMsg);
   return NFCSTATUS_SUCCESS;
 }
 
 NFCSTATUS phNxpHal_EnqueueRsp(uint8_t* pBuffer, uint16_t wLength) {
   NXPLOG_NCIHAL_D("%s Enter wLength:%d", __func__, wLength);
-  phLibNfc_DeferredCall_t tDeferredInfo;
-  phLibNfc_Message_t tMsg;
-  phTmlNfc_TransactInfo_t tTransactionInfo;
-
-  tTransactionInfo.wStatus = NFCSTATUS_SUCCESS;
-  tTransactionInfo.oem_rsp_ntf_len = wLength;
-  phNxpNciHal_Memcpy(tTransactionInfo.p_oem_rsp_ntf_data, wLength, pBuffer,
-                     wLength);
-  tDeferredInfo.pParameter = &tTransactionInfo;
-  tMsg.pMsgData = &tDeferredInfo;
-  tMsg.Size = sizeof(tDeferredInfo);
-  tMsg.eMsgType = NCI_HAL_OEM_RSP_NTF_MSG;
-  phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &tMsg);
+  nciRspNtfDeferredData.tTransactionInfo.wStatus = NFCSTATUS_SUCCESS;
+  nciRspNtfDeferredData.tTransactionInfo.oem_rsp_ntf_len = wLength;
+  phNxpNciHal_Memcpy(nciRspNtfDeferredData.tTransactionInfo.p_oem_rsp_ntf_data,
+                     wLength, pBuffer, wLength);
+  nciRspNtfDeferredData.tDeferredInfo.pParameter =
+      &nciRspNtfDeferredData.tTransactionInfo;
+  nciRspNtfDeferredData.tMsg.pMsgData = &nciRspNtfDeferredData.tDeferredInfo;
+  nciRspNtfDeferredData.tMsg.Size = sizeof(nciRspNtfDeferredData.tDeferredInfo);
+  nciRspNtfDeferredData.tMsg.eMsgType = NCI_HAL_OEM_RSP_NTF_MSG;
+  phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId,
+                        &nciRspNtfDeferredData.tMsg);
   return NFCSTATUS_SUCCESS;
 }
 

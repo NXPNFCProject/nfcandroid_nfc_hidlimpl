@@ -48,6 +48,8 @@
 #define NXP_MW_VERSION_MAJ (0x03)
 #define NXP_MW_VERSION_MIN (0x02)
 
+#define NCI_MAX_DATA_LEN 300
+
 #define GET_EEPROM_DATA (1U)
 #define SET_EEPROM_DATA (2U)
 

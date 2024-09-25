@@ -16,9 +16,19 @@
 
 #ifndef NFC_EXTENSION_H
 #define NFC_EXTENSION_H
+#include <phTmlNfc.h>
 #include <cstdint>
 #include "Nxp_Features.h"
 #include "phNfcStatus.h"
+
+typedef struct {
+  phLibNfc_DeferredCall_t tDeferredInfo;
+  phLibNfc_Message_t tMsg;
+  phTmlNfc_TransactInfo_t tTransactionInfo;
+} NciDeferredData_t;
+
+static NciDeferredData_t nciMsgDeferredData;
+static NciDeferredData_t nciRspNtfDeferredData;
 
 /**
  * @brief Holds NCI packet data length and data buffer
