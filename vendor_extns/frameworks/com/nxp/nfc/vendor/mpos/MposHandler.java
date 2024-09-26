@@ -105,6 +105,8 @@ public class MposHandler implements INxpNfcNtfHandler {
       break;
     case SE_READER_TAG_DISCOVERY_START_FAILED:
       NxpNfcLogger.d(TAG, "ACTION_NFC_MPOS_READER_MODE_START_FAIL");
+      isMposEnabled = false;
+      mNfcOperations.enableDiscovery();
       break;
     case SE_READER_TAG_DISCOVERY_RESTARTED:
       NxpNfcLogger.d(TAG, "ACTION_NFC_MPOS_READER_MODE_RESTART");
@@ -152,6 +154,12 @@ public class MposHandler implements INxpNfcNtfHandler {
 
   public int mPOSSetReaderMode(String pkg, boolean enable) throws IOException {
     NxpNfcLogger.d(TAG, "mPOSSetReaderMode Enter : " + enable);
+
+    /* MPOS Reader mode shall not be started if CE or R/W mode is going on */
+    if (mNfcOperations.isRfFieldActivated()) {
+      NxpNfcLogger.d(TAG, "Payment is in progress");
+      return MPOS_STATUS_FAILED;
+    }
 
     if (enable == false) {
       synchronized (lock) {
