@@ -571,8 +571,8 @@ int phNxpNciHal_MinOpen() {
     return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
   }
 
-  /* By default HAL status is HAL_STATUS_OPEN */
-  nxpncihal_ctrl.halStatus = HAL_STATUS_OPEN;
+  /* By default HAL status is HAL_STATUS_CLOSE */
+  nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
 
   /*nci version NCI_VERSION_2_0 version by default for SN100 chip type*/
   nxpncihal_ctrl.nci_info.nci_version = NCI_VERSION_2_0;
