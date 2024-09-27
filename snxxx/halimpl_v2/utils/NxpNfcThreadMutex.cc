@@ -15,7 +15,13 @@
  *  limitations under the License.
  *
  ******************************************************************************/
+#define LOG_TAG "NxpNfcThreadMutex"
+
+#include <android-base/logging.h>
 #include "NxpNfcThreadMutex.h"
+#include <android-base/stringprintf.h>
+
+using android::base::StringPrintf;
 
 /*******************************************************************************
 **
@@ -30,7 +36,10 @@ NfcHalThreadMutex::NfcHalThreadMutex() {
   pthread_mutexattr_t mutexAttr;
 
   pthread_mutexattr_init(&mutexAttr);
-  pthread_mutex_init(&mMutex, &mutexAttr);
+  if(pthread_mutex_init(&mMutex, &mutexAttr))
+    LOG(DEBUG) << StringPrintf("init mutex success");
+  else
+    LOG(ERROR) << StringPrintf("fail to init mutex");
   pthread_mutexattr_destroy(&mutexAttr);
 }
 

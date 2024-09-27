@@ -2149,6 +2149,7 @@ int phNxpNciHal_configDiscShutdown(void) {
         phNxpNciHal_getULPDetFlag() == false) {
       NXPLOG_NCIHAL_D("Ulpdet supported");
       status = phNxpNciHal_propConfULPDetMode(true);
+      CONCURRENCY_UNLOCK();
       return status;
     }
   }

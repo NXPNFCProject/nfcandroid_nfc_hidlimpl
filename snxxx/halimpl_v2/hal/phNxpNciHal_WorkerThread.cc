@@ -29,7 +29,7 @@
 
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 
-phNxpNciHal_WorkerThread::phNxpNciHal_WorkerThread() : thread_running(false) {}
+phNxpNciHal_WorkerThread::phNxpNciHal_WorkerThread() : thread_running(false) {worker_thread = 0;}
 
 phNxpNciHal_WorkerThread::~phNxpNciHal_WorkerThread() { Stop(); }
 

@@ -166,7 +166,7 @@ clean_and_return:
 
 void NfcWriter::enqueue_write(const uint8_t* pBuffer, uint16_t wLength) {
   phLibNfc_DeferredCall_t tDeferredInfo;
-  phLibNfc_Message_t tMsg;
+  phLibNfc_Message_t tMsg = {0, NULL, 0};
   phTmlNfc_TransactInfo_t tTransactionInfo;
 
   if ((pBuffer == NULL) || (wLength == 0x00) || (wLength > NCI_MAX_DATA_LEN)) {

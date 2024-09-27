@@ -580,7 +580,7 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
  * Returns          void
  *******************************************************************************/
 static void phnxpNciHal_partialClose(void) {
-  phLibNfc_Message_t msg;
+  phLibNfc_Message_t msg = {0,NULL,0};
   nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
 
   if (NULL != gpphTmlNfc_Context->pDevHandle) {
