@@ -166,7 +166,7 @@ public class MposHandler implements INxpNfcNtfHandler {
         /* When card activated. we should not allow to stop mPOS untill card
          *  deactivated notification arrived.
          */
-        if (isCardActivated) {
+        while (isCardActivated) {
           try {
             NxpNfcLogger.d(TAG, "Transaction is going on. Wait to complete" +
                                     enable);
