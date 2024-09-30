@@ -22,6 +22,7 @@
 #include <phNxpLog.h>
 #include <phNxpNciHal.h>
 #include <phNxpNciHal_utils.h>
+#include "NfcExtension.h"
 #include "phNxpNciHal_extOperations.h"
 
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
@@ -510,6 +511,7 @@ void phNxpNciHal_emergency_recovery(uint8_t status) {
     case CORE_RESET_TRIGGER_TYPE_UNRECOVERABLE_ERROR: {
       phNxpNciHal_decodeGpioStatus();
       NXPLOG_NCIHAL_E("abort()");
+      phNxpExtn_HandleHalEvent(NFCC_HAL_FATAL_ERR_CODE);
       abort();
     }
     case CORE_RESET_TRIGGER_TYPE_POWERED_ON: {
@@ -517,6 +519,7 @@ void phNxpNciHal_emergency_recovery(uint8_t status) {
           nxpncihal_ctrl.power_reset_triggered == false) {
         phNxpNciHal_decodeGpioStatus();
         NXPLOG_NCIHAL_E("abort()");
+        phNxpExtn_HandleHalEvent(NFCC_HAL_FATAL_ERR_CODE);
         abort();
       }
     } break;

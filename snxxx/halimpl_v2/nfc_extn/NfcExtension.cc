@@ -114,6 +114,17 @@ NFCSTATUS phNxpExtn_HandleNciMsg(uint16_t dataLen, const uint8_t* pData) {
   }
 }
 
+NFCSTATUS phNxpExtn_HandleHalEvent(uint8_t handle_event) {
+  NXPLOG_NCIHAL_D("%s Enter handle_event:%d", __func__, handle_event);
+  nfc_ext_event_data.handle_event = handle_event;
+
+  if (fp_extn_handle_nfc_event != NULL) {
+    return fp_extn_handle_nfc_event(HANDLE_HAL_EVENT, nfc_ext_event_data);
+  } else {
+    return NFCSTATUS_EXTN_FEATURE_FAILURE;
+  }
+}
+
 void phNxpExtn_WriteCompleteStatusUpdate(NFCSTATUS status) {
   NXPLOG_NCIHAL_D("%s Enter status:%d", __func__, status);
   nfc_ext_event_data.write_status = status;

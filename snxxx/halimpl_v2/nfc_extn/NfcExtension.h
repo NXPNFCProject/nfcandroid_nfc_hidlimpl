@@ -64,9 +64,14 @@ typedef enum {
   HANDLE_HAL_CONTROL_GRANTED,
   HANDLE_NFC_HAL_STATE_UPDATE,
   HANDLE_RF_HAL_STATE_UPDATE,
-  HANDLE_EVENT,
+  HANDLE_HAL_EVENT,
   HANDLE_WRITE_EXTN_MSG,
 } NfcExtEvent_t;
+
+typedef enum {
+  NFCC_HAL_TRANS_ERR_CODE,
+  NFCC_HAL_FATAL_ERR_CODE,
+} NfcExtHal_NFCC_ERROR_CODE_t;
 
 typedef void (*fp_extn_init_t)();
 typedef void (*fp_extn_deinit_t)();
@@ -153,6 +158,17 @@ void phNxpExtn_WriteCompleteStatusUpdate(NFCSTATUS status);
  *
  */
 NFCSTATUS phNxpExtn_HandleNciMsg(uint16_t dataLen, const uint8_t* pData);
+
+/**
+
+ * @brief sends an Hal error event to extension library to handle it.
+ *
+ * @param event NFC HAL error events
+ * @return returns NFCSTATUS_EXTN_FEATURE_SUCCESS, if it is vendor specific
+ * feature and handled by extension library otherwise
+ * NFCSTATUS_EXTN_FEATURE_FAILURE.
+ */
+NFCSTATUS phNxpExtn_HandleHalEvent(uint8_t event);
 
 /**
  * @brief sends the NCI packet to handle extension feature

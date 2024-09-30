@@ -250,6 +250,7 @@ int NfcWriter::write_unlocked(uint16_t data_len, const uint8_t* p_data,
         if (nxpncihal_ctrl.p_rx_data != NULL) {
           NXPLOG_NCIHAL_D("Doing abort which will trigger the recovery\n");
           // abort which will trigger the recovery.
+          phNxpExtn_HandleHalEvent(NFCC_HAL_FATAL_ERR_CODE);
           abort();
         } else {
           (*nxpncihal_ctrl.p_nfc_stack_data_cback)(0x00, NULL);
