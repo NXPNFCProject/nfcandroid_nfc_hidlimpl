@@ -278,7 +278,7 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
       case CMA_DATA_TRIGGER_TYPE: {
         readExtraBytesForUnknownEvent = true;
         extraByteLength = p_event[INDEX_OF_CMA_EVT_DATA];
-        unknownEventTimeStamp = timestamp;
+        unknownEventTimeStamp = std::move(timestamp);
         break;
       }
       default:
