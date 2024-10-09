@@ -65,62 +65,6 @@ extern bool nfc_debug_enabled;
 extern phNxpNciClock_t phNxpNciClock;
 extern NfcHalThreadMutex sHalFnLock;
 
-/*******************************************************************************
- **
- ** Function:        property_get_intf()
- **
- ** Description:     Gets property value for the input property name
- **
- ** Parameters       propName:   Name of the property whichs value need to get
- **                  valueStr:   output value of the property.
- **                  defaultStr: default value of the property if value is not
- **                              there this will be set to output value.
- **
- ** Returns:         actual length of the property value
- **
- ********************************************************************************/
-int property_get_intf(const char* propName, char* valueStr,
-                      const char* defaultStr) {
-  string propValue;
-  string propValueDefault = defaultStr;
-  int len = 0;
-
-  propValue = phNxpNciHal_getSystemProperty(propName);
-  if (propValue.length() > 0) {
-    NXPLOG_NCIHAL_D("property_get_intf , key[%s], propValue[%s], length[%zu]",
-                    propName, propValue.c_str(), propValue.length());
-    len = propValue.length();
-    strlcpy(valueStr, propValue.c_str(), PROPERTY_VALUE_MAX);
-  } else {
-    if (propValueDefault.length() > 0) {
-      len = propValueDefault.length();
-      strlcpy(valueStr, propValueDefault.c_str(), PROPERTY_VALUE_MAX);
-    }
-  }
-
-  return len;
-}
-
-/*******************************************************************************
- **
- ** Function:        property_set_intf()
- **
- ** Description:     Sets property value for the input property name
- **
- ** Parameters       propName:   Name of the property whichs value need to set
- **                  valueStr:   value of the property.
- **
- ** Returns:        returns 0 on success, < 0 on failure
- **
- ********************************************************************************/
-int property_set_intf(const char* propName, const char* valueStr) {
-  NXPLOG_NCIHAL_D("property_set_intf, key[%s], value[%s]", propName, valueStr);
-  if (phNxpNciHal_setSystemProperty(propName, valueStr))
-    return NFCSTATUS_SUCCESS;
-  else
-    return NFCSTATUS_FAILED;
-}
-
 extern size_t readConfigFile(const char* fileName, uint8_t** p_data);
 
 static string phNxpNciHal_parseBytesString(string in);
@@ -129,27 +73,6 @@ static bool phNxpNciHal_CheckKeyNeeded(string key);
 static string phNxpNciHal_extractConfig(string& config);
 static void phNxpNciHal_getFilteredConfig(string& config);
 
-typedef std::map<std::string, std::string> systemProperty;
-systemProperty gsystemProperty = {
-    {"nfc.nxp_log_level_global", ""},
-    {"nfc.nxp_log_level_extns", ""},
-    {"nfc.nxp_log_level_hal", ""},
-    {"nfc.nxp_log_level_nci", ""},
-    {"nfc.nxp_log_level_dnld", ""},
-    {"nfc.nxp_log_level_tml", ""},
-    {"nfc.fw.dfl", ""},
-    {"nfc.fw.downloadmode_force", ""},
-    {"nfc.debug_enabled", ""},
-    {"nfc.product.support.ese", ""},
-    {"nfc.product.support.uicc", ""},
-    {"nfc.product.support.uicc2", ""},
-    {"nfc.fw.rfreg_ver", ""},
-    {"nfc.fw.rfreg_display_ver", ""},
-    {"nfc.fw.dfl_areacode", ""},
-    {"nfc.cover.cover_id", ""},
-    {"nfc.cover.state", ""},
-    {"ro.factory.factory_binary", ""},
-};
 const char default_nxp_config_path[] = "/vendor/etc/libnfc-nxp.conf";
 std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
                                 "NXP_SWP_RD_TAG_OP_TIMEOUT",
@@ -256,20 +179,16 @@ int phNxpNciHal_ioctlIf(long arg, void* p_data) {
  **                  else returns the null/empty string
  *******************************************************************************/
 string phNxpNciHal_getSystemProperty(string key) {
-  string propValue;
-  std::map<std::string, std::string>::iterator prop;
+  int len;
+  char valueStr[PROPERTY_VALUE_MAX] = {0};
 
   if (key == "libnfc-nxp.conf") {
     return phNxpNciHal_getNxpConfigIf();
+  } else if (property_get(key.c_str(), valueStr, "") > 0) {
+    return valueStr;
   } else {
-    prop = gsystemProperty.find(key);
-    if (prop != gsystemProperty.end()) {
-      propValue = prop->second;
-    } else {
-      /* else Pass a null string */
-    }
+    return NULL;
   }
-  return propValue;
 }
 /*******************************************************************************
  **
@@ -326,7 +245,7 @@ bool phNxpNciHal_setSystemProperty(string key, string value) {
     NXPLOG_NCIHAL_E("%s : nci_timeout, sem post", __func__);
     sem_post(&(nxpncihal_ctrl.syncSpiNfc));
   }
-  gsystemProperty[key] = std::move(value);
+  property_set(key.c_str(), value.c_str());
   return stat;
 }
 
@@ -668,7 +587,7 @@ int phNxpNciHal_CheckFwRegFlashRequired(uint8_t* fw_update_req,
     NXPLOG_NCIHAL_D("FW update not required");
     phDnldNfc_ReSetHwDevHandle();
   } else {
-    property_set("nfc.fw.downloadmode_force", "1");
+    property_set("nfc.fw.force_download", "1");
   }
 
   NXPLOG_NCIHAL_D(

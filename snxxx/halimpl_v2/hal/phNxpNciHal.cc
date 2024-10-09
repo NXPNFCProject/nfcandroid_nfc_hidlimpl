@@ -305,7 +305,7 @@ static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset,
     if (status == NFCSTATUS_FW_CHECK_INTEGRITY_FAILED) {
       status = phNxpNciHal_CheckIntegrityRecovery();
     }
-    property_set("nfc.fw.downloadmode_force", "0");
+    property_set("nfc.fw.force_download", "0");
     if (status == NFCSTATUS_SUCCESS) {
       wConfigStatus = NFCSTATUS_SUCCESS;
       fw_download_success = TRUE;
@@ -545,8 +545,6 @@ int phNxpNciHal_MinOpen() {
   phNxpNciHal_initializeRegRfFwDnld();
 
   phNxpNciHal_initialize_debug_enabled_flag();
-  /* initialize trace level */
-  phNxpLog_InitializeLogLevel();
 
   /* initialize Mifare flags*/
   phNxpNciHal_initialize_mifare_flag();
@@ -702,7 +700,7 @@ int phNxpNciHal_MinOpen() {
         fw_update_req = TRUE;
       } else {
         NXPLOG_NCIHAL_D("FW update not required");
-        property_set("nfc.fw.downloadmode_force", "0");
+        property_set("nfc.fw.force_download", "0");
         phDnldNfc_ReSetHwDevHandle();
       }
     }
