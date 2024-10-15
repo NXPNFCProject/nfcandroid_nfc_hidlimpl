@@ -15,9 +15,6 @@
  */
 
 #include "phNxpNciHal_VendorProp.h"
-#undef PROPERTY_VALUE_MAX
-#undef property_get
-#undef property_set
 #include <cutils/properties.h>
 
 /******************************************************************************

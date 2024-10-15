@@ -51,15 +51,6 @@ extern bool nfc_debug_enabled;
 #define NAME_NXPLOG_FWDNLD_LOGLEVEL "NXPLOG_FWDNLD_LOGLEVEL"
 #define NAME_NXPLOG_TML_LOGLEVEL "NXPLOG_TML_LOGLEVEL"
 
-/* ####################### Set the log module name by Android property
- * ########################## */
-#define PROP_NAME_NXPLOG_GLOBAL_LOGLEVEL "nfc.nxp_log_level_global"
-#define PROP_NAME_NXPLOG_EXTNS_LOGLEVEL "nfc.nxp_log_level_extns"
-#define PROP_NAME_NXPLOG_NCIHAL_LOGLEVEL "nfc.nxp_log_level_hal"
-#define PROP_NAME_NXPLOG_NCI_LOGLEVEL "nfc.nxp_log_level_nci"
-#define PROP_NAME_NXPLOG_FWDNLD_LOGLEVEL "nfc.nxp_log_level_dnld"
-#define PROP_NAME_NXPLOG_TML_LOGLEVEL "nfc.nxp_log_level_tml"
-
 /* ####################### Set the logging level for EVERY COMPONENT here
  * ######################## :START: */
 #define NXPLOG_LOG_SILENT_LOGLEVEL 0x00
@@ -420,8 +411,6 @@ extern const char* NXPLOG_ITEM_HCPR; /* Android logging tag for NxpHcpR   */
 #endif /* NXP_HCI_REQ */
 
 #endif /* NXP_VRBS_REQ */
-
-void phNxpLog_InitializeLogLevel(void);
 
 uint8_t phNxpLog_EnableDisableLogLevel(uint8_t enable);
 

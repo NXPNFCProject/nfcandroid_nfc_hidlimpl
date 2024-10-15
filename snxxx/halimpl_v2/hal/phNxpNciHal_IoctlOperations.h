@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 NXP
+ * Copyright 2019-2024 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
+#include <cutils/properties.h>
 #include <hardware/nfc.h>
-
 #include "phNfcStatus.h"
 #include "phNxpConfig.h"
 #include "phNxpLog.h"
@@ -117,37 +117,6 @@ void phNxpNciHal_txNfccClockSetCmd(void);
 
 /*******************************************************************************
  **
- ** Function:        property_get_intf()
- **
- ** Description:     Gets property value for the input property name
- **
- ** Parameters       propName:   Name of the property whichs value need to get
- **                  valueStr:   output value of the property.
- **                  defaultStr: default value of the property if value is not
- **                              there this will be set to output value.
- **
- ** Returns:         actual length of the property value
- **
- ********************************************************************************/
-int property_get_intf(const char* propName, char* valueStr,
-                      const char* defaultStr);
-
-/*******************************************************************************
- **
- ** Function:        property_set_intf()
- **
- ** Description:     Sets property value for the input property name
- **
- ** Parameters       propName:   Name of the property whichs value need to set
- **                  valueStr:   value of the property.
- **
- ** Returns:        returns 0 on success, < 0 on failure
- **
- ********************************************************************************/
-int property_set_intf(const char* propName, const char* valueStr);
-
-/*******************************************************************************
- **
  ** Function:        phNxpNciHal_GetNfcGpiosStatus()
  **
  ** Description:     Sets the gpios status flag byte
@@ -171,8 +140,3 @@ NFCSTATUS phNxpNciHal_GetNfcGpiosStatus(uint32_t* gpiosstatus);
  **
  ********************************************************************************/
 bool phNxpNciHal_Abort();
-
-#undef PROPERTY_VALUE_MAX
-#define PROPERTY_VALUE_MAX 92
-#define property_get(a, b, c) property_get_intf(a, b, c)
-#define property_set(a, b) property_set_intf(a, b)

@@ -18,6 +18,7 @@
 
 #include "phNxpNciHal_Recovery.h"
 
+#include <cutils/properties.h>
 #include <phDnldNfc.h>
 #include <phNfcStatus.h>
 #include <phNfcTypes.h>
@@ -28,10 +29,6 @@
 #include <phOsalNfc_Timer.h>
 #include <phTmlNfc.h>
 #include "phNxpNciHal_WorkerThread.h"
-#undef property_set
-#undef PROPERTY_VALUE_MAX
-#undef property_get
-#include <cutils/properties.h>
 #define MAX_CORE_RESET 3
 
 extern phNxpNciProfile_Control_t nxpprofile_ctrl;
@@ -469,8 +466,7 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
     CONCURRENCY_UNLOCK();
     return NFCSTATUS_SUCCESS;
   }
-  /* initialize trace level */
-  phNxpLog_InitializeLogLevel();
+
   if (phNxpNciHal_init_monitor() == NULL) {
     NXPLOG_NCIHAL_E("Init monitor failed");
     CONCURRENCY_UNLOCK();
