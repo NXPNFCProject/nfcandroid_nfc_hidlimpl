@@ -162,6 +162,14 @@ NFCSTATUS phNxpExtn_HandleNciRspNtf(uint16_t dataLen, const uint8_t* pData) {
   }
 }
 
+void phNxpExtn_FwDnldStatusUpdate(uint8_t status) {
+  NXPLOG_NCIHAL_D("%s Enter status:%d", __func__, status);
+  nfc_ext_event_data.fwDnldStatus = status;
+  if (fp_extn_handle_nfc_event != NULL) {
+    fp_extn_handle_nfc_event(HANDLE_FW_DNLD_STATUS_UPDATE, nfc_ext_event_data);
+  }
+}
+
 // TODO: Shall it be directly maintained in Extension library
 void phNxpExtn_NfcRfStateUpdate(uint8_t state) {
   NXPLOG_NCIHAL_D("%s Enter state:%d", __func__, state);

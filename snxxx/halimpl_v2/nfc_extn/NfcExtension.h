@@ -51,6 +51,7 @@ typedef union {
   uint8_t hal_state;
   uint8_t rf_state;
   uint8_t handle_event;
+  uint8_t fwDnldStatus;
 } NfcExtEventData_t;
 
 /**
@@ -66,6 +67,7 @@ typedef enum {
   HANDLE_RF_HAL_STATE_UPDATE,
   HANDLE_HAL_EVENT,
   HANDLE_WRITE_EXTN_MSG,
+  HANDLE_FW_DNLD_STATUS_UPDATE,
 } NfcExtEvent_t;
 
 typedef enum {
@@ -108,6 +110,13 @@ void phNxpExtn_NfcRfStateUpdate(uint8_t state);
  */
 void phNxpExtn_NfcHalStateUpdate(uint8_t state);
 
+/**
+ * @brief updates the FW Dnld status
+ * @param  status
+ * @return void
+ *
+ */
+void phNxpExtn_FwDnldStatusUpdate(uint8_t status);
 /**
  * @brief Adds the write message to queue and
  *        worker thread sends it to controller
