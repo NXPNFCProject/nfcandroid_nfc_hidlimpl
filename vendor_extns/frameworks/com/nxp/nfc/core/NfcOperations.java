@@ -16,7 +16,6 @@
 
 package com.nxp.nfc.core;
 
-import android.app.Activity;
 import android.nfc.NfcAdapter;
 import android.nfc.NfcAdapter.ControllerAlwaysOnListener;
 import android.nfc.NfcOemExtension;
@@ -41,7 +40,8 @@ public class NfcOperations {
 
     private static NfcOperations sNfcOperations = null;
 
-    private Activity mActivity;
+    private int PAUSE_POLLING_INDEFINITELY = 0;
+
     private NfcAdapter mNfcAdapter;
     private NfcOemExtension mNfcOemExtension;
 
@@ -73,11 +73,9 @@ public class NfcOperations {
     /**
      * @brief private constructor to create singleton object
      * @param nfcAdapter
-     * @param activity
      */
-    private NfcOperations(NfcAdapter nfcAdapter, Activity activity) {
+    private NfcOperations(NfcAdapter nfcAdapter) {
         this.mNfcAdapter = nfcAdapter;
-        this.mActivity = activity;
         mNfcOemExtension = mNfcAdapter.getNfcOemExtension();
         mNfcAdapter.registerControllerAlwaysOnListener(Executors.newSingleThreadExecutor(),
                             mControllerAlwaysOnListener);
@@ -87,14 +85,13 @@ public class NfcOperations {
 
     /**
      * @brief public function to get the instance of
-     * {@link #NfcOperations(NfcAdapter, Activity)}
+     * {@link #NfcOperations(NfcAdapter)}
      * @param nfcAdapter
-     * @param activity
-     * @return instance of {@link #NfcOperations(NfcAdapter, Activity)}
+     * @return instance of {@link #NfcOperations(NfcAdapter)}
      */
-    public static NfcOperations getInstance(NfcAdapter nfcAdapter, Activity activity) {
+    public static NfcOperations getInstance(NfcAdapter nfcAdapter) {
         if (sNfcOperations == null) {
-            sNfcOperations = new NfcOperations(nfcAdapter, activity);
+            sNfcOperations = new NfcOperations(nfcAdapter);
         }
         return sNfcOperations;
     }
@@ -130,8 +127,7 @@ public class NfcOperations {
     public void disableDiscovery() {
         NxpNfcLogger.d(TAG, "disableDiscovery");
         mDisCountDownLatch = new CountDownLatch(1);
-        mNfcAdapter.setDiscoveryTechnology(mActivity,
-                NfcAdapter.FLAG_READER_DISABLE, NfcAdapter.FLAG_LISTEN_DISABLE);
+        mNfcOemExtension.pausePolling(PAUSE_POLLING_INDEFINITELY);
         try {
             mDisCountDownLatch.await(NxpNfcConstants.SEND_RAW_WAIT_TIME_OUT_VAL,
                             TimeUnit.MILLISECONDS);
@@ -148,12 +144,12 @@ public class NfcOperations {
     public void enableDiscovery() {
         NxpNfcLogger.d(TAG, "enableDiscovery");
         mDisCountDownLatch = new CountDownLatch(1);
-        mNfcAdapter.resetDiscoveryTechnology(mActivity);
+        mNfcOemExtension.resumePolling();
         try {
             mDisCountDownLatch.await(NxpNfcConstants.SEND_RAW_WAIT_TIME_OUT_VAL,
                             TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
-            NxpNfcLogger.e(TAG, "Error disabling discovery");
+            NxpNfcLogger.e(TAG, "Error enabling discovery");
         }
     }
 
@@ -166,8 +162,8 @@ public class NfcOperations {
     public void setDiscoveryTech(int pollTechnology, int listenTechnology) {
       NxpNfcLogger.d(TAG, "setDiscoveryTech");
       mDisCountDownLatch = new CountDownLatch(1);
-      mNfcAdapter.setDiscoveryTechnology(mActivity, pollTechnology,
-                                         listenTechnology);
+      mNfcAdapter.setDiscoveryTechnology(null, pollTechnology | NfcAdapter.FLAG_SET_DEFAULT_TECH,
+                                         listenTechnology | NfcAdapter.FLAG_SET_DEFAULT_TECH);
       try {
         mDisCountDownLatch.await(NxpNfcConstants.SEND_RAW_WAIT_TIME_OUT_VAL,
                                  TimeUnit.MILLISECONDS);

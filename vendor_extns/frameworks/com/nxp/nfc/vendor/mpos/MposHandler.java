@@ -20,7 +20,6 @@
 
 package com.nxp.nfc.vendor.mpos;
 
-import android.app.Activity;
 import android.nfc.NfcAdapter;
 import com.nxp.nfc.INxpNfcNtfHandler;
 import com.nxp.nfc.NxpNfcConstants;
@@ -53,9 +52,9 @@ public class MposHandler implements INxpNfcNtfHandler {
   private final Object lock = new Object();
   private boolean isCardActivated = false;
 
-  public MposHandler(NfcAdapter nfcAdapter, Activity activity) {
+  public MposHandler(NfcAdapter nfcAdapter) {
     this.mNxpNciPacketHandler = NxpNciPacketHandler.getInstance(nfcAdapter);
-    this.mNfcOperations = NfcOperations.getInstance(nfcAdapter, activity);
+    this.mNfcOperations = NfcOperations.getInstance(nfcAdapter);
     mPOSStarted(false);
   }
 
