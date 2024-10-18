@@ -17,6 +17,7 @@
  ******************************************************************************/
 
 #include <stdint.h>
+#include "phNxpConfig.h"
 
 #include <string>
 #ifndef NXP_FEATURES_H
@@ -129,6 +130,19 @@ typedef struct {
 } tNfc_nfccFeatureList;
 
 typedef struct {
+  uint8_t id;
+  uint8_t len;
+  uint8_t val;
+} tNfc_capability;
+
+typedef struct {
+  tNfc_capability OBSEVE_MODE;
+  tNfc_capability POLLING_FRAME_NOTIFICATION;
+  tNfc_capability POWER_SAVING;
+  tNfc_capability AUTOTRANSACT_PLF;
+} tNfc_nfccCapabililty;
+
+typedef struct {
   uint8_t nfcNxpEse : 1;
   tNFC_chipType chipType;
   std::string _FW_LIB_PATH;
@@ -137,6 +151,7 @@ typedef struct {
   uint16_t _PHDNLDNFC_USERDATA_EEPROM_LEN;
   uint8_t _FW_MOBILE_MAJOR_NUMBER;
   tNfc_nfccFeatureList nfccFL;
+  tNfc_nfccCapabililty nfccCap;
 } tNfc_featureList;
 
 extern tNfc_featureList nfcFL;
@@ -234,6 +249,7 @@ extern tNfc_featureList nfcFL;
     nfcFL._FW_MOBILE_MAJOR_NUMBER = FW_MOBILE_MAJOR_NUMBER_PN48AD;     \
     nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_VEN_RESET;         \
     nfcFL.nfccFL._NFCC_4K_FW_SUPPORT = false;                          \
+    UPDATE_NFCC_CAPABILITY()                                           \
     switch (chipType) {                                                \
       case pn557:                                                      \
         nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;          \
@@ -295,5 +311,40 @@ extern tNfc_featureList nfcFL;
     nfcFL._FW_LIB_PATH.append(FW_LIB_ROOT_DIR);  \
     nfcFL._FW_LIB_PATH.append(str1);             \
     nfcFL._FW_LIB_PATH.append(FW_LIB_EXTENSION); \
+  }
+
+#define CAP_OBSERVE_MODE_ID 0x00
+#define CAP_POLL_FRAME_NTF_ID 0x01
+#define CAP_POWER_SAVING_MODE_ID 0x02
+#define CAP_AUTOTRANSACT_PLF_ID 0x03
+
+#define UPDATE_NFCC_CAPABILITY()                                             \
+  {                                                                          \
+    nfcFL.nfccCap.OBSEVE_MODE.id = CAP_OBSERVE_MODE_ID;                      \
+    nfcFL.nfccCap.OBSEVE_MODE.len = 0x01;                                    \
+    nfcFL.nfccCap.OBSEVE_MODE.val = 0x00;                                    \
+    nfcFL.nfccCap.POLLING_FRAME_NOTIFICATION.id = CAP_POLL_FRAME_NTF_ID;     \
+    nfcFL.nfccCap.POLLING_FRAME_NOTIFICATION.len = 0x01;                     \
+    nfcFL.nfccCap.POLLING_FRAME_NOTIFICATION.val = 0x00;                     \
+    nfcFL.nfccCap.POWER_SAVING.id = CAP_POWER_SAVING_MODE_ID;                \
+    nfcFL.nfccCap.POWER_SAVING.len = 0x01;                                   \
+    nfcFL.nfccCap.POWER_SAVING.val = 0x00;                                   \
+    nfcFL.nfccCap.AUTOTRANSACT_PLF.id = CAP_AUTOTRANSACT_PLF_ID;             \
+    nfcFL.nfccCap.AUTOTRANSACT_PLF.len = 0x01;                               \
+    nfcFL.nfccCap.AUTOTRANSACT_PLF.val = 0x00;                               \
+    uint8_t extended_field_mode = 0x00;                                      \
+    if (IS_CHIP_TYPE_GE(sn100u) &&                                           \
+        GetNxpNumValue(NAME_NXP_EXTENDED_FIELD_DETECT_MODE,                  \
+                       &extended_field_mode, sizeof(extended_field_mode))) { \
+      if (extended_field_mode == 0x03) {                                     \
+        nfcFL.nfccCap.OBSEVE_MODE.val = 0x01;                                \
+      }                                                                      \
+    }                                                                        \
+    unsigned long num = 0;                                                   \
+    if ((GetNxpNumValue(NAME_NXP_DEFAULT_ULPDET_MODE, &num, sizeof(num)))) { \
+      if ((uint8_t)num > 0) {                                                \
+        nfcFL.nfccCap.POWER_SAVING.val = 0x01;                               \
+      }                                                                      \
+    }                                                                        \
   }
 #endif
