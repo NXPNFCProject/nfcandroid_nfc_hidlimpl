@@ -81,6 +81,10 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 #define NXP_MAX_CONFIG_STRING_LEN 260
 #define NCI_HEADER_SIZE 3
 
+#define ENABLE_T4T_CE 0x03
+#define NXP_PHONE_OFF_NFC_OFF_CE_NOT_SUPPORTED 0x00
+#define NXP_PHONE_OFF_NFC_OFF_T4T_CE_SUPPORTED 0x03
+
 #define CORE_RESET_NTF_RECOVERY_REQ_COUNT 0x03
 
 typedef enum {

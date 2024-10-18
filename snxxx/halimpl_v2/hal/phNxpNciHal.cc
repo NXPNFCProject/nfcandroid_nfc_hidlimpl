@@ -1352,6 +1352,12 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   request_EEPROM(&mEEPROM_info);
 
   if (IS_CHIP_TYPE_GE(sn100u)) {
+    unsigned long num = 0;
+    if ((GetNxpNumValue(NAME_NXP_CE_SUPPORT_IN_NFC_OFF_PHONE_OFF, &num,
+                        sizeof(num))) &&
+        (IS_CHIP_TYPE_EQ(sn300u))) {
+      if (num == ENABLE_T4T_CE) enable_ce_in_phone_off = num;
+    }
     mEEPROM_info.buffer = &enable_ce_in_phone_off;
     mEEPROM_info.bufflen = sizeof(enable_ce_in_phone_off);
     mEEPROM_info.request_type = EEPROM_CE_PHONE_OFF_CFG;
@@ -1911,6 +1917,7 @@ int phNxpNciHal_close(bool bShutdown) {
   unsigned long uiccListenMask = 0x00;
   unsigned long eseListenMask = 0x00;
   uint8_t retry = 0;
+  uint8_t num = 0x00;
 
   phNxpNciHal_deinitializeRegRfFwDnld();
   NfcHalAutoThreadMutex a(sHalFnLock);
@@ -1942,19 +1949,38 @@ int phNxpNciHal_close(bool bShutdown) {
   if (sem_val == 0) {
     sem_post(&(nxpncihal_ctrl.syncSpiNfc));
   }
+  /**
+   * @brief Incase of chipset greater than or equal to SN110,
+   * If Chipset is SN300 &
+   *    - NAME_NXP_CE_SUPPORT_IN_NFC_OFF_PHONE_OFF is 0x00,
+   *      then CE support in Phone off NFC off is not supported &
+   *      Autonomous mode is disabled.
+   *    - NAME_NXP_CE_SUPPORT_IN_NFC_OFF_PHONE_OFF is 0x03,
+   *      then CE support for T4T in Phone off NFC off is supported &
+   *      Autonomous mode is disabled.
+   * otherwise, CE support in Phone off NFC off is not supported &
+   * Autonomous mode is disabled.
+   */
   if (!bShutdown && phNxpNciHal_getULPDetFlag() == false) {
-    if (IS_CHIP_TYPE_GE(sn100u)) {
-      status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_in_phone_off),
-                                        cmd_ce_in_phone_off);
-      if (status != NFCSTATUS_SUCCESS) {
-        NXPLOG_NCIHAL_E("CMD_CE_IN_PHONE_OFF: Failed");
+    if ((IS_CHIP_TYPE_GE(sn100u) && IS_CHIP_TYPE_L(sn300u)) ||
+        ((IS_CHIP_TYPE_EQ(sn300u)) &&
+         (GetNxpNumValue(NAME_NXP_CE_SUPPORT_IN_NFC_OFF_PHONE_OFF, &num,
+                         sizeof(num))) &&
+         ((num == NXP_PHONE_OFF_NFC_OFF_CE_NOT_SUPPORTED) ||
+          (num == NXP_PHONE_OFF_NFC_OFF_T4T_CE_SUPPORTED)))) {
+      if (num == NXP_PHONE_OFF_NFC_OFF_CE_NOT_SUPPORTED) {
+        status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_in_phone_off),
+                                          cmd_ce_in_phone_off);
+        if (status != NFCSTATUS_SUCCESS) {
+          NXPLOG_NCIHAL_E("CMD_CE_IN_PHONE_OFF: Failed");
+        }
       }
       config_ext.autonomous_mode = 0x00;
       status = phNxpNciHal_setAutonomousMode();
       if (status != NFCSTATUS_SUCCESS) {
         NXPLOG_NCIHAL_E("Autonomous mode Disable: Failed");
       }
-    } else {
+    } else if (IS_CHIP_TYPE_EQ(pn557)) {
       status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_in_phone_off_pn557),
                                         cmd_ce_in_phone_off_pn557);
       if (status != NFCSTATUS_SUCCESS) {
