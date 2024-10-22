@@ -630,8 +630,8 @@ int phNxpNciHal_MinOpen() {
   }
   /* call read pending */
   status = phTmlNfc_Read(
-      nxpncihal_ctrl.p_rsp_data, NCI_MAX_DATA_LEN,
-      (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete, NULL);
+      NULL, 0x00, (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete,
+      NULL);
   if (status != NFCSTATUS_PENDING) {
     NXPLOG_NCIHAL_E("TML Read status error status = %x", status);
     wConfigStatus = phTmlNfc_Shutdown_CleanUp();
@@ -1167,8 +1167,8 @@ void phNxpNciHal_client_data_callback() {
 NFCSTATUS phNxpNciHal_enableTmlRead() {
   /* Read again because read must be pending always.*/
   NFCSTATUS status = phTmlNfc_Read(
-      nxpncihal_ctrl.p_rsp_data, NCI_MAX_DATA_LEN,
-      (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete, NULL);
+      NULL, 0x00, (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete,
+      NULL);
   if (status != NFCSTATUS_PENDING) {
     NXPLOG_NCIHAL_E("read status error status = %x", status);
   }
