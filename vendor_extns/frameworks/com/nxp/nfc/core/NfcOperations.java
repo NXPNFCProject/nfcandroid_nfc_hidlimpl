@@ -42,6 +42,8 @@ public class NfcOperations {
 
     private int PAUSE_POLLING_INDEFINITELY = 0;
 
+    private static final int FLAG_USE_ALL_TECH = 0xff;
+
     private NfcAdapter mNfcAdapter;
     private NfcOemExtension mNfcOemExtension;
 
@@ -144,7 +146,7 @@ public class NfcOperations {
     public void enableDiscovery() {
         NxpNfcLogger.d(TAG, "enableDiscovery");
         mDisCountDownLatch = new CountDownLatch(1);
-        mNfcOemExtension.resumePolling();
+        setDiscoveryTech(FLAG_USE_ALL_TECH, FLAG_USE_ALL_TECH);
         try {
             mDisCountDownLatch.await(NxpNfcConstants.SEND_RAW_WAIT_TIME_OUT_VAL,
                             TimeUnit.MILLISECONDS);
