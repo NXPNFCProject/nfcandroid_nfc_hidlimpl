@@ -137,7 +137,8 @@ void phNxpNciHal_WorkerThread::Run() {
         phTmlNfc_TransactInfo_t transact_info;
         phTmlNfc_TransactInfo_t* ptransact_info = &transact_info;
         if (ptransact_info != NULL && msg.Size > 0) {
-          ptransact_info->pBuff = msg.data;
+          memcpy(nxpncihal_ctrl.p_rsp_data, msg.data, msg.Size);
+          ptransact_info->pBuff = nxpncihal_ctrl.p_rsp_data;
           ptransact_info->wLength = msg.Size;
           ptransact_info->wStatus = msg.w_status;
           deferCall->pCallback(ptransact_info);
