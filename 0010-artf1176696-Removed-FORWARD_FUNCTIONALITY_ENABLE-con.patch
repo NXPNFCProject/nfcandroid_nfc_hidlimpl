@@ -1,0 +1,259 @@
+From 29aabc69afbf4ec9e85a42bd6fba32fd39b40fb8 Mon Sep 17 00:00:00 2001
+From: "sai.shwethas" <sai.shwethas@nxp.com>
+Date: Fri, 13 Sep 2024 15:00:19 +0530
+Subject: [PATCH 10/18] [artf1176696]:Removed FORWARD_FUNCTIONALITY_ENABLE
+ config from gen-config file as it is now specific to ssg builds.
+
+---
+ .../gen-config-files/libnfc-nxp-PN560_example.conf  | 13 -------------
+ .../gen-config-files/libnfc-nxp-SN100U_example.conf | 13 -------------
+ .../gen-config-files/libnfc-nxp_AndroidOne.conf     |  6 ------
+ .../gen-config-files/libnfc-nxp-SN100U_example.conf | 13 -------------
+ .../gen-config-files/libnfc-nxp_AndroidOne.conf     |  6 ------
+ .../gen-config-files/libnfc-nxp-SN220E_example.conf | 13 -------------
+ .../libnfc-nxp-SN220U_V5_example.conf               | 13 -------------
+ .../gen-config-files/libnfc-nxp-SN220U_example.conf | 13 -------------
+ .../gen-config-files/libnfc-nxp_AndroidOne.conf     |  6 ------
+ .../gen-config-files/libnfc-nxp-SN300U_example.conf | 13 -------------
+ .../gen-config-files/libnfc-nxp_AndroidOne.conf     |  6 ------
+ 11 files changed, 115 deletions(-)
+
+diff --git a/snxxx/halimpl/conf/PN560/gen-config-files/libnfc-nxp-PN560_example.conf b/snxxx/halimpl/conf/PN560/gen-config-files/libnfc-nxp-PN560_example.conf
+index f7fc75df..e269c86f 100644
+--- a/snxxx/halimpl/conf/PN560/gen-config-files/libnfc-nxp-PN560_example.conf
++++ b/snxxx/halimpl/conf/PN560/gen-config-files/libnfc-nxp-PN560_example.conf
+@@ -288,19 +288,6 @@ NXP_CORE_PROP_SYSTEM_DEBUG=0x0000
+ # 0x07 : Enable Host to Listen (ABF)for ISO-DEP tech AB & T3T Tag Type Protocol tech F
+ HOST_LISTEN_TECH_MASK=0x07
+ 
+-###############################################################################
+-# Enable forward functionality
+-# Disable           0x00
+-# Enable            0x01 //Any positive value as per below bit configuration
+-# HOST power states when type A/B only UICC present
+-# bit pos 0 = Switch On
+-# bit pos 1 = Switch Off
+-# bit pos 2 = Battery Off
+-# bit pos 3 = Screen off unlock
+-# bit pos 4 = Screen On lock
+-# bit pos 5 = Screen Off lock
+-FORWARD_FUNCTIONALITY_ENABLE=0x01
+-
+ ###############################################################################
+ # Configure the NFC Extras to open and use a static pipe.  If the value is
+ # not set or set to 0, then the default is use a dynamic pipe based on a
+diff --git a/snxxx/halimpl/conf/SN1xx/sn100/gen-config-files/libnfc-nxp-SN100U_example.conf b/snxxx/halimpl/conf/SN1xx/sn100/gen-config-files/libnfc-nxp-SN100U_example.conf
+index 3761dedd..ac2e3e00 100644
+--- a/snxxx/halimpl/conf/SN1xx/sn100/gen-config-files/libnfc-nxp-SN100U_example.conf
++++ b/snxxx/halimpl/conf/SN1xx/sn100/gen-config-files/libnfc-nxp-SN100U_example.conf
+@@ -275,19 +275,6 @@ NXP_CORE_PROP_SYSTEM_DEBUG=0x0000
+ # 0x07 : Enable Host to Listen (ABF)for ISO-DEP tech AB & T3T Tag Type Protocol tech F
+ HOST_LISTEN_TECH_MASK=0x07
+ 
+-###############################################################################
+-# Enable forward functionality
+-# Disable           0x00
+-# Enable            0x01 //Any positive value as per below bit configuration
+-# HOST power states when type A/B only UICC present
+-# bit pos 0 = Switch On
+-# bit pos 1 = Switch Off
+-# bit pos 2 = Battery Off
+-# bit pos 3 = Screen off unlock
+-# bit pos 4 = Screen On lock
+-# bit pos 5 = Screen Off lock
+-FORWARD_FUNCTIONALITY_ENABLE=0x01
+-
+ ###############################################################################
+ # Configure the NFC Extras to open and use a static pipe.  If the value is
+ # not set or set to 0, then the default is use a dynamic pipe based on a
+diff --git a/snxxx/halimpl/conf/SN1xx/sn100/gen-config-files/libnfc-nxp_AndroidOne.conf b/snxxx/halimpl/conf/SN1xx/sn100/gen-config-files/libnfc-nxp_AndroidOne.conf
+index b9787bda..1fa589e9 100644
+--- a/snxxx/halimpl/conf/SN1xx/sn100/gen-config-files/libnfc-nxp_AndroidOne.conf
++++ b/snxxx/halimpl/conf/SN1xx/sn100/gen-config-files/libnfc-nxp_AndroidOne.conf
+@@ -255,12 +255,6 @@ NFA_PROPRIETARY_CFG={05, FF, FF, 06, 81, 80, FF, FF, FF}
+ # e.g. NXP_CORE_PROP_SYSTEM_DEBUG=0x0031 ==> Modulation detected, L1, L2 CE
+ NXP_CORE_PROP_SYSTEM_DEBUG=0x0000
+ 
+-###############################################################################
+-# Enable forward functionality
+-# Disable           0x00
+-# Enable            0x01
+-FORWARD_FUNCTIONALITY_ENABLE=0x01
+-
+ ###############################################################################
+ # Configure the NFC Extras to open and use a static pipe.  If the value is
+ # not set or set to 0, then the default is use a dynamic pipe based on a
+diff --git a/snxxx/halimpl/conf/SN1xx/sn110/gen-config-files/libnfc-nxp-SN100U_example.conf b/snxxx/halimpl/conf/SN1xx/sn110/gen-config-files/libnfc-nxp-SN100U_example.conf
+index cd9a4f03..c9085e01 100644
+--- a/snxxx/halimpl/conf/SN1xx/sn110/gen-config-files/libnfc-nxp-SN100U_example.conf
++++ b/snxxx/halimpl/conf/SN1xx/sn110/gen-config-files/libnfc-nxp-SN100U_example.conf
+@@ -275,19 +275,6 @@ NXP_CORE_PROP_SYSTEM_DEBUG=0x0000
+ # 0x07 : Enable Host to Listen (ABF)for ISO-DEP tech AB & T3T Tag Type Protocol tech F
+ HOST_LISTEN_TECH_MASK=0x07
+ 
+-###############################################################################
+-# Enable forward functionality
+-# Disable           0x00
+-# Enable            0x01 //Any positive value as per below bit configuration
+-# HOST power states when type A/B only UICC present
+-# bit pos 0 = Switch On
+-# bit pos 1 = Switch Off
+-# bit pos 2 = Battery Off
+-# bit pos 3 = Screen off unlock
+-# bit pos 4 = Screen On lock
+-# bit pos 5 = Screen Off lock
+-FORWARD_FUNCTIONALITY_ENABLE=0x01
+-
+ ###############################################################################
+ # Configure the NFC Extras to open and use a static pipe.  If the value is
+ # not set or set to 0, then the default is use a dynamic pipe based on a
+diff --git a/snxxx/halimpl/conf/SN1xx/sn110/gen-config-files/libnfc-nxp_AndroidOne.conf b/snxxx/halimpl/conf/SN1xx/sn110/gen-config-files/libnfc-nxp_AndroidOne.conf
+index b9787bda..1fa589e9 100644
+--- a/snxxx/halimpl/conf/SN1xx/sn110/gen-config-files/libnfc-nxp_AndroidOne.conf
++++ b/snxxx/halimpl/conf/SN1xx/sn110/gen-config-files/libnfc-nxp_AndroidOne.conf
+@@ -255,12 +255,6 @@ NFA_PROPRIETARY_CFG={05, FF, FF, 06, 81, 80, FF, FF, FF}
+ # e.g. NXP_CORE_PROP_SYSTEM_DEBUG=0x0031 ==> Modulation detected, L1, L2 CE
+ NXP_CORE_PROP_SYSTEM_DEBUG=0x0000
+ 
+-###############################################################################
+-# Enable forward functionality
+-# Disable           0x00
+-# Enable            0x01
+-FORWARD_FUNCTIONALITY_ENABLE=0x01
+-
+ ###############################################################################
+ # Configure the NFC Extras to open and use a static pipe.  If the value is
+ # not set or set to 0, then the default is use a dynamic pipe based on a
+diff --git a/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220E_example.conf b/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220E_example.conf
+index 47d2e75f..22c26774 100644
+--- a/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220E_example.conf
++++ b/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220E_example.conf
+@@ -323,19 +323,6 @@ OS_DOWNLOAD_TIMEOUT_VALUE=60000
+ # 0x07 : Enable Host to Listen (ABF)for ISO-DEP tech AB & T3T Tag Type Protocol tech F
+ HOST_LISTEN_TECH_MASK=0x07
+ 
+-###############################################################################
+-# Enable forward functionality
+-# Disable           0x00
+-# Enable            0x01 //Any positive value as per below bit configuration
+-# HOST power states when type A/B only UICC present
+-# bit pos 0 = Switch On
+-# bit pos 1 = Switch Off
+-# bit pos 2 = Battery Off
+-# bit pos 3 = Screen off unlock
+-# bit pos 4 = Screen On lock
+-# bit pos 5 = Screen Off lock
+-FORWARD_FUNCTIONALITY_ENABLE=0x01
+-
+ ###############################################################################
+ # Configure the NFC Extras to open and use a static pipe.  If the value is
+ # not set or set to 0, then the default is use a dynamic pipe based on a
+diff --git a/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220U_V5_example.conf b/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220U_V5_example.conf
+index 5c117833..53796749 100644
+--- a/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220U_V5_example.conf
++++ b/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220U_V5_example.conf
+@@ -298,19 +298,6 @@ NXP_CORE_PROP_SYSTEM_DEBUG=0x0000
+ # 0x07 : Enable Host to Listen (ABF)for ISO-DEP tech AB & T3T Tag Type Protocol tech F
+ HOST_LISTEN_TECH_MASK=0x07
+ 
+-###############################################################################
+-# Enable forward functionality
+-# Disable           0x00
+-# Enable            0x01 //Any positive value as per below bit configuration
+-# HOST power states when type A/B only UICC present
+-# bit pos 0 = Switch On
+-# bit pos 1 = Switch Off
+-# bit pos 2 = Battery Off
+-# bit pos 3 = Screen off unlock
+-# bit pos 4 = Screen On lock
+-# bit pos 5 = Screen Off lock
+-FORWARD_FUNCTIONALITY_ENABLE=0x01
+-
+ ###############################################################################
+ # Configure the NFC Extras to open and use a static pipe.  If the value is
+ # not set or set to 0, then the default is use a dynamic pipe based on a
+diff --git a/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220U_example.conf b/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220U_example.conf
+index bb475670..88b40744 100644
+--- a/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220U_example.conf
++++ b/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220U_example.conf
+@@ -292,19 +292,6 @@ NXP_CORE_PROP_SYSTEM_DEBUG=0x0000
+ # 0x07 : Enable Host to Listen (ABF)for ISO-DEP tech AB & T3T Tag Type Protocol tech F
+ HOST_LISTEN_TECH_MASK=0x07
+ 
+-###############################################################################
+-# Enable forward functionality
+-# Disable           0x00
+-# Enable            0x01 //Any positive value as per below bit configuration
+-# HOST power states when type A/B only UICC present
+-# bit pos 0 = Switch On
+-# bit pos 1 = Switch Off
+-# bit pos 2 = Battery Off
+-# bit pos 3 = Screen off unlock
+-# bit pos 4 = Screen On lock
+-# bit pos 5 = Screen Off lock
+-FORWARD_FUNCTIONALITY_ENABLE=0x01
+-
+ ###############################################################################
+ # Configure the NFC Extras to open and use a static pipe.  If the value is
+ # not set or set to 0, then the default is use a dynamic pipe based on a
+diff --git a/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp_AndroidOne.conf b/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp_AndroidOne.conf
+index 4e74bde7..40931814 100644
+--- a/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp_AndroidOne.conf
++++ b/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp_AndroidOne.conf
+@@ -264,12 +264,6 @@ NFA_PROPRIETARY_CFG={05, FF, FF, 06, 81, 80, FF, FF, FF}
+ # e.g. NXP_CORE_PROP_SYSTEM_DEBUG=0x0031 ==> Modulation detected, L1, L2 CE
+ NXP_CORE_PROP_SYSTEM_DEBUG=0x0000
+ 
+-###############################################################################
+-# Enable forward functionality
+-# Disable           0x00
+-# Enable            0x01
+-FORWARD_FUNCTIONALITY_ENABLE=0x01
+-
+ ###############################################################################
+ # Configure the NFC Extras to open and use a static pipe.  If the value is
+ # not set or set to 0, then the default is use a dynamic pipe based on a
+diff --git a/snxxx/halimpl/conf/SN300/gen-config-files/libnfc-nxp-SN300U_example.conf b/snxxx/halimpl/conf/SN300/gen-config-files/libnfc-nxp-SN300U_example.conf
+index c16afda5..2d7fc5f0 100644
+--- a/snxxx/halimpl/conf/SN300/gen-config-files/libnfc-nxp-SN300U_example.conf
++++ b/snxxx/halimpl/conf/SN300/gen-config-files/libnfc-nxp-SN300U_example.conf
+@@ -298,19 +298,6 @@ NXP_CORE_PROP_SYSTEM_DEBUG=0x0000
+ # 0x07 : Enable Host to Listen (ABF)for ISO-DEP tech AB & T3T Tag Type Protocol tech F
+ HOST_LISTEN_TECH_MASK=0x07
+ 
+-###############################################################################
+-# Enable forward functionality
+-# Disable           0x00
+-# Enable            0x01 //Any positive value as per below bit configuration
+-# HOST power states when type A/B only UICC present
+-# bit pos 0 = Switch On
+-# bit pos 1 = Switch Off
+-# bit pos 2 = Battery Off
+-# bit pos 3 = Screen off unlock
+-# bit pos 4 = Screen On lock
+-# bit pos 5 = Screen Off lock
+-FORWARD_FUNCTIONALITY_ENABLE=0x01
+-
+ ###############################################################################
+ # Configure the NFC Extras to open and use a static pipe.  If the value is
+ # not set or set to 0, then the default is use a dynamic pipe based on a
+diff --git a/snxxx/halimpl/conf/SN300/gen-config-files/libnfc-nxp_AndroidOne.conf b/snxxx/halimpl/conf/SN300/gen-config-files/libnfc-nxp_AndroidOne.conf
+index f5bffca5..fb5a9401 100644
+--- a/snxxx/halimpl/conf/SN300/gen-config-files/libnfc-nxp_AndroidOne.conf
++++ b/snxxx/halimpl/conf/SN300/gen-config-files/libnfc-nxp_AndroidOne.conf
+@@ -266,12 +266,6 @@ NFA_PROPRIETARY_CFG={05, FF, FF, 06, 81, 80, FF, FF, FF}
+ # e.g. NXP_CORE_PROP_SYSTEM_DEBUG=0x0031 ==> Modulation detected, L1, L2 CE
+ NXP_CORE_PROP_SYSTEM_DEBUG=0x0000
+ 
+-###############################################################################
+-# Enable forward functionality
+-# Disable           0x00
+-# Enable            0x01
+-FORWARD_FUNCTIONALITY_ENABLE=0x01
+-
+ ###############################################################################
+ # Configure the NFC Extras to open and use a static pipe.  If the value is
+ # not set or set to 0, then the default is use a dynamic pipe based on a
+-- 
+2.47.0
+

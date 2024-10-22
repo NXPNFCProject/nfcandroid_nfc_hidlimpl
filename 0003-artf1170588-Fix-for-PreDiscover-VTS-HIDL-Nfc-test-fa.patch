@@ -1,0 +1,63 @@
+From f563f55acfb51dae72fa69002c3e0bf83bd545c8 Mon Sep 17 00:00:00 2001
+From: "suryaprakash.konduru" <suryaprakash.konduru@nxp.com>
+Date: Fri, 6 Sep 2024 10:19:22 +0530
+Subject: [PATCH 03/18] [artf1170588] Fix for PreDiscover VTS HIDL Nfc test
+ failure
+
+Change-Id: Ia9bcfed8758200bf047e5be308b2c364d2e11d3d
+---
+ snxxx/1.1/Nfc.cpp | 7 ++-----
+ snxxx/1.2/Nfc.cpp | 7 ++-----
+ 2 files changed, 4 insertions(+), 10 deletions(-)
+
+diff --git a/snxxx/1.1/Nfc.cpp b/snxxx/1.1/Nfc.cpp
+index 69f969ce..35c89a89 100644
+--- a/snxxx/1.1/Nfc.cpp
++++ b/snxxx/1.1/Nfc.cpp
+@@ -1,6 +1,6 @@
+ /******************************************************************************
+  *
+- *  Copyright 2018, 2023 NXP
++ *  Copyright 2018, 2023-2024 NXP
+  *
+  *  Licensed under the Apache License, Version 2.0 (the "License");
+  *  you may not use this file except in compliance with the License.
+@@ -79,10 +79,7 @@ Return<V1_0::NfcStatus> Nfc::coreInitialized(const hidl_vec<uint8_t>& data) {
+   return CHK_STATUS(status);
+ }
+ 
+-Return<V1_0::NfcStatus> Nfc::prediscover() {
+-  NFCSTATUS status = phNxpNciHal_pre_discover();
+-  return CHK_STATUS(status);
+-}
++Return<V1_0::NfcStatus> Nfc::prediscover() { return V1_0::NfcStatus::OK; }
+ 
+ Return<V1_0::NfcStatus> Nfc::close() {
+   if (mCallbackV1_1 == nullptr && mCallbackV1_0 == nullptr) {
+diff --git a/snxxx/1.2/Nfc.cpp b/snxxx/1.2/Nfc.cpp
+index 2e6778b8..f9296215 100644
+--- a/snxxx/1.2/Nfc.cpp
++++ b/snxxx/1.2/Nfc.cpp
+@@ -1,6 +1,6 @@
+ /******************************************************************************
+  *
+- *  Copyright 2019-2023 NXP
++ *  Copyright 2019-2024 NXP
+  *
+  *  Licensed under the Apache License, Version 2.0 (the "License");
+  *  you may not use this file except in compliance with the License.
+@@ -81,10 +81,7 @@ Return<V1_0::NfcStatus> Nfc::coreInitialized(const hidl_vec<uint8_t>& data) {
+   return CHK_STATUS(status);
+ }
+ 
+-Return<V1_0::NfcStatus> Nfc::prediscover() {
+-  NFCSTATUS status = phNxpNciHal_pre_discover();
+-  return CHK_STATUS(status);
+-}
++Return<V1_0::NfcStatus> Nfc::prediscover() { return V1_0::NfcStatus::OK; }
+ 
+ Return<V1_0::NfcStatus> Nfc::close() {
+   if (mCallbackV1_1 == nullptr && mCallbackV1_0 == nullptr) {
+-- 
+2.47.0
+

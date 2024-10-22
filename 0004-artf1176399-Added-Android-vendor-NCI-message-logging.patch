@@ -1,0 +1,404 @@
+From 58be69f723ba8272a8976c2ddc813717439ae0cc Mon Sep 17 00:00:00 2001
+From: "suryaprakash.konduru" <suryaprakash.konduru@nxp.com>
+Date: Thu, 5 Sep 2024 19:23:35 +0530
+Subject: [PATCH 04/18] [artf1176399] Added Android vendor NCI message logging
+ support
+
+New logging option added for Android vendor NCI messages & PL
+to differentiate with regular NCI frames.
+
+Change-Id: I6beee8bb4c58841a419fe61442099ab3279b6b0c
+---
+ .../libnfc-nxp-SN220E_example.conf            |  1 +
+ .../libnfc-nxp-SN220U_V5_example.conf         |  1 +
+ .../libnfc-nxp-SN220U_example.conf            |  1 +
+ .../libnfc-nxp_AndroidOne.conf                |  1 +
+ .../libnfc-nxp-SN300U_example.conf            |  1 +
+ .../libnfc-nxp_AndroidOne.conf                |  1 +
+ snxxx/halimpl/hal/phNxpNciHal.cc              | 22 +++++++++++++-
+ snxxx/halimpl/hal/phNxpNciHal.h               | 12 ++++++++
+ .../halimpl/hal/phNxpNciHal_extOperations.cc  |  4 +++
+ snxxx/halimpl/log/phNxpLog.cc                 | 30 ++++++++++++++++---
+ snxxx/halimpl/log/phNxpLog.h                  | 30 ++++++++++++++++++-
+ snxxx/halimpl/utils/phNxpNciHal_utils.cc      | 22 ++++++++++----
+ snxxx/halimpl/utils/phNxpNciHal_utils.h       |  4 +--
+ 13 files changed, 116 insertions(+), 14 deletions(-)
+
+diff --git a/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220E_example.conf b/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220E_example.conf
+index ca5a4803..47d2e75f 100644
+--- a/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220E_example.conf
++++ b/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220E_example.conf
+@@ -12,6 +12,7 @@ NXPLOG_EXTNS_LOGLEVEL=0x04
+ NXPLOG_NCIHAL_LOGLEVEL=0x04
+ NXPLOG_NCIX_LOGLEVEL=0x04
+ NXPLOG_NCIR_LOGLEVEL=0x04
++NXPLOG_AVCNCI_LOGLEVEL=0x04
+ NXPLOG_FWDNLD_LOGLEVEL=0x04
+ NXPLOG_TML_LOGLEVEL=0x04
+ NFC_DEBUG_ENABLED=1
+diff --git a/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220U_V5_example.conf b/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220U_V5_example.conf
+index 4446cfae..5c117833 100644
+--- a/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220U_V5_example.conf
++++ b/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220U_V5_example.conf
+@@ -12,6 +12,7 @@ NXPLOG_EXTNS_LOGLEVEL=0x04
+ NXPLOG_NCIHAL_LOGLEVEL=0x04
+ NXPLOG_NCIX_LOGLEVEL=0x04
+ NXPLOG_NCIR_LOGLEVEL=0x04
++NXPLOG_AVCNCI_LOGLEVEL=0x04
+ NXPLOG_FWDNLD_LOGLEVEL=0x04
+ NXPLOG_TML_LOGLEVEL=0x04
+ NFC_DEBUG_ENABLED=1
+diff --git a/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220U_example.conf b/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220U_example.conf
+index cb28706c..bb475670 100644
+--- a/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220U_example.conf
++++ b/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp-SN220U_example.conf
+@@ -12,6 +12,7 @@ NXPLOG_EXTNS_LOGLEVEL=0x04
+ NXPLOG_NCIHAL_LOGLEVEL=0x04
+ NXPLOG_NCIX_LOGLEVEL=0x04
+ NXPLOG_NCIR_LOGLEVEL=0x04
++NXPLOG_AVCNCI_LOGLEVEL=0x04
+ NXPLOG_FWDNLD_LOGLEVEL=0x04
+ NXPLOG_TML_LOGLEVEL=0x04
+ NFC_DEBUG_ENABLED=1
+diff --git a/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp_AndroidOne.conf b/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp_AndroidOne.conf
+index 284634a6..c22d5180 100644
+--- a/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp_AndroidOne.conf
++++ b/snxxx/halimpl/conf/SN220/gen-config-files/libnfc-nxp_AndroidOne.conf
+@@ -12,6 +12,7 @@ NXPLOG_EXTNS_LOGLEVEL=0x04
+ NXPLOG_NCIHAL_LOGLEVEL=0x04
+ NXPLOG_NCIX_LOGLEVEL=0x04
+ NXPLOG_NCIR_LOGLEVEL=0x04
++NXPLOG_AVCNCI_LOGLEVEL=0x04
+ NXPLOG_FWDNLD_LOGLEVEL=0x04
+ NXPLOG_TML_LOGLEVEL=0x04
+ NFC_DEBUG_ENABLED=1
+diff --git a/snxxx/halimpl/conf/SN300/gen-config-files/libnfc-nxp-SN300U_example.conf b/snxxx/halimpl/conf/SN300/gen-config-files/libnfc-nxp-SN300U_example.conf
+index 19e0dcd2..c16afda5 100644
+--- a/snxxx/halimpl/conf/SN300/gen-config-files/libnfc-nxp-SN300U_example.conf
++++ b/snxxx/halimpl/conf/SN300/gen-config-files/libnfc-nxp-SN300U_example.conf
+@@ -12,6 +12,7 @@ NXPLOG_EXTNS_LOGLEVEL=0x04
+ NXPLOG_NCIHAL_LOGLEVEL=0x04
+ NXPLOG_NCIX_LOGLEVEL=0x04
+ NXPLOG_NCIR_LOGLEVEL=0x04
++NXPLOG_AVCNCI_LOGLEVEL=0x04
+ NXPLOG_FWDNLD_LOGLEVEL=0x04
+ NXPLOG_TML_LOGLEVEL=0x04
+ NFC_DEBUG_ENABLED=1
+diff --git a/snxxx/halimpl/conf/SN300/gen-config-files/libnfc-nxp_AndroidOne.conf b/snxxx/halimpl/conf/SN300/gen-config-files/libnfc-nxp_AndroidOne.conf
+index f79c24e3..d824d410 100644
+--- a/snxxx/halimpl/conf/SN300/gen-config-files/libnfc-nxp_AndroidOne.conf
++++ b/snxxx/halimpl/conf/SN300/gen-config-files/libnfc-nxp_AndroidOne.conf
+@@ -12,6 +12,7 @@ NXPLOG_EXTNS_LOGLEVEL=0x04
+ NXPLOG_NCIHAL_LOGLEVEL=0x04
+ NXPLOG_NCIX_LOGLEVEL=0x04
+ NXPLOG_NCIR_LOGLEVEL=0x04
++NXPLOG_AVCNCI_LOGLEVEL=0x04
+ NXPLOG_FWDNLD_LOGLEVEL=0x04
+ NXPLOG_TML_LOGLEVEL=0x04
+ NFC_DEBUG_ENABLED=1
+diff --git a/snxxx/halimpl/hal/phNxpNciHal.cc b/snxxx/halimpl/hal/phNxpNciHal.cc
+index 0bafa506..08c207e8 100644
+--- a/snxxx/halimpl/hal/phNxpNciHal.cc
++++ b/snxxx/halimpl/hal/phNxpNciHal.cc
+@@ -1139,6 +1139,8 @@ int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data) {
+   if (bEnableMfcExtns && p_data[NCI_GID_INDEX] == 0x00) {
+     return NxpMfcReaderInstance.Write(data_len, p_data);
+   }else if (phNxpNciHal_isVendorSpecificCommand(data_len, p_data)) {
++    phNxpNciHal_print_packet("SEND", p_data, data_len,
++                             RfFwRegionDnld_handle == NULL);
+     return phNxpNciHal_handleVendorSpecificCommand(data_len, p_data);
+   } else if (isObserveModeEnabled() &&
+              p_data[NCI_GID_INDEX] == NCI_RF_DISC_COMMD_GID &&
+@@ -1482,6 +1484,24 @@ static void phNxpNciHal_read_complete(void* pContext,
+   return;
+ }
+ 
++/******************************************************************************
++ * Function         phNxpNciHal_notifyPollingFrame
++ *
++ * Description      Send polling info notification to send to upper layer
++ *
++ * Parameters       p_data - Polling loop info notification
++ *
++ * Returns          void
++ *
++ ******************************************************************************/
++void phNxpNciHal_notifyPollingFrame(uint16_t data_len, uint8_t* p_data) {
++  phNxpNciHal_print_packet("RECV", p_data, data_len,
++                           RfFwRegionDnld_handle == NULL);
++  if (nxpncihal_ctrl.p_nfc_stack_data_cback != NULL) {
++    (*nxpncihal_ctrl.p_nfc_stack_data_cback)(data_len, p_data);
++  }
++}
++
+ /******************************************************************************
+  * Function         phNxpNciHal_client_data_callback
+  *
+@@ -1510,7 +1530,7 @@ void phNxpNciHal_client_data_callback() {
+     }
+     readerPollConfigParser.setNotificationType(notificationType);
+     readerPollConfigParser.setReaderPollCallBack(
+-        nxpncihal_ctrl.p_nfc_stack_data_cback);
++        phNxpNciHal_notifyPollingFrame);
+     readerPollConfigParser.parseAndSendReaderPollInfo(
+         nxpncihal_ctrl.p_rx_data, nxpncihal_ctrl.rx_data_len);
+   } else {
+diff --git a/snxxx/halimpl/hal/phNxpNciHal.h b/snxxx/halimpl/hal/phNxpNciHal.h
+index fd2da7ef..aecc3ac0 100644
+--- a/snxxx/halimpl/hal/phNxpNciHal.h
++++ b/snxxx/halimpl/hal/phNxpNciHal.h
+@@ -458,4 +458,16 @@ void phNxpNciHal_client_data_callback();
+  ******************************************************************************/
+ bool phNxpNciHal_UpdateRfMiscSettings();
+ 
++/******************************************************************************
++ * Function         phNxpNciHal_notifyPollingFrame
++ *
++ * Description      Send polling info notification to send to upper layer
++ *
++ * Parameters       p_data - Polling loop info notification
++ *
++ * Returns          void
++ *
++ ******************************************************************************/
++void phNxpNciHal_notifyPollingFrame(uint16_t data_len, uint8_t* p_data);
++
+ #endif /* _PHNXPNCIHAL_H_ */
+diff --git a/snxxx/halimpl/hal/phNxpNciHal_extOperations.cc b/snxxx/halimpl/hal/phNxpNciHal_extOperations.cc
+index 8e773f32..86f5c159 100644
+--- a/snxxx/halimpl/hal/phNxpNciHal_extOperations.cc
++++ b/snxxx/halimpl/hal/phNxpNciHal_extOperations.cc
+@@ -34,6 +34,7 @@ static vector<uint8_t> uicc2HciParams(0);
+ static vector<uint8_t> uiccHciCeParams(0);
+ extern phNxpNciHal_Control_t nxpncihal_ctrl;
+ extern phTmlNfc_Context_t* gpphTmlNfc_Context;
++extern void* RfFwRegionDnld_handle;
+ extern NFCSTATUS phNxpNciHal_ext_send_sram_config_to_flash();
+ 
+ /*******************************************************************************
+@@ -833,6 +834,9 @@ void phNxpNciHal_vendorSpecificCallback(int oid, int opcode,
+   msg.eMsgType = NCI_HAL_VENDOR_MSG;
+   msg.pMsgData = NULL;
+   msg.Size = 0;
++  phNxpNciHal_print_packet("RECV", nxpncihal_ctrl.vendor_msg,
++                           nxpncihal_ctrl.vendor_msg_len,
++                           RfFwRegionDnld_handle == NULL);
+   phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId,
+                         (phLibNfc_Message_t*)&msg);
+ }
+diff --git a/snxxx/halimpl/log/phNxpLog.cc b/snxxx/halimpl/log/phNxpLog.cc
+index 7608c267..c43f59c4 100644
+--- a/snxxx/halimpl/log/phNxpLog.cc
++++ b/snxxx/halimpl/log/phNxpLog.cc
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright 2010-2019, 2022-2023 NXP
++ * Copyright 2010-2019, 2022-2024 NXP
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+@@ -27,6 +27,8 @@ const char* NXPLOG_ITEM_EXTNS = "NxpExtns";
+ const char* NXPLOG_ITEM_NCIHAL = "NxpHal";
+ const char* NXPLOG_ITEM_NCIX = "NxpNciX";
+ const char* NXPLOG_ITEM_NCIR = "NxpNciR";
++const char* NXPAVCLOG_ITEM_NCIX = "NxpAvcNciX";
++const char* NXPAVCLOG_ITEM_NCIR = "NxpAvcNciR";
+ const char* NXPLOG_ITEM_FWDNLD = "NxpFwDnld";
+ const char* NXPLOG_ITEM_TML = "NxpTml";
+ const char* NXPLOG_ITEM_ONEBIN = "NxpOneBinary";
+@@ -85,7 +87,6 @@ static void phNxpLog_SetHALLogLevel(uint8_t level) {
+   if (GetNxpNumValue(NAME_NXPLOG_NCIHAL_LOGLEVEL, &num, sizeof(num))) {
+     gLog_level.hal_log_level =
+         (level > (unsigned char)num) ? level : (unsigned char)num;
+-    ;
+   }
+ 
+   len = property_get(PROP_NAME_NXPLOG_NCIHAL_LOGLEVEL, valueStr, "");
+@@ -96,6 +97,26 @@ static void phNxpLog_SetHALLogLevel(uint8_t level) {
+   }
+ }
+ 
++/*******************************************************************************
++ *
++ * Function         phNxpLog_SetAvcLogLevel
++ *
++ * Description      Sets the Android Vendor GID OID log level.
++ *
++ * Returns          void
++ *
++ ******************************************************************************/
++static void phNxpLog_SetAvcLogLevel(uint8_t level) {
++  unsigned long num = 0;
++  int len;
++  char valueStr[PROPERTY_VALUE_MAX] = {0};
++
++  if (GetNxpNumValue(NAME_NXPLOG_AVCNCI_LOGLEVEL, &num, sizeof(num))) {
++    gLog_level.avc_log_level =
++        (level > (unsigned char)num) ? level : (unsigned char)num;
++  }
++}
++
+ /*******************************************************************************
+  *
+  * Function         phNxpLog_SetExtnsLogLevel
+@@ -247,6 +268,7 @@ static void phNxpLog_SetNciTxLogLevel(uint8_t level) {
+ void phNxpLog_InitializeLogLevel(void) {
+   uint8_t level = phNxpLog_SetGlobalLogLevel();
+   phNxpLog_SetHALLogLevel(level);
++  phNxpLog_SetAvcLogLevel(level);
+   phNxpLog_SetExtnsLogLevel(level);
+   phNxpLog_SetTmlLogLevel(level);
+   phNxpLog_SetDnldLogLevel(level);
+@@ -255,11 +277,11 @@ void phNxpLog_InitializeLogLevel(void) {
+   ALOGD_IF(nfc_debug_enabled,
+            "%s: global =%u, Fwdnld =%u, extns =%u, \
+                 hal =%u, tml =%u, ncir =%u, \
+-                ncix =%u",
++                ncix =%u, avc = %u",
+            __func__, gLog_level.global_log_level, gLog_level.dnld_log_level,
+            gLog_level.extns_log_level, gLog_level.hal_log_level,
+            gLog_level.tml_log_level, gLog_level.ncir_log_level,
+-           gLog_level.ncix_log_level);
++           gLog_level.ncix_log_level, gLog_level.avc_log_level);
+ }
+ /******************************************************************************
+  * Function         phNxpLog_EnableDisableLogLevel
+diff --git a/snxxx/halimpl/log/phNxpLog.h b/snxxx/halimpl/log/phNxpLog.h
+index 26f46709..7438d4cf 100644
+--- a/snxxx/halimpl/log/phNxpLog.h
++++ b/snxxx/halimpl/log/phNxpLog.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright 2010-2014, 2022-2023 NXP
++ * Copyright 2010-2014, 2022-2024 NXP
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+@@ -23,6 +23,7 @@ typedef struct nci_log_level {
+   uint8_t global_log_level;
+   uint8_t extns_log_level;
+   uint8_t hal_log_level;
++  uint8_t avc_log_level;
+   uint8_t dnld_log_level;
+   uint8_t tml_log_level;
+   uint8_t ncix_log_level;
+@@ -47,6 +48,7 @@ extern bool nfc_debug_enabled;
+  * ########################## */
+ #define NAME_NXPLOG_EXTNS_LOGLEVEL "NXPLOG_EXTNS_LOGLEVEL"
+ #define NAME_NXPLOG_NCIHAL_LOGLEVEL "NXPLOG_NCIHAL_LOGLEVEL"
++#define NAME_NXPLOG_AVCNCI_LOGLEVEL "NXPLOG_AVCNCI_LOGLEVEL"
+ #define NAME_NXPLOG_NCIX_LOGLEVEL "NXPLOG_NCIX_LOGLEVEL"
+ #define NAME_NXPLOG_NCIR_LOGLEVEL "NXPLOG_NCIR_LOGLEVEL"
+ #define NAME_NXPLOG_FWDNLD_LOGLEVEL "NXPLOG_FWDNLD_LOGLEVEL"
+@@ -87,6 +89,8 @@ extern const char* NXPLOG_ITEM_EXTNS;  /* Android logging tag for NxpExtns  */
+ extern const char* NXPLOG_ITEM_NCIHAL; /* Android logging tag for NxpNciHal */
+ extern const char* NXPLOG_ITEM_NCIX;   /* Android logging tag for NxpNciX   */
+ extern const char* NXPLOG_ITEM_NCIR;   /* Android logging tag for NxpNciR   */
++extern const char* NXPAVCLOG_ITEM_NCIX; /* Android logging tag for NxpAvcNciX */
++extern const char* NXPAVCLOG_ITEM_NCIR; /* Android logging tag for NxpAvcNciR */
+ extern const char* NXPLOG_ITEM_FWDNLD; /* Android logging tag for NxpFwDnld */
+ extern const char* NXPLOG_ITEM_TML;    /* Android logging tag for NxpTml    */
+ 
+@@ -238,6 +242,30 @@ extern const char* NXPLOG_ITEM_HCPR; /* Android logging tag for NxpHcpR   */
+ #define NXPLOG_NCIR_E(...)
+ #endif /* Logging APIs used by NCIR module */
+ 
++/* Logging APIs used by NxpAvcNciX module */
++#if (ENABLE_NCIX_TRACES == TRUE)
++#define NXPAVCLOG_NCIX_I(...)                                      \
++  {                                                                \
++    if ((nfc_debug_enabled) ||                                     \
++        (gLog_level.avc_log_level >= NXPLOG_LOG_INFO_LOGLEVEL))    \
++      LOG_PRI(ANDROID_LOG_INFO, NXPAVCLOG_ITEM_NCIX, __VA_ARGS__); \
++  }
++#else
++#define NXPAVCLOG_NCIX_I(...)
++#endif /* Logging APIs used by AVC Command module */
++
++/* Logging APIs used by NxpAVCNciR module */
++#if (ENABLE_NCIR_TRACES == TRUE)
++#define NXPAVCLOG_NCIR_I(...)                                      \
++  {                                                                \
++    if ((nfc_debug_enabled) ||                                     \
++        (gLog_level.avc_log_level >= NXPLOG_LOG_INFO_LOGLEVEL))    \
++      LOG_PRI(ANDROID_LOG_INFO, NXPAVCLOG_ITEM_NCIR, __VA_ARGS__); \
++  }
++#else
++#define NXPAVCLOG_NCIR_I(...)
++#endif /* Logging APIs used by AVC R module */
++
+ /* Logging APIs used by NxpFwDnld module */
+ #if (ENABLE_FWDNLD_TRACES == TRUE)
+ #define NXPLOG_FWDNLD_D(...)                                       \
+diff --git a/snxxx/halimpl/utils/phNxpNciHal_utils.cc b/snxxx/halimpl/utils/phNxpNciHal_utils.cc
+index d138d07c..f7e2152d 100644
+--- a/snxxx/halimpl/utils/phNxpNciHal_utils.cc
++++ b/snxxx/halimpl/utils/phNxpNciHal_utils.cc
+@@ -1,6 +1,6 @@
+ /*
+  *
+- *  Copyright 2013-2023 NXP
++ *  Copyright 2013-2024 NXP
+  *
+  *  Licensed under the Apache License, Version 2.0 (the "License");
+  *  you may not use this file except in compliance with the License.
+@@ -431,7 +431,7 @@ void phNxpNciHal_releaseall_cb_data(void) {
+ **
+ *******************************************************************************/
+ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
+-                              uint16_t len) {
++                              uint16_t len, bool isNxpAvcNciPrint) {
+   tNFC_printType printType = getPrintType(pString);
+   if (printType == PRINT_UNKNOWN) return;  // logging is disabled
+   uint32_t i;
+@@ -441,12 +441,22 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
+       snprintf(&print_buffer[i * 2], 3, "%02X", p_data[i]);
+     }
+     switch (printType) {
+-      case PRINT_SEND:
+-        NXPLOG_NCIX_I("len = %3d > %s", len, print_buffer);
++      case PRINT_SEND: {
++        if (isNxpAvcNciPrint) {
++          NXPAVCLOG_NCIX_I("len = %3d > %s", len, print_buffer);
++        } else {
++          NXPLOG_NCIX_I("len = %3d > %s", len, print_buffer);
++        }
+         break;
+-      case PRINT_RECV:
+-        NXPLOG_NCIR_I("len = %3d > %s", len, print_buffer);
++      }
++      case PRINT_RECV: {
++        if (isNxpAvcNciPrint) {
++          NXPAVCLOG_NCIR_I("len = %3d > %s", len, print_buffer);
++        } else {
++          NXPLOG_NCIR_I("len = %3d > %s", len, print_buffer);
++        }
+         break;
++      }
+       case PRINT_DEBUG:
+         NXPLOG_NCIHAL_D(" Debug Info > len = %3d > %s", len, print_buffer);
+         break;
+diff --git a/snxxx/halimpl/utils/phNxpNciHal_utils.h b/snxxx/halimpl/utils/phNxpNciHal_utils.h
+index e7d42efa..4dcf725d 100644
+--- a/snxxx/halimpl/utils/phNxpNciHal_utils.h
++++ b/snxxx/halimpl/utils/phNxpNciHal_utils.h
+@@ -1,6 +1,6 @@
+ /*
+  *
+- *  Copyright (C) 2013-2018, 2021-2022 NXP
++ *  Copyright (C) 2013-2018, 2021-2022, 2024 NXP
+  *
+  *  Licensed under the Apache License, Version 2.0 (the "License");
+  *  you may not use this file except in compliance with the License.
+@@ -97,7 +97,7 @@ NFCSTATUS phNxpNciHal_init_cb_data(phNxpNciHal_Sem_t* pCallbackData,
+ void phNxpNciHal_cleanup_cb_data(phNxpNciHal_Sem_t* pCallbackData);
+ void phNxpNciHal_releaseall_cb_data(void);
+ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
+-                              uint16_t len);
++                              uint16_t len, bool isNxpAvcNciPrint = false);
+ void phNxpNciHal_emergency_recovery(uint8_t status);
+ tNFC_printType getPrintType(const char* pString);
+ 
+-- 
+2.47.0
+

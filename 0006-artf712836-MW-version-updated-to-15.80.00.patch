@@ -1,0 +1,26 @@
+From f6b2b11b2d5a316fa11b74b7fd6604e25d596879 Mon Sep 17 00:00:00 2001
+From: nxf77715 <shrivatsa.hande@nxp.com>
+Date: Tue, 10 Sep 2024 01:07:46 +0530
+Subject: [PATCH 06/18] [artf712836] MW version updated to 15.80.00
+
+Change-Id: Ibdda3175b940ef9cd26f05059e86440174ff80a0
+---
+ snxxx/halimpl/hal/phNxpNciHal_ext.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/snxxx/halimpl/hal/phNxpNciHal_ext.cc b/snxxx/halimpl/hal/phNxpNciHal_ext.cc
+index bf0688f4..a9113352 100644
+--- a/snxxx/halimpl/hal/phNxpNciHal_ext.cc
++++ b/snxxx/halimpl/hal/phNxpNciHal_ext.cc
+@@ -41,7 +41,7 @@
+ #define NXP_EN_SN300U 1
+ #define NXP_EN_SN330U 1
+ #define NFC_NXP_MW_ANDROID_VER (15U)  /* Android version used by NFC MW */
+-#define NFC_NXP_MW_VERSION_MAJ (0x0B) /* MW Major Version */
++#define NFC_NXP_MW_VERSION_MAJ (0x80) /* MW Major Version */
+ #define NFC_NXP_MW_VERSION_MIN (0x00) /* MW Minor Version */
+ #define NFC_NXP_MW_CUSTOMER_ID (0x00) /* MW Customer Id */
+ #define NFC_NXP_MW_RC_VERSION (0x00)  /* MW RC Version */
+-- 
+2.47.0
+

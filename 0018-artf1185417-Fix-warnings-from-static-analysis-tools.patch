@@ -1,0 +1,27 @@
+From 796093ef8d35101bc13da9558862c8f37c213242 Mon Sep 17 00:00:00 2001
+From: "suryaprakash.konduru" <suryaprakash.konduru@nxp.com>
+Date: Mon, 30 Sep 2024 20:09:27 +0530
+Subject: [PATCH 18/18] [artf1185417] Fix warnings from static analysis tools
+
+'timestamp' is copied in a call to copy assignment 'operator =',
+when it could be moved instead.
+---
+ snxxx/halimpl/observe_mode/ReaderPollConfigParser.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/snxxx/halimpl/observe_mode/ReaderPollConfigParser.cc b/snxxx/halimpl/observe_mode/ReaderPollConfigParser.cc
+index bd7bfc79..5ad42ffe 100644
+--- a/snxxx/halimpl/observe_mode/ReaderPollConfigParser.cc
++++ b/snxxx/halimpl/observe_mode/ReaderPollConfigParser.cc
+@@ -278,7 +278,7 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
+       case CMA_DATA_TRIGGER_TYPE: {
+         readExtraBytesForUnknownEvent = true;
+         extraByteLength = p_event[INDEX_OF_CMA_EVT_DATA];
+-        unknownEventTimeStamp = timestamp;
++        unknownEventTimeStamp = std::move(timestamp);
+         break;
+       }
+       default:
+-- 
+2.47.0
+
