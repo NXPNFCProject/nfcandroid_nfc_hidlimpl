@@ -201,6 +201,11 @@ public class NfcOperations {
             NxpNfcLogger.d(TAG, "onRfFieldActivated: " + isActivated);
         }
 
+        @Override
+        public void onSeListenActivated(boolean isActivated) {
+            NxpNfcLogger.d(TAG, "onSeListenActivated: " + isActivated);
+        }
+
     };
 
     ControllerAlwaysOnListener mControllerAlwaysOnListener = new ControllerAlwaysOnListener() {
