@@ -201,6 +201,11 @@ public class NfcOperations {
         }
 
         @Override
+        public void onSeListenActivated(boolean isActivated) {
+            NxpNfcLogger.d(TAG, "onSeListenActivated: " + isActivated);
+        }
+
+        @Override
         public void onStateUpdated(int state){
         }
         @Override
