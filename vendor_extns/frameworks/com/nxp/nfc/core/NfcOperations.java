@@ -144,9 +144,10 @@ public class NfcOperations {
      * @return None
      */
     public void enableDiscovery() {
-        NxpNfcLogger.d(TAG, "enableDiscovery");
+        NxpNfcLogger.d(TAG, "enableDiscovery With Keep READER|LISTEN");
         mDisCountDownLatch = new CountDownLatch(1);
-        setDiscoveryTech(FLAG_USE_ALL_TECH, FLAG_USE_ALL_TECH);
+        setDiscoveryTech(NfcAdapter.FLAG_READER_KEEP | FLAG_USE_ALL_TECH,
+                            NfcAdapter.FLAG_LISTEN_KEEP | FLAG_USE_ALL_TECH);
         try {
             mDisCountDownLatch.await(NxpNfcConstants.SEND_RAW_WAIT_TIME_OUT_VAL,
                             TimeUnit.MILLISECONDS);
