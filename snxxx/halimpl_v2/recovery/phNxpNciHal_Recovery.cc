@@ -553,6 +553,7 @@ static void phnxpNciHal_partialClose(void) {
     msg.eMsgType = NCI_HAL_CLOSE_CPLT_MSG;
     msg.pMsgData = NULL;
     msg.Size = 0;
+    memset(msg.data, 0x00, (sizeof(msg.data) / sizeof(msg.data[0])));
     phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &msg);
     /* Abort any pending read and write */
     phTmlNfc_ReadAbort();
