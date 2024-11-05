@@ -62,7 +62,7 @@
 /*
  * Value indicates to NFCC recovery from vbat low.
  */
-#define PH_TMNFC_VBAT_LOW_ERROR (-ENOTCONN)
+#define PH_TMNFC_VBAT_LOW_ERROR (-EREMOTEIO)
 /*
 ***************************Globals,Structure and Enumeration ******************
 */
