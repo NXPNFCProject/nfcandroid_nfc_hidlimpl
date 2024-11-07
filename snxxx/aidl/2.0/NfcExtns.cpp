@@ -70,8 +70,8 @@ void NfcExtns::getConfig(NfcConfig& config) {
   }
   if (GetNxpByteArrayValue(NAME_OFF_HOST_SIM_PIPE_IDS, (char*)buffer.data(),
                            buffer.size(), &retlen)) {
-    config.offHostSIMPipeIds.resize(retlen);
-    for (long i = 0; i < retlen; i++) config.offHostSIMPipeIds[i] = buffer[i];
+    config.offHostSimPipeIds.resize(retlen);
+    for (long i = 0; i < retlen; i++) config.offHostSimPipeIds[i] = buffer[i];
   }
   if (GetNxpNumValue(NAME_DEFAULT_ISODEP_ROUTE, &num, sizeof(num))) {
     config.defaultIsoDepRoute = (uint8_t)num;
