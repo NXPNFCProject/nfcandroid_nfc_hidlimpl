@@ -16,9 +16,10 @@
 
 package com.nxp.nfc;
 
-import android.app.Activity;
 import android.nfc.NfcAdapter;
+
 import com.nxp.nfc.vendor.mpos.MposHandler;
+
 import java.io.IOException;
 
 /**
@@ -40,11 +41,10 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     /**
      * @brief private constructor to create the instance of {@link NxpNfcAdapter}
      * @param nfcAdapter
-     * @param activity
      */
-    private NxpNfcAdapter(NfcAdapter nfcAdapter, Activity activity) {
+    private NxpNfcAdapter(NfcAdapter nfcAdapter) {
         mNfcAdapter = nfcAdapter;
-        mMposHandler = new MposHandler(nfcAdapter, activity);
+        mMposHandler = new MposHandler(nfcAdapter);
     }
 
     /**
@@ -52,27 +52,32 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
      * or throws UnsupportedOperationException nfcAdapter is null.
      *
      * @param nfcAdapter
-     * @param activity
      * @return {@link NxpNfcAdapter} instance
      */
-    public static synchronized NxpNfcAdapter getNxpNfcAdapter(NfcAdapter nfcAdapter,
-            Activity activity) {
+    public static synchronized NxpNfcAdapter getNxpNfcAdapter(NfcAdapter nfcAdapter) {
         if (sNxpNfcAdapter == null) {
             if (nfcAdapter == null) {
                 NxpNfcLogger.e(TAG, "nfcAdapter is null");
                 throw new UnsupportedOperationException();
             }
-            sNxpNfcAdapter = new NxpNfcAdapter(nfcAdapter, activity);
+            sNxpNfcAdapter = new NxpNfcAdapter(nfcAdapter);
         }
         return sNxpNfcAdapter;
     }
 
     /**
      * @brief getter for accessing {@link INxpNfcAdapter}
+     * make sure to call {@link #getNxpNfcAdapter()} before calling this
+     * throws UnsupportedOperationException {@link #sNxpNfcAdapter} is null.
      * @return {@link INxpNfcAdapter} instance
      */
-    public INxpNfcAdapter getNxpNfcAdapterInterface() {
-        return ((INxpNfcAdapter) this);
+    public static INxpNfcAdapter getNxpNfcAdapterInterface() {
+        if (sNxpNfcAdapter == null) {
+            throw new UnsupportedOperationException(
+                "You need a reference from NxpNfcAdapter to use the "
+                + " NXP NFC APIs");
+        }
+        return ((INxpNfcAdapter) sNxpNfcAdapter);
     }
 
     /**

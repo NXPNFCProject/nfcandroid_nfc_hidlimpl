@@ -16,7 +16,6 @@
 
 package com.nxp.nfc.core;
 
-import android.app.Activity;
 import android.nfc.NfcAdapter;
 import android.nfc.NfcAdapter.ControllerAlwaysOnListener;
 import android.nfc.NfcOemExtension;
@@ -28,6 +27,7 @@ import com.nxp.nfc.NxpNfcLogger;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
  /**
  * @class NfcOperations
  * @brief A wrapper class for Nfc functionality.
@@ -40,7 +40,10 @@ public class NfcOperations {
 
     private static NfcOperations sNfcOperations = null;
 
-    private Activity mActivity;
+    private int PAUSE_POLLING_INDEFINITELY = 0;
+
+    private static final int FLAG_USE_ALL_TECH = 0xff;
+
     private NfcAdapter mNfcAdapter;
     private NfcOemExtension mNfcOemExtension;
 
@@ -72,11 +75,9 @@ public class NfcOperations {
     /**
      * @brief private constructor to create singleton object
      * @param nfcAdapter
-     * @param activity
      */
-    private NfcOperations(NfcAdapter nfcAdapter, Activity activity) {
+    private NfcOperations(NfcAdapter nfcAdapter) {
         this.mNfcAdapter = nfcAdapter;
-        this.mActivity = activity;
         mNfcOemExtension = mNfcAdapter.getNfcOemExtension();
         mNfcAdapter.registerControllerAlwaysOnListener(Executors.newSingleThreadExecutor(),
                             mControllerAlwaysOnListener);
@@ -86,14 +87,13 @@ public class NfcOperations {
 
     /**
      * @brief public function to get the instance of
-     * {@link #NfcOperations(NfcAdapter, Activity)}
+     * {@link #NfcOperations(NfcAdapter)}
      * @param nfcAdapter
-     * @param activity
-     * @return instance of {@link #NfcOperations(NfcAdapter, Activity)}
+     * @return instance of {@link #NfcOperations(NfcAdapter)}
      */
-    public static NfcOperations getInstance(NfcAdapter nfcAdapter, Activity activity) {
+    public static NfcOperations getInstance(NfcAdapter nfcAdapter) {
         if (sNfcOperations == null) {
-            sNfcOperations = new NfcOperations(nfcAdapter, activity);
+            sNfcOperations = new NfcOperations(nfcAdapter);
         }
         return sNfcOperations;
     }
@@ -129,8 +129,7 @@ public class NfcOperations {
     public void disableDiscovery() {
         NxpNfcLogger.d(TAG, "disableDiscovery");
         mDisCountDownLatch = new CountDownLatch(1);
-        mNfcAdapter.setDiscoveryTechnology(mActivity,
-                NfcAdapter.FLAG_READER_DISABLE, NfcAdapter.FLAG_LISTEN_DISABLE);
+        mNfcOemExtension.pausePolling(PAUSE_POLLING_INDEFINITELY);
         try {
             mDisCountDownLatch.await(NxpNfcConstants.SEND_RAW_WAIT_TIME_OUT_VAL,
                             TimeUnit.MILLISECONDS);
@@ -145,14 +144,15 @@ public class NfcOperations {
      * @return None
      */
     public void enableDiscovery() {
-        NxpNfcLogger.d(TAG, "enableDiscovery");
+        NxpNfcLogger.d(TAG, "enableDiscovery With Keep READER|LISTEN");
         mDisCountDownLatch = new CountDownLatch(1);
-        mNfcAdapter.resetDiscoveryTechnology(mActivity);
+        setDiscoveryTech(NfcAdapter.FLAG_READER_KEEP | FLAG_USE_ALL_TECH,
+                            NfcAdapter.FLAG_LISTEN_KEEP | FLAG_USE_ALL_TECH);
         try {
             mDisCountDownLatch.await(NxpNfcConstants.SEND_RAW_WAIT_TIME_OUT_VAL,
                             TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
-            NxpNfcLogger.e(TAG, "Error disabling discovery");
+            NxpNfcLogger.e(TAG, "Error enabling discovery");
         }
     }
 
@@ -165,8 +165,8 @@ public class NfcOperations {
     public void setDiscoveryTech(int pollTechnology, int listenTechnology) {
       NxpNfcLogger.d(TAG, "setDiscoveryTech");
       mDisCountDownLatch = new CountDownLatch(1);
-      mNfcAdapter.setDiscoveryTechnology(mActivity, pollTechnology,
-                                         listenTechnology);
+      mNfcAdapter.setDiscoveryTechnology(null, pollTechnology | NfcAdapter.FLAG_SET_DEFAULT_TECH,
+                                         listenTechnology | NfcAdapter.FLAG_SET_DEFAULT_TECH);
       try {
         mDisCountDownLatch.await(NxpNfcConstants.SEND_RAW_WAIT_TIME_OUT_VAL,
                                  TimeUnit.MILLISECONDS);
@@ -205,7 +205,49 @@ public class NfcOperations {
         public void onSeListenActivated(boolean isActivated) {
             NxpNfcLogger.d(TAG, "onSeListenActivated: " + isActivated);
         }
-
+		
+        @Override
+        public void onStateUpdated(int state){
+        }
+        @Override
+        public void onApplyRouting(Consumer<Boolean> isSkipped){
+        }
+        @Override
+        public void onNdefRead(Consumer<Boolean> isSkipped){
+        }
+        @Override
+        public void onEnable(Consumer<Boolean> isAllowed){
+        }
+        @Override
+        public void onDisable(Consumer<Boolean> isAllowed){
+        }
+        @Override
+        public void onBootStarted(){
+        }
+        @Override
+        public void onEnableStarted(){
+        }
+        @Override
+        public void onDisableStarted(){
+        }
+        @Override
+        public void onBootFinished(int status){
+        }
+        @Override
+        public void onEnableFinished(int status){
+        }
+        @Override
+        public void onDisableFinished(int status){
+        }
+        @Override
+        public void onTagDispatch(Consumer<Boolean> isSkipped){
+        }
+        @Override
+        public void onRoutingChanged(){
+        }
+        @Override
+        public void onHceEventReceived(int action){
+        }
     };
 
     ControllerAlwaysOnListener mControllerAlwaysOnListener = new ControllerAlwaysOnListener() {
