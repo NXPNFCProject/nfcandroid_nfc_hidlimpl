@@ -20,6 +20,12 @@ import android.nfc.NfcAdapter;
 import android.nfc.NfcAdapter.ControllerAlwaysOnListener;
 import android.nfc.NfcOemExtension;
 import android.nfc.Tag;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.nfc.cardemulation.ApduServiceInfo;
+import android.nfc.NdefMessage;
+
+import android.os.Bundle;
 
 import com.nxp.nfc.NxpNfcConstants;
 import com.nxp.nfc.NxpNfcLogger;
@@ -28,6 +34,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.List;
+
  /**
  * @class NfcOperations
  * @brief A wrapper class for Nfc functionality.
@@ -109,7 +117,7 @@ public class NfcOperations {
         NxpNfcLogger.d(TAG, "setControllerAlwaysOn");
         if (value) {
             mControllerAlwaysOnLatch = new CountDownLatch(1);
-            mNfcOemExtension.setControllerAlwaysOn(NfcOemExtension.ENABLE_TRANSPARENT);
+            mNfcOemExtension.setControllerAlwaysOnMode(NfcOemExtension.ENABLE_TRANSPARENT);
             try {
                 mControllerAlwaysOnLatch.await(NxpNfcConstants.SEND_RAW_WAIT_TIME_OUT_VAL,
                                             TimeUnit.MILLISECONDS);
@@ -117,7 +125,7 @@ public class NfcOperations {
                 NxpNfcLogger.e(TAG, "Error in setControllerAlwaysOn");
             }
         } else {
-            mNfcOemExtension.setControllerAlwaysOn(NfcOemExtension.DISABLE);
+            mNfcOemExtension.setControllerAlwaysOnMode(NfcOemExtension.DISABLE);
         }
     }
 
@@ -190,6 +198,27 @@ public class NfcOperations {
         }
 
         @Override
+        public void onGetOemAppSearchIntent(List<String> packages,
+                                    Consumer<Intent> intentConsumer) {
+        }
+
+        @Override
+        public void onNdefMessage(Tag tag, NdefMessage message,
+                           Consumer<Boolean> hasOemExecutableContent) {
+        }
+
+        @Override
+        public void onLaunchHceAppChooserActivity(String selectedAid,
+                                           List<ApduServiceInfo> services,
+                                           ComponentName failedComponent,
+                                          String category) {
+        }
+
+        @Override
+        public void onLaunchHceTapAgainDialog(ApduServiceInfo service, String category) {
+        }
+
+        @Override
         public void onCardEmulationActivated(boolean isActivated) {
             NfcOperations.this.mIsCardEmulationActivated = isActivated;
             NxpNfcLogger.d(TAG, "onCardEmulationActivated: " + isActivated);
@@ -201,11 +230,6 @@ public class NfcOperations {
             NxpNfcLogger.d(TAG, "onRfFieldActivated: " + isActivated);
         }
 
-        @Override
-        public void onSeListenActivated(boolean isActivated) {
-            NxpNfcLogger.d(TAG, "onSeListenActivated: " + isActivated);
-        }
-		
         @Override
         public void onStateUpdated(int state){
         }
@@ -244,6 +268,10 @@ public class NfcOperations {
         }
         @Override
         public void onRoutingChanged(){
+        }
+        @Override
+        public void onReaderOptionChanged(boolean enabled){
+            NxpNfcLogger.d(TAG, "onReaderOptionChanged: " + enabled);
         }
         @Override
         public void onHceEventReceived(int action){
