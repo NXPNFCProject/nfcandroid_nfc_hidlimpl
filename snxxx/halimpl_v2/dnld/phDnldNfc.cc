@@ -1199,7 +1199,7 @@ void phDnldNfc_SetDlRspTimeout(uint16_t timeout) {
 *******************************************************************************/
 void phDnldNfc_SetI2CFragmentLength() {
   if (NULL != gpphDnldContext) {
-    if (IS_CHIP_TYPE_EQ(sn300u)) {
+    if (IS_CHIP_TYPE_EQ(sn300u) && IS_4K_SUPPORT) {
       gpphDnldContext->nxp_i2c_fragment_len = PH_TMLNFC_FRGMENT_SIZE_SN300;
     } else if (IS_CHIP_TYPE_GE(sn100u)) {
       gpphDnldContext->nxp_i2c_fragment_len = PH_TMLNFC_FRGMENT_SIZE_SNXXX;

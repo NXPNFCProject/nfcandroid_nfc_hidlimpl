@@ -125,6 +125,7 @@ typedef struct {
   uint8_t _NFCEE_REMOVED_NTF_RECOVERY : 1;
   uint8_t _NFCC_FORCE_FW_DOWNLOAD : 1;
   uint8_t _NFCC_DWNLD_MODE : 1;
+  uint8_t _NFCC_4K_FW_SUPPORT : 1;
 } tNfc_nfccFeatureList;
 
 typedef struct {
@@ -147,6 +148,10 @@ extern tNfc_featureList nfcFL;
 #define IS_CHIP_TYPE_LE(cType) (nfcFL.chipType <= cType)
 #define IS_CHIP_TYPE_L(cType) (nfcFL.chipType < cType)
 #define IS_CHIP_TYPE_NE(cType) (nfcFL.chipType != cType)
+#define IS_4K_SUPPORT (nfcFL.nfccFL._NFCC_4K_FW_SUPPORT == true)
+
+#define CONFIGURE_4K_SUPPORT(value) \
+  { nfcFL.nfccFL._NFCC_4K_FW_SUPPORT = value; }
 
 #define CONFIGURE_FEATURELIST(chipType)               \
   {                                                   \
@@ -228,6 +233,7 @@ extern tNfc_featureList nfcFL;
     nfcFL._PHDNLDNFC_USERDATA_EEPROM_LEN = 0x0C80U;                    \
     nfcFL._FW_MOBILE_MAJOR_NUMBER = FW_MOBILE_MAJOR_NUMBER_PN48AD;     \
     nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_VEN_RESET;         \
+    nfcFL.nfccFL._NFCC_4K_FW_SUPPORT = false;                          \
     switch (chipType) {                                                \
       case pn557:                                                      \
         nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;          \
