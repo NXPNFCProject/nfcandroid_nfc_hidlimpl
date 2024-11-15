@@ -11,13 +11,16 @@
  ** See the License for the specific language governing permissions and
  ** limitations under the License.
  **
- ** Copyright 2023 NXP
+ ** Copyright 2023-2024 NXP
  **
  */
 #pragma once
 
 #include <fstream>
 #include <mutex>
+
+#define TEMPERATURE_MODULE_ID_ESE 0x10
+#define TEMPERATURE_LOW 0x02
 
 using namespace std;
 
