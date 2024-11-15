@@ -201,6 +201,7 @@ cc_library_shared {
         "halimpl_v2/nfc_comm/NfcWriter.cc",
         "halimpl_v2/hal/phNxpNciHal_WorkerThread.cc",
         "halimpl_v2/nfc_extn/NfcExtension.cc",
+        "halimpl_v2/hal/phNxpNciHal_WiredSeIface.cc",
     ],
 
     local_include_dirs: [
