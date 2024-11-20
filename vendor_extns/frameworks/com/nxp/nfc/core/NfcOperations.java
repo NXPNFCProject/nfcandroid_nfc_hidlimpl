@@ -198,6 +198,10 @@ public class NfcOperations {
         }
 
         @Override
+        public void onEeListenActivated(boolean isActivated){
+        }
+
+        @Override
         public void onGetOemAppSearchIntent(List<String> packages,
                                     Consumer<Intent> intentConsumer) {
         }
