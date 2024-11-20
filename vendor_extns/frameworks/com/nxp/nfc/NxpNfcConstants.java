@@ -30,6 +30,6 @@ public interface NxpNfcConstants {
     int RF_UNEXPECTED_DATA_ERR_CODE  = 0xB3;
 
     int NFC_NCI_PROP_GID = 0x2F;
-    int NXP_NFC_PROP_OID = 0x3E;
+    int NXP_NFC_PROP_OID = 0x70;
 
 }
