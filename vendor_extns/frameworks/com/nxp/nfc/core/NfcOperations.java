@@ -24,8 +24,10 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.nfc.cardemulation.ApduServiceInfo;
 import android.nfc.NdefMessage;
+import android.nfc.OemLogItems;
 
 import android.os.Bundle;
+import android.os.ResultReceiver;
 
 import com.nxp.nfc.NxpNfcConstants;
 import com.nxp.nfc.NxpNfcLogger;
@@ -186,8 +188,81 @@ public class NfcOperations {
     private NfcOemExtension.Callback mOemExtensionCallback = new NfcOemExtension.Callback() {
 
         @Override
-        public void onTagConnected(boolean connected, Tag tag) {
+        public void onTagConnected(boolean connected) {
             NxpNfcLogger.d(TAG, "onTagConnected: " + connected);
+        }
+
+        @Override
+        public void onStateUpdated(int state){
+        }
+
+        @Override
+        public void onApplyRouting(Consumer<Boolean> isSkipped){
+        }
+
+        @Override
+        public void onNdefRead(Consumer<Boolean> isSkipped){
+        }
+
+        @Override
+        public void onEnableRequested(Consumer<Boolean> isAllowed){
+        }
+
+        @Override
+        public void onDisableRequested(Consumer<Boolean> isAllowed){
+        }
+
+        @Override
+        public void onBootStarted(){
+        }
+
+        @Override
+        public void onEnableStarted(){
+        }
+
+        @Override
+        public void onDisableStarted(){
+        }
+
+        @Override
+        public void onBootFinished(int status){
+        }
+
+        @Override
+        public void onEnableFinished(int status){
+        }
+
+        @Override
+        public void onDisableFinished(int status){
+        }
+
+        @Override
+        public void onTagDispatch(Consumer<Boolean> isSkipped){
+        }
+
+        @Override
+        public void onRoutingChanged(){
+        }
+
+        @Override
+        public void onHceEventReceived(int action){
+        }
+
+        @Override
+        public void onReaderOptionChanged(boolean enabled){
+            NxpNfcLogger.d(TAG, "onReaderOptionChanged: " + enabled);
+        }
+
+        @Override
+        public void onCardEmulationActivated(boolean isActivated) {
+            NfcOperations.this.mIsCardEmulationActivated = isActivated;
+            NxpNfcLogger.d(TAG, "onCardEmulationActivated: " + isActivated);
+        }
+
+        @Override
+        public void onRfFieldActivated(boolean isActivated) {
+            NfcOperations.this.mIsRfFieldActivated = isActivated;
+            NxpNfcLogger.d(TAG, "onRfFieldActivated: " + isActivated);
         }
 
         @Override
@@ -223,62 +298,11 @@ public class NfcOperations {
         }
 
         @Override
-        public void onCardEmulationActivated(boolean isActivated) {
-            NfcOperations.this.mIsCardEmulationActivated = isActivated;
-            NxpNfcLogger.d(TAG, "onCardEmulationActivated: " + isActivated);
+        public void onRoutingTableFull(){
         }
 
         @Override
-        public void onRfFieldActivated(boolean isActivated) {
-            NfcOperations.this.mIsRfFieldActivated = isActivated;
-            NxpNfcLogger.d(TAG, "onRfFieldActivated: " + isActivated);
-        }
-
-        @Override
-        public void onStateUpdated(int state){
-        }
-        @Override
-        public void onApplyRouting(Consumer<Boolean> isSkipped){
-        }
-        @Override
-        public void onNdefRead(Consumer<Boolean> isSkipped){
-        }
-        @Override
-        public void onEnable(Consumer<Boolean> isAllowed){
-        }
-        @Override
-        public void onDisable(Consumer<Boolean> isAllowed){
-        }
-        @Override
-        public void onBootStarted(){
-        }
-        @Override
-        public void onEnableStarted(){
-        }
-        @Override
-        public void onDisableStarted(){
-        }
-        @Override
-        public void onBootFinished(int status){
-        }
-        @Override
-        public void onEnableFinished(int status){
-        }
-        @Override
-        public void onDisableFinished(int status){
-        }
-        @Override
-        public void onTagDispatch(Consumer<Boolean> isSkipped){
-        }
-        @Override
-        public void onRoutingChanged(){
-        }
-        @Override
-        public void onReaderOptionChanged(boolean enabled){
-            NxpNfcLogger.d(TAG, "onReaderOptionChanged: " + enabled);
-        }
-        @Override
-        public void onHceEventReceived(int action){
+        public void onLogEventNotified(OemLogItems item){
         }
     };
 
