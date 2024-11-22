@@ -776,6 +776,7 @@ bool phNxpNciHal_isVendorSpecificCommand(uint16_t data_len,
                                          const uint8_t* p_data) {
   if (data_len > 3 && p_data[NCI_GID_INDEX] == (NCI_MT_CMD | NCI_GID_PROP) &&
       (p_data[NCI_OID_INDEX] == NCI_PROP_NTF_ANDROID_OID ||
+       p_data[NCI_OID_INDEX] == NCI_ROW_MAINLINE_OID ||
        p_data[NCI_OID_INDEX] == NCI_OEM_MAINLINE_OID)) {
     return true;
   }
@@ -806,6 +807,16 @@ int phNxpNciHal_handleVendorSpecificCommand(uint16_t data_len,
              p_data[NCI_MSG_INDEX_FOR_FEATURE] == NCI_ANDROID_GET_CAPABILITY) {
     // 2F 0C 01 00 => GetCapability Command length is 4 Bytes
     return handleGetCapability(data_len, p_data);
+  } else if (data_len >= 4 && (p_data[NCI_OID_INDEX] == NCI_ROW_MAINLINE_OID ||
+                               p_data[NCI_OID_INDEX] == NCI_OEM_MAINLINE_OID)) {
+    bool isExtnLibHandled = phNxpExtn_HandleNciMsg(data_len, p_data);
+    NXPLOG_NCIHAL_D("isExtnLibHandled:%d", isExtnLibHandled);
+    if (!isExtnLibHandled) {
+      // TODO: send UN_SUPPORTED_FEATURE error code in this case
+      return 0;  // Zero bytes written to controller, as it is not handled by
+                 // extension library.
+    }
+    return data_len;
   } else {
     return phNxpNciHal_write_internal(data_len, p_data);
   }
