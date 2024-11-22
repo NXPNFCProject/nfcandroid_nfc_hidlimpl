@@ -16,10 +16,11 @@
 
 package com.nxp.nfc;
 
+import android.app.Activity;
 import android.nfc.NfcAdapter;
-
+import android.nfc.Tag;
 import com.nxp.nfc.vendor.mpos.MposHandler;
-
+import com.nxp.nfc.vendor.qtag.QTagHandler;
 import java.io.IOException;
 
 /**
@@ -37,6 +38,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
 
     private NfcAdapter mNfcAdapter;
     private MposHandler mMposHandler;
+    private QTagHandler mQTagHandler;
 
     /**
      * @brief private constructor to create the instance of {@link NxpNfcAdapter}
@@ -45,6 +47,11 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     private NxpNfcAdapter(NfcAdapter nfcAdapter) {
         mNfcAdapter = nfcAdapter;
         mMposHandler = new MposHandler(nfcAdapter);
+        mQTagHandler = new QTagHandler(nfcAdapter);
+    }
+
+    public interface NxpReaderCallback {
+      void onNxpTagDiscovered(Tag tag, boolean isNxpTagDetected);
     }
 
     /**
@@ -96,5 +103,15 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     @Override
     public boolean mPOSGetReaderMode(String pkg) throws IOException {
       return mMposHandler.mPOSGetReaderMode(pkg);
+    }
+
+    /**
+     * @brief To be called to enable QTag
+     * @return {@link INxpNfcAdapter.enableQTag} instance
+     */
+    @Override
+    public int enableQTag(Activity activity, NxpReaderCallback mQTagCallback,
+                          int mode, int pollTech) throws IOException {
+      return mQTagHandler.enableQTag(activity, mode, mQTagCallback, pollTech);
     }
 }

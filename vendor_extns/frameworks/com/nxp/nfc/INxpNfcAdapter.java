@@ -16,6 +16,8 @@
 
 package com.nxp.nfc;
 
+import android.app.Activity;
+import com.nxp.nfc.NxpNfcAdapter.NxpReaderCallback;
 import java.io.IOException;
 
 /**
@@ -53,4 +55,27 @@ public interface INxpNfcAdapter {
    * @throws IOException If a failure occurred during reader mode set or reset
    */
   public boolean mPOSGetReaderMode(String pkg) throws IOException;
+
+  /**
+   * This is the API to be called to enable or disable QTag RF mode.
+   * <li>This api shall be called only when Nfcservice is enabled.
+   * <li>This api shall be called only when there are no NFC transactions
+   * ongoing.
+   * <li>Limit the NFC controller to reader mode while this Activity is in the
+   * foreground.
+   * </ul>
+   * @param  activity activity the Activity that requests the adapter to be in
+   *     reader mode.
+   * @param mQTagCallback the callback to be called when a tag is discovered
+   * @param  mode to ENABLE_QTAG_ONLY_MODE.
+   *                 APPEND_QTAG_MODE with input pollTech.
+   *                 DISABLE_QTAG_MODE & reset to default discovery.
+   * @param pollTech to append QPoll in reader mode.
+   * @return whether the update of state is
+   *          QTag_STATUS_SUCCESS,
+   *          QTag_STATUS_FAILED,
+   * @throws IOException If a failure occurred during QTag RF mode set or reset
+   */
+  public int enableQTag(Activity activity, NxpReaderCallback mQTagCallback,
+                        int mode, int pollTech) throws IOException;
 }
