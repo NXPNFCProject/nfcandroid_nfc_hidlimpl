@@ -2616,6 +2616,56 @@ void phNxpNciHal_close_complete(NFCSTATUS status) {
 }
 
 /******************************************************************************
+ * Function         phNxpNciHal_clean_resources
+ *
+ * Description      This function clean the resources.
+ *
+ * Returns          void.
+ *
+ ******************************************************************************/
+void phNxpNciHal_clean_resources() {
+  phNxpNciHal_deinitializeRegRfFwDnld();
+
+  if (gPowerTrackerHandle.stop != NULL) {
+    gPowerTrackerHandle.stop();
+  }
+  phNxpNciHal_WiredSeDispatchEvent(&gWiredSeHandle, NFC_STATE_CHANGE,
+                                   (WiredSeEvtData)NfcState::NFC_OFF);
+
+  sem_destroy(&sem_reset_ntf_received);
+  sem_destroy(&nxpncihal_ctrl.syncSpiNfc);
+
+  if (NULL != gpphTmlNfc_Context->pDevHandle) {
+    phNxpNciHal_close_complete(NFCSTATUS_SUCCESS);
+    /* Abort any pending read and write */
+    NFCSTATUS status = phTmlNfc_ReadAbort();
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_TML_E("phTmlNfc_ReadAbort Failed");
+    }
+    phOsalNfc_Timer_Cleanup();
+
+    status = phTmlNfc_Shutdown();
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_TML_E("phTmlNfc_Shutdown Failed");
+    }
+
+    PhNxpEventLogger::GetInstance().Finalize();
+    phNxpTempMgr::GetInstance().Reset();
+    phTmlNfc_CleanUp();
+
+    phDal4Nfc_msgrelease(nxpncihal_ctrl.gDrvCfg.nClientId);
+
+    memset(&nxpncihal_ctrl, 0x00, sizeof(nxpncihal_ctrl));
+  }
+
+  phNxpNciHal_cleanup_monitor();
+  write_unlocked_status = NFCSTATUS_SUCCESS;
+  phNxpNciHal_release_info();
+  /* reset config cache */
+  resetNxpConfig();
+}
+
+/******************************************************************************
  * Function         phNxpNciHal_configDiscShutdown
  *
  * Description      Enable the CE and VEN config during shutdown.
@@ -2665,8 +2715,14 @@ int phNxpNciHal_configDiscShutdown(void) {
   if (IS_CHIP_TYPE_GE(sn220u)) {
     if (phNxpNciHal_isULPDetSupported() &&
         phNxpNciHal_getULPDetFlag() == false) {
+      if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
+        NXPLOG_NCIHAL_D("phNxpNciHal_close is already closed, ignoring close");
+        return NFCSTATUS_FAILED;
+      }
       NXPLOG_NCIHAL_D("Ulpdet supported");
       status = phNxpNciHal_propConfULPDetMode(true);
+      phNxpNciHal_clean_resources();
+      CONCURRENCY_UNLOCK();
       return status;
     }
   }
