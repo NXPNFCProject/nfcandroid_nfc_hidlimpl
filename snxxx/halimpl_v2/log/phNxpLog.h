@@ -23,6 +23,7 @@ typedef struct nci_log_level {
   uint8_t global_log_level;
   uint8_t extns_log_level;
   uint8_t hal_log_level;
+  uint8_t avc_log_level;
   uint8_t dnld_log_level;
   uint8_t tml_log_level;
   uint8_t ncix_log_level;
@@ -46,6 +47,7 @@ extern bool nfc_debug_enabled;
 /* ####################### Set the log module name in .conf file
  * ########################## */
 #define NAME_NXPLOG_NCIHAL_LOGLEVEL "NXPLOG_NCIHAL_LOGLEVEL"
+#define NAME_NXPLOG_AVCNCI_LOGLEVEL "NXPLOG_AVCNCI_LOGLEVEL"
 #define NAME_NXPLOG_NCIX_LOGLEVEL "NXPLOG_NCIX_LOGLEVEL"
 #define NAME_NXPLOG_NCIR_LOGLEVEL "NXPLOG_NCIR_LOGLEVEL"
 #define NAME_NXPLOG_FWDNLD_LOGLEVEL "NXPLOG_FWDNLD_LOGLEVEL"
@@ -77,6 +79,8 @@ extern const char* NXPLOG_ITEM_EXTNS;  /* Android logging tag for NxpExtns  */
 extern const char* NXPLOG_ITEM_NCIHAL; /* Android logging tag for NxpNciHal */
 extern const char* NXPLOG_ITEM_NCIX;   /* Android logging tag for NxpNciX   */
 extern const char* NXPLOG_ITEM_NCIR;   /* Android logging tag for NxpNciR   */
+extern const char* NXPAVCLOG_ITEM_NCIX; /* Android logging tag for NxpAvcNciX */
+extern const char* NXPAVCLOG_ITEM_NCIR; /* Android logging tag for NxpAvcNciR */
 extern const char* NXPLOG_ITEM_FWDNLD; /* Android logging tag for NxpFwDnld */
 extern const char* NXPLOG_ITEM_TML;    /* Android logging tag for NxpTml    */
 
@@ -227,6 +231,30 @@ extern const char* NXPLOG_ITEM_HCPR; /* Android logging tag for NxpHcpR   */
 #define NXPLOG_NCIR_W(...)
 #define NXPLOG_NCIR_E(...)
 #endif /* Logging APIs used by NCIR module */
+
+/* Logging APIs used by NxpAvcNciX module */
+#if (ENABLE_NCIX_TRACES == TRUE)
+#define NXPAVCLOG_NCIX_I(...)                                      \
+  {                                                                \
+    if ((nfc_debug_enabled) ||                                     \
+        (gLog_level.avc_log_level >= NXPLOG_LOG_INFO_LOGLEVEL))    \
+      LOG_PRI(ANDROID_LOG_INFO, NXPAVCLOG_ITEM_NCIX, __VA_ARGS__); \
+  }
+#else
+#define NXPAVCLOG_NCIX_I(...)
+#endif /* Logging APIs used by AVC Command module */
+
+/* Logging APIs used by NxpAVCNciR module */
+#if (ENABLE_NCIR_TRACES == TRUE)
+#define NXPAVCLOG_NCIR_I(...)                                      \
+  {                                                                \
+    if ((nfc_debug_enabled) ||                                     \
+        (gLog_level.avc_log_level >= NXPLOG_LOG_INFO_LOGLEVEL))    \
+      LOG_PRI(ANDROID_LOG_INFO, NXPAVCLOG_ITEM_NCIR, __VA_ARGS__); \
+  }
+#else
+#define NXPAVCLOG_NCIR_I(...)
+#endif /* Logging APIs used by AVC R module */
 
 /* Logging APIs used by NxpFwDnld module */
 #if (ENABLE_FWDNLD_TRACES == TRUE)

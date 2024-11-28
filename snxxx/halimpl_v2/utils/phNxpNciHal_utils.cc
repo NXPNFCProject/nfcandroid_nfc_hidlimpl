@@ -432,7 +432,7 @@ void phNxpNciHal_releaseall_cb_data(void) {
 **
 *******************************************************************************/
 void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
-                              uint16_t len) {
+                              uint16_t len, bool isNxpAvcNciPrint) {
   tNFC_printType printType = getPrintType(pString);
   if (printType == PRINT_UNKNOWN) return;  // logging is disabled
   uint32_t i;
@@ -442,12 +442,22 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
       snprintf(&print_buffer[i * 2], 3, "%02X", p_data[i]);
     }
     switch (printType) {
-      case PRINT_SEND:
-        NXPLOG_NCIX_I("len = %3d > %s", len, print_buffer);
+      case PRINT_SEND: {
+        if (isNxpAvcNciPrint) {
+          NXPAVCLOG_NCIX_I("len = %3d > %s", len, print_buffer);
+        } else {
+          NXPLOG_NCIX_I("len = %3d > %s", len, print_buffer);
+        }
         break;
-      case PRINT_RECV:
-        NXPLOG_NCIR_I("len = %3d > %s", len, print_buffer);
+      }
+      case PRINT_RECV: {
+        if (isNxpAvcNciPrint) {
+          NXPAVCLOG_NCIR_I("len = %3d > %s", len, print_buffer);
+        } else {
+          NXPLOG_NCIR_I("len = %3d > %s", len, print_buffer);
+        }
         break;
+      }
       case PRINT_DEBUG:
         NXPLOG_NCIHAL_D(" Debug Info > len = %3d > %s", len, print_buffer);
         break;
