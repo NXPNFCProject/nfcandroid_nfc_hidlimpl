@@ -211,6 +211,9 @@ typedef struct phNxpNciHal_Control {
   uint16_t rsp_len;
   uint8_t p_rsp_data[NCI_MAX_DATA_LEN];
 
+  uint16_t vendor_msg_len;
+  uint8_t vendor_msg[NCI_MAX_DATA_LEN];
+
   /* retry count used to force download */
   uint16_t retry_cnt;
   uint8_t read_retry_cnt;
@@ -367,6 +370,7 @@ typedef struct phNxpNciProfile_Control {
 #define HAL_CTRL_GRANTED_MSG 0x418
 #define NCI_HAL_OEM_RSP_NTF_MSG 0x419
 #define NCI_HAL_RX_MSG 0xF01
+#define NCI_HAL_VENDOR_MSG 0xF02
 #define HAL_NFC_FW_UPDATE_STATUS_EVT 0x0A
 
 #define NCIHAL_CMD_CODE_LEN_BYTE_OFFSET (2U)
@@ -498,5 +502,17 @@ void phNxpNciHal_client_data_callback();
  *
  ******************************************************************************/
 bool phNxpNciHal_UpdateRfMiscSettings();
+
+/******************************************************************************
+ * Function         phNxpNciHal_notifyPollingFrame
+ *
+ * Description      Send polling info notification to send to upper layer
+ *
+ * Parameters       p_data - Polling loop info notification
+ *
+ * Returns          void
+ *
+ ******************************************************************************/
+void phNxpNciHal_notifyPollingFrame(uint16_t data_len, uint8_t* p_data);
 
 #endif /* _PHNXPNCIHAL_H_ */

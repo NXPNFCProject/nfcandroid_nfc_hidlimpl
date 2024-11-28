@@ -48,6 +48,7 @@ extern uint8_t write_unlocked_status;
 extern phTmlNfc_Context_t* gpphTmlNfc_Context;
 
 extern WiredSeHandle gWiredSeHandle;
+extern void* RfFwRegionDnld_handle;
 
 /******************************************************************************
  * Function         Default constructor
@@ -86,6 +87,8 @@ int NfcWriter::write(uint16_t data_len, const uint8_t* p_data) {
   if (bEnableMfcExtns && p_data[NCI_GID_INDEX] == 0x00) {
     return NxpMfcReaderInstance.Write(data_len, p_data);
   } else if (phNxpNciHal_isVendorSpecificCommand(data_len, p_data)) {
+    phNxpNciHal_print_packet("SEND", p_data, data_len,
+                             RfFwRegionDnld_handle == NULL);
     return phNxpNciHal_handleVendorSpecificCommand(data_len, p_data);
   } else if (isObserveModeEnabled() &&
              p_data[NCI_GID_INDEX] == NCI_RF_DISC_COMMD_GID &&

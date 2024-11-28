@@ -35,6 +35,7 @@ static vector<uint8_t> uicc2HciParams(0);
 static vector<uint8_t> uiccHciCeParams(0);
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 extern phTmlNfc_Context_t* gpphTmlNfc_Context;
+extern void* RfFwRegionDnld_handle;
 extern NFCSTATUS phNxpNciHal_ext_send_sram_config_to_flash();
 
 /*******************************************************************************
@@ -797,18 +798,14 @@ int phNxpNciHal_handleVendorSpecificCommand(uint16_t data_len,
   } else if (data_len > 4 &&
              p_data[NCI_MSG_INDEX_FOR_FEATURE] == NCI_ANDROID_OBSERVER_MODE) {
     return handleObserveMode(data_len, p_data);
-  } else if (data_len > 4 && p_data[NCI_MSG_INDEX_FOR_FEATURE] ==
-                                 NCI_ANDROID_GET_OBSERVER_MODE_STATUS) {
+  } else if (data_len >= 4 && p_data[NCI_MSG_INDEX_FOR_FEATURE] ==
+                                  NCI_ANDROID_GET_OBSERVER_MODE_STATUS) {
+    // 2F 0C 01 04 => ObserveMode Status Command length is 4 Bytes
     return handleGetObserveModeStatus(data_len, p_data);
-  } else if (data_len >= 4 && p_data[NCI_OID_INDEX] == NCI_OEM_MAINLINE_OID) {
-    bool isExtnLibHandled = phNxpExtn_HandleNciMsg(data_len, p_data);
-    NXPLOG_NCIHAL_D("isExtnLibHandled:%d", isExtnLibHandled);
-    if (!isExtnLibHandled) {
-      // TODO: send UN_SUPPORTED_FEATURE error code in this case
-      return 0;  // Zero bytes written to controller, as it is not handled by
-                 // extension library.
-    }
-    return data_len;
+  } else if (data_len >= 4 &&
+             p_data[NCI_MSG_INDEX_FOR_FEATURE] == NCI_ANDROID_GET_CAPABILITY) {
+    // 2F 0C 01 00 => GetCapability Command length is 4 Bytes
+    return handleGetCapability(data_len, p_data);
   } else {
     return phNxpNciHal_write_internal(data_len, p_data);
   }
@@ -826,19 +823,22 @@ int phNxpNciHal_handleVendorSpecificCommand(uint16_t data_len,
 void phNxpNciHal_vendorSpecificCallback(int oid, int opcode,
                                         vector<uint8_t> data) {
   static phLibNfc_Message_t msg;
-  nxpncihal_ctrl.p_rsp_data[0] = (uint8_t)(NCI_GID_PROP | NCI_MT_RSP);
-  nxpncihal_ctrl.p_rsp_data[1] = oid;
-  nxpncihal_ctrl.p_rsp_data[2] = 1 + (int)data.size();
-  nxpncihal_ctrl.p_rsp_data[3] = opcode;
+  nxpncihal_ctrl.vendor_msg[0] = (uint8_t)(NCI_GID_PROP | NCI_MT_RSP);
+  nxpncihal_ctrl.vendor_msg[1] = oid;
+  nxpncihal_ctrl.vendor_msg[2] = 1 + (int)data.size();
+  nxpncihal_ctrl.vendor_msg[3] = opcode;
   if ((int)data.size() > 0) {
-    memcpy(&nxpncihal_ctrl.p_rsp_data[4], data.data(),
+    memcpy(&nxpncihal_ctrl.vendor_msg[4], data.data(),
            data.size() * sizeof(uint8_t));
   }
-  nxpncihal_ctrl.rsp_len = 4 + (int)data.size();
+  nxpncihal_ctrl.vendor_msg_len = 4 + (int)data.size();
 
-  msg.eMsgType = NCI_HAL_RX_MSG;
+  msg.eMsgType = NCI_HAL_VENDOR_MSG;
   msg.pMsgData = NULL;
   msg.Size = 0;
+  phNxpNciHal_print_packet("RECV", nxpncihal_ctrl.vendor_msg,
+                           nxpncihal_ctrl.vendor_msg_len,
+                           RfFwRegionDnld_handle == NULL);
   phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId,
                         (phLibNfc_Message_t*)&msg);
 }
@@ -866,4 +866,51 @@ bool phNxpNciHal_isObserveModeSupported() {
     }
   }
   return false;
+}
+
+/*******************************************************************************
+ *
+ * Function         handleGetCapability()
+ *
+ * Description      It frames the capability for the below features
+ *                  1. Observe mode
+ *                  2. Polling frame notification
+ *                  3. Power saving mode
+ *                  4. Auotransact polling loop filter
+ *
+ * Returns          It returns number of bytes received.
+ *
+ ******************************************************************************/
+int handleGetCapability(uint16_t data_len, const uint8_t* p_data) {
+  // 2F 0C 01 00 => GetCapability Command length is 4 Bytes
+  if (data_len < 4) {
+    return 0;
+  }
+
+  // First byte is status is ok
+  // next 2 bytes is version for Android requirements
+  vector<uint8_t> capability = {0x00, 0x00, 0x00};
+  capability.push_back(4);  // 4 capability event's
+  // Observe mode
+  capability.push_back(nfcFL.nfccCap.OBSEVE_MODE.id);
+  capability.push_back(nfcFL.nfccCap.OBSEVE_MODE.len);
+  capability.push_back(nfcFL.nfccCap.OBSEVE_MODE.val);
+  // Polling frame notification
+  capability.push_back(nfcFL.nfccCap.POLLING_FRAME_NOTIFICATION.id);
+  capability.push_back(nfcFL.nfccCap.POLLING_FRAME_NOTIFICATION.len);
+  capability.push_back(nfcFL.nfccCap.POLLING_FRAME_NOTIFICATION.val);
+  // Power saving mode
+  capability.push_back(nfcFL.nfccCap.POWER_SAVING.id);
+  capability.push_back(nfcFL.nfccCap.POWER_SAVING.len);
+  capability.push_back(nfcFL.nfccCap.POWER_SAVING.val);
+  // Auotransact polling loop filter
+  capability.push_back(nfcFL.nfccCap.AUTOTRANSACT_PLF.id);
+  capability.push_back(nfcFL.nfccCap.AUTOTRANSACT_PLF.len);
+  capability.push_back(nfcFL.nfccCap.AUTOTRANSACT_PLF.val);
+
+  phNxpNciHal_vendorSpecificCallback(p_data[NCI_OID_INDEX],
+                                     p_data[NCI_MSG_INDEX_FOR_FEATURE],
+                                     std::move(capability));
+
+  return p_data[NCI_MSG_LEN_INDEX];
 }

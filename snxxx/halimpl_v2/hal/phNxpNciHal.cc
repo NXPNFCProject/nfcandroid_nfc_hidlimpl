@@ -536,6 +536,7 @@ int phNxpNciHal_MinOpen() {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   int dnld_retry_cnt = 0;
   sIsHalOpenErrorRecovery = false;
+  setObserveModeFlag(false);
   NXPLOG_NCIHAL_D("phNxpNci_MinOpen(): enter");
 
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_MIN_OPEN) {
@@ -1118,6 +1119,24 @@ static void phNxpNciHal_read_complete(void* pContext,
 }
 
 /******************************************************************************
+ * Function         phNxpNciHal_notifyPollingFrame
+ *
+ * Description      Send polling info notification to send to upper layer
+ *
+ * Parameters       p_data - Polling loop info notification
+ *
+ * Returns          void
+ *
+ ******************************************************************************/
+void phNxpNciHal_notifyPollingFrame(uint16_t data_len, uint8_t* p_data) {
+  phNxpNciHal_print_packet("RECV", p_data, data_len,
+                           RfFwRegionDnld_handle == NULL);
+  if (nxpncihal_ctrl.p_nfc_stack_data_cback != NULL) {
+    (*nxpncihal_ctrl.p_nfc_stack_data_cback)(data_len, p_data);
+  }
+}
+
+/******************************************************************************
  * Function         phNxpNciHal_client_data_callback
  *
  * Description      This will process the data and sends message to lib-nfc
@@ -1136,9 +1155,16 @@ void phNxpNciHal_client_data_callback() {
   if (isObserveModeEnabled() &&
       nxpncihal_ctrl.p_rx_data[NCI_GID_INDEX] == NCI_PROP_NTF_GID &&
       nxpncihal_ctrl.p_rx_data[NCI_OID_INDEX] == NCI_PROP_LX_NTF_OID) {
+    unsigned long notificationType = 0;
     ReaderPollConfigParser readerPollConfigParser;
+    int isFound = GetNxpNumValue(NAME_NXP_OBSERVE_MODE_REQ_NOTIFICATION_TYPE,
+                                 &notificationType, sizeof(notificationType));
+    if (isFound == 0) {
+      notificationType = 0;
+    }
+    readerPollConfigParser.setNotificationType(notificationType);
     readerPollConfigParser.setReaderPollCallBack(
-        nxpncihal_ctrl.p_nfc_stack_data_cback);
+        phNxpNciHal_notifyPollingFrame);
     readerPollConfigParser.parseAndSendReaderPollInfo(
         nxpncihal_ctrl.p_rx_data, nxpncihal_ctrl.rx_data_len);
   } else {

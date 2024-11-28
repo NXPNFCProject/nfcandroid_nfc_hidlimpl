@@ -97,7 +97,7 @@ NFCSTATUS phNxpNciHal_init_cb_data(phNxpNciHal_Sem_t* pCallbackData,
 void phNxpNciHal_cleanup_cb_data(phNxpNciHal_Sem_t* pCallbackData);
 void phNxpNciHal_releaseall_cb_data(void);
 void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
-                              uint16_t len);
+                              uint16_t len, bool isNxpAvcNciPrint = false);
 void phNxpNciHal_emergency_recovery(uint8_t status);
 tNFC_printType getPrintType(const char* pString);
 void phNxpNciHal_Memcpy(void* pDest, size_t destSize, const void* pSrc,
