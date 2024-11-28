@@ -1903,6 +1903,14 @@ NFCSTATUS phNxpNciHalRFConfigCmdRecSequence() {
  ******************************************************************************/
 int phNxpNciHal_pre_discover(void) {
   if (nxpncihal_ctrl.halStatus != HAL_STATUS_CLOSE) {
+    // Flush SRAM content to flash
+    CONCURRENCY_LOCK();
+    if (phNxpNciHal_ext_send_sram_config_to_flash() != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("phNxpNciHal_ext_send_sram_config_to_flash: Failed");
+    }
+    CONCURRENCY_UNLOCK();
+  }
+  if (nxpncihal_ctrl.halStatus != HAL_STATUS_CLOSE) {
     phNxpNciHal_WiredSeDispatchEvent(&gWiredSeHandle, NFC_STATE_CHANGE,
                                      (WiredSeEvtData)NfcState::NFC_ON);
   }
