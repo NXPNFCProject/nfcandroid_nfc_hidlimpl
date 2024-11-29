@@ -36,8 +36,8 @@ public class MposHandler implements INxpNfcNtfHandler {
 
   private static final String TAG = "MposHandler";
 
-  public static final byte MPOS_READER_MODE_NTF_SUB_GID_OID = 0x5F;
-  public static final byte MPOS_READER_MODE_SET_DEDICATED_MODE_CMD = 0x51;
+  public static final byte MPOS_READER_MODE_NTF_SUB_GID_OID = (byte) 0xA0;
+  public static final byte MPOS_READER_MODE_SET_DEDICATED_MODE_CMD = (byte) 0xAE;
   public static final byte DEDICATED_MODE_OFF = 0x00;
   public static final byte DEDICATED_MODE_ON = 0x01;
   /**
