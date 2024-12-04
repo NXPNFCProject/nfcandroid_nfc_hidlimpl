@@ -205,11 +205,13 @@ public class NfcOperations {
         }
 
         @Override
-        public void onEnableRequested(Consumer<Boolean> isAllowed){
+        public void onEnableRequested(Consumer<Boolean> isAllowed) {
+            isAllowed.accept(true);
         }
 
         @Override
-        public void onDisableRequested(Consumer<Boolean> isAllowed){
+        public void onDisableRequested(Consumer<Boolean> isAllowed) {
+            isAllowed.accept(true);
         }
 
         @Override
