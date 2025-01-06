@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 NXP
+ * Copyright 2012-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,6 +77,8 @@ static uint8_t fw_download_success = 0;
 static uint8_t config_access = false;
 static uint8_t config_success = true;
 static bool sIsHalOpenErrorRecovery = false;
+static bool sSendSramConfigToFlash = false;
+
 NfcWriter& nfcData = NfcWriter::getInstance();
 phNxpNciHal_WorkerThread& g_workerThread =
     phNxpNciHal_WorkerThread::getInstance();
@@ -771,6 +773,8 @@ int phNxpNciHal_MinOpen() {
       phNxpNciHal_setVendorProp(core_reset_ntf_count_prop_name, "0")) {
     NXPLOG_NCIHAL_E("setting core_reset_ntf_count_prop failed");
   }
+  // Mark next prediscover call should send sram config to flash
+  sSendSramConfigToFlash = true;
   /* Call open complete */
   phNxpNciHal_complete(wConfigStatus, PHNXP_NCIHAL_OP_MIN_OPEN);
   NXPLOG_NCIHAL_D("phNxpNciHal_MinOpen(): exit");
@@ -1903,12 +1907,17 @@ NFCSTATUS phNxpNciHalRFConfigCmdRecSequence() {
  ******************************************************************************/
 int phNxpNciHal_pre_discover(void) {
   if (nxpncihal_ctrl.halStatus != HAL_STATUS_CLOSE) {
-    // Flush SRAM content to flash
-    CONCURRENCY_LOCK();
-    if (phNxpNciHal_ext_send_sram_config_to_flash() != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("phNxpNciHal_ext_send_sram_config_to_flash: Failed");
+    if (sSendSramConfigToFlash) {
+      // Flush SRAM content to flash
+      CONCURRENCY_LOCK();
+      if (phNxpNciHal_ext_send_sram_config_to_flash() != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("phNxpNciHal_ext_send_sram_config_to_flash: Failed");
+      }
+      CONCURRENCY_UNLOCK();
+      // Clear the flag so that subsequent prediscover will not send
+      // sram config to flash.
+      sSendSramConfigToFlash = false;
     }
-    CONCURRENCY_UNLOCK();
   }
   if (nxpncihal_ctrl.halStatus != HAL_STATUS_CLOSE) {
     phNxpNciHal_WiredSeDispatchEvent(&gWiredSeHandle, NFC_STATE_CHANGE,
