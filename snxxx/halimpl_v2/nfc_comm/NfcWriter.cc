@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,13 +28,6 @@
 
 #define MAX_NXP_HAL_EXTN_BYTES 10
 
-#define IS_HCI_PACKET(nciPkt) \
-  (nciPkt[NCI_GID_INDEX] == 0x01) && (nciPkt[NCI_OID_INDEX] == 0x00)
-#define IS_NFCEE_DISABLE(nciPkt)                                     \
-  (nciPkt[NCI_GID_INDEX] == 0x22 && nciPkt[NCI_OID_INDEX] == 0x01 && \
-   nciPkt[NCI_MSG_LEN_INDEX] == 0x02 &&                              \
-   nciPkt[NFCEE_MODE_SET_CMD_MODE_INDEX] == 0x00)
-
 bool bEnableMfcExtns = false;
 
 /* NCI HAL Control structure */
@@ -47,7 +40,7 @@ extern uint8_t write_unlocked_status;
 /* TML Context */
 extern phTmlNfc_Context_t* gpphTmlNfc_Context;
 
-extern WiredSeHandle gWiredSeHandle;
+extern WiredSeHandle* gWiredSeHandle;
 extern void* RfFwRegionDnld_handle;
 
 /******************************************************************************
@@ -98,13 +91,13 @@ int NfcWriter::write(uint16_t data_len, const uint8_t* p_data) {
     return this->direct_write(v_data.size(), v_data.data());
     } else if (IS_HCI_PACKET(p_data)) {
     // Inform WiredSe service that HCI Pkt is sending from libnfc layer
-    phNxpNciHal_WiredSeDispatchEvent(&gWiredSeHandle, SENDING_HCI_PKT);
+    phNxpNciHal_WiredSeDispatchEvent(gWiredSeHandle, SENDING_HCI_PKT);
   } else if (IS_NFCEE_DISABLE(p_data)) {
     // NFCEE_MODE_SET(DISABLE) is called. Dispatch event to WiredSe so
     // that it can close if session is ongoing on same NFCEE
     phNxpNciHal_WiredSeDispatchEvent(
-        &gWiredSeHandle, DISABLING_NFCEE,
-        (WiredSeEvtData)NfcPkt((uint8_t*)p_data, data_len));
+        gWiredSeHandle, DISABLING_NFCEE,
+        createWiredSeEvtData((uint8_t*)p_data, data_len));
   }
   long value = 0;
   /* NXP Removal Detection timeout Config */
