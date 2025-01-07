@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,3 +110,10 @@
 #define TYPE_ALL_EVENTS 0x00
 #define TYPE_ONLY_MOD_EVENTS 0x01
 #define TYPE_ONLY_CMA_EVENTS 0x02
+
+#define IS_HCI_PACKET(nciPkt) \
+  (nciPkt[NCI_GID_INDEX] == 0x01) && (nciPkt[NCI_OID_INDEX] == 0x00)
+#define IS_NFCEE_DISABLE(nciPkt)                                     \
+  (nciPkt[NCI_GID_INDEX] == 0x22 && nciPkt[NCI_OID_INDEX] == 0x01 && \
+   nciPkt[NCI_MSG_LEN_INDEX] == 0x02 &&                              \
+   nciPkt[NFCEE_MODE_SET_CMD_MODE_INDEX] == 0x00)

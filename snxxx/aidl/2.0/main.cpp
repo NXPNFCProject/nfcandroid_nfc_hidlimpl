@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2022, 2024 NXP
+ *  Copyright 2022, 2024-2025 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ using ::aidl::vendor::nxp::nxpnfc_aidl::INxpNfc;
 using ::aidl::vendor::nxp::nxpnfc_aidl::NxpNfc;
 using namespace std;
 
-extern WiredSeHandle gWiredSeHandle;
+extern WiredSeHandle* gWiredSeHandle;
 
 void startNxpNfcAidlService() {
   ALOGI("NXP NFC Extn Service is starting.");
@@ -66,7 +66,8 @@ int main() {
 #endif
   thread t1(startNxpNfcAidlService);
   // Starts Wired SE HAL instance if platform supports
-  if (phNxpNciHal_WiredSeStart(&gWiredSeHandle) != NFCSTATUS_SUCCESS) {
+  gWiredSeHandle = phNxpNciHal_WiredSeStart();
+  if (gWiredSeHandle == NULL) {
     ALOGE("Wired Se HAL Disabled");
   }
   ABinderProcess_joinThreadPool();

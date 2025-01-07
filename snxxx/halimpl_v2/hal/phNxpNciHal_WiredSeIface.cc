@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,17 +29,17 @@
 **
 ** Description      Starts wired-se HAL. This is the first Api to be invoked.
 **                  Once it is started it will run throughout the process
-*lifecycle.
+**                  lifecycle.
 **                  It is recommended to call from main() of service.
 **
-** Parameters       outHandle - Handle to the Wired SE subsystem.
-** Returns          NFCSTATUS_SUCCESS if WiredSe HAL is started.
-**                  NFCSTATUS_FAILURE otherwise
+** Returns          Pointer to WiredSeHandle if WiredSe HAL is started.
+**                  NULL otherwise
 *******************************************************************************/
 
-NFCSTATUS phNxpNciHal_WiredSeStart(WiredSeHandle* outHandle) {
+WiredSeHandle* phNxpNciHal_WiredSeStart() {
+  WiredSeHandle* outHandle = (WiredSeHandle*)calloc(1, sizeof(WiredSeHandle));
   if (outHandle == NULL) {
-    return NFCSTATUS_FAILED;
+    return NULL;
   }
   // Open WiredSe shared library
   NXPLOG_NCIHAL_D("Opening (/vendor/lib64/WiredSe.so)");
@@ -47,14 +47,17 @@ NFCSTATUS phNxpNciHal_WiredSeStart(WiredSeHandle* outHandle) {
   if (outHandle->dlHandle == NULL) {
     NXPLOG_NCIHAL_E("Error : opening (/vendor/lib64/WiredSe.so) %s!!",
                     dlerror());
-    return NFCSTATUS_FAILED;
+    free(outHandle);
+    return NULL;
   }
   outHandle->start =
       (WiredSeStartFunc_t)dlsym(outHandle->dlHandle, "WiredSeService_Start");
   if (outHandle->start == NULL) {
     NXPLOG_NCIHAL_E("Error : Failed to find symbol WiredSeService_Start %s!!",
                     dlerror());
-    return NFCSTATUS_FAILED;
+    dlclose(outHandle->dlHandle);
+    free(outHandle);
+    return NULL;
   }
   outHandle->dispatchEvent = (WiredSeDispatchEventFunc_t)dlsym(
       outHandle->dlHandle, "WiredSeService_DispatchEvent");
@@ -63,10 +66,18 @@ NFCSTATUS phNxpNciHal_WiredSeStart(WiredSeHandle* outHandle) {
         "Error : Failed to find symbol WiredSeService_DispatchEvent "
         "%s!!",
         dlerror());
-    return NFCSTATUS_FAILED;
+    dlclose(outHandle->dlHandle);
+    free(outHandle);
+    return NULL;
   }
   NXPLOG_NCIHAL_D("Opened (/vendor/lib64/WiredSe.so)");
-  return outHandle->start(&outHandle->pWiredSeService);
+  if (outHandle->start(&outHandle->pWiredSeService) != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("Failed to start WiredSeService");
+    dlclose(outHandle->dlHandle);
+    free(outHandle);
+    return NULL;
+  }
+  return outHandle;
 }
 
 /*******************************************************************************

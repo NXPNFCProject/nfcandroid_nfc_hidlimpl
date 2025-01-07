@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,18 +43,44 @@ typedef struct {
 
 /*******************************************************************************
 **
+** Function         createWiredSeEvtData()
+**
+** Description      Helper function to create wired se event data from
+**                  Nfc state.
+**
+** Returns          WiredSeEvtData object.
+*******************************************************************************/
+static inline WiredSeEvtData createWiredSeEvtData(NfcState nfcState) {
+  return (WiredSeEvtData)nfcState;
+}
+
+/*******************************************************************************
+**
+** Function         createWiredSeEvtData()
+**
+** Description      Helper function to create wired se event data from
+**                  Nfc packet.
+**
+** Returns          WiredSeEvtData object.
+*******************************************************************************/
+static inline WiredSeEvtData createWiredSeEvtData(uint8_t* nciPkt,
+                                                  uint16_t len) {
+  return (WiredSeEvtData)std::make_shared<NfcPkt>(nciPkt, len);
+}
+
+/*******************************************************************************
+**
 ** Function         phNxpNciHal_WiredSeStart()
 **
 ** Description      Starts wired-se HAL. This is the first Api to be invoked.
 **                  Once it is started it will run throughout the process
-*lifecycle.
+**                  lifecycle.
 **                  It is recommended to call from main() of service.
 **
-** Parameters       outHandle - Handle to the Wired SE subsystem.
-** Returns          NFCSTATUS_SUCCESS if WiredSe HAL is started.
-**                  NFCSTATUS_FAILURE otherwise
+** Returns          Pointer to WiredSeHandle if WiredSe HAL is started.
+**                  NULL otherwise
 *******************************************************************************/
-NFCSTATUS phNxpNciHal_WiredSeStart(WiredSeHandle* outHandle);
+WiredSeHandle* phNxpNciHal_WiredSeStart();
 
 /*******************************************************************************
 **
