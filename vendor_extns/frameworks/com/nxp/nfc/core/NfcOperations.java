@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -276,6 +276,9 @@ public class NfcOperations {
         @Override
         public void onEeListenActivated(boolean isActivated) {
         }
+
+        @Override
+        public void onEeUpdated() {}
 
         @Override
         public void onGetOemAppSearchIntent(List<String> packages,
