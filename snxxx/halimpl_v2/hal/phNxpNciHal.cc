@@ -2192,8 +2192,8 @@ void phNxpNciHal_clean_resources() {
   if (gPowerTrackerHandle.stop != NULL) {
     gPowerTrackerHandle.stop();
   }
-  phNxpNciHal_WiredSeDispatchEvent(&gWiredSeHandle, NFC_STATE_CHANGE,
-                                   (WiredSeEvtData)NfcState::NFC_OFF);
+  phNxpNciHal_WiredSeDispatchEvent(gWiredSeHandle, NFC_STATE_CHANGE,
+                                   createWiredSeEvtData(NfcState::NFC_OFF));
 
   sem_destroy(&sem_reset_ntf_received);
   sem_destroy(&nxpncihal_ctrl.syncSpiNfc);
