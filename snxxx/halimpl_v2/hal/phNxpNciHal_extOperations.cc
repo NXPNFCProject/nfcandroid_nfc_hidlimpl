@@ -26,6 +26,7 @@
 #include <phNxpNciHal_Adaptation.h>
 #include "NfcExtension.h"
 #include "ObserveMode.h"
+#include "ReaderPollConfigParser.h"
 #include "phNfcCommon.h"
 #include "phNxpNciHal_IoctlOperations.h"
 #include "phNxpNciHal_ULPDet.h"
@@ -36,10 +37,13 @@ nxp_nfc_config_ext_t config_ext;
 static vector<uint8_t> uicc1HciParams(0);
 static vector<uint8_t> uicc2HciParams(0);
 static vector<uint8_t> uiccHciCeParams(0);
+static vector<uint8_t> interplolatedRssi8AmRsp(0);
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 extern phTmlNfc_Context_t* gpphTmlNfc_Context;
 extern void* RfFwRegionDnld_handle;
 extern NFCSTATUS phNxpNciHal_ext_send_sram_config_to_flash();
+extern void setInterplolatedRssi8Am(uint16_t rssiAt8Am,
+                                    uint8_t measuredFieldStrength);
 
 /*******************************************************************************
 **
@@ -617,6 +621,45 @@ NFCSTATUS phNxpNciHal_setExtendedFieldMode() {
       NXPLOG_NCIHAL_E("Invalid Extended Field Mode in config");
     }
   }
+  return status;
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_getInterplolatedRssi8Am
+ *
+ * Description      This function will get InterplolatedRssi8Am which will be
+ *                  used for RSSI calculation
+ *
+ * Params           none
+ *
+ * Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS or
+ *                  NFCSTATUS_FEATURE_NOT_SUPPORTED
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_getInterplolatedRssi8Am() {
+  if (!phNxpNciHal_isObserveModeSupported()) return NFCSTATUS_FAILED;
+
+  interplolatedRssi8AmRsp.resize(0xFF);
+
+  phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
+  mEEPROM_info.buffer = &interplolatedRssi8AmRsp[0];
+  mEEPROM_info.bufflen = interplolatedRssi8AmRsp.size();
+  mEEPROM_info.request_type = EEPROM_INTERPOLATED_RSSI_8AM;
+  mEEPROM_info.request_mode = GET_EEPROM_DATA;
+  NFCSTATUS status = request_EEPROM(&mEEPROM_info);
+  interplolatedRssi8AmRsp.resize(mEEPROM_info.bufflen);
+
+  if (interplolatedRssi8AmRsp.size() < 4) {
+    NXPLOG_NCIHAL_D("Could not get RSSI at 8 A/m");
+    return NFCSTATUS_FAILED;
+  }
+
+  uint16_t rssiAt8Am =
+      (uint16_t)((interplolatedRssi8AmRsp[RSSI_AT_8AM_INDEX + 1] << 8) |
+                 interplolatedRssi8AmRsp[RSSI_AT_8AM_INDEX]);
+  uint8_t measuredFieldStrength =
+      interplolatedRssi8AmRsp[MEASURD_FIELD_STRENGTH];
+  setInterplolatedRssi8Am(rssiAt8Am, measuredFieldStrength);
   return status;
 }
 

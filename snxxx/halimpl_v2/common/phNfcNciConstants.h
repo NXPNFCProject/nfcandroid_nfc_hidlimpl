@@ -111,6 +111,11 @@
 #define TYPE_ONLY_MOD_EVENTS 0x01
 #define TYPE_ONLY_CMA_EVENTS 0x02
 
+#define GAIN_NOT_SUPPORTED 0xFF
+#define GAIN_MAX_VALUE 0xF0
+#define RSSI_AT_8AM_INDEX 1
+#define MEASURD_FIELD_STRENGTH 3
+
 #define IS_HCI_PACKET(nciPkt) \
   (nciPkt[NCI_GID_INDEX] == 0x01) && (nciPkt[NCI_OID_INDEX] == 0x00)
 #define IS_NFCEE_DISABLE(nciPkt)                                     \

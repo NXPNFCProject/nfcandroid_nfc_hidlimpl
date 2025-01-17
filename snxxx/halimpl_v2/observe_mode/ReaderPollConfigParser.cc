@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,19 @@
 #include <phNfcNciConstants.h>
 
 using namespace std;
+
+double gpMeasuredFieldStrength_of_gpRssiAt8Am = -1;
+
+void setInterplolatedRssi8Am(uint16_t rssiAt8Am,
+                             uint8_t measuredFieldStrength) {
+  if (rssiAt8Am == 0x00) {
+    gpMeasuredFieldStrength_of_gpRssiAt8Am = -1;
+    return;
+  }
+  gpMeasuredFieldStrength_of_gpRssiAt8Am =
+      static_cast<double>(measuredFieldStrength) /
+      static_cast<double>(rssiAt8Am);
+}
 
 /*****************************************************************************
  *
@@ -198,7 +211,18 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
 
     vector<uint8_t> timestamp = getTimestampInMicroSeconds(p_event);
 
-    lastKnownGain = p_event[INDEX_OF_L2_EVT_GAIN];
+    lastKnownGain = GAIN_NOT_SUPPORTED;
+    if (gpMeasuredFieldStrength_of_gpRssiAt8Am != -1) {
+      uint16_t gain = ((p_event[INDEX_OF_L2_EVT_GAIN - 1] << 8) |
+                       p_event[INDEX_OF_L2_EVT_GAIN]) *
+                      gpMeasuredFieldStrength_of_gpRssiAt8Am;
+      if (gain < GAIN_MAX_VALUE) {
+        lastKnownGain = (uint8_t)gain;
+      } else {
+        lastKnownGain = GAIN_MAX_VALUE;
+      }
+    }
+
     switch (p_event[INDEX_OF_L2_EVT_TYPE] & LX_TYPE_MASK) {
       // Trigger Type
       case L2_EVENT_TRIGGER_TYPE:
