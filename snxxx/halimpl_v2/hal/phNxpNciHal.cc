@@ -1571,6 +1571,12 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
       }
     }
   }
+
+  NFCSTATUS getCommandStatus = phNxpNciHal_getInterplolatedRssi8Am();
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_D("Get Interplolated Rssi 8 A/m command failed");
+  }
+
   if ((true == fw_dwnld_flag) || (true == setConfigAlways) ||
       isNxpConfigModified() || (wRfUpdateReq == true)) {
     retlen = 0;

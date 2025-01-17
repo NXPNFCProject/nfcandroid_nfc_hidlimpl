@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2024 NXP
+ * Copyright 2019-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -172,6 +172,20 @@ phNxpNciHal_get_uicc_hci_params(vector<uint8_t>& ptr, uint8_t bufflen,
  *
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_setExtendedFieldMode();
+
+/******************************************************************************
+ * Function         phNxpNciHal_getInterplolatedRssi8Am
+ *
+ * Description      This function will get InterplolatedRssi8Am which will be
+ *                  used for RSSI calculation
+ *
+ * Params           none
+ *
+ * Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS or
+ *                  NFCSTATUS_FEATURE_NOT_SUPPORTED
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpNciHal_getInterplolatedRssi8Am();
 
 /*******************************************************************************
 **

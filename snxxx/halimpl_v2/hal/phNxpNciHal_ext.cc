@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 NXP
+ * Copyright 2012-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1233,6 +1233,13 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
       memIndex = 0x00;
       addr[0] = 0xA1;
       addr[1] = 0x36;
+      break;
+    case EEPROM_INTERPOLATED_RSSI_8AM:
+      mEEPROM_info->update_mode = BYTEWISE;
+      b_position = 0;
+      memIndex = 0x00;
+      addr[0] = 0xA0;
+      addr[1] = 0x98;
       break;
     case EEPROM_CONF_GPIO_CTRL:
       mEEPROM_info->update_mode = BYTEWISE;

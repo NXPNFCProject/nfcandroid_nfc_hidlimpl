@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef _PHNXPNCIHAL_READER_POLLCONFIG_PARSER_H_
+#define _PHNXPNCIHAL_READER_POLLCONFIG_PARSER_H_
 
 #include <vector>
 
 using namespace std;
 
 typedef void(reader_poll_info_callback_t)(uint16_t data_len, uint8_t* p_data);
+void setInterplolatedRssi8Am(uint16_t rssiAt8Am, uint8_t measuredFieldStrength);
 
 /**
  * @brief This class handles the parsing of Lx notifications and
@@ -224,3 +227,5 @@ class ReaderPollConfigParser {
    ****************************************************************************/
   vector<uint8_t> getTimestampInMicroSeconds(vector<uint8_t> rawFrame);
 };
+
+#endif /* _PHNXPNCIHAL_READER_POLLCONFIG_PARSER_H_ */
