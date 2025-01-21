@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2014, 2022-2024 NXP
+ * Copyright 2010-2014, 2022-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ typedef struct nci_log_level {
 extern nci_log_level_t gLog_level;
 extern bool nfc_debug_enabled;
 /* define log module included when compile */
-#define ENABLE_EXTNS_TRACES TRUE
 #define ENABLE_HAL_TRACES TRUE
 #define ENABLE_TML_TRACES TRUE
 #define ENABLE_FWDNLD_TRACES TRUE
@@ -75,7 +74,6 @@ extern bool nfc_debug_enabled;
 /* ################################################################################################################
  */
 
-extern const char* NXPLOG_ITEM_EXTNS;  /* Android logging tag for NxpExtns  */
 extern const char* NXPLOG_ITEM_NCIHAL; /* Android logging tag for NxpNciHal */
 extern const char* NXPLOG_ITEM_NCIX;   /* Android logging tag for NxpNciX   */
 extern const char* NXPLOG_ITEM_NCIR;   /* Android logging tag for NxpNciR   */
@@ -104,37 +102,6 @@ extern const char* NXPLOG_ITEM_HCPR; /* Android logging tag for NxpHcpR   */
  * ######################################## */
 /* ################################################################################################################
  */
-/* Logging APIs used by NxpExtns module */
-#if (ENABLE_EXTNS_TRACES == TRUE)
-#define NXPLOG_EXTNS_D(COMP, ...)                                  \
-  {                                                                \
-    if ((nfc_debug_enabled) ||                                     \
-        (gLog_level.extns_log_level >= NXPLOG_LOG_DEBUG_LOGLEVEL)) \
-      LOG_PRI(ANDROID_LOG_DEBUG, COMP, __VA_ARGS__);               \
-  }
-#define NXPLOG_EXTNS_I(COMP, ...)                                 \
-  {                                                               \
-    if ((nfc_debug_enabled) ||                                    \
-        (gLog_level.extns_log_level >= NXPLOG_LOG_INFO_LOGLEVEL)) \
-      LOG_PRI(ANDROID_LOG_INFO, COMP, __VA_ARGS__);               \
-  }
-#define NXPLOG_EXTNS_W(COMP, ...)                                 \
-  {                                                               \
-    if ((nfc_debug_enabled) ||                                    \
-        (gLog_level.extns_log_level >= NXPLOG_LOG_WARN_LOGLEVEL)) \
-      LOG_PRI(ANDROID_LOG_WARN, COMP, __VA_ARGS__);               \
-  }
-#define NXPLOG_EXTNS_E(COMP, ...)                                \
-  {                                                              \
-    if (gLog_level.extns_log_level >= NXPLOG_LOG_ERROR_LOGLEVEL) \
-      LOG_PRI(ANDROID_LOG_ERROR, COMP, __VA_ARGS__);             \
-  }
-#else
-#define NXPLOG_EXTNS_D(...)
-#define NXPLOG_EXTNS_W(...)
-#define NXPLOG_EXTNS_E(...)
-#define NXPLOG_EXTNS_I(...)
-#endif /* Logging APIs used by NxpExtns module */
 
 /* Logging APIs used by NxpNciHal module */
 #if (ENABLE_HAL_TRACES == TRUE)
@@ -387,14 +354,6 @@ extern const char* NXPLOG_ITEM_HCPR; /* Android logging tag for NxpHcpR   */
 #endif /* NXP_HCI_REQ */
 
 #ifdef NXP_VRBS_REQ
-#if (ENABLE_EXTNS_TRACES == TRUE)
-#define NXPLOG_EXTNS_ENTRY() NXPLOG_FUNC_ENTRY(NXPLOG_ITEM_EXTNS)
-#define NXPLOG_EXTNS_EXIT() NXPLOG_FUNC_EXIT(NXPLOG_ITEM_EXTNS)
-#else
-#define NXPLOG_EXTNS_ENTRY()
-#define NXPLOG_EXTNS_EXIT()
-#endif
-
 #if (ENABLE_HAL_TRACES == TRUE)
 #define NXPLOG_NCIHAL_ENTRY() NXPLOG_FUNC_ENTRY(NXPLOG_ITEM_NCIHAL)
 #define NXPLOG_NCIHAL_EXIT() NXPLOG_FUNC_EXIT(NXPLOG_ITEM_NCIHAL)
