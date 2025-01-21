@@ -98,6 +98,16 @@ int NfcWriter::write(uint16_t data_len, const uint8_t* p_data) {
     phNxpNciHal_WiredSeDispatchEvent(
         gWiredSeHandle, DISABLING_NFCEE,
         createWiredSeEvtData((uint8_t*)p_data, data_len));
+  } else {
+    bool isExtnLibHandled = phNxpExtn_HandleNciMsg(data_len, p_data);
+    NXPLOG_NCIHAL_D("isExtnLibHandled:%d", isExtnLibHandled);
+    if (!isExtnLibHandled) {
+      // TODO: send UN_SUPPORTED_FEATURE error code in this case
+      return 0;  // Zero bytes written to controller, as it is not handled by
+                 // extension library.
+    } else {
+      return data_len;
+    }
   }
   long value = 0;
   /* NXP Removal Detection timeout Config */

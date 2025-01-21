@@ -781,12 +781,6 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
     mfc_mode = false;
   }
 
-  //Return if proprietary command received in Proprietary state
-  if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
-      phNxpExtn_WriteExt(cmd_len, p_cmd_data)) {
-    return status;
-  }
-
   if (*cmd_len <= (NCI_MAX_DATA_LEN - 3) && bEnableMfcReader &&
       (p_cmd_data[0] == 0x21 && p_cmd_data[1] == 0x00) &&
       (nxpprofile_ctrl.profile_type == NFC_FORUM_PROFILE)) {

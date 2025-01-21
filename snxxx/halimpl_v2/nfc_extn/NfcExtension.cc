@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ void phNxpExtn_Init() {
   NXPLOG_NCIHAL_D("%s Enter", __func__);
   if (fp_extn_init != NULL) {
     if (!initalized) {
-      fp_extn_init();
+      fp_extn_init(nullptr);
       NXPLOG_NCIHAL_D("%s Initialized!", __func__);
       initalized = true;
     } else {
@@ -116,7 +116,7 @@ NFCSTATUS phNxpExtn_HandleNciMsg(uint16_t dataLen, const uint8_t* pData) {
 
 NFCSTATUS phNxpExtn_HandleHalEvent(uint8_t handle_event) {
   NXPLOG_NCIHAL_D("%s Enter handle_event:%d", __func__, handle_event);
-  nfc_ext_event_data.handle_event = handle_event;
+  nfc_ext_event_data.hal_event = handle_event;
 
   if (fp_extn_handle_nfc_event != NULL) {
     return fp_extn_handle_nfc_event(HANDLE_HAL_EVENT, nfc_ext_event_data);
@@ -130,20 +130,6 @@ void phNxpExtn_WriteCompleteStatusUpdate(NFCSTATUS status) {
   nfc_ext_event_data.write_status = status;
   if (fp_extn_handle_nfc_event != NULL) {
     fp_extn_handle_nfc_event(HANDLE_WRITE_COMPLETE_STATUS, nfc_ext_event_data);
-  }
-}
-
-NFCSTATUS phNxpExtn_WriteExt(uint16_t* dataLen, uint8_t* pData) {
-  NXPLOG_NCIHAL_D("%s Enter dataLen:%d", __func__, *dataLen);
-  NciData_t nci_data;
-  nci_data.data_len = dataLen;
-  nci_data.p_data = (uint8_t*)pData;
-  nfc_ext_event_data.nci_msg = nci_data;
-
-  if (fp_extn_handle_nfc_event != NULL) {
-    return fp_extn_handle_nfc_event(HANDLE_WRITE_EXTN_MSG, nfc_ext_event_data);
-  } else {
-    return NFCSTATUS_EXTN_FEATURE_FAILURE;
   }
 }
 
@@ -164,7 +150,7 @@ NFCSTATUS phNxpExtn_HandleNciRspNtf(uint16_t dataLen, const uint8_t* pData) {
 
 void phNxpExtn_FwDnldStatusUpdate(uint8_t status) {
   NXPLOG_NCIHAL_D("%s Enter status:%d", __func__, status);
-  nfc_ext_event_data.fwDnldStatus = status;
+  nfc_ext_event_data.hal_event_status = status;
   if (fp_extn_handle_nfc_event != NULL) {
     fp_extn_handle_nfc_event(HANDLE_FW_DNLD_STATUS_UPDATE, nfc_ext_event_data);
   }
@@ -252,13 +238,6 @@ uint8_t phNxpHal_GetNxpByteArrayValue(const char* name, char* pValue,
 uint8_t phNxpHal_GetNxpNumValue(const char* name, void* pValue,
                                 unsigned long len) {
   return GetNxpNumValue(name, pValue, len);
-}
-
-tNFC_chipType phNxpHal_GetChipType() {
-  NXPLOG_NCIHAL_D("%s Enter nfcFL.chipType %d", __func__,
-                  static_cast<int>(nfcFL.chipType));
-
-  return nfcFL.chipType;
 }
 
 /* HAL API's End */

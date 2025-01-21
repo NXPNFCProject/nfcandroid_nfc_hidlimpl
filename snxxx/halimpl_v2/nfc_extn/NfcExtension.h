@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,13 @@
 #define NFC_EXTENSION_H
 #include <phTmlNfc.h>
 #include <cstdint>
-#include "Nxp_Features.h"
 #include "phNfcStatus.h"
+
+struct VendorExtnCb
+{
+  /* dummy struct to maitain
+     same API signatures accross */
+};
 
 typedef struct {
   phLibNfc_DeferredCall_t tDeferredInfo;
@@ -50,8 +55,8 @@ typedef union {
   uint8_t write_status;
   uint8_t hal_state;
   uint8_t rf_state;
-  uint8_t handle_event;
-  uint8_t fwDnldStatus;
+  uint8_t hal_event;
+  uint8_t hal_event_status;
 } NfcExtEventData_t;
 
 /**
@@ -66,16 +71,15 @@ typedef enum {
   HANDLE_NFC_HAL_STATE_UPDATE,
   HANDLE_RF_HAL_STATE_UPDATE,
   HANDLE_HAL_EVENT,
-  HANDLE_WRITE_EXTN_MSG,
   HANDLE_FW_DNLD_STATUS_UPDATE,
 } NfcExtEvent_t;
 
 typedef enum {
-  NFCC_HAL_TRANS_ERR_CODE,
-  NFCC_HAL_FATAL_ERR_CODE,
+  NFCC_HAL_TRANS_ERR_CODE = 6u,
+  NFCC_HAL_FATAL_ERR_CODE = 8u,
 } NfcExtHal_NFCC_ERROR_CODE_t;
 
-typedef void (*fp_extn_init_t)();
+typedef void (*fp_extn_init_t)(VendorExtnCb*);
 typedef void (*fp_extn_deinit_t)();
 typedef NFCSTATUS (*fp_extn_handle_nfc_event_t)(NfcExtEvent_t,
                                                 NfcExtEventData_t);
@@ -193,17 +197,6 @@ NFCSTATUS phNxpExtn_HandleHalEvent(uint8_t event);
 NFCSTATUS phNxpExtn_HandleNciRspNtf(uint16_t dataLen, const uint8_t* pData);
 
 /**
- * @brief sends the NCI packet to handle extension feature and update NCI
- * packet if feature is enabled.
- * @param dataLen Length of NCI packet
- * @param pData data buffer pointer
- * @return returns NFCSTATUS_EXTN_FEATURE_SUCCESS, if it is vendor specific
- * feature and handled by extension library otherwise
- * NFCSTATUS_EXTN_FEATURE_FAILURE.
- */
-NFCSTATUS phNxpExtn_WriteExt(uint16_t* dataLen, uint8_t* pData);
-
-/**
  * @brief  requests control of NFCC to libnfc-nci.
  *         When control is provided to HAL it is
  *         notified through phNxpExtn_NfcHalControlGranted.
@@ -251,13 +244,5 @@ uint8_t phNxpHal_GetNxpByteArrayValue(const char* name, char* pValue,
  */
 uint8_t phNxpHal_GetNxpNumValue(const char* name, void* pValue,
                                 unsigned long len);
-
-/**
- * @brief this function returns the chip type
- * @param  void
- * @return return the chip type version
- *
- */
-tNFC_chipType phNxpHal_GetChipType();
 
 #endif  // NFC_EXTENSION_H
