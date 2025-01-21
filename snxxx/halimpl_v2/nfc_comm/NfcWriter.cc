@@ -244,8 +244,6 @@ int NfcWriter::write_unlocked(uint16_t data_len, const uint8_t* p_data,
     if (nxpncihal_ctrl.retry_cnt++ < MAX_RETRY_COUNT) {
       NXPLOG_NCIHAL_D(
           "write_unlocked failed - NFCC Maybe in Standby Mode - Retry");
-      /* 10ms delay to give NFCC wake up delay */
-      usleep(1000 * 10);
     } else {
       data_len = 0;
       NXPLOG_NCIHAL_E(
