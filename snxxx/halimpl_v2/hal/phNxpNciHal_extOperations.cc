@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+#undef PROPERTY_VALUE_MAX
+#include <cutils/properties.h>
+
 #include "phNxpNciHal_extOperations.h"
 
 #include <phNfcNciConstants.h>
