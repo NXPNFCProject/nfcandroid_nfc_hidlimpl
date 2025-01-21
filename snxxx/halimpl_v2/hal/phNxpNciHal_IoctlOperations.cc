@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2024 NXP
+ * Copyright 2019-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#undef PROPERTY_VALUE_MAX
+#include <cutils/properties.h>
 #include "phNxpNciHal_IoctlOperations.h"
 
 #include <android-base/file.h>
