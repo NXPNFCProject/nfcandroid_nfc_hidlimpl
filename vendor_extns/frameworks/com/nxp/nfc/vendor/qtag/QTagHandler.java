@@ -41,8 +41,8 @@ public class QTagHandler implements INxpNfcNtfHandler {
   public static final int QTAG_STATUS_SUCCESS = 0x00;
   public static final int QTAG_STATUS_FAILED = 0x03;
   public static final int QTAG_STATUS_DETECTED = 0x00;
-  public static final byte QTAG_SUB_GID_OID = 0x61;
-  public static final byte QTAG_DETECTION_SUB_GID_OID = 0x62;
+  public static final byte QTAG_SUB_GID_OID = 0x31;
+  public static final byte QTAG_DETECTION_SUB_GID_OID = 0x32;
   public static final int INVALID_POLL_TECH = 0;
 
   public static Object qtagSync = new Object();
