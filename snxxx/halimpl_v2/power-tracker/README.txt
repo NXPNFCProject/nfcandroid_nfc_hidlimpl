@@ -8,12 +8,12 @@ each state is entered since boot.
 
 Feature enable
 --------------
-This feature can be enabled by setting POWER_STATE_FEATURE to true.
+This feature can be enabled by setting POWER_TRACKER_FEATURE to true.
 There are two ways we can set this variables.
   - This can be integrated into build by adding below line to device-nfc.mk
-POWER_STATE_FEATURE ?= true
+POWER_TRACKER_FEATURE ?= true
   - We can set these variables during make command
-make -j8 POWER_STATE_FEATURE=true.
+make -j8 POWER_TRACKER_FEATURE=true.
 
 Config file change
 ------------------
