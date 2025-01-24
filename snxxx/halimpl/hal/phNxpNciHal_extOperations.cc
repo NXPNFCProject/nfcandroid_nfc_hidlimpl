@@ -857,3 +857,50 @@ bool phNxpNciHal_isObserveModeSupported() {
   }
   return false;
 }
+
+/*******************************************************************************
+ *
+ * Function         handleGetCapability()
+ *
+ * Description      It frames the capability for the below features
+ *                  1. Observe mode
+ *                  2. Polling frame notification
+ *                  3. Power saving mode
+ *                  4. Auotransact polling loop filter
+ *
+ * Returns          It returns number of bytes received.
+ *
+ ******************************************************************************/
+int handleGetCapability(uint16_t data_len, const uint8_t* p_data) {
+  // 2F 0C 01 00 => GetCapability Command length is 4 Bytes
+  if (data_len < 4) {
+    return 0;
+  }
+
+  // First byte is status is ok
+  // next 2 bytes is version for Android requirements
+  vector<uint8_t> capability = {0x00, 0x00, 0x00};
+  capability.push_back(4);  // 4 capability event's
+  // Observe mode
+  capability.push_back(nfcFL.nfccCap.OBSEVE_MODE.id);
+  capability.push_back(nfcFL.nfccCap.OBSEVE_MODE.len);
+  capability.push_back(nfcFL.nfccCap.OBSEVE_MODE.val);
+  // Polling frame notification
+  capability.push_back(nfcFL.nfccCap.POLLING_FRAME_NOTIFICATION.id);
+  capability.push_back(nfcFL.nfccCap.POLLING_FRAME_NOTIFICATION.len);
+  capability.push_back(nfcFL.nfccCap.POLLING_FRAME_NOTIFICATION.val);
+  // Power saving mode
+  capability.push_back(nfcFL.nfccCap.POWER_SAVING.id);
+  capability.push_back(nfcFL.nfccCap.POWER_SAVING.len);
+  capability.push_back(nfcFL.nfccCap.POWER_SAVING.val);
+  // Auotransact polling loop filter
+  capability.push_back(nfcFL.nfccCap.AUTOTRANSACT_PLF.id);
+  capability.push_back(nfcFL.nfccCap.AUTOTRANSACT_PLF.len);
+  capability.push_back(nfcFL.nfccCap.AUTOTRANSACT_PLF.val);
+
+  phNxpNciHal_vendorSpecificCallback(p_data[NCI_OID_INDEX],
+                                     p_data[NCI_MSG_INDEX_FOR_FEATURE],
+                                     std::move(capability));
+
+  return p_data[NCI_MSG_LEN_INDEX];
+}
