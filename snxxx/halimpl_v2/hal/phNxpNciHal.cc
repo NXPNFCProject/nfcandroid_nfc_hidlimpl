@@ -2289,10 +2289,12 @@ int phNxpNciHal_configDiscShutdown(void) {
         phNxpNciHal_getULPDetFlag() == false) {
       if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
         NXPLOG_NCIHAL_D("phNxpNciHal_close is already closed, ignoring close");
+        CONCURRENCY_UNLOCK();
         return NFCSTATUS_FAILED;
       }
       NXPLOG_NCIHAL_D("Ulpdet supported");
       status = phNxpNciHal_propConfULPDetMode(true);
+      CONCURRENCY_UNLOCK();
       phNxpNciHal_clean_resources();
       return status;
     }
