@@ -2,7 +2,7 @@
  *
  *  The original Work has been changed by NXP.
  *
- *  Copyright 2024 NXP
+ *  Copyright 2024-2025 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -68,8 +68,8 @@ public class QTagHandler implements INxpNfcNtfHandler {
     NxpNfcLogger.d(TAG, "Sub-GidOid: " + subGidOid +
                             ", Notification Type: " + notificationType);
 
-    if (subGidOid == QTAG_DETECTION_SUB_GID_OID) {
-      synchronized (qtagSync) {
+    synchronized (qtagSync) {
+      if (subGidOid == QTAG_DETECTION_SUB_GID_OID) {
         if (payload.length > 1) {
           if (payload[1] == QTAG_STATUS_DETECTED)
             sQTagDetected = true;
@@ -78,15 +78,14 @@ public class QTagHandler implements INxpNfcNtfHandler {
         } else {
           sQTagDetected = false;
         }
+      } else if ((subGidOid == QTAG_SUB_GID_OID)
+          && (notificationType == NfcAdapter.SEND_VENDOR_NCI_STATUS_REJECTED)) {
+        sIsQPollEnabled = false;
+        sQTagDetected = false;
+        NxpNfcLogger.d(TAG, "sIsQPollEnabled: " + sIsQPollEnabled);
       }
-    } else if ((subGidOid == QTAG_SUB_GID_OID) &&
-               (notificationType ==
-                NfcAdapter.SEND_VENDOR_NCI_STATUS_REJECTED)) {
-      sIsQPollEnabled = false;
-      sQTagDetected = false;
-      NxpNfcLogger.d(TAG, "sIsQPollEnabled: " + sIsQPollEnabled);
+      NxpNfcLogger.d(TAG, "sQTagDetected: " + sQTagDetected);
     }
-    NxpNfcLogger.d(TAG, "sQTagDetected: " + sQTagDetected);
   }
 
   public int enableQTag(Activity activity, int mode,
