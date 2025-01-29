@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2024 NXP
+ * Copyright 2021-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -553,6 +553,7 @@ static void phnxpNciHal_partialClose(void) {
     msg.eMsgType = NCI_HAL_CLOSE_CPLT_MSG;
     msg.pMsgData = NULL;
     msg.Size = 0;
+    msg.w_status = 0;
     memset(msg.data, 0x00, (sizeof(msg.data) / sizeof(msg.data[0])));
     phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &msg);
     /* Abort any pending read and write */
