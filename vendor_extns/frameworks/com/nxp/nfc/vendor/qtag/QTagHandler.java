@@ -23,6 +23,7 @@ package com.nxp.nfc.vendor.qtag;
 import android.app.Activity;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
+import android.os.Bundle;
 import com.nxp.nfc.INxpNfcNtfHandler;
 import com.nxp.nfc.NxpNfcAdapter;
 import com.nxp.nfc.NxpNfcAdapter.NxpReaderCallback;
@@ -89,11 +90,13 @@ public class QTagHandler implements INxpNfcNtfHandler {
   }
 
   public int enableQTag(Activity activity, int mode,
-                        NxpReaderCallback mQTagCallback, int pollTech)
-      throws IOException {
-    NxpNfcLogger.d(TAG,
-                   "enableQTag Enter mode: " + mode + " pollTech:" + pollTech);
+                        NxpReaderCallback mQTagCallback, int pollTech,
+                        int delay_value) throws IOException {
+    NxpNfcLogger.d(TAG, "enableQTag Enter mode: " + mode + " pollTech:" +
+                            pollTech + " delay_value:" + delay_value);
     QTagMode qMode = QTagMode.fromValue(mode);
+    final Bundle options = new Bundle();
+    options.putInt(NfcAdapter.EXTRA_READER_PRESENCE_CHECK_DELAY, delay_value);
     int status = QTAG_STATUS_FAILED;
 
     if (mNfcAdapter.getAdapterState() == NfcAdapter.STATE_OFF) {
@@ -158,10 +161,10 @@ public class QTagHandler implements INxpNfcNtfHandler {
                   if (mQTagCallback != null)
                     mQTagCallback.onNxpTagDiscovered(tag, sQTagDetected);
                 }
-              }, pollTech, null);
+              }, pollTech, options);
         }
       } else if (qMode == QTagMode.DISABLE_QTAG_MODE) {
-        mNfcOperations.enableDiscovery();
+        mNfcAdapter.disableReaderMode(activity);
       }
     }
     return status;

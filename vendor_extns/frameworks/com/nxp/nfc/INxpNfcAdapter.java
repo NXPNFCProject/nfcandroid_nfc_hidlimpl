@@ -71,11 +71,13 @@ public interface INxpNfcAdapter {
    *                 APPEND_QTAG_MODE with input pollTech.
    *                 DISABLE_QTAG_MODE & reset to default discovery.
    * @param pollTech to append QPoll in reader mode.
+   * @param delay_value PRESENCE_CHECK_DELAY
    * @return whether the update of state is
    *          QTag_STATUS_SUCCESS,
    *          QTag_STATUS_FAILED,
    * @throws IOException If a failure occurred during QTag RF mode set or reset
    */
   public int enableQTag(Activity activity, NxpReaderCallback mQTagCallback,
-                        int mode, int pollTech) throws IOException;
+                        int mode, int pollTech, int delay_value)
+      throws IOException;
 }

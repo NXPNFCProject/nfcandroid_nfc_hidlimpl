@@ -111,7 +111,9 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
      */
     @Override
     public int enableQTag(Activity activity, NxpReaderCallback mQTagCallback,
-                          int mode, int pollTech) throws IOException {
-      return mQTagHandler.enableQTag(activity, mode, mQTagCallback, pollTech);
+                          int mode, int pollTech, int delay_value)
+        throws IOException {
+      return mQTagHandler.enableQTag(activity, mode, mQTagCallback, pollTech,
+                                     delay_value);
     }
 }
