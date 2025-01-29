@@ -132,6 +132,7 @@ int NfcWriter::write(uint16_t data_len, const uint8_t* p_data) {
  ******************************************************************************/
 int NfcWriter::direct_write(uint16_t data_len, const uint8_t* p_data) {
   NFCSTATUS status = NFCSTATUS_FAILED;
+  int wdata_len = 0;
   uint8_t cmd_icode_eof[] = {0x00, 0x00, 0x00};
   static phLibNfc_Message_t msg;
   if (nxpncihal_ctrl.halStatus != HAL_STATUS_OPEN) {
@@ -160,7 +161,7 @@ int NfcWriter::direct_write(uint16_t data_len, const uint8_t* p_data) {
     goto clean_and_return;
   }
 
-  data_len = this->write_unlocked(data_len, p_data, ORIG_LIBNFC);
+  wdata_len = this->write_unlocked(data_len, p_data, ORIG_LIBNFC);
 
   if (IS_CHIP_TYPE_L(sn100u) && IS_CHIP_TYPE_NE(pn557) && icode_send_eof == 1) {
     usleep(10000);
@@ -174,7 +175,7 @@ int NfcWriter::direct_write(uint16_t data_len, const uint8_t* p_data) {
 clean_and_return:
   /* No data written */
   CONCURRENCY_UNLOCK();
-  return data_len;
+  return wdata_len;
 }
 
 /******************************************************************************
