@@ -42,8 +42,8 @@
 #define NXP_EN_SN300U 1
 #define NXP_EN_SN330U 1
 #define NXP_NDEF_TAG_EMULATION_LOGICAL_CHANNEL 5
-#define NFC_NXP_MW_ANDROID_VER (15U)  /* Android version used by NFC MW */
-#define NFC_NXP_MW_VERSION_MAJ (0xA3) /* MW Major Version */
+#define NFC_NXP_MW_ANDROID_VER (16U)  /* Android version used by NFC MW */
+#define NFC_NXP_MW_VERSION_MAJ (0x03) /* MW Major Version */
 #define NFC_NXP_MW_VERSION_MIN (0x00) /* MW Minor Version */
 #define NFC_NXP_MW_CUSTOMER_ID (0x00) /* MW Customer Id */
 #define NFC_NXP_MW_RC_VERSION (0x00)  /* MW RC Version */
@@ -116,7 +116,7 @@ void printNfcMwVersion() {
   validation |= (NXP_EN_SN330U << 18);
   validation |= (NXP_EN_PN557 << 11);
 
-  ALOGE("MW-HAL Version: NFC_AR_%02X_%05X_%02d.%02x.%02x",
+  ALOGE("MW-HAL Version: NFC_AR_%02X_%05X_%02d.%02x.%02x_Interim",
         NFC_NXP_MW_CUSTOMER_ID, validation, NFC_NXP_MW_ANDROID_VER,
         NFC_NXP_MW_VERSION_MAJ, NFC_NXP_MW_VERSION_MIN);
 }
