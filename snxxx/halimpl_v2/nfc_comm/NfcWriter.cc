@@ -99,7 +99,7 @@ int NfcWriter::write(uint16_t data_len, const uint8_t* p_data) {
         gWiredSeHandle, DISABLING_NFCEE,
         createWiredSeEvtData((uint8_t*)p_data, data_len));
   } else {
-    NFCSTATUS status = phNxpExtn_HandleNciMsg(data_len, p_data);
+    NFCSTATUS status = phNxpExtn_HandleNciMsg(&data_len, p_data);
     NXPLOG_NCIHAL_D("Vendor specific status: %d", status);
     if (status == NFCSTATUS_EXTN_FEATURE_SUCCESS) {
       return data_len;
