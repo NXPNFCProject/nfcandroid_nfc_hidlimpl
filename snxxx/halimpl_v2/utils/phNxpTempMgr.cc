@@ -11,7 +11,7 @@
  ** See the License for the specific language governing permissions and
  ** limitations under the License.
  **
- ** Copyright 2023 NXP
+ ** Copyright 2023,2025 NXP
  **
  */
 #include "phNxpTempMgr.h"
@@ -51,6 +51,9 @@ void phNxpTempMgr::UpdateICTempStatus(uint8_t* p_ntf, uint16_t p_len) {
   (void)p_len;
   NFCSTATUS status = NFCSTATUS_FAILED;
   bool temp_status = p_ntf[03] == 0x00 ? true : false;
+  /* ese low temperature should be consider as normal temp state */
+  if (p_ntf[04] == TEMPERATURE_MODULE_ID_ESE && p_ntf[03] == TEMPERATURE_LOW)
+    temp_status = true;
   UpdateTempStatusLocked(temp_status);
   NXPLOG_NCIHAL_D("phNxpTempMgr: IC temp state is %d", IsICTempOk());
   // Temperature status will be notified for only one module at a time.
