@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 #include <phNfcNciConstants.h>
 
 #include <vector>
+#include "NciDiscoveryCommandBuilder.h"
 #include "phNxpNciHal_extOperations.h"
 
 using namespace std;
@@ -68,6 +69,118 @@ int handleObserveMode(uint16_t data_len, const uint8_t* p_data) {
   if (phNxpNciHal_isObserveModeSupported()) {
     setObserveModeFlag(p_data[NCI_MSG_INDEX_FEATURE_VALUE]);
     status = NCI_RSP_OK;
+  }
+
+  phNxpNciHal_vendorSpecificCallback(
+      p_data[NCI_OID_INDEX], p_data[NCI_MSG_INDEX_FOR_FEATURE], {status});
+
+  return p_data[NCI_MSG_LEN_INDEX];
+}
+
+/*******************************************************************************
+ *
+ * Function         deactivateRfDiscovery()
+ *
+ * Description      sends RF deactivate command
+ *
+ * Returns          It returns Rf deactivate status
+ *
+ ******************************************************************************/
+NFCSTATUS deactivateRfDiscovery() {
+  uint8_t rf_deactivate_cmd[] = {0x21, 0x06, 0x01, 0x00};
+  return phNxpNciHal_send_ext_cmd(sizeof(rf_deactivate_cmd), rf_deactivate_cmd);
+}
+
+/*******************************************************************************
+ *
+ * Function         sendRfDiscoveryCommand()
+ *
+ * Description      sends RF discovery command
+ *
+ * Parameters       isObserveModeEnable
+ *                      - true to send discovery with field detect mode
+ *                      - false to send default discovery command
+ *
+ * Returns          It returns Rf deactivate status
+ *
+ ******************************************************************************/
+NFCSTATUS sendRfDiscoveryCommand(bool isObserveModeEnable) {
+  vector<uint8_t> discoveryCommand =
+      isObserveModeEnable
+          ? NciDiscoveryCommandBuilderInstance.reConfigRFDiscCmd()
+          : NciDiscoveryCommandBuilderInstance.getDiscoveryCommand();
+  return phNxpNciHal_send_ext_cmd(discoveryCommand.size(),
+                                  &discoveryCommand[0]);
+}
+
+/*******************************************************************************
+ *
+ * Function         handleObserveModeTechCommand()
+ *
+ * Description      This handles the ObserveMode command and enables the observe
+ *                  Mode flag
+ *
+ * Returns          It returns number of bytes received.
+ *
+ ******************************************************************************/
+int handleObserveModeTechCommand(uint16_t data_len, const uint8_t* p_data) {
+  NFCSTATUS nciStatus = NFCSTATUS_FAILED;
+  uint8_t status = NCI_RSP_FAIL;
+  uint8_t techValue = p_data[NCI_MSG_INDEX_FEATURE_VALUE];
+  if (phNxpNciHal_isObserveModeSupported() &&
+      (techValue == OBSERVE_MODE_TECH_COMMAND_SUPPORT_FLAG ||
+       techValue == OBSERVE_MODE_TECH_COMMAND_SUPPORT_FLAG_FOR_ALL_TECH ||
+       techValue == NCI_ANDROID_PASSIVE_OBSERVE_PARAM_DISABLE)) {
+    bool flag =
+        (techValue == OBSERVE_MODE_TECH_COMMAND_SUPPORT_FLAG ||
+         techValue == OBSERVE_MODE_TECH_COMMAND_SUPPORT_FLAG_FOR_ALL_TECH)
+            ? true
+            : false;
+    // send RF Deactivate command
+    nciStatus = deactivateRfDiscovery();
+    if (nciStatus == NFCSTATUS_SUCCESS) {
+      if (flag && techValue != NciDiscoveryCommandBuilderInstance
+                                   .getCurrentObserveModeTechValue()) {
+        // send Observe Mode Tech command
+        NciDiscoveryCommandBuilderInstance.setObserveModePerTech(techValue);
+
+        nciStatus = phNxpNciHal_send_ext_cmd(data_len, (uint8_t*)p_data);
+        if (nciStatus != NFCSTATUS_SUCCESS) {
+          NXPLOG_NCIHAL_E("%s ObserveMode tech command failed", __func__);
+        }
+      }
+
+      // Send RF Discovery command
+      NFCSTATUS rfDiscoveryStatus =
+          sendRfDiscoveryCommand(nciStatus == NFCSTATUS_SUCCESS ? flag : false);
+
+      if (rfDiscoveryStatus == NFCSTATUS_SUCCESS &&
+          nciStatus == NFCSTATUS_SUCCESS) {
+        setObserveModeFlag(flag);
+        status = NCI_RSP_OK;
+      } else if (rfDiscoveryStatus != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E(
+            "%s Rf Disovery command failed, reset back to default discovery",
+            __func__);
+        // Recovery to fallback to default discovery when there is a failure
+        nciStatus = deactivateRfDiscovery();
+        if (nciStatus != NFCSTATUS_SUCCESS) {
+          NXPLOG_NCIHAL_E("%s Rf Deactivate command failed on recovery",
+                          __func__);
+        }
+        rfDiscoveryStatus = sendRfDiscoveryCommand(false);
+        if (rfDiscoveryStatus != NFCSTATUS_SUCCESS) {
+          NXPLOG_NCIHAL_E("%s Rf Disovery command failed on recovery",
+                          __func__);
+        }
+      }
+    } else {
+      NXPLOG_NCIHAL_E("%s Rf Deactivate command failed", __func__);
+    }
+  } else {
+    NXPLOG_NCIHAL_E(
+        "%s ObserveMode feature or tech which is requested is not supported",
+        __func__);
   }
 
   phNxpNciHal_vendorSpecificCallback(

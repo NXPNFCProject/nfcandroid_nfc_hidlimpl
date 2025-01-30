@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,18 @@ bool isObserveModeEnabled();
  *
  ******************************************************************************/
 int handleObserveMode(uint16_t data_len, const uint8_t* p_data);
+
+/*******************************************************************************
+ *
+ * Function         handleObserveModeTechCommand
+ *
+ * Description      This handles the ObserveMode command and enables the observe
+ *                  Mode flag
+ *
+ * Returns          It returns number of bytes received.
+ *
+ ******************************************************************************/
+int handleObserveModeTechCommand(uint16_t data_len, const uint8_t* p_data);
 
 /*******************************************************************************
  *
