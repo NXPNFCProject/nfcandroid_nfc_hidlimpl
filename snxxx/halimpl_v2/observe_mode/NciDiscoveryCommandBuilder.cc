@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,11 @@
 #include <phNfcNciConstants.h>
 
 using namespace std;
+
+NciDiscoveryCommandBuilder& NciDiscoveryCommandBuilder::getInstance() {
+  static NciDiscoveryCommandBuilder msNciDiscoveryCommandBuilder;
+  return msNciDiscoveryCommandBuilder;
+}
 
 /*****************************************************************************
  *
@@ -140,22 +145,17 @@ vector<uint8_t> NciDiscoveryCommandBuilder::build() {
  *
  * Function         reConfigRFDiscCmd
  *
- * Description      It parse the discovery command and alter the configuration
- *                  to enable Observe Mode
- *
- * Parameters       data - RF discovery command
+ * Description      It parse the current discovery command and alter
+ *                  the configuration to enable Observe Mode
  *
  * Returns          return the discovery command for Observe mode
  *
  ****************************************************************************/
-vector<uint8_t> NciDiscoveryCommandBuilder::reConfigRFDiscCmd(
-    uint16_t data_len, const uint8_t* p_data) {
-  if (!p_data) {
+vector<uint8_t> NciDiscoveryCommandBuilder::reConfigRFDiscCmd() {
+  if (size(currentDiscoveryCommand) <= 0) {
     return vector<uint8_t>();
   }
-
-  vector<uint8_t> discoveryCommand = vector<uint8_t>(p_data, p_data + data_len);
-  bool status = parse(std::move(discoveryCommand));
+  bool status = parse(currentDiscoveryCommand);
   if (status) {
     removeListenParams();
     addObserveModeParams();
@@ -163,4 +163,64 @@ vector<uint8_t> NciDiscoveryCommandBuilder::reConfigRFDiscCmd(
   } else {
     return vector<uint8_t>();
   }
+}
+
+/*****************************************************************************
+ *
+ * Function         setDiscoveryCommand
+ *
+ * Description      It sets the current discovery command
+ *
+ * Parameters       data - RF discovery command
+ *
+ * Returns          return void
+ *
+ ****************************************************************************/
+void NciDiscoveryCommandBuilder::setDiscoveryCommand(uint16_t data_len,
+                                                     const uint8_t* p_data) {
+  if (!p_data || data_len <= 0) {
+    return;
+  }
+  currentDiscoveryCommand = vector<uint8_t>(p_data, p_data + data_len);
+}
+
+/*****************************************************************************
+ *
+ * Function         getDiscoveryCommand
+ *
+ * Description      It returns the current discovery command
+ *
+ * Returns          return current discovery command which is set
+ *
+ ****************************************************************************/
+vector<uint8_t> NciDiscoveryCommandBuilder::getDiscoveryCommand() {
+  return currentDiscoveryCommand;
+}
+
+/*****************************************************************************
+ *
+ * Function         setObserveModePerTech
+ *
+ * Description      Sets ObserveMode per tech
+ *
+ * Parameters       techMode - ObserveMode per tech
+ *
+ * Returns          return void
+ *
+ ****************************************************************************/
+void NciDiscoveryCommandBuilder::setObserveModePerTech(uint8_t techMode) {
+  currentObserveModeTech = techMode;
+}
+
+/*****************************************************************************
+ *
+ * Function         getCurrentObserveModeTechValue
+ *
+ * Description      gets ObserveMode tech mode
+ *
+ * Returns          return Observe mode tech mode
+ *
+ ****************************************************************************/
+uint8_t NciDiscoveryCommandBuilder::getCurrentObserveModeTechValue() {
+  return currentObserveModeTech;
 }

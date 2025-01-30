@@ -83,13 +83,17 @@ int NfcWriter::write(uint16_t data_len, const uint8_t* p_data) {
     phNxpNciHal_print_packet("SEND", p_data, data_len,
                              RfFwRegionDnld_handle == NULL);
     return phNxpNciHal_handleVendorSpecificCommand(data_len, p_data);
-  } else if (isObserveModeEnabled() &&
-             p_data[NCI_GID_INDEX] == NCI_RF_DISC_COMMD_GID &&
+  } else if (p_data[NCI_GID_INDEX] == NCI_RF_DISC_COMMD_GID &&
              p_data[NCI_OID_INDEX] == NCI_RF_DISC_COMMAND_OID) {
-    NciDiscoveryCommandBuilder builder;
-    vector<uint8_t> v_data = builder.reConfigRFDiscCmd(data_len, p_data);
-    return this->direct_write(v_data.size(), v_data.data());
-    } else if (IS_HCI_PACKET(p_data)) {
+    NciDiscoveryCommandBuilderInstance.setDiscoveryCommand(data_len, p_data);
+    if (isObserveModeEnabled()) {
+      vector<uint8_t> v_data =
+          NciDiscoveryCommandBuilderInstance.reConfigRFDiscCmd();
+      return this->direct_write(v_data.size(), v_data.data());
+    } else {
+      return this->direct_write(data_len, p_data);
+    }
+  } else if (IS_HCI_PACKET(p_data)) {
     // Inform WiredSe service that HCI Pkt is sending from libnfc layer
     phNxpNciHal_WiredSeDispatchEvent(gWiredSeHandle, SENDING_HCI_PKT);
   } else if (IS_NFCEE_DISABLE(p_data)) {
