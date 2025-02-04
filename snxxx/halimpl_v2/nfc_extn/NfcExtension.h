@@ -170,7 +170,7 @@ void phNxpExtn_WriteCompleteStatusUpdate(NFCSTATUS status);
  * NFCSTATUS_EXTN_FEATURE_FAILURE.
  *
  */
-NFCSTATUS phNxpExtn_HandleNciMsg(uint16_t dataLen, const uint8_t* pData);
+NFCSTATUS phNxpExtn_HandleNciMsg(uint16_t *dataLen, const uint8_t* pData);
 
 /**
 
@@ -194,7 +194,7 @@ NFCSTATUS phNxpExtn_HandleHalEvent(uint8_t event);
  * stop the response timer.
  *
  */
-NFCSTATUS phNxpExtn_HandleNciRspNtf(uint16_t dataLen, const uint8_t* pData);
+NFCSTATUS phNxpExtn_HandleNciRspNtf(uint16_t *dataLen, const uint8_t* pData);
 
 /**
  * @brief  requests control of NFCC to libnfc-nci.
