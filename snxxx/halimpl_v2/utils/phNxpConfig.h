@@ -20,7 +20,7 @@
  *
  *  The original Work has been changed by NXP.
  *
- *  Copyright 2013-2024 NXP
+ *  Copyright 2013-2025 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -183,4 +183,5 @@ extern char Fw_Lib_Path[256];
 #define NAME_NXP_CE_SUPPORT_IN_NFC_OFF_PHONE_OFF \
   "NXP_CE_SUPPORT_IN_NFC_OFF_PHONE_OFF"
 #define NAME_NXP_4K_FWDNLD_SUPPORT "NXP_4K_FWDNLD_SUPPORT"
+#define NAME_NFCEE_EVENT_RF_DISCOVERY_OPTION "NFCEE_EVENT_RF_DISCOVERY_OPTION"
 #endif
