@@ -198,6 +198,9 @@ public class NfcOperations {
 
         @Override
         public void onApplyRouting(Consumer<Boolean> isSkipped){
+            // allow apply routing by default.
+            // if required apply routing can be skipped based on usecases
+            isSkipped.accept(false);
         }
 
         @Override
