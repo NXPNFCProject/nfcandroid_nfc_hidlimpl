@@ -216,7 +216,9 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
       uint16_t gain = ((p_event[INDEX_OF_L2_EVT_GAIN - 1] << 8) |
                        p_event[INDEX_OF_L2_EVT_GAIN]) *
                       gpMeasuredFieldStrength_of_gpRssiAt8Am;
-      if (gain < GAIN_MAX_VALUE) {
+      if (gain == 0) {
+        lastKnownGain = GAIN_NOT_SUPPORTED;
+      } else if (gain < GAIN_MAX_VALUE) {
         lastKnownGain = (uint8_t)gain;
       } else {
         lastKnownGain = GAIN_MAX_VALUE;
