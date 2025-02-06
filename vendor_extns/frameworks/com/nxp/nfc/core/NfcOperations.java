@@ -54,6 +54,7 @@ public class NfcOperations {
 
     private static final int FLAG_USE_ALL_TECH = 0xff;
 
+
     private NfcAdapter mNfcAdapter;
     private NfcOemExtension mNfcOemExtension;
 
@@ -155,15 +156,22 @@ public class NfcOperations {
      */
     public void enableDiscovery() {
         NxpNfcLogger.d(TAG, "enableDiscovery With Keep READER|LISTEN");
-        mDisCountDownLatch = new CountDownLatch(1);
         setDiscoveryTech(NfcAdapter.FLAG_READER_KEEP | FLAG_USE_ALL_TECH,
                             NfcAdapter.FLAG_LISTEN_KEEP | FLAG_USE_ALL_TECH);
-        try {
-            mDisCountDownLatch.await(NxpNfcConstants.SEND_RAW_WAIT_TIME_OUT_VAL,
-                            TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            NxpNfcLogger.e(TAG, "Error enabling discovery");
-        }
+        startDiscovery();
+    }
+
+    /**
+     * @brief sets discover Technology also starts discovery if stopped
+     * @param pollTechnology Flags indicating poll technologies.
+     * @param listenTechnology Flags indicating listen technologies.
+     * @return None
+     */
+    public void setDiscoveryTech(int pollTechnology, int listenTechnology) {
+      NxpNfcLogger.d(TAG, "setDiscoveryTech");
+      mNfcAdapter.setDiscoveryTechnology(null, pollTechnology | NfcAdapter.FLAG_SET_DEFAULT_TECH,
+                                         listenTechnology | NfcAdapter.FLAG_SET_DEFAULT_TECH);
+      startDiscovery();
     }
 
     /**
@@ -172,17 +180,20 @@ public class NfcOperations {
      * @param listenTechnology Flags indicating listen technologies.
      * @return None
      */
-    public void setDiscoveryTech(int pollTechnology, int listenTechnology) {
-      NxpNfcLogger.d(TAG, "setDiscoveryTech");
-      mDisCountDownLatch = new CountDownLatch(1);
-      mNfcAdapter.setDiscoveryTechnology(null, pollTechnology | NfcAdapter.FLAG_SET_DEFAULT_TECH,
-                                         listenTechnology | NfcAdapter.FLAG_SET_DEFAULT_TECH);
-      try {
-        mDisCountDownLatch.await(NxpNfcConstants.SEND_RAW_WAIT_TIME_OUT_VAL,
-                                 TimeUnit.MILLISECONDS);
-      } catch (InterruptedException e) {
-        NxpNfcLogger.e(TAG, "Error disabling discovery");
-      }
+    private void startDiscovery() {
+        NxpNfcLogger.d(TAG, "startDiscovery");
+        if (isDiscoveryStarted()) {
+            NxpNfcLogger.d(TAG, " discovery already started");
+            return;
+        }
+        try {
+            mDisCountDownLatch = new CountDownLatch(1);
+            mNfcOemExtension.resumePolling();
+            mDisCountDownLatch.await(NxpNfcConstants.SEND_RAW_WAIT_TIME_OUT_VAL,
+                    TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            NxpNfcLogger.e(TAG, "Error starting discovery");
+        }
     }
 
     private NfcOemExtension.Callback mOemExtensionCallback = new NfcOemExtension.Callback() {
@@ -197,7 +208,7 @@ public class NfcOperations {
         }
 
         @Override
-        public void onApplyRouting(Consumer<Boolean> isSkipped){
+        public void onApplyRouting(Consumer<Boolean> isSkipped) {
             // allow apply routing by default.
             // if required apply routing can be skipped based on usecases
             isSkipped.accept(false);
