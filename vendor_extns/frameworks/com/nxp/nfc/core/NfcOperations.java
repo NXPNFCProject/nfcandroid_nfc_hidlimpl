@@ -74,9 +74,9 @@ public class NfcOperations {
     private boolean mIsDiscoveryStarted = false;
     /**
      * @brief holds the value of
-     * {@link NfcOemExtension.Callback#onRfFieldActivated()}
+     * {@link NfcOemExtension.Callback#onRfFieldDetected()}
      */
-    private boolean mIsRfFieldActivated = false;
+    private boolean mIsRfFieldDetected = false;
     /**
      * @brief holds the value of
      * {@link NfcOemExtension.Callback#onCardEmulationActivated()}
@@ -275,9 +275,9 @@ public class NfcOperations {
         }
 
         @Override
-        public void onRfFieldActivated(boolean isActivated) {
-            NfcOperations.this.mIsRfFieldActivated = isActivated;
-            NxpNfcLogger.d(TAG, "onRfFieldActivated: " + isActivated);
+        public void onRfFieldDetected(boolean isActive) {
+            NfcOperations.this.mIsRfFieldDetected = isActive;
+            NxpNfcLogger.d(TAG, "onRfFieldDetected: " + isActive);
         }
 
         @Override
@@ -341,8 +341,8 @@ public class NfcOperations {
     /**
      * @brief Getter of {@link #mIsRfFieldActivated}
      */
-    public boolean isRfFieldActivated() {
-        return this.mIsRfFieldActivated;
+    public boolean isRfFieldDetected() {
+        return this.mIsRfFieldDetected;
     }
 
     /**

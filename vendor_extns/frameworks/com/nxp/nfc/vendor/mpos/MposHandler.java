@@ -155,7 +155,7 @@ public class MposHandler implements INxpNfcNtfHandler {
     NxpNfcLogger.d(TAG, "mPOSSetReaderMode Enter : " + enable);
 
     /* MPOS Reader mode shall not be started if CE or R/W mode is going on */
-    if (mNfcOperations.isRfFieldActivated()) {
+    if (mNfcOperations.isRfFieldDetected()) {
       NxpNfcLogger.d(TAG, "Payment is in progress");
       return MPOS_STATUS_FAILED;
     }
