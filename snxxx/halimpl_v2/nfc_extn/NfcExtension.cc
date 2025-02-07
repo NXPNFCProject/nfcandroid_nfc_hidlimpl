@@ -26,6 +26,9 @@ extern tNfc_featureList nfcFL;
 fp_extn_init_t fp_extn_init = NULL;
 fp_extn_deinit_t fp_extn_deinit = NULL;
 fp_extn_handle_nfc_event_t fp_extn_handle_nfc_event = NULL;
+const std::string vendor_nfc_init_name = "vendor_nfc_init";
+const std::string vendor_nfc_de_init_name = "vendor_nfc_de_init";
+const std::string vendor_nfc_handle_event_name = "vendor_nfc_handle_event";
 
 void* p_oem_extn_handle = NULL;
 NfcExtEventData_t nfc_ext_event_data;
@@ -57,18 +60,18 @@ void phNxpExtn_LibSetup() {
   }
 
   if ((fp_extn_init = (fp_extn_init_t)dlsym(p_oem_extn_handle,
-                                            "phNxpExtn_LibInit")) == NULL) {
-    NXPLOG_NCIHAL_E("%s Failed to find phNxpExtn_LibInit !!", __func__);
+                                            vendor_nfc_init_name.c_str())) == NULL) {
+    NXPLOG_NCIHAL_E("%s Failed to find %s !!", __func__, vendor_nfc_init_name.c_str());
   }
 
   if ((fp_extn_deinit = (fp_extn_deinit_t)dlsym(
-           p_oem_extn_handle, "phNxpExtn_LibDeInit")) == NULL) {
-    NXPLOG_NCIHAL_E("%s Failed to find phNxpExtn_LibDeInit !!", __func__);
+           p_oem_extn_handle, vendor_nfc_de_init_name.c_str())) == NULL) {
+    NXPLOG_NCIHAL_E("%s Failed to find %s !!", __func__, vendor_nfc_de_init_name.c_str());
   }
 
   if ((fp_extn_handle_nfc_event = (fp_extn_handle_nfc_event_t)dlsym(
-           p_oem_extn_handle, "phNxpExtn_HandleNfcEvent")) == NULL) {
-    NXPLOG_NCIHAL_E("%s Failed to find phNxpExtn_HandleNfcEvent !!", __func__);
+           p_oem_extn_handle, vendor_nfc_handle_event_name.c_str())) == NULL) {
+    NXPLOG_NCIHAL_E("%s Failed to find %s !!", __func__, vendor_nfc_handle_event_name.c_str());
   }
 
   phNxpExtn_Init();
