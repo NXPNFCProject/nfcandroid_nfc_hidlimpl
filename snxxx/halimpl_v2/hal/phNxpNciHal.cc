@@ -3595,21 +3595,8 @@ void phNxpNciHal_configFeatureList(uint8_t* init_rsp, uint16_t rsp_len) {
 ** Returns          void
 *******************************************************************************/
 static void phNxpNciHal_UpdateFwStatus(HalNfcFwUpdateStatus fwStatus) {
-  static phLibNfc_Message_t msg;
-  static uint8_t status;
-  phNxpExtn_FwDnldStatusUpdate(fwStatus);
-  if (RfFwRegionDnld_handle == NULL) {
-    /* If proprietary feature not supported */
-    return;
-  }
   NXPLOG_NCIHAL_D("phNxpNciHal_UpdateFwStatus Enter");
-
-  status = (uint8_t)fwStatus;
-  msg.eMsgType = HAL_NFC_FW_UPDATE_STATUS_EVT;
-  msg.pMsgData = &status;
-  msg.Size = sizeof(status);
-  phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId,
-                        (phLibNfc_Message_t*)&msg);
+  phNxpExtn_FwDnldStatusUpdate(fwStatus);
   return;
 }
 
