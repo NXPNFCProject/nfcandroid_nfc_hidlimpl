@@ -21,7 +21,7 @@
  *
  * Description      This function will read and return property
  *                  value of input key as integer.
- * Parameters       key - property string for which vaue to be read.
+ * Parameters       key - property string for which value to be read.
  *                  default_value - default value to be return if property not
  *                  set.
  *
@@ -32,14 +32,55 @@
 int32_t phNxpNciHal_getVendorProp_int32(const char* key, int32_t default_value);
 
 /******************************************************************************
+ * Function         phNxpNciHal_getVendorProp
+ *
+ * Description      This function will read and return property
+ *                  value of input key as string.
+ * Parameters       key - property string for which value to be read.
+ *                  value - output value of property.
+ *
+ * Returns          actual length of the property value.
+ *
+ ******************************************************************************/
+int phNxpNciHal_getVendorProp(const char* key, char* value);
+
+/******************************************************************************
  * Function         phNxpNciHal_setVendorProp
  *
  * Description      This function will set the value for input property.
  *
- * Parameters       key - property string for which vaue to be set.
+ * Parameters       key - property string for which value to be set.
  *                  value - value of key property be set.
  *
  * Returns          returns 0 on success and, < 0 on failure
  *
  ******************************************************************************/
 int phNxpNciHal_setVendorProp(const char* key, const char* value);
+
+/******************************************************************************
+ * Function         phNxpNciHal_getFragmentedVendorProp
+ *
+ * Description      This function will read and return property
+ *                  value of input key which is stored in multiple fragments.
+ * Parameters       key - property string for which value to be read.
+ *                  value - output value of property.
+ *
+ * Returns          actual length of the property value.
+ *
+ ******************************************************************************/
+int phNxpNciHal_getFragmentedVendorProp(const char* key, char* value);
+
+/******************************************************************************
+ * Function         phNxpNciHal_setFragmentedVendorProp
+ *
+ * Description      This function will set the value for input property
+ *                  which are large to store in single property hence
+ *                  needs to be fragmented.
+ *
+ * Parameters       key - property string for which value to be set.
+ *                  value - value of key property be set.
+ *
+ * Returns          returns 0 on success and, < 0 on failure
+ *
+ ******************************************************************************/
+int phNxpNciHal_setFragmentedVendorProp(const char* key, const char* value);
