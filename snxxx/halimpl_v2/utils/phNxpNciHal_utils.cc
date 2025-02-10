@@ -22,8 +22,13 @@
 #include <phNxpLog.h>
 #include <phNxpNciHal.h>
 #include <phNxpNciHal_utils.h>
+#include <iomanip>
+#include <sstream>
 #include "NfcExtension.h"
 #include "phNxpNciHal_extOperations.h"
+
+#define ASCII_OFFSET_NUM 48
+#define ASCII_OFFSET_CHAR 55
 
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 /*********************** Link list functions **********************************/
@@ -470,6 +475,69 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
     NXPLOG_NCIX_E("\nphNxpNciHal_print_packet:Failed to Allocate memory\n");
   }
   return;
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_StringToHex
+ *
+ * Description      This function will convert string to hexadecimal
+ *                  representation.
+ * Parameters       str - string to be converted.
+ *                  len - Length of passed string
+ *                  hex - Output converted hex bytes.
+ *
+ * Returns          None.
+ *
+ ******************************************************************************/
+void phNxpNciHal_StringToHex(char* str, size_t len, char* hex) {
+  if (str == NULL || hex == NULL || (len % 2) != 0) {
+    return;
+  }
+  memset(hex, 0, (len / 2));
+  // Convert from string to hexadecimal format
+  for (size_t i = 0; i < len; i += 2) {
+    uint8_t temp = 0x00;
+    // 1st Nibble of byte
+    if (str[i] >= '0' && str[i] <= '9') {
+      temp = (char(str[i]) - ASCII_OFFSET_NUM) << 4;
+    } else if (toupper(str[i]) >= 'A' && toupper(str[i]) <= 'F') {
+      temp = (char(toupper(str[i])) - ASCII_OFFSET_CHAR) << 4;
+    } else {
+      return;
+    }
+    // 2nd Nibble of byte
+    if (str[i + 1] >= '0' && str[i + 1] <= '9') {
+      temp = temp | (char(str[i + 1]) - ASCII_OFFSET_NUM);
+    } else if (toupper(str[i + 1]) >= 'A' && toupper(str[i + 1]) <= 'F') {
+      temp = temp | (char(toupper(str[i + 1])) - ASCII_OFFSET_CHAR);
+    } else {
+      return;
+    }
+    hex[i / 2] = temp;
+  }
+  return;
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_HexToString
+ *
+ * Description      This function will convert hexadecimal buffer to
+ *                  string representation.
+ * Parameters       hex - hex bytes to be converted to string.
+ *                  len - Length of passed hex buffer.
+ *                  str - Output converted string.
+ *
+ * Returns          None.
+ *
+ ******************************************************************************/
+void phNxpNciHal_HexToString(char* hex, size_t len, char* str) {
+  std::stringstream ss;
+  // Convert to character
+  for (size_t i = 0; i < len; i++) {
+    ss << std::setfill('0') << std::hex << std::uppercase << std::setw(2)
+       << (0xFF & hex[i]);
+  }
+  strcpy(str, ss.str().c_str());
 }
 
 /*******************************************************************************

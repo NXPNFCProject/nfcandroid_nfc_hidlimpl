@@ -30,6 +30,7 @@
 #include "phNfcCommon.h"
 #include "phNxpNciHal_IoctlOperations.h"
 #include "phNxpNciHal_ULPDet.h"
+#include "phNxpNciHal_VendorProp.h"
 
 #define NCI_HEADER_SIZE 3
 #define NCI_SE_CMD_LEN 4
@@ -342,6 +343,13 @@ NFCSTATUS phNxpNciHal_save_uicc_params() {
       uicc1HciParams, uicc1HciParams.size(), EEPROM_UICC1_SESSION_ID);
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("%s: Save UICC1 CLPP failed .", __func__);
+  } else {
+    // Convert from hexadecimal to character
+    char uicc1HciParamsStr[uicc1HciParams.size() * 2 + 1];
+    phNxpNciHal_HexToString((char*)uicc1HciParams.data(), uicc1HciParams.size(),
+                            uicc1HciParamsStr);
+    std::string propName = "persist.vendor.nfc.nxp.uicc1HciParams";
+    phNxpNciHal_setFragmentedVendorProp(propName.c_str(), uicc1HciParamsStr);
   }
 
   /* Getting UICC2 CL params */
@@ -350,6 +358,13 @@ NFCSTATUS phNxpNciHal_save_uicc_params() {
       uicc2HciParams, uicc2HciParams.size(), EEPROM_UICC2_SESSION_ID);
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("%s: Save UICC2 CLPP failed .", __func__);
+  } else {
+    // Convert to character
+    char uicc2HciParamsStr[uicc2HciParams.size() * 2 + 1];
+    phNxpNciHal_HexToString((char*)uicc2HciParams.data(), uicc2HciParams.size(),
+                            uicc2HciParamsStr);
+    std::string propName = "persist.vendor.nfc.nxp.uicc2HciParams";
+    phNxpNciHal_setFragmentedVendorProp(propName.c_str(), uicc2HciParamsStr);
   }
 
   /* Get UICC CE HCI State */
@@ -358,6 +373,13 @@ NFCSTATUS phNxpNciHal_save_uicc_params() {
       uiccHciCeParams, uiccHciCeParams.size(), EEPROM_UICC_HCI_CE_STATE);
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("%s: Save UICC_HCI_CE_STATE failed .", __func__);
+  } else {
+    // Convert to character
+    char uiccHciCeParamsStr[uiccHciCeParams.size() * 2 + 1];
+    phNxpNciHal_HexToString((char*)uiccHciCeParams.data(),
+                            uiccHciCeParams.size(), uiccHciCeParamsStr);
+    std::string propName = "persist.vendor.nfc.nxp.uiccHciCeParams";
+    phNxpNciHal_setVendorProp(propName.c_str(), uiccHciCeParamsStr);
   }
   return status;
 }
@@ -378,6 +400,42 @@ NFCSTATUS phNxpNciHal_restore_uicc_params() {
   }
 
   NFCSTATUS status = NFCSTATUS_FAILED;
+
+  // UICC1 HCI PARAMS
+  const char* uicc1HciParamsPropName = "persist.vendor.nfc.nxp.uicc1HciParams";
+  char uiccHciParamsStr[1024];
+  memset(uiccHciParamsStr, 0, sizeof(uiccHciParamsStr));
+  // Read fragmented property
+  phNxpNciHal_getFragmentedVendorProp(uicc1HciParamsPropName, uiccHciParamsStr);
+  uicc1HciParams.clear();
+  uicc1HciParams.resize(strlen(uiccHciParamsStr) / 2);
+  // Convert from string to hexadecimal format
+  phNxpNciHal_StringToHex(uiccHciParamsStr, strlen(uiccHciParamsStr),
+                          (char*)uicc1HciParams.data());
+
+  // UICC2 HCI PARAMS
+  const char* uicc2HciParamsPropName = "persist.vendor.nfc.nxp.uicc2HciParams";
+  memset(uiccHciParamsStr, 0, sizeof(uiccHciParamsStr));
+  // Read fragmented property
+  phNxpNciHal_getFragmentedVendorProp(uicc2HciParamsPropName, uiccHciParamsStr);
+  uicc2HciParams.clear();
+  uicc2HciParams.resize(strlen(uiccHciParamsStr) / 2);
+  // Convert from string to hexadecimal format
+  phNxpNciHal_StringToHex(uiccHciParamsStr, strlen(uiccHciParamsStr),
+                          (char*)uicc2HciParams.data());
+
+  // HCI CE PARAMS
+  const char* uiccHciCeParamsPropName =
+      "persist.vendor.nfc.nxp.uiccHciCeParams";
+  memset(uiccHciParamsStr, 0, sizeof(uiccHciParamsStr));
+  // Read fragmented property
+  phNxpNciHal_getVendorProp(uiccHciCeParamsPropName, uiccHciParamsStr);
+  uiccHciCeParams.clear();
+  uiccHciCeParams.resize(strlen(uiccHciParamsStr) / 2);
+  // Convert from string to hexadecimal format
+  phNxpNciHal_StringToHex(uiccHciParamsStr, strlen(uiccHciParamsStr),
+                          (char*)uiccHciCeParams.data());
+
   if (uicc1HciParams.size() > 0) {
     status = phNxpNciHal_set_uicc_hci_params(
         uicc1HciParams, uicc1HciParams.size(), EEPROM_UICC1_SESSION_ID);
@@ -385,6 +443,7 @@ NFCSTATUS phNxpNciHal_restore_uicc_params() {
       NXPLOG_NCIHAL_E("%s: Restore UICC1 CLPP failed .", __func__);
     } else {
       uicc1HciParams.resize(0);
+      phNxpNciHal_setFragmentedVendorProp(uicc1HciParamsPropName, "");
     }
   }
   if (uicc2HciParams.size() > 0) {
@@ -394,6 +453,7 @@ NFCSTATUS phNxpNciHal_restore_uicc_params() {
       NXPLOG_NCIHAL_E("%s: Restore UICC2 CLPP failed .", __func__);
     } else {
       uicc2HciParams.resize(0);
+      phNxpNciHal_setFragmentedVendorProp(uicc2HciParamsPropName, "");
     }
   }
   if (uiccHciCeParams.size() > 0) {
@@ -403,6 +463,7 @@ NFCSTATUS phNxpNciHal_restore_uicc_params() {
       NXPLOG_NCIHAL_E("%s: Restore UICC_HCI_CE_STATE failed .", __func__);
     } else {
       uiccHciCeParams.resize(0);
+      phNxpNciHal_setVendorProp(uiccHciCeParamsPropName, "");
     }
   }
   return status;
