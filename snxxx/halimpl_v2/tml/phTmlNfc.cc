@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2024 NXP
+ * Copyright 2010-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -229,7 +229,7 @@ static NFCSTATUS phTmlNfc_StartThread(void) {
 *******************************************************************************/
 static void* phTmlNfc_TmlThread(void* pParam) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
-  int32_t dwNoBytesWrRd = PH_TMLNFC_RESET_VALUE;
+  int16_t dwNoBytesWrRd = PH_TMLNFC_RESET_VALUE;
   uint8_t readRetryDelay = 0;
   /* Transaction info buffer to be passed to Callback Thread */
   static phTmlNfc_TransactInfo_t tTransactionInfo;
@@ -283,21 +283,20 @@ static void* phTmlNfc_TmlThread(void* pParam) {
             memcpy(gpphTmlNfc_Context->tReadInfo.pBuffer, tMsg.data,
                    dwNoBytesWrRd);
             /* Update the actual number of bytes read including header */
-            gpphTmlNfc_Context->tReadInfo.wLength = (uint16_t)(dwNoBytesWrRd);
+            gpphTmlNfc_Context->tReadInfo.wLength = dwNoBytesWrRd;
           }
           readRetryDelay = 0;
 
           NXPLOG_TML_D("NFCC - Read successful.....\n");
           /* This has to be reset only after a successful read */
           gpphTmlNfc_Context->tReadInfo.bEnable = 0;
-          phNxpNciHal_print_packet("RECV", tMsg.data,
-                                   (uint16_t)(dwNoBytesWrRd));
+          phNxpNciHal_print_packet("RECV", tMsg.data, dwNoBytesWrRd);
 
           /* Fill the Transaction info structure to be passed to Callback
            * Function */
           tTransactionInfo.wStatus = wStatus;
           /* Actual number of bytes read is filled in the structure */
-          tTransactionInfo.wLength = (uint16_t)(dwNoBytesWrRd);
+          tTransactionInfo.wLength = dwNoBytesWrRd;
 
           /* Read operation completed successfully. Post a Message onto Callback
            * Thread*/
@@ -306,7 +305,7 @@ static void* phTmlNfc_TmlThread(void* pParam) {
           tDeferredInfo.pParameter = &tTransactionInfo;
           tMsg.eMsgType = PH_LIBNFC_DEFERREDCALL_MSG;
           tMsg.pMsgData = &tDeferredInfo;
-          tMsg.Size = (uint16_t)(dwNoBytesWrRd);
+          tMsg.Size = dwNoBytesWrRd;
           tMsg.w_status = tTransactionInfo.wStatus;
           NXPLOG_TML_D("NFCC - Posting read message.....\n");
           dwNoBytesWrRd =
