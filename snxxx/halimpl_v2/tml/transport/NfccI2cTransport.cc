@@ -1,5 +1,5 @@
 /******************************************************************************
- *  Copyright 2020-2023 NXP
+ *  Copyright 2020-2023, 2025 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -42,6 +42,9 @@
 #define FW_DNLD_LEN_OFFSET 1
 #define NORMAL_MODE_LEN_OFFSET 2
 #define FLUSH_BUFFER_SIZE 0xFF
+//To enable the VBAT monitor feature.
+// #define NXP_NFC_VBAT_MONITOR
+
 extern phTmlNfc_i2cfragmentation_t fragmentation_enabled;
 extern phTmlNfc_Context_t* gpphTmlNfc_Context;
 /*******************************************************************************
@@ -190,6 +193,11 @@ int NfccI2cTransport::Read(void* pDevHandle, uint8_t* pBuffer,
     } else if (ret_Read == 0) {
       NXPLOG_TML_E("%s [hdr]EOF", __func__);
       return -1;
+#ifdef NXP_NFC_VBAT_MONITOR
+    } else if (errno == EREMOTEIO) {
+      NXPLOG_TML_E("%s [hdr] errno : %x", __func__, errno);
+      return -EREMOTEIO;
+#endif
     } else {
       NXPLOG_TML_E("%s [hdr] errno : %x", __func__, errno);
       NXPLOG_TML_E(" %s pBuffer[0] = %x pBuffer[1]= %x", __func__, pBuffer[0],

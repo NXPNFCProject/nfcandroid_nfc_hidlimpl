@@ -274,7 +274,13 @@ static void* phTmlNfc_TmlThread(void* pParam) {
           }
           usleep(readRetryDelay * 1000);
           sem_post(&gpphTmlNfc_Context->rxSemaphore);
-        } else if (dwNoBytesWrRd > 260) {
+        } else if (dwNoBytesWrRd == PH_TMNFC_VBAT_LOW_ERROR) {
+          NXPLOG_TML_E(
+              "Platform VBAT Error detected by NFCC "
+              "NFC restart... : %d\n",
+              dwNoBytesWrRd);
+          abort();
+        } else if (dwNoBytesWrRd > PH_TMLNFC_MAX_READ_NCI_BUFF_LEN) {
           NXPLOG_TML_E("Numer of bytes read exceeds the limit 260.....\n");
           readRetryDelay = 0;
           sem_post(&gpphTmlNfc_Context->rxSemaphore);
