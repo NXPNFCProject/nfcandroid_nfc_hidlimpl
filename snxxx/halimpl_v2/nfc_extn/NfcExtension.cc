@@ -51,10 +51,10 @@ static bool initalized = false;
 void phNxpExtn_LibSetup() {
   NXPLOG_NCIHAL_D("%s Enter", __func__);
   p_oem_extn_handle =
-      dlopen("/system/vendor/lib64/libnxp_nfc_gen_ext.so", RTLD_NOW);
+      dlopen("/system/vendor/lib64/libnfc_vendor_extn.so", RTLD_NOW);
   if (p_oem_extn_handle == NULL) {
     NXPLOG_NCIHAL_E(
-        "%s Error : opening (/system/vendor/lib64/libnxp_nfc_gen_ext.so) !!",
+        "%s Error : opening (/system/vendor/lib64/libnfc_vendor_extn.so) !!",
         __func__);
     return;
   }
@@ -97,7 +97,7 @@ void phNxpExtn_LibClose() {
     fp_extn_deinit();
   }
   if (p_oem_extn_handle != NULL) {
-    NXPLOG_NCIHAL_D("%s Closing libnxp_nfc_gen_ext.so lib", __func__);
+    NXPLOG_NCIHAL_D("%s Closing libnfc_vendor_extn.so lib", __func__);
     dlclose(p_oem_extn_handle);
     p_oem_extn_handle = NULL;
   }
