@@ -80,4 +80,24 @@ public interface INxpNfcAdapter {
   public int enableQTag(Activity activity, NxpReaderCallback mQTagCallback,
                         int mode, int pollTech, int delay_value)
       throws IOException;
+
+  /**
+     * This api is called by applications to update the NFC configurations which
+     * are already part of libnfc-nci.conf <p>Requires
+     * {@link android.Manifest.permission#NFC} permission.<ul> <li>This api
+     * shall be called only Nfcservice is enabled. <li>This api shall be called
+     * only when there are no NFC transactions ongoing
+     * </ul>
+     * @param  configs NFC Configuration to be updated.
+     * @apiNote String should have KEY and assigned with Value in Hexadecimal.
+     * Refer below sample.
+     * POLLING_TECH_MASK=0x4F
+     * @return whether  the update of configuration is
+     *          success or not.
+     *          0xFF - failure
+     *          0x00 - success
+     * @throws  IOException if any exception occurs during setting the NFC
+     * configuration.
+     */
+    public boolean setConfig(String configs) throws IOException;
 }
