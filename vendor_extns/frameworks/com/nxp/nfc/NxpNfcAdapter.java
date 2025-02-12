@@ -41,10 +41,44 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     private QTagHandler mQTagHandler;
 
     /**
+     * @brief supported chipsets
+     */
+    private static final int NXP_EN_SN110U = 1;
+    private static final int NXP_EN_SN100U = 1;
+    private static final int NXP_EN_SN220U = 1;
+    private static final int NXP_EN_PN557 = 1;
+    private static final int NXP_EN_PN560 = 1;
+    private static final int NXP_EN_SN300U = 1;
+    private static final int NXP_EN_SN330U = 1;
+
+    private static final int NFC_NXP_MW_ANDROID_VER = 16; // Android version used by NFC MW
+    private static final int NFC_NXP_MW_VERSION_MAJ = 0x00; // MW Major Version
+    private static final int NFC_NXP_MW_VERSION_MIN = 0x00; // MW Minor Version
+    private static final int NFC_NXP_MW_CUSTOMER_ID = 0x00; // MW Customer ID
+    private static final int NFC_NXP_MW_RC_VERSION = 0x00; // MW RC Version
+
+    private static void printComNxpNfcVersion() {
+        int validation = (NXP_EN_SN100U << 13);
+        validation |= (NXP_EN_SN110U << 14);
+        validation |= (NXP_EN_SN220U << 15);
+        validation |= (NXP_EN_PN560 << 16);
+        validation |= (NXP_EN_SN300U << 17);
+        validation |= (NXP_EN_SN330U << 18);
+        validation |= (NXP_EN_PN557 << 11);
+
+        String logMessage = String.format(
+            "NxpNfcJar Version: NXP_AR_%02X_%05X_%02d.%02X.%02X",
+            NFC_NXP_MW_CUSTOMER_ID, validation, NFC_NXP_MW_ANDROID_VER,
+            NFC_NXP_MW_VERSION_MAJ, NFC_NXP_MW_VERSION_MIN);
+        NxpNfcLogger.d(TAG, logMessage);
+    }
+
+    /**
      * @brief private constructor to create the instance of {@link NxpNfcAdapter}
      * @param nfcAdapter
      */
     private NxpNfcAdapter(NfcAdapter nfcAdapter) {
+        printComNxpNfcVersion();
         mNfcAdapter = nfcAdapter;
         mMposHandler = new MposHandler(nfcAdapter);
         mQTagHandler = new QTagHandler(nfcAdapter);
