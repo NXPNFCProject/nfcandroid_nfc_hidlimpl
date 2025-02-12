@@ -52,7 +52,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     private static final int NXP_EN_SN330U = 1;
 
     private static final int NFC_NXP_MW_ANDROID_VER = 16; // Android version used by NFC MW
-    private static final int NFC_NXP_MW_VERSION_MAJ = 0x00; // MW Major Version
+    private static final int NFC_NXP_MW_VERSION_MAJ = 0x03; // MW Major Version
     private static final int NFC_NXP_MW_VERSION_MIN = 0x00; // MW Minor Version
     private static final int NFC_NXP_MW_CUSTOMER_ID = 0x00; // MW Customer ID
     private static final int NFC_NXP_MW_RC_VERSION = 0x00; // MW RC Version
