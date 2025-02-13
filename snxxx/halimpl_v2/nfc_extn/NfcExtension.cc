@@ -82,8 +82,13 @@ void phNxpExtn_Init() {
   NXPLOG_NCIHAL_D("%s Enter", __func__);
   if (fp_extn_init != NULL) {
     if (!initalized) {
-      fp_extn_init(nullptr);
-      NXPLOG_NCIHAL_D("%s Initialized!", __func__);
+      if (fp_extn_init(nullptr)) {
+        NXPLOG_NCIHAL_D("%s : %s Success",
+            __func__, vendor_nfc_init_name.c_str());
+      } else {
+        NXPLOG_NCIHAL_D("%s: %s Failed",
+            __func__, vendor_nfc_init_name.c_str());
+      }
       initalized = true;
     } else {
       NXPLOG_NCIHAL_D("%s Already Initialized!", __func__);
@@ -94,7 +99,10 @@ void phNxpExtn_Init() {
 void phNxpExtn_LibClose() {
   NXPLOG_NCIHAL_D("%s Enter", __func__);
   if (fp_extn_deinit != NULL) {
-    fp_extn_deinit();
+    if (!fp_extn_deinit()) {
+      NXPLOG_NCIHAL_D("%s : %s Failed ",
+          __func__, vendor_nfc_de_init_name.c_str());
+    }
   }
   if (p_oem_extn_handle != NULL) {
     NXPLOG_NCIHAL_D("%s Closing libnfc_vendor_extn.so lib", __func__);
@@ -106,7 +114,7 @@ void phNxpExtn_LibClose() {
 NFCSTATUS phNxpExtn_HandleNciMsg(uint16_t *dataLen, const uint8_t* pData) {
   NXPLOG_NCIHAL_D("%s Enter dataLen:%d", __func__, *dataLen);
   NciData_t nci_data;
-  nci_data.data_len = dataLen;
+  nci_data.data_len = *dataLen;
   nci_data.p_data = (uint8_t*)pData;
   nfc_ext_event_data.nci_msg = nci_data;
 
@@ -139,7 +147,7 @@ void phNxpExtn_WriteCompleteStatusUpdate(NFCSTATUS status) {
 NFCSTATUS phNxpExtn_HandleNciRspNtf(uint16_t *dataLen, const uint8_t* pData) {
   NXPLOG_NCIHAL_D("%s Enter dataLen:%d", __func__, *dataLen);
   NciData_t nci_data;
-  nci_data.data_len = dataLen;
+  nci_data.data_len = *dataLen;
   nci_data.p_data = (uint8_t*)pData;
   nfc_ext_event_data.nci_rsp_ntf = nci_data;
 
