@@ -40,7 +40,7 @@ static NciDeferredData_t nciRspNtfDeferredData;
  *
  */
 typedef struct {
-  uint16_t* data_len;
+  uint16_t data_len;
   uint8_t* p_data;
 } NciData_t;
 
@@ -80,8 +80,8 @@ typedef enum {
   NFCC_HAL_FATAL_ERR_CODE = 8u,
 } NfcExtHal_NFCC_ERROR_CODE_t;
 
-typedef void (*fp_extn_init_t)(VendorExtnCb*);
-typedef void (*fp_extn_deinit_t)();
+typedef bool (*fp_extn_init_t)(VendorExtnCb*);
+typedef bool (*fp_extn_deinit_t)();
 typedef NFCSTATUS (*fp_extn_handle_nfc_event_t)(NfcExtEvent_t,
                                                 NfcExtEventData_t);
 
