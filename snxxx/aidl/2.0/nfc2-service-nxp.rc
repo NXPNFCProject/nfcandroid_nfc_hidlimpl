@@ -1,4 +1,8 @@
 service vendor.nfc_hal_service /vendor/bin/hw/android.hardware.nfc2-service.nxp
+    interface aidl android.hardware.nfc.INfc/default
+    interface aidl vendor.nxp.nxpnfc_aidl.INxpNfc/default
     class early_hal
     user nfc
     group nfc drmrpc system
+    oneshot
+    disabled
