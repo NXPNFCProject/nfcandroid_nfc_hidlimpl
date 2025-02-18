@@ -39,12 +39,6 @@
 // PROTECTED_MIR_USER_AREA_AT_CRC_MISMATCH
 #define CORE_GENERIC_ERR_UA_MIR_CRC_NTF 0xF7
 
-#define NXP_NON_STD_SAK_VALUE 0x13
-#define NXP_STD_SAK_VALUE 0x53
-
-#define T2T_RF_PROTOCOL 0x02
-#define ISO_DEP_RF_PROTOCOL 0x04
-
 void printNfcMwVersion();
 void phNxpNciHal_ext_init(void);
 NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len);
