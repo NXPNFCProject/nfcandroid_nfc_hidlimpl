@@ -1088,6 +1088,9 @@ static void phNxpNciHal_read_complete(void* pContext,
              ((nxpncihal_ctrl.p_cmd_data[0x01] & NCI_OID_MASK) ==
               (nxpncihal_ctrl.p_rx_data[0x01] & NCI_OID_MASK)) &&
              (nxpncihal_ctrl.nci_info.wait_for_ntf == TRUE)) {
+      /* Post to extentsion lib */
+      phNxpExtn_HandleNciRspNtf(&nxpncihal_ctrl.rx_data_len,
+        nxpncihal_ctrl.p_rx_data);
       /* Unlock semaphore waiting for only  ntf*/
       nxpncihal_ctrl.nci_info.wait_for_ntf = FALSE;
       SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
