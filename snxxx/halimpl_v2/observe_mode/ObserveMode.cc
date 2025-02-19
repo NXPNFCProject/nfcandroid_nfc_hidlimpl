@@ -68,6 +68,9 @@ int handleObserveMode(uint16_t data_len, const uint8_t* p_data) {
   uint8_t status = NCI_RSP_FAIL;
   if (phNxpNciHal_isObserveModeSupported()) {
     setObserveModeFlag(p_data[NCI_MSG_INDEX_FEATURE_VALUE]);
+    // ObseveMode per tech will be set to 0x01/0x00 for observe mode old command
+    NciDiscoveryCommandBuilderInstance.setObserveModePerTech(
+        p_data[NCI_MSG_INDEX_FEATURE_VALUE]);
     status = NCI_RSP_OK;
   }
 
@@ -206,7 +209,10 @@ int handleGetObserveModeStatus(uint16_t data_len, const uint8_t* p_data) {
   }
   vector<uint8_t> response;
   response.push_back(0x00);
-  response.push_back(isObserveModeEnabled() ? 0x01 : 0x00);
+  response.push_back(
+      isObserveModeEnabled()
+          ? NciDiscoveryCommandBuilderInstance.getCurrentObserveModeTechValue()
+          : 0x00);
   phNxpNciHal_vendorSpecificCallback(p_data[NCI_OID_INDEX],
                                      p_data[NCI_MSG_INDEX_FOR_FEATURE],
                                      std::move(response));
