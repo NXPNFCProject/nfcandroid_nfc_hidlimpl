@@ -64,7 +64,7 @@ typedef union {
  *        extension features.
  */
 typedef enum {
-  HANDLE_VENDOR_NCI_MSG,
+  HANDLE_VENDOR_NCI_MSG = 0x0B, /* TO avoid clash with existing HAL Status Event*/
   HANDLE_VENDOR_NCI_RSP_NTF,
   HANDLE_WRITE_COMPLETE_STATUS,
   HANDLE_HAL_CONTROL_GRANTED,
@@ -72,6 +72,7 @@ typedef enum {
   HANDLE_RF_HAL_STATE_UPDATE,
   HANDLE_HAL_EVENT,
   HANDLE_FW_DNLD_STATUS_UPDATE,
+  HANDLE_DOWNLOAD_FIRMWARE_REQUEST,
 } NfcExtEvent_t;
 
 typedef enum {
