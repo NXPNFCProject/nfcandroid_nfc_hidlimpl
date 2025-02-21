@@ -47,15 +47,19 @@ static void phNxpExtn_Init();
  * @brief global flag to initialize extention lib only once
  */
 static bool initalized = false;
+std::string mLibName = "libnfc_vendor_extn.so";
+#if (defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64))
+std::string mLibPathName = "/system/vendor/lib64/" + mLibName;
+#else
+std::string mLibPathName = "/system/vendor/lib/" + mLibName;
+#endif
 
 void phNxpExtn_LibSetup() {
   NXPLOG_NCIHAL_D("%s Enter", __func__);
-  p_oem_extn_handle =
-      dlopen("/system/vendor/lib64/libnfc_vendor_extn.so", RTLD_NOW);
+  p_oem_extn_handle = dlopen(mLibPathName.c_str(), RTLD_NOW);
   if (p_oem_extn_handle == NULL) {
-    NXPLOG_NCIHAL_E(
-        "%s Error : opening (/system/vendor/lib64/libnfc_vendor_extn.so) !!",
-        __func__);
+    NXPLOG_NCIHAL_E("%s Error : opening (%s) !!", __func__,
+                    mLibPathName.c_str());
     return;
   }
 
