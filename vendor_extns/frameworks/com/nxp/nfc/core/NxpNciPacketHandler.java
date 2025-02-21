@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,9 +85,9 @@ public class NxpNciPacketHandler {
         try {
             if (mNfcAdapter != null) {
                 mCurrentCmdSubGidOid = payload[0];
+                mResCountDownLatch = new CountDownLatch(1);
                 status = mNfcAdapter.sendVendorNciMessage(NfcAdapter.MESSAGE_TYPE_COMMAND,
                             gid, oid, payload);
-                mResCountDownLatch = new CountDownLatch(1);
                 if (status != NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
                     mVendorNciRsp = new byte[] { (byte) status };
                     NxpNfcLogger.e(TAG, "sendVendorNciMessage: error " + status);
