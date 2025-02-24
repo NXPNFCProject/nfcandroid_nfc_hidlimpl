@@ -16,6 +16,7 @@
 
 #undef PROPERTY_VALUE_MAX
 #include <cutils/properties.h>
+#include <hardware/nfc.h>
 #include "phNxpNciHal_IoctlOperations.h"
 
 #include <android-base/file.h>
