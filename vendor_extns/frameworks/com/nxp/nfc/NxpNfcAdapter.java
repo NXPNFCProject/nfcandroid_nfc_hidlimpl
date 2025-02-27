@@ -21,6 +21,8 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import com.nxp.nfc.vendor.mpos.MposHandler;
 import com.nxp.nfc.vendor.qtag.QTagHandler;
+import com.nxp.nfc.vendor.transit.TransitConfigHandler;
+
 import java.io.IOException;
 
 /**
@@ -39,6 +41,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     private NfcAdapter mNfcAdapter;
     private MposHandler mMposHandler;
     private QTagHandler mQTagHandler;
+    private TransitConfigHandler mTransitHandler;
 
     /**
      * @brief supported chipsets
@@ -82,6 +85,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
         mNfcAdapter = nfcAdapter;
         mMposHandler = new MposHandler(nfcAdapter);
         mQTagHandler = new QTagHandler(nfcAdapter);
+        mTransitHandler = new TransitConfigHandler(nfcAdapter);
     }
 
     public interface NxpReaderCallback {
@@ -149,5 +153,14 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
         throws IOException {
       return mQTagHandler.enableQTag(activity, mode, mQTagCallback, pollTech,
                                      delay_value);
+    }
+
+    /**
+     * @brief To be called to set NCI configuration
+     * @return {@link INxpNfcAdapter.mTransitHandler} instance
+     */
+    @Override
+    public boolean setConfig(String configs) throws IOException {
+      return mTransitHandler.setConfig(configs);
     }
 }

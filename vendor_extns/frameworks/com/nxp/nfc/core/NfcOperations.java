@@ -82,6 +82,11 @@ public class NfcOperations {
      * {@link NfcOemExtension.Callback#onCardEmulationActivated()}
      */
     private boolean mIsCardEmulationActivated = false;
+    /**
+     * @brief holds the value of
+     * {@link NfcOemExtension.Callback#onTagConnected()}
+     */
+    private boolean mIsTagConnected = false;
 
     /**
      * @brief private constructor to create singleton object
@@ -200,6 +205,7 @@ public class NfcOperations {
 
         @Override
         public void onTagConnected(boolean connected) {
+            mIsTagConnected = connected;
             NxpNfcLogger.d(TAG, "onTagConnected: " + connected);
         }
 
@@ -337,6 +343,13 @@ public class NfcOperations {
 
         }
     };
+
+    /**
+     * @brief Getter of {@link #mIsTagConnected}
+     */
+    public boolean isTagConnected() {
+        return this.mIsTagConnected;
+    }
 
     /**
      * @brief Getter of {@link #mIsRfFieldActivated}
