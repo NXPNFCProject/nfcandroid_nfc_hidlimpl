@@ -466,7 +466,8 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
     CONCURRENCY_UNLOCK();
     return NFCSTATUS_SUCCESS;
   }
-
+  /* initialize trace level */
+  phNxpLog_InitializeLogLevel();
   if (phNxpNciHal_init_monitor() == NULL) {
     NXPLOG_NCIHAL_E("Init monitor failed");
     CONCURRENCY_UNLOCK();
