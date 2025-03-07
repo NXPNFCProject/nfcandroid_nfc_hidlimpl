@@ -118,7 +118,9 @@ public class NxpNciPacketHandler {
             if (mCurrentCmdSubGidOid == payload[0]) {
                 NxpNfcLogger.d(TAG, "Expected Response received!");
                 mVendorNciRsp = payload;
-                mResCountDownLatch.countDown();
+                if (mResCountDownLatch != null) {
+                    mResCountDownLatch.countDown();
+                }
             } else {
                 NxpNfcLogger.e(TAG, "UnExpected Response received!");
             }
