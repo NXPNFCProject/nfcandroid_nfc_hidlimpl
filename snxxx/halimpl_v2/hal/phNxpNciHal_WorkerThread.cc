@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -152,6 +152,7 @@ void phNxpNciHal_WorkerThread::Run() {
 
       case NCI_HAL_OPEN_CPLT_MSG: {
         REENTRANCE_LOCK();
+        phNxpExtn_HandleHalEvent(HAL_NFC_OPEN_CPLT_EVT);
         if (nxpncihal_ctrl.p_nfc_stack_cback != NULL) {
           /* Send the event */
           (*nxpncihal_ctrl.p_nfc_stack_cback)(HAL_NFC_OPEN_CPLT_EVT,
