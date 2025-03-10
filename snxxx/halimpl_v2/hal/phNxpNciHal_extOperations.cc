@@ -999,7 +999,7 @@ int handleGetCapability(uint16_t data_len, const uint8_t* p_data) {
   // First byte is status is ok
   // next 2 bytes is version for Android requirements
   vector<uint8_t> capability = {0x00, 0x00, 0x00};
-  capability.push_back(4);  // 4 capability event's
+  capability.push_back(5);  // 5 capability event's
   // Observe mode
   capability.push_back(nfcFL.nfccCap.OBSEVE_MODE.id);
   capability.push_back(nfcFL.nfccCap.OBSEVE_MODE.len);
@@ -1016,6 +1016,10 @@ int handleGetCapability(uint16_t data_len, const uint8_t* p_data) {
   capability.push_back(nfcFL.nfccCap.AUTOTRANSACT_PLF.id);
   capability.push_back(nfcFL.nfccCap.AUTOTRANSACT_PLF.len);
   capability.push_back(nfcFL.nfccCap.AUTOTRANSACT_PLF.val);
+  // No of exit frames supported
+  capability.push_back(nfcFL.nfccCap.NO_OF_EXIT_FRAMES_PLF.id);
+  capability.push_back(nfcFL.nfccCap.NO_OF_EXIT_FRAMES_PLF.len);
+  capability.push_back(nfcFL.nfccCap.NO_OF_EXIT_FRAMES_PLF.val);
 
   phNxpNciHal_vendorSpecificCallback(p_data[NCI_OID_INDEX],
                                      p_data[NCI_MSG_INDEX_FOR_FEATURE],
