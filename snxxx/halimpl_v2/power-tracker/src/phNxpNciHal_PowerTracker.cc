@@ -36,6 +36,19 @@ using std::vector;
 #define TIME_MS(spec) \
   ((long)spec.tv_sec * 1000 + (long)(spec.tv_nsec / 1000000))
 
+#define NXP_EN_SN110U 1
+#define NXP_EN_SN100U 1
+#define NXP_EN_SN220U 1
+#define NXP_EN_PN557 1
+#define NXP_EN_PN560 1
+#define NXP_EN_SN300U 1
+#define NXP_EN_SN330U 1
+#define NFC_NXP_MW_ANDROID_VER (16U)  /* Android version used by NFC MW */
+#define NFC_NXP_MW_VERSION_MAJ (0x04) /* MW Major Version */
+#define NFC_NXP_MW_VERSION_MIN (0x00) /* MW Minor Version */
+#define NFC_NXP_MW_CUSTOMER_ID (0x00) /* MW Customer Id */
+#define NFC_NXP_MW_RC_VERSION (0x00)  /* MW RC Version */
+
 /******************* Local functions *****************************************/
 static void* phNxpNciHal_pollPowerTrackerData(void* pContext);
 static NFCSTATUS phNxpNciHal_syncPowerTrackerData();
@@ -93,6 +106,29 @@ static PowerTrackerContext gContext = {
     .stateData[ACTIVE].stateTickCount = 0,
 };
 
+
+/******************************************************************************
+ * Function         printPowerTrackerVersion
+ *
+ * Description      This function is called to print Power tracker version
+ *
+ * Returns          None
+ *
+ ******************************************************************************/
+static void printPowerTrackerVersion() {
+  uint32_t validation = (NXP_EN_SN100U << 13);
+  validation |= (NXP_EN_SN110U << 14);
+  validation |= (NXP_EN_SN220U << 15);
+  validation |= (NXP_EN_PN560 << 16);
+  validation |= (NXP_EN_SN300U << 17);
+  validation |= (NXP_EN_SN330U << 18);
+  validation |= (NXP_EN_PN557 << 11);
+
+  NXPLOG_NCIHAL_I("Power Tracker Version: NXP_AR_%02X_%05X_%02d.%02x.%02x",
+        NFC_NXP_MW_CUSTOMER_ID, validation, NFC_NXP_MW_ANDROID_VER,
+        NFC_NXP_MW_VERSION_MAJ, NFC_NXP_MW_VERSION_MIN);
+}
+
 /*******************************************************************************
 **
 ** Function         phNxpNciHal_startPowerTracker()
@@ -110,6 +146,7 @@ NFCSTATUS phNxpNciHal_startPowerTracker(unsigned long pollDuration) {
   phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
   uint8_t power_tracker_enable = 0x01;
 
+  printPowerTrackerVersion();
   NXPLOG_NCIHAL_I("%s: Starting PowerTracker with poll duration %ld", __func__,
                   pollDuration);
   mEEPROM_info.request_mode = SET_EEPROM_DATA;
