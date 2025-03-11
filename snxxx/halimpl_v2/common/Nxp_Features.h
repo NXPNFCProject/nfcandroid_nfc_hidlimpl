@@ -140,6 +140,7 @@ typedef struct {
   tNfc_capability POLLING_FRAME_NOTIFICATION;
   tNfc_capability POWER_SAVING;
   tNfc_capability AUTOTRANSACT_PLF;
+  tNfc_capability NO_OF_EXIT_FRAMES_PLF;
 } tNfc_nfccCapabililty;
 
 typedef struct {
@@ -317,35 +318,53 @@ extern tNfc_featureList nfcFL;
 #define CAP_POLL_FRAME_NTF_ID 0x01
 #define CAP_POWER_SAVING_MODE_ID 0x02
 #define CAP_AUTOTRANSACT_PLF_ID 0x03
+#define CAP_NUMBER_OF_EXIT_FRAMES_PLF_ID 0x04
 #define OBSERVE_MODE_WITHOUT_RF_DEACTIVATE 0x02
 
-#define UPDATE_NFCC_CAPABILITY()                                             \
-  {                                                                          \
-    nfcFL.nfccCap.OBSEVE_MODE.id = CAP_OBSERVE_MODE_ID;                      \
-    nfcFL.nfccCap.OBSEVE_MODE.len = 0x01;                                    \
-    nfcFL.nfccCap.OBSEVE_MODE.val = 0x00;                                    \
-    nfcFL.nfccCap.POLLING_FRAME_NOTIFICATION.id = CAP_POLL_FRAME_NTF_ID;     \
-    nfcFL.nfccCap.POLLING_FRAME_NOTIFICATION.len = 0x01;                     \
-    nfcFL.nfccCap.POLLING_FRAME_NOTIFICATION.val = 0x00;                     \
-    nfcFL.nfccCap.POWER_SAVING.id = CAP_POWER_SAVING_MODE_ID;                \
-    nfcFL.nfccCap.POWER_SAVING.len = 0x01;                                   \
-    nfcFL.nfccCap.POWER_SAVING.val = 0x00;                                   \
-    nfcFL.nfccCap.AUTOTRANSACT_PLF.id = CAP_AUTOTRANSACT_PLF_ID;             \
-    nfcFL.nfccCap.AUTOTRANSACT_PLF.len = 0x01;                               \
-    nfcFL.nfccCap.AUTOTRANSACT_PLF.val = 0x00;                               \
-    uint8_t extended_field_mode = 0x00;                                      \
-    if (IS_CHIP_TYPE_GE(sn100u) &&                                           \
-        GetNxpNumValue(NAME_NXP_EXTENDED_FIELD_DETECT_MODE,                  \
-                       &extended_field_mode, sizeof(extended_field_mode))) { \
-      if (extended_field_mode == 0x03) {                                     \
-        nfcFL.nfccCap.OBSEVE_MODE.val = OBSERVE_MODE_WITHOUT_RF_DEACTIVATE;  \
-      }                                                                      \
-    }                                                                        \
-    unsigned long num = 0;                                                   \
-    if ((GetNxpNumValue(NAME_NXP_DEFAULT_ULPDET_MODE, &num, sizeof(num)))) { \
-      if ((uint8_t)num > 0) {                                                \
-        nfcFL.nfccCap.POWER_SAVING.val = 0x01;                               \
-      }                                                                      \
-    }                                                                        \
+#define UPDATE_NFCC_CAPABILITY()                                               \
+  {                                                                            \
+    nfcFL.nfccCap.OBSEVE_MODE.id = CAP_OBSERVE_MODE_ID;                        \
+    nfcFL.nfccCap.OBSEVE_MODE.len = 0x01;                                      \
+    nfcFL.nfccCap.OBSEVE_MODE.val = 0x00;                                      \
+    nfcFL.nfccCap.POLLING_FRAME_NOTIFICATION.id = CAP_POLL_FRAME_NTF_ID;       \
+    nfcFL.nfccCap.POLLING_FRAME_NOTIFICATION.len = 0x01;                       \
+    nfcFL.nfccCap.POLLING_FRAME_NOTIFICATION.val = 0x00;                       \
+    nfcFL.nfccCap.POWER_SAVING.id = CAP_POWER_SAVING_MODE_ID;                  \
+    nfcFL.nfccCap.POWER_SAVING.len = 0x01;                                     \
+    nfcFL.nfccCap.POWER_SAVING.val = 0x00;                                     \
+    nfcFL.nfccCap.AUTOTRANSACT_PLF.id = CAP_AUTOTRANSACT_PLF_ID;               \
+    nfcFL.nfccCap.AUTOTRANSACT_PLF.len = 0x01;                                 \
+    nfcFL.nfccCap.AUTOTRANSACT_PLF.val = 0x00;                                 \
+    nfcFL.nfccCap.NO_OF_EXIT_FRAMES_PLF.id = CAP_NUMBER_OF_EXIT_FRAMES_PLF_ID; \
+    nfcFL.nfccCap.NO_OF_EXIT_FRAMES_PLF.len = 0x01;                            \
+    nfcFL.nfccCap.NO_OF_EXIT_FRAMES_PLF.val = 0x00;                            \
+    uint8_t extended_field_mode = 0x00;                                        \
+    if (IS_CHIP_TYPE_GE(sn100u) &&                                             \
+        GetNxpNumValue(NAME_NXP_EXTENDED_FIELD_DETECT_MODE,                    \
+                       &extended_field_mode, sizeof(extended_field_mode))) {   \
+      if (extended_field_mode == 0x03) {                                       \
+        nfcFL.nfccCap.OBSEVE_MODE.val = OBSERVE_MODE_WITHOUT_RF_DEACTIVATE;    \
+      }                                                                        \
+    }                                                                          \
+    uint8_t max_exit_frames = 0x00;                                            \
+    uint8_t no_of_exit_frames_supported = 0x00;                                \
+    if (IS_CHIP_TYPE_GE(sn100u) &&                                             \
+        GetNxpNumValue(NAME_NXP_MAX_EXIT_FRAMES_SUPPORTED, &max_exit_frames,   \
+                       sizeof(max_exit_frames)) &&                             \
+        GetNxpNumValue(NAME_NXP_NUMBER_OF_EXIT_FRAMES_SUPPORTED,               \
+                       &no_of_exit_frames_supported,                           \
+                       sizeof(no_of_exit_frames_supported))) {                 \
+      if (no_of_exit_frames_supported > 0 &&                                   \
+          no_of_exit_frames_supported <= max_exit_frames) {                    \
+        nfcFL.nfccCap.AUTOTRANSACT_PLF.val = 0x01;                             \
+        nfcFL.nfccCap.NO_OF_EXIT_FRAMES_PLF.val = no_of_exit_frames_supported; \
+      }                                                                        \
+    }                                                                          \
+    unsigned long num = 0;                                                     \
+    if ((GetNxpNumValue(NAME_NXP_DEFAULT_ULPDET_MODE, &num, sizeof(num)))) {   \
+      if ((uint8_t)num > 0) {                                                  \
+        nfcFL.nfccCap.POWER_SAVING.val = 0x01;                                 \
+      }                                                                        \
+    }                                                                          \
   }
 #endif
