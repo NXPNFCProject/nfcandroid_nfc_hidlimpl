@@ -42,6 +42,7 @@
 #define FW_DNLD_LEN_OFFSET 1
 #define NORMAL_MODE_LEN_OFFSET 2
 #define FLUSH_BUFFER_SIZE 0xFF
+#define FLUSH_READ_TIMEOUT_MS 10
 //To enable the VBAT monitor feature.
 // #define NXP_NFC_VBAT_MONITOR
 
@@ -103,6 +104,27 @@ NFCSTATUS NfccI2cTransport::OpenAndConfigure(pphTmlNfc_Config_t pConfig,
 
 /*******************************************************************************
 **
+** Function         FlushTimeoutHandler
+**
+** Description      Handler which will be invoked once FlushTimer expires
+**
+** Parameters       timerId  - Timer id
+**                  pContext - Context passed to Timer
+**
+** Returns          None
+**
+*******************************************************************************/
+void FlushTimeoutHandler(uint32_t timerId, void* pContext) {
+  int handle = *((int*)pContext);
+  NXPLOG_TML_D("%s: FlushTimer expired, Closing fd %d", __func__, handle);
+  if (handle != 0) {
+    close(handle);
+    NXPLOG_TML_D("%s: fd closed", __func__);
+  }
+}
+
+/*******************************************************************************
+**
 ** Function         Flushdata
 **
 ** Description      Reads payload of FW rsp from NFCC device into given buffer
@@ -117,9 +139,25 @@ bool NfccI2cTransport::Flushdata(pphTmlNfc_Config_t pConfig) {
   int nHandle;
   uint8_t pBuffer[FLUSH_BUFFER_SIZE];
   NXPLOG_TML_D("%s: Enter", __func__);
-  nHandle = open((const char*)pConfig->pDevName, O_RDWR | O_NONBLOCK);
+
+  nHandle = open((const char*)pConfig->pDevName, O_RDWR);
   if (nHandle < 0) {
     NXPLOG_TML_E("%s: _i2c_open() Failed: retval %x", __func__, nHandle);
+    return false;
+  }
+  /* Start timer */
+  uint32_t timerId = phOsalNfc_Timer_Create();
+  if (timerId == PH_OSALNFC_TIMER_ID_INVALID) {
+    NXPLOG_TML_D("%s: Failed to create FlushTimer", __func__);
+    close(nHandle);
+    return false;
+  }
+  NFCSTATUS status = phOsalNfc_Timer_Start(
+      timerId, FLUSH_READ_TIMEOUT_MS, &FlushTimeoutHandler, (void*)&nHandle);
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_TML_D("%s: Failed to start FlushTimer", __func__);
+    close(nHandle);
+    phOsalNfc_Timer_Delete(timerId);
     return false;
   }
   do {
@@ -129,7 +167,13 @@ bool NfccI2cTransport::Flushdata(pphTmlNfc_Config_t pConfig) {
       usleep(2 * 1000);
     }
   } while (retRead > 0);
-  close(nHandle);
+
+  if (phOsalNfc_Timer_Stop(timerId) != NFCSTATUS_SUCCESS) {
+    NXPLOG_TML_D("%s: Failed to Stop FlushTimer", __func__);
+  }
+  if (phOsalNfc_Timer_Delete(timerId) != NFCSTATUS_SUCCESS) {
+    NXPLOG_TML_D("%s: Failed to Delete FlushTimer", __func__);
+  }
   NXPLOG_TML_D("%s: Exit", __func__);
   return true;
 }

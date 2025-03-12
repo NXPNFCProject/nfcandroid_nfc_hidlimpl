@@ -614,6 +614,13 @@ int phNxpNciHal_MinOpen() {
   }
   memset(mGetCfg_info, 0x00, sizeof(phNxpNci_getCfg_info_t));
 
+  /* Create the client thread */
+  if (g_workerThread.Start() != true) {
+    NXPLOG_NCIHAL_E("pthread_create failed");
+    CONCURRENCY_UNLOCK();
+    return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
+  }
+
   /* Initialize TML layer */
   wConfigStatus = phTmlNfc_Init(&tTmlConfig);
   if (wConfigStatus != NFCSTATUS_SUCCESS) {
@@ -625,14 +632,6 @@ int phNxpNciHal_MinOpen() {
       free(nfc_dev_node);
       nfc_dev_node = NULL;
     }
-  }
-
-  /* Create the client thread */
-  if (g_workerThread.Start() != true) {
-    NXPLOG_NCIHAL_E("pthread_create failed");
-    wConfigStatus = phTmlNfc_Shutdown_CleanUp();
-    CONCURRENCY_UNLOCK();
-    return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
   }
 
   CONCURRENCY_UNLOCK();
@@ -2960,9 +2959,21 @@ static void phNxpNciHal_DownloadFw(bool isMinFwVer, bool degradedFwDnld) {
  ******************************************************************************/
 void phNxpNciHal_CheckAndHandleFwTearDown() {
   NFCSTATUS status = NFCSTATUS_FAILED;
+  uint8_t core_reset_cmd[] = {0x20, 0x00, 0x01, 0x00};
   uint8_t session_state = -1;
   unsigned long minimal_fw_version = DEFAULT_MINIMAL_FW_VERSION;
   bool isMinFwVer = false;
+
+  status = phNxpNciHal_send_ext_cmd(sizeof(core_reset_cmd), core_reset_cmd);
+  if (status == NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_D("%s: CORE_RESET SUCCESS, NOT IN FW TEARDOWN STATE",
+                    __func__);
+    return;
+  } else {
+    NXPLOG_NCIHAL_D("%s: CORE_RESET FAILED, FW MIGHT BE IN TEARDOWN STATE",
+                    __func__);
+  }
+
   status = phNxpNciHal_getChipInfoInFwDnldMode();
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("Get Chip Info Failed");

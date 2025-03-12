@@ -511,6 +511,12 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
   tOsalConfig.pLogFile = NULL;
   tTmlConfig.dwGetMsgThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
 
+  /* Create the client thread */
+  if (g_workerThread_rcvr.Start() != false) {
+    NXPLOG_NCIHAL_E("pthread_create failed");
+    CONCURRENCY_UNLOCK();
+    return phnxpNciHal_partialOpenCleanUp(nfc_dev_node);
+  }
   /* Initialize TML layer */
   if (phTmlNfc_Init(&tTmlConfig) != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("phTmlNfc_Init Failed");
@@ -521,15 +527,6 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
       free(nfc_dev_node);
       nfc_dev_node = NULL;
     }
-  }
-  /* Create the client thread */
-  if (g_workerThread_rcvr.Start() != false) {
-    NXPLOG_NCIHAL_E("pthread_create failed");
-    if (phTmlNfc_Shutdown_CleanUp() != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("phTmlNfc_Shutdown_CleanUp: Failed");
-    }
-    CONCURRENCY_UNLOCK();
-    return phnxpNciHal_partialOpenCleanUp(nfc_dev_node);
   }
   phNxpNciHal_readNFCCClockCfgValues();
   CONCURRENCY_UNLOCK();
