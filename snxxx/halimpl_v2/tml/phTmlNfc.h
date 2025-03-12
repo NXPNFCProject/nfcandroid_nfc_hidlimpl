@@ -140,6 +140,7 @@ typedef enum {
 typedef struct phTmlNfc_ReadWriteInfo {
   volatile uint8_t bEnable; /*This flag shall decide whether to perform
                                Write/Read operation */
+  pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
   uint8_t
       bThreadBusy; /*Flag to indicate thread is busy on respective operation */
   /* Transaction completion Callback function */
