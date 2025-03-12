@@ -37,12 +37,23 @@ extern WiredSeHandle* gWiredSeHandle;
 
 void startNxpNfcAidlService() {
   ALOGI("NXP NFC Extn Service is starting.");
+  unsigned long dynamicHal = 0;
+  if (!GetNxpNumValue("NFC_DYNAMIC_HAL", &dynamicHal, sizeof(dynamicHal))) {
+    NXPLOG_NCIHAL_D("NFC_DYNAMIC_HAL not found in config. Using default value");
+  }
   std::shared_ptr<NxpNfc> nxp_nfc_service = ndk::SharedRefBase::make<NxpNfc>();
   const std::string nxpNfcInstName =
       std::string() + NxpNfc::descriptor + "/default";
-  ALOGI("NxpNfc Registering service: %s", nxpNfcInstName.c_str());
-  binder_status_t status = AServiceManager_addService(
-      nxp_nfc_service->asBinder().get(), nxpNfcInstName.c_str());
+  binder_status_t status = STATUS_OK;
+  if (dynamicHal == 1) {
+    ALOGI("NxpNfc Registering Lazy service: %s", nxpNfcInstName.c_str());
+    status = AServiceManager_registerLazyService(
+        nxp_nfc_service->asBinder().get(), nxpNfcInstName.c_str());
+  } else {
+    ALOGI("NxpNfc Registering service: %s", nxpNfcInstName.c_str());
+    status = AServiceManager_addService(nxp_nfc_service->asBinder().get(),
+                                        nxpNfcInstName.c_str());
+  }
   ALOGI("NxpNfc Registered INxpNfc service status: %d", status);
   CHECK(status == STATUS_OK);
   ABinderProcess_joinThreadPool();
@@ -54,11 +65,23 @@ int main() {
     ALOGE("failed to set thread pool max thread count");
     return 1;
   }
+  unsigned long dynamicHal = 0;
+  if (!GetNxpNumValue("NFC_DYNAMIC_HAL", &dynamicHal, sizeof(dynamicHal))) {
+    NXPLOG_NCIHAL_D("NFC_DYNAMIC_HAL not found in config. Using default value");
+  }
   std::shared_ptr<Nfc> nfc_service = ndk::SharedRefBase::make<Nfc>();
 
   const std::string nfcInstName = std::string() + Nfc::descriptor + "/default";
-  binder_status_t status = AServiceManager_addService(
-      nfc_service->asBinder().get(), nfcInstName.c_str());
+  binder_status_t status = STATUS_OK;
+  if (dynamicHal == 1) {
+    ALOGI("Nfc Registering Lazy service: %s", nfcInstName.c_str());
+    status = AServiceManager_registerLazyService(nfc_service->asBinder().get(),
+                                                 nfcInstName.c_str());
+  } else {
+    ALOGI("Nfc Registering service: %s", nfcInstName.c_str());
+    status = AServiceManager_addService(nfc_service->asBinder().get(),
+                                        nfcInstName.c_str());
+  }
   CHECK(status == STATUS_OK);
 
 #if (NXP_NFC_RECOVERY == TRUE)
