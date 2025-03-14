@@ -543,6 +543,7 @@ int phNxpNciHal_MinOpen() {
   setObserveModeFlag(false);
   NciDiscoveryCommandBuilderInstance.setObserveModePerTech(
       NCI_ANDROID_PASSIVE_OBSERVE_PARAM_DISABLE);
+  NciDiscoveryCommandBuilderInstance.setRfDiscoveryReceived(false);
   NXPLOG_NCIHAL_D("phNxpNci_MinOpen(): enter");
 
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_MIN_OPEN) {

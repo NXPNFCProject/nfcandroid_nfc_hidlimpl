@@ -46,6 +46,7 @@ class NciDiscoveryCommandBuilder {
   uint8_t currentObserveModeTech = 0x00;
   vector<uint8_t> currentDiscoveryCommand;
   vector<DiscoveryConfiguration> mRfDiscoverConfiguration;
+  bool mIsRfDiscoveriryReceived;
 
   /*****************************************************************************
    *
@@ -177,6 +178,29 @@ class NciDiscoveryCommandBuilder {
    *
    ****************************************************************************/
   uint8_t getCurrentObserveModeTechValue();
+
+  /*****************************************************************************
+   *
+   * Function         setRfDiscoveryReceived
+   *
+   * Description      Set flags when it receives discovery command received,
+   *                  set to false during nfc init begin
+   *
+   * Returns          return void
+   *
+   ****************************************************************************/
+  void setRfDiscoveryReceived(bool flag);
+
+  /*****************************************************************************
+   *
+   * Function         isRfDiscoveryCommandReceived
+   *
+   * Description      returns true if discovery command set otherwise false
+   *
+   * Returns          return bool
+   *
+   ****************************************************************************/
+  bool isRfDiscoveryCommandReceived();
 
   static NciDiscoveryCommandBuilder& getInstance();
 };

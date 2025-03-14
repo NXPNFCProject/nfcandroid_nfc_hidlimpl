@@ -90,8 +90,13 @@ int handleObserveMode(uint16_t data_len, const uint8_t* p_data) {
  *
  ******************************************************************************/
 NFCSTATUS deactivateRfDiscovery() {
-  uint8_t rf_deactivate_cmd[] = {0x21, 0x06, 0x01, 0x00};
-  return phNxpNciHal_send_ext_cmd(sizeof(rf_deactivate_cmd), rf_deactivate_cmd);
+  if (NciDiscoveryCommandBuilderInstance.isRfDiscoveryCommandReceived()) {
+    uint8_t rf_deactivate_cmd[] = {0x21, 0x06, 0x01, 0x00};
+    return phNxpNciHal_send_ext_cmd(sizeof(rf_deactivate_cmd),
+                                    rf_deactivate_cmd);
+  } else {
+    return NFCSTATUS_SUCCESS;
+  }
 }
 
 /*******************************************************************************
@@ -108,12 +113,16 @@ NFCSTATUS deactivateRfDiscovery() {
  *
  ******************************************************************************/
 NFCSTATUS sendRfDiscoveryCommand(bool isObserveModeEnable) {
-  vector<uint8_t> discoveryCommand =
-      isObserveModeEnable
-          ? NciDiscoveryCommandBuilderInstance.reConfigRFDiscCmd()
-          : NciDiscoveryCommandBuilderInstance.getDiscoveryCommand();
-  return phNxpNciHal_send_ext_cmd(discoveryCommand.size(),
-                                  &discoveryCommand[0]);
+  if (NciDiscoveryCommandBuilderInstance.isRfDiscoveryCommandReceived()) {
+    vector<uint8_t> discoveryCommand =
+        isObserveModeEnable
+            ? NciDiscoveryCommandBuilderInstance.reConfigRFDiscCmd()
+            : NciDiscoveryCommandBuilderInstance.getDiscoveryCommand();
+    return phNxpNciHal_send_ext_cmd(discoveryCommand.size(),
+                                    &discoveryCommand[0]);
+  } else {
+    return NFCSTATUS_SUCCESS;
+  }
 }
 
 /*******************************************************************************
