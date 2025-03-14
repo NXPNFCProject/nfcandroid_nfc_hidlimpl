@@ -181,6 +181,7 @@ void NciDiscoveryCommandBuilder::setDiscoveryCommand(uint16_t data_len,
   if (!p_data || data_len <= 0) {
     return;
   }
+  setRfDiscoveryReceived(true);
   currentDiscoveryCommand = vector<uint8_t>(p_data, p_data + data_len);
 }
 
@@ -223,4 +224,31 @@ void NciDiscoveryCommandBuilder::setObserveModePerTech(uint8_t techMode) {
  ****************************************************************************/
 uint8_t NciDiscoveryCommandBuilder::getCurrentObserveModeTechValue() {
   return currentObserveModeTech;
+}
+
+/*****************************************************************************
+ *
+ * Function         setRfDiscoveryReceived
+ *
+ * Description      Set flags when it receives discovery command received,
+ *                  set to false during nfc init begin
+ *
+ * Returns          return void
+ *
+ ****************************************************************************/
+void NciDiscoveryCommandBuilder::setRfDiscoveryReceived(bool flag) {
+  mIsRfDiscoveriryReceived = flag;
+}
+
+/*****************************************************************************
+ *
+ * Function         isRfDiscoveryCommandReceived
+ *
+ * Description      returns true if discovery command set otherwise false
+ *
+ * Returns          return bool
+ *
+ ****************************************************************************/
+bool NciDiscoveryCommandBuilder::isRfDiscoveryCommandReceived() {
+  return mIsRfDiscoveriryReceived;
 }
