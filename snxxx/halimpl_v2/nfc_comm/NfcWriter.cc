@@ -140,6 +140,9 @@ int NfcWriter::direct_write(uint16_t data_len, const uint8_t* p_data) {
   int wdata_len = 0;
   uint8_t cmd_icode_eof[] = {0x00, 0x00, 0x00};
   static phLibNfc_Message_t msg;
+  // Create an alias in local buffer as buffer may modified internally later
+  uint8_t* p_data_updated = (uint8_t*)p_data;
+
   if (nxpncihal_ctrl.halStatus != HAL_STATUS_OPEN) {
     return NFCSTATUS_FAILED;
   }
@@ -148,11 +151,10 @@ int NfcWriter::direct_write(uint16_t data_len, const uint8_t* p_data) {
     android_errorWriteLog(0x534e4554, "121267042");
     goto clean_and_return;
   }
-
   CONCURRENCY_LOCK();
   /* Check for NXP ext before sending write */
   status =
-      phNxpNciHal_write_ext(&data_len, (uint8_t*)p_data,
+      phNxpNciHal_write_ext(&data_len, (uint8_t**)&p_data_updated,
                             &nxpncihal_ctrl.rsp_len, nxpncihal_ctrl.p_rsp_data);
   if (status != NFCSTATUS_SUCCESS) {
     /* Do not send packet to NFCC, send response directly */
@@ -166,7 +168,7 @@ int NfcWriter::direct_write(uint16_t data_len, const uint8_t* p_data) {
     goto clean_and_return;
   }
 
-  wdata_len = this->write_unlocked(data_len, p_data, ORIG_LIBNFC);
+  wdata_len = this->write_unlocked(data_len, p_data_updated, ORIG_LIBNFC);
 
   if (IS_CHIP_TYPE_L(sn100u) && IS_CHIP_TYPE_NE(pn557) && icode_send_eof == 1) {
     usleep(10000);
@@ -180,6 +182,8 @@ int NfcWriter::direct_write(uint16_t data_len, const uint8_t* p_data) {
 clean_and_return:
   /* No data written */
   CONCURRENCY_UNLOCK();
+  // Free buffer if it is internally allocated
+  if (p_data_updated != p_data) free(p_data_updated);
   return wdata_len;
 }
 
