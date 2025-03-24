@@ -512,7 +512,7 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
   tTmlConfig.dwGetMsgThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
 
   /* Create the client thread */
-  if (g_workerThread_rcvr.Start() != false) {
+  if (g_workerThread_rcvr.Start() == false) {
     NXPLOG_NCIHAL_E("pthread_create failed");
     CONCURRENCY_UNLOCK();
     return phnxpNciHal_partialOpenCleanUp(nfc_dev_node);
