@@ -704,14 +704,15 @@ static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
 
   /*Response check for Set config, Core Reset & Core init command sent part of
    * HAL_EXT*/
-  if (nxpncihal_ctrl.halStatus == HAL_OPEN_CORE_INITIALIZING &&
-      nxpncihal_ctrl.p_rx_data[0] == 0x40 &&
+  if (nxpncihal_ctrl.p_rx_data[0] == 0x40 &&
       nxpncihal_ctrl.p_rx_data[1] <= 0x02 &&
       nxpncihal_ctrl.p_rx_data[2] != 0x00) {
     status = nxpncihal_ctrl.p_rx_data[3];
     if (status != NCI_STATUS_OK) {
-      /*Add 500ms delay for FW to flush circular buffer */
-      usleep(500 * 1000);
+      if (nxpncihal_ctrl.halStatus == HAL_OPEN_CORE_INITIALIZING) {
+        /*Add 500ms delay for FW to flush circular buffer */
+        usleep(500 * 1000);
+      }
       NXPLOG_NCIHAL_D("Status Failed. Status = 0x%02x", status);
     }
   }
