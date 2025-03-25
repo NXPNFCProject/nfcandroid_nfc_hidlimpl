@@ -28,6 +28,8 @@ import com.nxp.nfc.NxpNfcLogger;
 import com.nxp.nfc.INxpNfcNtfHandler;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Vector;
 
 public class TransitConfigHandler implements INxpNfcNtfHandler {
   private NfcAdapter mNfcAdapter;
@@ -91,6 +93,38 @@ public class TransitConfigHandler implements INxpNfcNtfHandler {
     return payloadBytes;
   }
 
+  private byte[] hexStringToByteArray(String config[]) {
+    String configKey = config[0];
+    String configVal = config[1].substring(2);
+
+    int length = configVal.length();
+    byte[] configPayload = new byte[2];
+    configPayload[0] = (byte)RfRegisterConstants.RfConfigMap.get(configKey);
+    configPayload[1] = (byte)(length/2);
+    byte[] payload = new byte[length/2];
+    for (int i = 0; i < length; i+=2) {
+      payload[i/2] = (byte)(Integer.parseInt(configVal.substring(i, i+2), 16));
+    }
+    return generateCmd(configPayload, payload);
+  }
+
+  private byte[] generateRfRegisterPayload(String configs) {
+    String[] configList = configs.lines().toArray(String[]::new);
+    Vector<Byte> rfVector = new Vector<>();
+    for (int configIndex = 0;configIndex < configList.length; configIndex++) {
+      String[] rfConfig = configList[configIndex].split("=");
+      byte[] rfPayload = hexStringToByteArray(rfConfig);
+      for (int i = 0; i < rfPayload.length; i++) {
+        rfVector.add(rfPayload[i]);
+      }
+    }
+    byte[] rfRegisterBytes = new byte[rfVector.size()];
+    for (int i = 0; i < rfVector.size(); i++) {
+      rfRegisterBytes[i] = rfVector.get(i);
+    }
+    return rfRegisterBytes;
+  }
+
   public boolean setConfig(String configs) throws IOException {
     if ((!mNfcOperations.isEnabled()) && (mNfcOperations.isCardEmulationActivated()) &&
         (mNfcOperations.isTagConnected())) {
@@ -104,7 +138,13 @@ public class TransitConfigHandler implements INxpNfcNtfHandler {
     byte[] vendorRsp = {};
 
     if (resetStatus == TRANSIT_CONFIG_REQUIRE_RF_RESET) {
-      // TODO: Implementation of RF_Register config
+      if (mNfcOperations.isDiscoveryStarted()) {
+        mNfcOperations.disableDiscovery();
+      }
+      byte[] rfRegisterPayload  = generateRfRegisterPayload(configs);
+      cmdBytes[0] = (byte)(TRANSIT_CONFIG_SUB_GID|RF_REGISTER_SUB_OID);
+      cmdBytes[1] = (byte)rfRegisterPayload.length;
+      configBytes = rfRegisterPayload;
     } else if(resetStatus == TRANSIT_CONFIG_REQUIRE_NFC_RESET) {
       cmdBytes[0] = (byte)(TRANSIT_CONFIG_SUB_GID|TRANSIT_CONFIG_SUB_OID);
       if (configs == null) {
@@ -123,7 +163,7 @@ public class TransitConfigHandler implements INxpNfcNtfHandler {
     }
 
     byte[] payloadBytes = generateCmd(cmdBytes, configBytes);
-
+    Boolean status = true;
     mNxpNciPacketHandler.setCurrentNtfHandler(this);
     try {
       NxpNfcLogger.d(TAG, "Sending VendorNciMessage");
@@ -136,9 +176,7 @@ public class TransitConfigHandler implements INxpNfcNtfHandler {
     } finally {
       if (vendorRsp != null && vendorRsp.length > 0 &&
           vendorRsp[1] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
-        if (resetStatus == TRANSIT_CONFIG_REQUIRE_RF_RESET) {
-          // TODO: Implementation of RF_Register config
-        } else if(resetStatus == TRANSIT_CONFIG_REQUIRE_NFC_RESET) {
+        if(resetStatus == TRANSIT_CONFIG_REQUIRE_NFC_RESET) {
           try {
             mNfcAdapter.disable();
             mNfcAdapter.enable();
@@ -148,9 +186,12 @@ public class TransitConfigHandler implements INxpNfcNtfHandler {
         }
       } else {
         NxpNfcLogger.e(TAG, "setConfig() failed...");
-        return false;
+        status = false;
+      }
+      if (resetStatus == TRANSIT_CONFIG_REQUIRE_RF_RESET) {
+        mNfcOperations.enableDiscovery();
       }
     }
-    return true;
+    return status;
   }
 }
