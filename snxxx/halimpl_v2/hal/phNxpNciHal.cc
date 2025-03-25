@@ -1982,7 +1982,8 @@ int phNxpNciHal_close(bool bShutdown) {
     NXPLOG_NCIHAL_D("phNxpNciHal_close is already closed, ignoring close");
     return NFCSTATUS_FAILED;
   }
-  phNxpExtn_LibClose();
+  NXPLOG_NCIHAL_D("phNxpNciHal_close is not closing extension library");
+  //phNxpExtn_LibClose();
   if (gPowerTrackerHandle.stop != NULL) {
     gPowerTrackerHandle.stop();
   }
