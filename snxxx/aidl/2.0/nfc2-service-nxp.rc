@@ -5,4 +5,3 @@ service vendor.nfc_hal_service /vendor/bin/hw/android.hardware.nfc2-service.nxp
     user nfc
     group nfc drmrpc system
     oneshot
-    disabled

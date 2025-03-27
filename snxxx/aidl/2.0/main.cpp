@@ -41,6 +41,10 @@ void startNxpNfcAidlService() {
   if (!GetNxpNumValue("NFC_DYNAMIC_HAL", &dynamicHal, sizeof(dynamicHal))) {
     NXPLOG_NCIHAL_D("NFC_DYNAMIC_HAL not found in config. Using default value");
   }
+  if (gWiredSeHandle != NULL && dynamicHal == 1) {
+    NXPLOG_NCIHAL_D("WiredSe support is enabled, Force disabling dynamic Hal");
+    dynamicHal = 0;
+  }
   std::shared_ptr<NxpNfc> nxp_nfc_service = ndk::SharedRefBase::make<NxpNfc>();
   const std::string nxpNfcInstName =
       std::string() + NxpNfc::descriptor + "/default";
@@ -65,9 +69,18 @@ int main() {
     ALOGE("failed to set thread pool max thread count");
     return 1;
   }
+  // Starts Wired SE HAL instance if platform supports
+  gWiredSeHandle = phNxpNciHal_WiredSeStart();
+  if (gWiredSeHandle == NULL) {
+    ALOGE("Wired Se HAL Disabled");
+  }
   unsigned long dynamicHal = 0;
   if (!GetNxpNumValue("NFC_DYNAMIC_HAL", &dynamicHal, sizeof(dynamicHal))) {
     NXPLOG_NCIHAL_D("NFC_DYNAMIC_HAL not found in config. Using default value");
+  }
+  if (gWiredSeHandle != NULL && dynamicHal == 1) {
+    NXPLOG_NCIHAL_D("WiredSe support is enabled, Force disabling dynamic Hal");
+    dynamicHal = 0;
   }
   std::shared_ptr<Nfc> nfc_service = ndk::SharedRefBase::make<Nfc>();
 
@@ -88,11 +101,6 @@ int main() {
   phNxpNciHal_RecoverFWTearDown();
 #endif
   thread t1(startNxpNfcAidlService);
-  // Starts Wired SE HAL instance if platform supports
-  gWiredSeHandle = phNxpNciHal_WiredSeStart();
-  if (gWiredSeHandle == NULL) {
-    ALOGE("Wired Se HAL Disabled");
-  }
   ABinderProcess_joinThreadPool();
   return 0;
 }
