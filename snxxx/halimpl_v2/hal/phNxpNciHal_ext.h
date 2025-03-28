@@ -43,7 +43,7 @@ void printNfcMwVersion();
 void phNxpNciHal_ext_init(void);
 NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len);
 NFCSTATUS phNxpNciHal_send_ext_cmd(uint16_t cmd_len, uint8_t* p_cmd);
-NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
+NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t** pp_cmd_data,
                                 uint16_t* rsp_len, uint8_t* p_rsp_data);
 
 extern bool_t wFwUpdateReq;
