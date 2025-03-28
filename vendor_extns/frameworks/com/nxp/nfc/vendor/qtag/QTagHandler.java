@@ -39,11 +39,26 @@ public class QTagHandler implements INxpNfcNtfHandler {
   private NfcAdapter mNfcAdapter;
   private final NfcOperations mNfcOperations;
 
-  public static final int QTAG_STATUS_SUCCESS = 0x00;
-  public static final int QTAG_STATUS_FAILED = 0x03;
-  public static final int QTAG_STATUS_DETECTED = 0x00;
-  public static final byte QTAG_SUB_GID_OID = 0x31;
-  public static final byte QTAG_DETECTION_SUB_GID_OID = 0x32;
+  public enum QTagStatus {
+    Success(0x00),
+    Detected(0x00),
+    Failed(0x03);
+    private final int value;
+    QTagStatus(int value) { this.value = (int)value; }
+    public int getValue() { return value; }
+  }
+
+  public enum QTagSubOid {
+    Disable(0x00),
+    Enable(0x01),
+    Append(0x02),
+    Detected(0x03);
+    private int value;
+    QTagSubOid(int value) { this.value = (int)value; }
+    public int getValue() { return value; }
+  }
+
+  public static final byte QTAG_SUB_GID = 0x30;
   public static final int INVALID_POLL_TECH = 0;
 
   public static Object qtagSync = new Object();
@@ -70,17 +85,18 @@ public class QTagHandler implements INxpNfcNtfHandler {
                             ", Notification Type: " + notificationType);
 
     synchronized (qtagSync) {
-      if (subGidOid == QTAG_DETECTION_SUB_GID_OID) {
+      if (subGidOid == (QTAG_SUB_GID | QTagSubOid.Detected.value)) {
         if (payload.length > 1) {
-          if (payload[1] == QTAG_STATUS_DETECTED)
+          if (payload[1] == QTagStatus.Detected.value)
             sQTagDetected = true;
           else
             sQTagDetected = false;
         } else {
           sQTagDetected = false;
         }
-      } else if ((subGidOid == QTAG_SUB_GID_OID)
-          && (notificationType == NfcAdapter.SEND_VENDOR_NCI_STATUS_REJECTED)) {
+      } else if ((subGidOid == (QTAG_SUB_GID | QTagSubOid.Enable.value)) &&
+                 (notificationType ==
+                  NfcAdapter.SEND_VENDOR_NCI_STATUS_REJECTED)) {
         sIsQPollEnabled = false;
         sQTagDetected = false;
         NxpNfcLogger.d(TAG, "sIsQPollEnabled: " + sIsQPollEnabled);
@@ -89,35 +105,34 @@ public class QTagHandler implements INxpNfcNtfHandler {
     }
   }
 
-  public int enableQTag(Activity activity, int mode,
+  public int enableQTag(Activity activity, int qMode,
                         NxpReaderCallback mQTagCallback, int pollTech,
                         int delay_value) throws IOException {
-    NxpNfcLogger.d(TAG, "enableQTag Enter mode: " + mode + " pollTech:" +
+    NxpNfcLogger.d(TAG, "enableQTag Enter mode: " + qMode + " pollTech:" +
                             pollTech + " delay_value:" + delay_value);
-    QTagMode qMode = QTagMode.fromValue(mode);
     final Bundle options = new Bundle();
     options.putInt(NfcAdapter.EXTRA_READER_PRESENCE_CHECK_DELAY, delay_value);
-    int status = QTAG_STATUS_FAILED;
+    int status = QTagStatus.Failed.value;
 
     if (mNfcAdapter.getAdapterState() == NfcAdapter.STATE_OFF) {
       NxpNfcLogger.e(TAG, "NFC is disabled");
       return status;
     }
 
-    if ((qMode != QTagMode.DISABLE_QTAG_MODE) &&
+    if ((qMode != QTagSubOid.Disable.value) &&
         (pollTech == INVALID_POLL_TECH)) {
       NxpNfcLogger.e(TAG, "Invalid poll tech");
       return status;
     }
 
-    byte[] qtag = {QTAG_SUB_GID_OID,
-                   (byte)QTagMode.DISABLE_QTAG_MODE.getValue()};
-    if (qMode == QTagMode.DISABLE_QTAG_MODE) {
-      qtag[1] = (byte)QTagMode.DISABLE_QTAG_MODE.getValue();
-    } else if (qMode == QTagMode.ENABLE_QTAG_ONLY_MODE) {
-      qtag[1] = (byte)QTagMode.ENABLE_QTAG_ONLY_MODE.getValue();
-    } else if (qMode == QTagMode.APPEND_QTAG_MODE) {
-      qtag[1] = (byte)QTagMode.APPEND_QTAG_MODE.getValue();
+    byte[] qtag = {(byte)(QTAG_SUB_GID | QTagSubOid.Enable.value),
+                   (byte)QTagSubOid.Disable.value};
+    if (qMode == QTagSubOid.Disable.value) {
+      qtag[1] = (byte)QTagSubOid.Disable.value;
+    } else if (qMode == QTagSubOid.Enable.value) {
+      qtag[1] = (byte)QTagSubOid.Enable.value;
+    } else if (qMode == QTagSubOid.Append.value) {
+      qtag[1] = (byte)QTagSubOid.Append.value;
     } else {
       NxpNfcLogger.e(TAG, "Invalid mode");
       return status;
@@ -133,14 +148,14 @@ public class QTagHandler implements INxpNfcNtfHandler {
           qtag);
       if (vendorRsp != null && vendorRsp.length > 0 &&
           vendorRsp[1] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
-        status = QTAG_STATUS_SUCCESS;
-        if (qMode == QTagMode.DISABLE_QTAG_MODE)
+        status = QTagStatus.Success.value;
+        if (qMode == QTagSubOid.Disable.value)
           sIsQPollEnabled = false;
         else
           sIsQPollEnabled = true;
       } else {
         NxpNfcLogger.e(TAG, "enableQtag failed!!");
-        status = QTAG_STATUS_FAILED;
+        status = QTagStatus.Failed.value;
         sIsQPollEnabled = false;
         return status;
       }
@@ -149,9 +164,9 @@ public class QTagHandler implements INxpNfcNtfHandler {
       throw new IOException("Error sending VendorNciMessage", e);
     }
 
-    if (status == QTAG_STATUS_SUCCESS) {
-      if ((qMode == QTagMode.ENABLE_QTAG_ONLY_MODE) ||
-          (qMode == QTagMode.APPEND_QTAG_MODE)) {
+    if (status == QTagStatus.Success.value) {
+      if ((qMode == QTagSubOid.Enable.value) ||
+          (qMode == QTagSubOid.Append.value)) {
         synchronized (qtagSync) {
           mNfcAdapter.enableReaderMode(
               activity, new NfcAdapter.ReaderCallback() {
@@ -163,7 +178,7 @@ public class QTagHandler implements INxpNfcNtfHandler {
                 }
               }, pollTech, options);
         }
-      } else if (qMode == QTagMode.DISABLE_QTAG_MODE) {
+      } else if (qMode == QTagSubOid.Disable.value) {
         mNfcAdapter.disableReaderMode(activity);
       }
     }
