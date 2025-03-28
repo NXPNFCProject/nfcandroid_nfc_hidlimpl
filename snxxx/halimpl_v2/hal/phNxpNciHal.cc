@@ -2215,11 +2215,6 @@ void phNxpNciHal_clean_resources() {
       NXPLOG_TML_E("phTmlNfc_Shutdown Failed");
     }
 
-    if (0 != pthread_join(nxpncihal_ctrl.client_thread, (void**)NULL)) {
-      NXPLOG_TML_E("NxpNci Fail to kill client thread!");
-    }
-
-
     PhNxpEventLogger::GetInstance().Finalize();
     phNxpTempMgr::GetInstance().Reset();
     phTmlNfc_CleanUp();
