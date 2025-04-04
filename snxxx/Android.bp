@@ -375,3 +375,4 @@ cc_library_headers {
         "//hardware/nxp/nfc/snxxx/tests/gtest",
     ],
 }
+
