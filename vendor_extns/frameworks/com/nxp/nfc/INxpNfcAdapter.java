@@ -99,5 +99,16 @@ public interface INxpNfcAdapter {
      * @throws  IOException if any exception occurs during setting the NFC
      * configuration.
      */
-    public boolean setConfig(String configs) throws IOException;
+  public boolean setConfig(String configs) throws IOException;
+
+  /**
+   * This api is called to get current FW version.
+   * @return byte array of fwVersion
+   *         fwVersion byte array of length 3 - Suceess
+   *            byte[0] - Major version
+   *            byte[1] - Minor version
+   *            byte[2] - Rom version
+   *         fwVersion byte array with all bytes 0x00 - Failure
+   */
+  public byte[] getFwVersion() throws IOException;
 }

@@ -22,6 +22,7 @@ import android.nfc.Tag;
 import com.nxp.nfc.vendor.mpos.MposHandler;
 import com.nxp.nfc.vendor.qtag.QTagHandler;
 import com.nxp.nfc.vendor.transit.TransitConfigHandler;
+import com.nxp.nfc.vendor.fw.NfcFirmwareInfo;
 
 import java.io.IOException;
 
@@ -42,6 +43,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     private MposHandler mMposHandler;
     private QTagHandler mQTagHandler;
     private TransitConfigHandler mTransitHandler;
+    private NfcFirmwareInfo mFwHandler;
 
     /**
      * @brief supported chipsets
@@ -86,6 +88,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
         mMposHandler = new MposHandler(nfcAdapter);
         mQTagHandler = new QTagHandler(nfcAdapter);
         mTransitHandler = new TransitConfigHandler(nfcAdapter);
+        mFwHandler = new NfcFirmwareInfo(nfcAdapter);
     }
 
     public interface NxpReaderCallback {
@@ -162,5 +165,14 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     @Override
     public boolean setConfig(String configs) throws IOException {
       return mTransitHandler.setConfig(configs);
+    }
+
+    /**
+     * @brief This api is called to get current FW version.
+     * @return {@link INxpNfcAdapter.NfcFirmwareInfo} instance
+     */
+    @Override
+    public byte[] getFwVersion() throws IOException {
+        return mFwHandler.getFwVersion();
     }
 }
