@@ -40,6 +40,20 @@ public class MposHandler implements INxpNfcNtfHandler {
   public static final byte MPOS_READER_MODE_SET_DEDICATED_MODE_CMD = (byte) 0xAE;
   public static final byte DEDICATED_MODE_OFF = 0x00;
   public static final byte DEDICATED_MODE_ON = 0x01;
+
+  /**
+   * mpos state
+   */
+  enum MposState {
+    MPOS_IDLE,
+    MPOS_START_INPROGRESS,
+    MPOS_START_COMPLETED,
+    MPOS_STOP_INPROGRESS,
+    MPOS_STOP_COMPLETED
+  }
+
+  public MposState mposState = MposState.MPOS_IDLE;
+
   /**
    * mpos mode status
    */
@@ -50,6 +64,7 @@ public class MposHandler implements INxpNfcNtfHandler {
   private final NxpNciPacketHandler mNxpNciPacketHandler;
   private final NfcOperations mNfcOperations;
   private final Object lock = new Object();
+  private final Object mposStateSync = new Object();
   private boolean isCardActivated = false;
 
   public MposHandler(NfcAdapter nfcAdapter) {
@@ -101,6 +116,11 @@ public class MposHandler implements INxpNfcNtfHandler {
     case SE_READER_TAG_DISCOVERY_STARTED:
       NxpNfcLogger.d(TAG, "ACTION_NFC_MPOS_READER_MODE_START_SUCCESS");
       mPOSStarted(true);
+      synchronized (mposStateSync) {
+        if (mposState == MposState.MPOS_START_INPROGRESS) {
+          mposState = MposState.MPOS_START_COMPLETED;
+        }
+      }
       break;
     case SE_READER_TAG_DISCOVERY_START_FAILED:
       NxpNfcLogger.d(TAG, "ACTION_NFC_MPOS_READER_MODE_START_FAIL");
@@ -131,6 +151,11 @@ public class MposHandler implements INxpNfcNtfHandler {
           lock.notify();
         }
       }
+      synchronized (mposStateSync) {
+        if (mposState == MposState.MPOS_STOP_INPROGRESS) {
+          mposState = MposState.MPOS_STOP_COMPLETED;
+        }
+      }
       break;
     case SE_READER_STOP_FAILED:
       NxpNfcLogger.d(TAG, "ACTION_NFC_MPOS_READER_MODE_STOP_FAIL");
@@ -158,6 +183,15 @@ public class MposHandler implements INxpNfcNtfHandler {
     if (mNfcOperations.isRfFieldDetected()) {
       NxpNfcLogger.d(TAG, "Payment is in progress");
       return MPOS_STATUS_FAILED;
+    }
+
+    synchronized (mposStateSync) {
+      if(mposState == MposState.MPOS_START_INPROGRESS ||
+          mposState == MposState.MPOS_STOP_INPROGRESS) {
+          NxpNfcLogger.e(TAG, "Mpos Start/Stop is in-progress. Wait to complete : " +
+                                  mposState);
+        return MPOS_STATUS_FAILED;
+      }
     }
 
     if (enable == false) {
@@ -195,6 +229,12 @@ public class MposHandler implements INxpNfcNtfHandler {
           mpos);
       if (vendorRsp != null && vendorRsp.length > 0 &&
           vendorRsp[0] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
+        synchronized (mposStateSync) {
+          if (enable)
+            mposState = MposState.MPOS_START_INPROGRESS;
+          else
+            mposState = MposState.MPOS_STOP_INPROGRESS;
+        }
         return MPOS_STATUS_SUCCESS;
       } else {
         return MPOS_STATUS_FAILED;
