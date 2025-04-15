@@ -42,11 +42,6 @@ NfcExtEventData_t nfc_ext_event_data;
  */
 static void phNxpExtn_Init();
 
-/**
- * TODO: Will be removed once fp_extn_deinit() is functional
- * @brief global flag to initialize extention lib only once
- */
-static bool initalized = false;
 std::string mLibName = "libnfc_vendor_extn.so";
 #if (defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64))
 std::string mLibPathName = "/system/vendor/lib64/" + mLibName;
@@ -85,17 +80,11 @@ void phNxpExtn_LibSetup() {
 void phNxpExtn_Init() {
   NXPLOG_NCIHAL_D("%s Enter", __func__);
   if (fp_extn_init != NULL) {
-    if (!initalized) {
-      if (fp_extn_init(nullptr)) {
-        NXPLOG_NCIHAL_D("%s : %s Success",
-            __func__, vendor_nfc_init_name.c_str());
-      } else {
-        NXPLOG_NCIHAL_D("%s: %s Failed",
-            __func__, vendor_nfc_init_name.c_str());
-      }
-      initalized = true;
+    if (fp_extn_init(nullptr)) {
+      NXPLOG_NCIHAL_D("%s : %s Success", __func__,
+                      vendor_nfc_init_name.c_str());
     } else {
-      NXPLOG_NCIHAL_D("%s Already Initialized!", __func__);
+      NXPLOG_NCIHAL_D("%s: %s Failed", __func__, vendor_nfc_init_name.c_str());
     }
   }
 }
@@ -111,6 +100,9 @@ void phNxpExtn_LibClose() {
   if (p_oem_extn_handle != NULL) {
     NXPLOG_NCIHAL_D("%s Closing libnfc_vendor_extn.so lib", __func__);
     dlclose(p_oem_extn_handle);
+    fp_extn_init = NULL;
+    fp_extn_deinit = NULL;
+    fp_extn_handle_nfc_event = NULL;
     p_oem_extn_handle = NULL;
   }
 }
