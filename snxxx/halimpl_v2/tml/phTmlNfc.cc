@@ -103,11 +103,10 @@ NFCSTATUS phTmlNfc_Init(pphTmlNfc_Config_t pConfig) {
           (NFCSTATUS_SUCCESS != phTmlNfc_ConfigTransport()))
         return NFCSTATUS_FAILED;
 
-      if (gsIsFirstHalMinOpen) {
-        if (!gpTransportObj->Flushdata(pConfig)) {
-          NXPLOG_NCIHAL_E("Flushdata Failed");
-        }
+      if (!gpTransportObj->Flushdata(pConfig)) {
+        NXPLOG_NCIHAL_E("Flushdata Failed");
       }
+
       /* Initialise all the internal TML variables */
       memset(gpphTmlNfc_Context, PH_TMLNFC_RESET_VALUE,
              sizeof(phTmlNfc_Context_t));
