@@ -1,0 +1,378 @@
+//
+// Copyright (C) 2018-2019, 2023 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/******************************************************************************
+ *
+ *  Copyright 2021-2024 NXP
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ ******************************************************************************/
+
+package {
+    // See: http://go/android-license-faq
+    // A large-scale-change added 'default_applicable_licenses' to import
+    // all of the 'license_kinds' from "hardware_nxp_nfc_license"
+    // to get the below license kinds:
+    //   SPDX-license-identifier-Apache-2.0
+    default_applicable_licenses: ["hardware_nxp_nfc_license"],
+}
+
+cc_library_shared {
+    name: "nfc_nci_nxp_snxxx",
+    defaults: ["hidl_defaults"],
+    proprietary: true,
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wextra",
+        "-DNXP_HW_SELF_TEST=TRUE",
+        "-DNXP_SRD=TRUE",
+        "-DNXP_NFC_RECOVERY=TRUE",
+        "-DNXP_QTAG=TRUE",
+        "-DNXP_FORCE_FW_DOWNLOAD=1",
+        "-DNXP_BOOTTIME_UPDATE",
+    ],
+    srcs: [
+        "halimpl/dnld/phDnldNfc.cc",
+        "halimpl/dnld/phDnldNfc_Internal.cc",
+        "halimpl/dnld/phDnldNfc_Utils.cc",
+        "halimpl/dnld/phNxpNciHal_Dnld.cc",
+        "halimpl/hal/phNxpNciHal.cc",
+        "halimpl/hal/phNxpNciHal_VendorProp.cc",
+        "halimpl/hal/phNxpNciHal_ext.cc",
+        "halimpl/log/phNxpLog.cc",
+        "halimpl/src/adaptation/EseAdaptation.cc",
+        "halimpl/tml/phDal4Nfc_messageQueueLib.cc",
+        "halimpl/tml/phOsalNfc_Timer.cc",
+        "halimpl/tml/phTmlNfc.cc",
+        "halimpl/tml/NfccTransportFactory.cc",
+        "halimpl/tml/transport/*.cc",
+        "halimpl/utils/NxpNfcCapability.cc",
+        "halimpl/utils/NxpNfcThreadMutex.cc",
+        "halimpl/utils/phNxpConfig.cc",
+        "halimpl/utils/phNxpNciHal_utils.cc",
+        "halimpl/utils/phNxpEventLogger.cc",
+        "halimpl/utils/phNxpTempMgr.cc",
+        "halimpl/utils/sparse_crc32.cc",
+        "halimpl/utils/IntervalTimer.cpp",
+        "halimpl/eseclients_extns/src/*.cc",
+        "halimpl/hal/phNxpNciHal_IoctlOperations.cc",
+        "halimpl/hal/phNxpNciHal_extOperations.cc",
+        "halimpl/hal/phNxpNciHal_ULPDet.cc",
+        "halimpl/observe_mode/NciDiscoveryCommandBuilder.cc",
+        "halimpl/observe_mode/ReaderPollConfigParser.cc",
+        "halimpl/observe_mode/ObserveMode.cc",
+        "halimpl/mifare/NxpMfcReader.cc",
+        "halimpl/recovery/phNxpNciHal_Recovery.cc",
+        "halimpl/hal/phNxpNciHal_PowerTrackerIface.cc",
+    ],
+
+    local_include_dirs: [
+        "halimpl/common",
+        "halimpl/dnld",
+        "halimpl/hal",
+        "halimpl/inc",
+        "halimpl/log",
+        "halimpl/tml/transport",
+        "halimpl/tml",
+        "halimpl/utils",
+        "halimpl/eseclients_extns/inc",
+        "halimpl/src/include",
+        "halimpl/mifare",
+        "halimpl/recovery",
+        "halimpl/observe_mode",
+    ],
+
+    include_dirs: [
+        "hardware/nxp/secure_element/snxxx/extns/impl",
+        "hardware/nxp/secure_element_extns/inc",
+    ],
+
+    shared_libs: [
+        "libbase",
+        "libcutils",
+        "libdl",
+        "libhardware",
+        "libhardware_legacy",
+        "libhidlbase",
+        "liblog",
+        "libutils",
+        "libbinder_ndk",
+        "vendor.nxp.nxpese@1.0",
+    ],
+    header_libs: [
+        "power_tracker_headers",
+    ],
+}
+
+cc_library_headers {
+    name: "nfc_nci_nxp_snxxx_headers",
+    vendor: true,
+    export_include_dirs: [
+        "halimpl/common",
+        "halimpl/dnld",
+        "halimpl/hal",
+        "halimpl/inc",
+        "halimpl/log",
+        "halimpl/tml/transport",
+        "halimpl/tml",
+        "halimpl/utils",
+        "halimpl/eseclients_extns/inc",
+        "halimpl/src/include",
+        "halimpl/mifare",
+        "extns/impl/nxpnfc/2.0",
+        "halimpl/recovery",
+    ],
+}
+
+cc_library_shared {
+    name: "nfc_nci_nxp_snxxx_v2",
+    defaults: ["hidl_defaults"],
+    proprietary: true,
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wextra",
+        "-DNXP_HW_SELF_TEST=TRUE",
+        "-DNXP_SRD=TRUE",
+        "-DNXP_NFC_RECOVERY=TRUE",
+        "-DNXP_QTAG=TRUE",
+        "-DNXP_FORCE_FW_DOWNLOAD=1",
+        "-DNXP_BOOTTIME_UPDATE",
+    ],
+    srcs: [
+        "halimpl_v2/dnld/phDnldNfc.cc",
+        "halimpl_v2/dnld/phDnldNfc_Internal.cc",
+        "halimpl_v2/dnld/phDnldNfc_Utils.cc",
+        "halimpl_v2/dnld/phNxpNciHal_Dnld.cc",
+        "halimpl_v2/hal/phNxpNciHal.cc",
+        "halimpl_v2/hal/phNxpNciHal_VendorProp.cc",
+        "halimpl_v2/hal/phNxpNciHal_ext.cc",
+        "halimpl_v2/log/phNxpLog.cc",
+        "halimpl_v2/src/adaptation/EseAdaptation.cc",
+        "halimpl_v2/tml/phDal4Nfc_messageQueueLib.cc",
+        "halimpl_v2/tml/phOsalNfc_Timer.cc",
+        "halimpl_v2/tml/phTmlNfc.cc",
+        "halimpl_v2/tml/NfccTransportFactory.cc",
+        "halimpl_v2/tml/transport/*.cc",
+        "halimpl_v2/utils/NxpNfcCapability.cc",
+        "halimpl_v2/utils/NxpNfcThreadMutex.cc",
+        "halimpl_v2/utils/phNxpConfig.cc",
+        "halimpl_v2/utils/phNxpNciHal_utils.cc",
+        "halimpl_v2/utils/phNxpEventLogger.cc",
+        "halimpl_v2/utils/phNxpTempMgr.cc",
+        "halimpl_v2/utils/sparse_crc32.cc",
+        "halimpl_v2/utils/IntervalTimer.cpp",
+        "halimpl_v2/eseclients_extns/src/*.cc",
+        "halimpl_v2/hal/phNxpNciHal_IoctlOperations.cc",
+        "halimpl_v2/hal/phNxpNciHal_extOperations.cc",
+        "halimpl_v2/hal/phNxpNciHal_ULPDet.cc",
+        "halimpl_v2/observe_mode/NciDiscoveryCommandBuilder.cc",
+        "halimpl_v2/observe_mode/ReaderPollConfigParser.cc",
+        "halimpl_v2/observe_mode/ObserveMode.cc",
+        "halimpl_v2/mifare/NxpMfcReader.cc",
+        "halimpl_v2/recovery/phNxpNciHal_Recovery.cc",
+        "halimpl_v2/hal/phNxpNciHal_PowerTrackerIface.cc",
+        "halimpl_v2/nfc_comm/NfcWriter.cc",
+        "halimpl_v2/hal/phNxpNciHal_WorkerThread.cc",
+        "halimpl_v2/nfc_extn/NfcExtension.cc",
+        "halimpl_v2/hal/phNxpNciHal_WiredSeIface.cc",
+    ],
+
+    local_include_dirs: [
+        "halimpl_v2/common",
+        "halimpl_v2/dnld",
+        "halimpl_v2/hal",
+        "halimpl_v2/inc",
+        "halimpl_v2/log",
+        "halimpl_v2/tml/transport",
+        "halimpl_v2/tml",
+        "halimpl_v2/utils",
+        "halimpl_v2/eseclients_extns/inc",
+        "halimpl_v2/src/include",
+        "halimpl_v2/mifare",
+        "halimpl_v2/recovery",
+        "halimpl_v2/observe_mode",
+        "halimpl_v2/nfc_comm",
+        "halimpl_v2/nfc_extn",
+    ],
+
+    include_dirs: [
+        "hardware/nxp/nfc/snxxx/aidl/2.0",
+        "hardware/nxp/secure_element/snxxx/extns/impl",
+        "hardware/nxp/secure_element_extns/inc",
+    ],
+
+    shared_libs: [
+        "libbase",
+        "libcutils",
+        "libdl",
+        "libhardware",
+        "libhardware_legacy",
+        "libhidlbase",
+        "liblog",
+        "libutils",
+        "libbinder_ndk",
+        "vendor.nxp.nxpese@1.0",
+    ],
+    header_libs: [
+      "power_tracker_headers_v2",
+    ],
+}
+
+cc_library_headers {
+    name: "nfc_nci_nxp_snxxx_headers_v2",
+    vendor: true,
+    export_include_dirs: [
+        "halimpl_v2/common",
+        "halimpl_v2/dnld",
+        "halimpl_v2/hal",
+        "halimpl_v2/inc",
+        "halimpl_v2/log",
+        "halimpl_v2/tml/transport",
+        "halimpl_v2/tml",
+        "halimpl_v2/utils",
+        "halimpl_v2/eseclients_extns/inc",
+        "halimpl_v2/src/include",
+        "halimpl_v2/mifare",
+        "extns/impl/nxpnfc/2.0",
+        "halimpl_v2/recovery",
+        "halimpl_v2/nfc_comm",
+    ],
+}
+
+cc_binary {
+    name: "android.hardware.nfc2-service.nxp",
+    relative_install_path: "hw",
+    init_rc: ["aidl/2.0/nfc2-service-nxp.rc"],
+    vintf_fragments: ["aidl/2.0/nfc2-service-nxp.xml"],
+    vendor: true,
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wextra",
+        "-DNXP_NFC_RECOVERY=TRUE",
+    ],
+    shared_libs: [
+        "libbase",
+        "liblog",
+        "libutils",
+        "libbinder_ndk",
+        "android.hardware.nfc-V2-ndk",
+        "nfc_nci_nxp_snxxx_v2",
+        "libhardware",
+        "vendor.nxp.nxpnfc_aidl-V1-ndk",
+        "libmemunreachable",
+    ],
+    srcs: [
+        "aidl/2.0/main.cpp",
+        "aidl/2.0/Nfc.cpp",
+        "aidl/2.0/NfcExtns.cpp",
+        "extns/impl/nxpnfc/aidl/NxpNfc.cpp",
+    ],
+    local_include_dirs: [
+        "halimpl_v2/common",
+        "halimpl_v2/dnld",
+        "halimpl_v2/hal",
+        "halimpl_v2/inc",
+        "halimpl_v2/log",
+        "halimpl_v2/utils",
+        "halimpl_v2/mifare",
+        "halimpl_v2/recovery",
+        "halimpl_v2/eseclients_extns/inc/",
+        "extns/impl/nxpnfc/aidl",
+        "halimpl_v2/nfc_comm",
+    ],
+}
+
+cc_binary {
+    name: "android.hardware.nfc-service.nxp",
+    relative_install_path: "hw",
+    init_rc: ["aidl/1.0/nfc-service-nxp.rc"],
+    vintf_fragments: ["aidl/1.0/nfc-service-nxp.xml"],
+    vendor: true,
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wextra",
+        "-DNXP_NFC_RECOVERY=TRUE",
+    ],
+    shared_libs: [
+        "libbase",
+        "liblog",
+        "libutils",
+        "libbinder_ndk",
+        "android.hardware.nfc-V1-ndk",
+        "nfc_nci_nxp_snxxx",
+        "libhardware",
+        "vendor.nxp.nxpnfc_aidl-V1-ndk",
+    ],
+    srcs: [
+        "aidl/1.0/main.cpp",
+        "aidl/1.0/Nfc.cpp",
+        "aidl/1.0/NfcExtns.cpp",
+        "extns/impl/nxpnfc/aidl/NxpNfc.cpp",
+    ],
+    local_include_dirs: [
+        "halimpl/common",
+        "halimpl/dnld",
+        "halimpl/hal",
+        "halimpl/inc",
+        "halimpl/log",
+        "halimpl/utils",
+        "halimpl/mifare",
+        "halimpl/recovery",
+        "halimpl/eseclients_extns/inc/",
+        "extns/impl/nxpnfc/aidl",
+    ],
+}
+
+filegroup {
+    name: "nxp_gtest_filegroup",
+
+    srcs: [
+        "halimpl_v2/observe_mode/NciDiscoveryCommandBuilder.cc",
+        "halimpl_v2/observe_mode/ReaderPollConfigParser.cc",
+    ],
+    visibility: [
+        "//hardware/nxp/nfc/snxxx/tests/gtest",
+    ],
+}
+
+cc_library_headers {
+    name: "nxp_gtest_headers",
+    host_supported: true,
+    export_include_dirs: [
+        "halimpl_v2/common",
+        "halimpl_v2/observe_mode",
+    ],
+    visibility: [
+        "//hardware/nxp/nfc/snxxx/tests/gtest",
+    ],
+}
+
