@@ -1,0 +1,8 @@
+java_library {
+    name: "com.nxp.nfc",
+    installable: true,
+    srcs: [
+        "com/**/I*.aidl",
+        "com/**/*.java",
+    ],
+}
