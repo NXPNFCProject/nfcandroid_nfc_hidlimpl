@@ -1,5 +1,5 @@
 /*
- *  Copyright 2010-2024 NXP
+ *  Copyright 2010-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -672,6 +672,10 @@ void phDnldNfc_SetHwDevHandle(void) {
 void phDnldNfc_ReSetHwDevHandle(void) {
   if (gpphDnldContext != NULL) {
     NXPLOG_FWDNLD_D("Freeing Mem for Dnld Context..");
+    if (gpphDnldContext->tCmdRspFrameInfo.aFrameBuff != NULL) {
+      free(gpphDnldContext->tCmdRspFrameInfo.aFrameBuff);
+      gpphDnldContext->tCmdRspFrameInfo.aFrameBuff = NULL;
+    }
     free(gpphDnldContext);
     gpphDnldContext = NULL;
   }
