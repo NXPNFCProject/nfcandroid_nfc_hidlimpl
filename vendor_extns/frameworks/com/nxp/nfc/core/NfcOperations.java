@@ -29,6 +29,7 @@ import android.nfc.OemLogItems;
 import android.os.Bundle;
 import android.os.ResultReceiver;
 
+import com.nxp.nfc.INxpOEMCallbacks;
 import com.nxp.nfc.NxpNfcConstants;
 import com.nxp.nfc.NxpNfcLogger;
 
@@ -57,6 +58,7 @@ public class NfcOperations {
 
     private NfcAdapter mNfcAdapter;
     private NfcOemExtension mNfcOemExtension;
+    private INxpOEMCallbacks mNxpOemCallbacks = null;
 
     /**
      * @brief wait latch for enable/disable discovery
@@ -201,6 +203,21 @@ public class NfcOperations {
         }
     }
 
+    /**
+     * @brief registers to the OEM callbacks through NXP extentions
+     * @param nxpOEMCallback callback to be register
+     */
+    public void registerNxpOemCallback(INxpOEMCallbacks nxpOEMCallback) {
+        mNxpOemCallbacks = nxpOEMCallback;
+    }
+
+    /**
+     * @brief unregisters to OEM callbacks through NXP extenstions
+     */
+    public void unregisterNxpOemCallback() {
+        mNxpOemCallbacks = null;
+    }
+
     private NfcOemExtension.Callback mOemExtensionCallback = new NfcOemExtension.Callback() {
 
         @Override
@@ -231,6 +248,9 @@ public class NfcOperations {
 
         @Override
         public void onDisableRequested(Consumer<Boolean> isAllowed) {
+            if (mNxpOemCallbacks != null) {
+                mNxpOemCallbacks.onDisableRequested();
+            }
             isAllowed.accept(true);
         }
 
@@ -284,6 +304,9 @@ public class NfcOperations {
         public void onRfFieldDetected(boolean isActive) {
             NfcOperations.this.mIsRfFieldDetected = isActive;
             NxpNfcLogger.d(TAG, "onRfFieldDetected: " + isActive);
+            if (mNxpOemCallbacks != null) {
+                mNxpOemCallbacks.onRfFieldDetected(isActive);
+            }
         }
 
         @Override

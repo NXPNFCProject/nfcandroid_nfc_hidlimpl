@@ -19,10 +19,13 @@ package com.nxp.nfc;
 import android.app.Activity;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
+
+import com.nxp.nfc.vendor.fw.NfcFirmwareInfo;
+import com.nxp.nfc.vendor.lxdebug.ILxDebugCallbacks;
+import com.nxp.nfc.vendor.lxdebug.LxDebugEventHandler;
 import com.nxp.nfc.vendor.mpos.MposHandler;
 import com.nxp.nfc.vendor.qtag.QTagHandler;
 import com.nxp.nfc.vendor.transit.TransitConfigHandler;
-import com.nxp.nfc.vendor.fw.NfcFirmwareInfo;
 
 import java.io.IOException;
 
@@ -42,6 +45,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     private NfcAdapter mNfcAdapter;
     private MposHandler mMposHandler;
     private QTagHandler mQTagHandler;
+    private LxDebugEventHandler mLxDebugEventHandler;
     private TransitConfigHandler mTransitHandler;
     private NfcFirmwareInfo mFwHandler;
 
@@ -61,6 +65,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     private static final int NFC_NXP_MW_VERSION_MIN = 0x00; // MW Minor Version
     private static final int NFC_NXP_MW_CUSTOMER_ID = 0x00; // MW Customer ID
     private static final int NFC_NXP_MW_RC_VERSION = 0x00; // MW RC Version
+    private static final int NFC_BUSY_IN_MPOS = 0x02;
 
     private static void printComNxpNfcVersion() {
         int validation = (NXP_EN_SN100U << 13);
@@ -87,6 +92,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
         mNfcAdapter = nfcAdapter;
         mMposHandler = new MposHandler(nfcAdapter);
         mQTagHandler = new QTagHandler(nfcAdapter);
+        mLxDebugEventHandler = new LxDebugEventHandler(nfcAdapter);
         mTransitHandler = new TransitConfigHandler(nfcAdapter);
         mFwHandler = new NfcFirmwareInfo(nfcAdapter);
     }
@@ -174,5 +180,175 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     @Override
     public byte[] getFwVersion() throws IOException {
         return mFwHandler.getFwVersion();
+    }
+
+    /**
+     * This API registers the callback to get Field Detected Events.
+     * @param callbacks : callback object to be register.
+     */
+    @Override
+    public void registerLxDebugCallbacks(ILxDebugCallbacks callbacks) {
+        mLxDebugEventHandler.registerLxDebugCallbacks(callbacks);
+    }
+
+    /**
+     * This API unregisters the Application callbacks to be called
+     * for LxDebug notifications.
+     */
+    @Override
+    public void unregisterLxDebugCallbacks() {
+        mLxDebugEventHandler.unregisterLxDebugCallbacks();
+    }
+
+    /**
+     * This API starts extended field detect mode.
+     * @param detectionTimeout : The time after 1st RF ON to
+     *                            exit extended field detect mode(msec).
+     * @return status     :-0x00 :EFDSTATUS_SUCCESS
+     *                      0x01 :EFDSTATUS_FAILED
+     *                      0x02 :EFDSTATUS_ERROR_ALREADY_STARTED
+     *                      0x03 :EFDSTATUS_ERROR_FEATURE_NOT_SUPPORTED
+     *                      0x04 :EFDSTATUS_ERROR_FEATURE_DISABLED_IN_CONFIG
+     *                      0x05 :EFDSTATUS_ERROR_NFC_IS_OFF
+     *                      0x06 :EFDSTATUS_ERROR_UNKNOWN
+     */
+    @Override
+    public int startExtendedFieldDetectMode(int detectionTimeout) {
+        return mLxDebugEventHandler.startExtendedFieldDetectMode(detectionTimeout);
+    }
+
+    /**
+     * @return status     :-0x00 :EFDSTATUS_SUCCESS
+     *                      0x01 :EFDSTATUS_FAILED
+     *                      0x05 :EFDSTATUS_ERROR_NFC_IS_OFF
+     *                      0x06 :EFDSTATUS_ERROR_UNKNOWN
+     *                      0x07 :EFDSTATUS_ERROR_NOT_STARTED
+     */
+    @Override
+    public int stopExtendedFieldDetectMode() {
+        return mLxDebugEventHandler.stopExtendedFieldDetectMode();
+    }
+
+    /**
+     * This API starts card emulation mode. Starts RF Discovery with Default
+     * POLL & Listen configurations
+     * @return status     :-0x00 :EFDSTATUS_SUCCESS
+     *                      0x01 :EFDSTATUS_FAILED
+     *                      0x05 :EFDSTATUS_ERROR_NFC_IS_OFF
+     *                      0x06 :EFDSTATUS_ERROR_UNKNOWN
+     */
+    @Override
+    public int startCardEmulation() {
+        return mLxDebugEventHandler.startCardEmulation();
+    }
+
+    /**
+     * This api is called by applications enable or disable field
+     * detect feauture.
+     * This api shall be called only Nfcservice is enabled.
+     * @param  mode to Enable(true) and Disable(false)
+     * @return whether  the update of configuration is
+     *          success or not with reason.
+     *          0x01  - NFC_IS_OFF,
+     *          0x02  - NFC_BUSY_IN_MPOS
+     *          0x03  - ERROR_UNKNOWN
+     *          0x00  - SUCCESS
+     * @throws  IOException if any exception occurs during setting the NFC configuration.
+     */
+    @Override
+    public int setFieldDetectMode(boolean mode) throws IOException {
+        if (mPOSGetReaderMode(TAG)) {
+            NxpNfcLogger.e(TAG, "NFC Busy in MPOS");
+            return NFC_BUSY_IN_MPOS;
+        }
+        return mLxDebugEventHandler.setFieldDetectMode(mode);
+    }
+
+    /**
+     * detect feature is enabled or not
+     * @return whether  the feature is enabled(true) disabled (false)
+     *          success or not.
+     *          Enabled  - true
+     *          Disabled - false
+     * @throws  IOException if any exception occurs during setting the NFC configuration.
+     */
+    @Override
+    public boolean isFieldDetectEnabled() {
+        return mLxDebugEventHandler.isFieldDetectEnabled();
+    }
+
+    /**
+     * This api is called by applications to start RSSI mode.
+     * Once RSSI is enabled, RSSI data notifications are broadcasted to registered
+     * application when the device is in the reader field. Application can then
+     * analyze this data and find best position for transaction.
+     * This api shall be called only after Nfcservice is enabled.
+     * @param  rssiNtfTimeIntervalInMillisec to set time interval between RSSI
+     * notification in milliseconds. It is recommended that this value is
+     * greater than 10 millisecs and multiple of 10.
+     * @return whether  the update of configuration is
+     *          success or not with reason.
+     *          0x01  - NFC_IS_OFF,
+     *          0x02  - NFC_BUSY_IN_MPOS
+     *          0x03  - ERROR_UNKNOWN
+     *          0x00  - SUCCESS
+     * @throws  IOException if any exception occurs during setting the NFC configuration.
+     */
+    @Override
+    public int startRssiMode(int rssiNtfTimeIntervalInMillisec) throws IOException {
+        if (mPOSGetReaderMode(TAG)) {
+            NxpNfcLogger.e(TAG, "NFC Busy in MPOS");
+            return NFC_BUSY_IN_MPOS;
+        }
+        return mLxDebugEventHandler.startRssiMode(rssiNtfTimeIntervalInMillisec);
+    }
+
+    /**
+     * This api is called by applications to stop RSSI mode
+     * This api shall be called only after Nfcservice is enabled.
+     * @return whether  the update of configuration is
+     *          success or not with reason.
+     *          0x01  - NFC_IS_OFF,
+     *          0x02  - NFC_BUSY_IN_MPOS
+     *          0x03  - ERROR_UNKNOWN
+     *          0x00  - SUCCESS
+     * @throws  IOException if any exception occurs during setting the NFC configuration.
+     */
+    @Override
+    public int stopRssiMode() throws IOException {
+        if (mPOSGetReaderMode(TAG)) {
+            NxpNfcLogger.e(TAG, "NFC Busy in MPOS");
+            return NFC_BUSY_IN_MPOS;
+        }
+        return mLxDebugEventHandler.stopRssiMode();
+    }
+
+    /**
+     * This api is called by applications to check whether RSSI is enabled or not
+     * @return whether  the feature is enabled(true) disabled (false)
+     *          success or not.
+     *          Enabled  - true
+     *          Disabled - false
+     * @throws  IOException if any exception occurs during setting the NFC configuration.
+     */
+    @Override
+    public boolean isRssiEnabled() throws IOException {
+        return mLxDebugEventHandler.isRssiEnabled();
+    }
+
+    /**
+     * This api is called by application to enable various debug notigications
+     * of NFCC.
+     * This api shall be called only if Nfcservice is enabled.
+     * @return whether  the update of configuration is
+     *          success or not.
+     *          0x00 - success
+     *          0x01 - NFC is not initialized
+     *          0x03 - NFCC command failed
+     *          0xFF - Service Unavialable
+     */
+    @Override
+    public int enableDebugNtf(byte fieldValue) {
+        return mLxDebugEventHandler.enableDebugNtf(fieldValue);
     }
 }

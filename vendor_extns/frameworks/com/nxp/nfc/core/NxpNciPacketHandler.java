@@ -45,6 +45,7 @@ public class NxpNciPacketHandler {
 
     private byte[] mVendorNciRsp;
     private byte mCurrentCmdSubGidOid;
+    private boolean mIsSubGidCheckReq = true;
     private CountDownLatch mResCountDownLatch;
 
     private NxpNciPacketHandler(NfcAdapter nfcAdapter) {
@@ -63,6 +64,14 @@ public class NxpNciPacketHandler {
 
     public void setCurrentNtfHandler(INxpNfcNtfHandler nxpNfcNtfHandler) {
         this.mINxpNfcNtfHandler = nxpNfcNtfHandler;
+    }
+
+    /**
+     * sets the value to verify Sub GID of response with command
+     * @param value : true if check needed false if check not needed
+     */
+    public void shouldCheckResponseSubGid(boolean value) {
+        mIsSubGidCheckReq = value;
     }
 
     public void resetCurrentNtfHandler() {
@@ -84,7 +93,9 @@ public class NxpNciPacketHandler {
         int status = NfcAdapter.SEND_VENDOR_NCI_STATUS_FAILED;
         try {
             if (mNfcAdapter != null) {
-                mCurrentCmdSubGidOid = payload[0];
+                if (mIsSubGidCheckReq) {
+                    mCurrentCmdSubGidOid = payload[0];
+                }
                 mResCountDownLatch = new CountDownLatch(1);
                 status = mNfcAdapter.sendVendorNciMessage(NfcAdapter.MESSAGE_TYPE_COMMAND,
                             gid, oid, payload);
@@ -115,7 +126,7 @@ public class NxpNciPacketHandler {
         public void onVendorNciResponse(int gid, int oid, byte[] payload) {
             NxpNfcLogger.d(TAG, "onVendorNciResponse Gid " + gid + " Oid " + oid
                             + ",payload: " + NxpNfcUtils.toHexString(payload));
-            if (mCurrentCmdSubGidOid == payload[0]) {
+            if ((!mIsSubGidCheckReq) || (mCurrentCmdSubGidOid == payload[0])) {
                 NxpNfcLogger.d(TAG, "Expected Response received!");
                 mVendorNciRsp = payload;
                 if (mResCountDownLatch != null) {
