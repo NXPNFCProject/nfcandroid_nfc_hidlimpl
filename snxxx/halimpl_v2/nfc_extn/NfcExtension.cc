@@ -99,7 +99,11 @@ void phNxpExtn_LibClose() {
   }
   if (p_oem_extn_handle != NULL) {
     NXPLOG_NCIHAL_D("%s Closing libnfc_vendor_extn.so lib", __func__);
-    dlclose(p_oem_extn_handle);
+    int32_t status = dlclose(p_oem_extn_handle);
+    dlerror(); /* Clear any existing error */
+    if (status != 0) {
+      NXPLOG_NCIHAL_E("%s Free libnfc_vendor_extn.so failed", __func__);
+    }
     fp_extn_init = NULL;
     fp_extn_deinit = NULL;
     fp_extn_handle_nfc_event = NULL;
