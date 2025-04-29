@@ -55,6 +55,7 @@ public class NfcOperations {
 
     private static final int FLAG_USE_ALL_TECH = 0xff;
 
+    private boolean mIsPollingPaused = false;
 
     private NfcAdapter mNfcAdapter;
     private NfcOemExtension mNfcOemExtension;
@@ -148,6 +149,7 @@ public class NfcOperations {
         NxpNfcLogger.d(TAG, "disableDiscovery");
         mDisCountDownLatch = new CountDownLatch(1);
         mNfcOemExtension.pausePolling(PAUSE_POLLING_INDEFINITELY);
+        mIsPollingPaused = true;
         try {
             mDisCountDownLatch.await(NxpNfcConstants.SEND_RAW_WAIT_TIME_OUT_VAL,
                             TimeUnit.MILLISECONDS);
@@ -196,6 +198,7 @@ public class NfcOperations {
         try {
             mDisCountDownLatch = new CountDownLatch(1);
             mNfcOemExtension.resumePolling();
+            mIsPollingPaused = false;
             mDisCountDownLatch.await(NxpNfcConstants.SEND_RAW_WAIT_TIME_OUT_VAL,
                     TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
@@ -248,6 +251,12 @@ public class NfcOperations {
 
         @Override
         public void onDisableRequested(Consumer<Boolean> isAllowed) {
+
+            if (mIsPollingPaused) {
+                mNfcOemExtension.resumePolling();
+                mIsPollingPaused = false;
+            }
+
             if (mNxpOemCallbacks != null) {
                 mNxpOemCallbacks.onDisableRequested();
             }
