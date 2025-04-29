@@ -228,7 +228,7 @@ public class MposHandler implements INxpNfcNtfHandler {
           NxpNfcConstants.NFC_NCI_PROP_GID, NxpNfcConstants.NXP_NFC_PROP_OID,
           mpos);
       if (vendorRsp != null && vendorRsp.length > 0 &&
-          vendorRsp[0] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
+          vendorRsp[1] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
         synchronized (mposStateSync) {
           if (enable)
             mposState = MposState.MPOS_START_INPROGRESS;
