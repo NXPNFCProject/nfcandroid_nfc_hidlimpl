@@ -474,8 +474,8 @@ NFCSTATUS phNxpNciHal_CheckValidFwVersion(void) {
     status = NFCSTATUS_SUCCESS;
   } else if ((ufw_current_major_no == nfcFL._FW_MOBILE_MAJOR_NUMBER) ||
              ((ufw_current_major_no == FW_MOBILE_MAJOR_NUMBER_PN81A) &&
-              (nxpncihal_ctrl.nci_info.nci_version == NCI_VERSION_2_0))) {
-    NXPLOG_NCIHAL_E("FW Version 2");
+              (nxpncihal_ctrl.nci_info.nci_version >= NCI_VERSION_2_0))) {
+    NXPLOG_NCIHAL_E("NCI_VERSION = 0x%x", nxpncihal_ctrl.nci_info.nci_version);
     status = NFCSTATUS_SUCCESS;
   } else if (ufw_current_major_no == sfw_infra_major_no) {
     if ((rom_version == FW_MOBILE_ROM_VERSION_PN553 ||
@@ -1313,7 +1313,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
       goto retry_core_init;
     }
 
-    if (nxpncihal_ctrl.nci_info.nci_version == NCI_VERSION_2_0) {
+    if (nxpncihal_ctrl.nci_info.nci_version >= NCI_VERSION_2_0) {
       status =
           phNxpNciHal_send_ext_cmd(sizeof(cmd_init_nci2_0), cmd_init_nci2_0);
     } else {
@@ -1800,7 +1800,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
       }
       status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci);
       if (status == NFCSTATUS_SUCCESS) {
-        if (nxpncihal_ctrl.nci_info.nci_version == NCI_VERSION_2_0) {
+        if (nxpncihal_ctrl.nci_info.nci_version >= NCI_VERSION_2_0) {
           status = phNxpNciHal_send_ext_cmd(sizeof(cmd_init_nci2_0),
                                             cmd_init_nci2_0);
         } else {
@@ -3226,7 +3226,7 @@ retry_core_reset:
   uint8_t cmd_init_nci[] = {0x20, 0x01, 0x00};
   uint8_t cmd_init_nci2_0[] = {0x20, 0x01, 0x02, 0x00, 0x00};
 retry_core_init:
-  if (nxpncihal_ctrl.nci_info.nci_version == NCI_VERSION_2_0) {
+  if (nxpncihal_ctrl.nci_info.nci_version >= NCI_VERSION_2_0) {
     status = phNxpNciHal_send_ext_cmd(sizeof(cmd_init_nci2_0), cmd_init_nci2_0);
   } else {
     status = phNxpNciHal_send_ext_cmd(sizeof(cmd_init_nci), cmd_init_nci);
@@ -3341,7 +3341,7 @@ void phNxpNciHal_enable_i2c_fragmentation() {
       if (status != NFCSTATUS_SUCCESS) {
         NXPLOG_NCIHAL_E("NCI_CORE_RESET: Failed");
       }
-      if (nxpncihal_ctrl.nci_info.nci_version == NCI_VERSION_2_0) {
+      if (nxpncihal_ctrl.nci_info.nci_version >= NCI_VERSION_2_0) {
         status =
             phNxpNciHal_send_ext_cmd(sizeof(cmd_init_nci2_0), cmd_init_nci2_0);
       } else {
