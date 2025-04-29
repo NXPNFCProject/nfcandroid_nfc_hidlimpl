@@ -100,7 +100,7 @@ void phNxpNciHal_WorkerThread::Run() {
             (phTmlNfc_TransactInfo_t*)deferCall->pParameter;
         int bytesWritten = phNxpNciHal_write_unlocked(
             (uint16_t)pInfo->oem_cmd_len, (uint8_t*)pInfo->p_oem_cmd_data,
-            ORIG_LIBNFC);
+            ORIG_EXTNS);
         if (bytesWritten == pInfo->oem_cmd_len) {
           phNxpExtn_WriteCompleteStatusUpdate(NFCSTATUS_SUCCESS);
         } else {
