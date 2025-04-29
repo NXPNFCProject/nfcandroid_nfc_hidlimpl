@@ -548,8 +548,8 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
     } /* Parsing CORE_INIT_RSP*/
   } else if (p_ntf[0] == NCI_MT_RSP &&
              ((p_ntf[1] & NCI_OID_MASK) == NCI_MSG_CORE_INIT)) {
-    if (nxpncihal_ctrl.nci_info.nci_version == NCI_VERSION_2_0) {
-      NXPLOG_NCIHAL_D("CORE_INIT_RSP NCI2.0 received !");
+    if (nxpncihal_ctrl.nci_info.nci_version >= NCI_VERSION_2_0) {
+      NXPLOG_NCIHAL_D("CORE_INIT_RSP NCI2.0 and above received !");
       /* Remove NFC-DEP interface support from INIT RESP */
       RemoveNfcDepIntfFromInitResp(p_ntf, p_len);
       /* If NDEF T4T is enabled, then change Max Logical Connections to 5
