@@ -74,6 +74,7 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 #define NCI_GID_MASK 0x0F
 #define ORIG_NXPHAL 0x01
 #define ORIG_LIBNFC 0x02
+#define ORIG_EXTNS 0x03
 #define NXP_PROPCMD_GID 0x2F
 #define NXP_FLUSH_SRAM_AO_TO_FLASH 0x21
 #define NXP_CORE_GET_CONFIG_CMD 0x03
