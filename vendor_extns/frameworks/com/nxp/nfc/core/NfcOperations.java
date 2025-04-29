@@ -26,8 +26,7 @@ import android.nfc.cardemulation.ApduServiceInfo;
 import android.nfc.NdefMessage;
 import android.nfc.OemLogItems;
 
-import android.os.Bundle;
-import android.os.ResultReceiver;
+import android.os.AsyncTask;
 
 import com.nxp.nfc.INxpOEMCallbacks;
 import com.nxp.nfc.NxpNfcConstants;
@@ -60,6 +59,11 @@ public class NfcOperations {
     private NfcAdapter mNfcAdapter;
     private NfcOemExtension mNfcOemExtension;
     private INxpOEMCallbacks mNxpOemCallbacks = null;
+
+    /**
+     * @brief holds the value for listen tech disable
+     */
+    private boolean mListenTechDisabled = false;
 
     /**
      * @brief wait latch for enable/disable discovery
@@ -149,7 +153,9 @@ public class NfcOperations {
         NxpNfcLogger.d(TAG, "disableDiscovery");
         mDisCountDownLatch = new CountDownLatch(1);
         mNfcOemExtension.pausePolling(PAUSE_POLLING_INDEFINITELY);
-        mIsPollingPaused = true;
+        synchronized (NfcOperations.this) {
+            mIsPollingPaused = true;
+        }
         try {
             mDisCountDownLatch.await(NxpNfcConstants.SEND_RAW_WAIT_TIME_OUT_VAL,
                             TimeUnit.MILLISECONDS);
@@ -165,9 +171,28 @@ public class NfcOperations {
      */
     public void enableDiscovery() {
         NxpNfcLogger.d(TAG, "enableDiscovery With Keep READER|LISTEN");
-        setDiscoveryTech(NfcAdapter.FLAG_READER_KEEP | FLAG_USE_ALL_TECH,
-                            NfcAdapter.FLAG_LISTEN_KEEP | FLAG_USE_ALL_TECH);
+        setDiscoveryTechnology(NfcAdapter.FLAG_READER_KEEP | FLAG_USE_ALL_TECH,
+                NfcAdapter.FLAG_LISTEN_KEEP | FLAG_USE_ALL_TECH);
         startDiscovery();
+    }
+
+    /**
+     * only sets the discovery technology parameters
+     */
+    private void setDiscoveryTechnology(int pollTechnology, int listenTechnology) {
+      NxpNfcLogger.d(TAG, "setDiscoveryTechnology");
+      mNfcAdapter.setDiscoveryTechnology(null, pollTechnology | NfcAdapter.FLAG_SET_DEFAULT_TECH,
+                                         listenTechnology | NfcAdapter.FLAG_SET_DEFAULT_TECH);
+      synchronized (NfcOperations.this) {
+          if (listenTechnology == NfcAdapter.FLAG_LISTEN_DISABLE)  {
+              NxpNfcLogger.d(TAG, "Listen Disabled");
+              mListenTechDisabled = true;
+          } else {
+              NxpNfcLogger.d(TAG, "Listen Enabled");
+              mListenTechDisabled = false;
+
+          }
+      }
     }
 
     /**
@@ -178,8 +203,7 @@ public class NfcOperations {
      */
     public void setDiscoveryTech(int pollTechnology, int listenTechnology) {
       NxpNfcLogger.d(TAG, "setDiscoveryTech");
-      mNfcAdapter.setDiscoveryTechnology(null, pollTechnology | NfcAdapter.FLAG_SET_DEFAULT_TECH,
-                                         listenTechnology | NfcAdapter.FLAG_SET_DEFAULT_TECH);
+      setDiscoveryTechnology(pollTechnology, listenTechnology);
       startDiscovery();
     }
 
@@ -198,7 +222,9 @@ public class NfcOperations {
         try {
             mDisCountDownLatch = new CountDownLatch(1);
             mNfcOemExtension.resumePolling();
-            mIsPollingPaused = false;
+            synchronized (NfcOperations.this) {
+                mIsPollingPaused = false;
+            }
             mDisCountDownLatch.await(NxpNfcConstants.SEND_RAW_WAIT_TIME_OUT_VAL,
                     TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
@@ -235,6 +261,7 @@ public class NfcOperations {
 
         @Override
         public void onApplyRouting(Consumer<Boolean> isSkipped) {
+            NxpNfcLogger.d(TAG, "onApplyRouting :");
             // allow apply routing by default.
             // if required apply routing can be skipped based on usecases
             isSkipped.accept(false);
@@ -246,17 +273,13 @@ public class NfcOperations {
 
         @Override
         public void onEnableRequested(Consumer<Boolean> isAllowed) {
+            NxpNfcLogger.d(TAG, "onEnableRequested :");
             isAllowed.accept(true);
         }
 
         @Override
         public void onDisableRequested(Consumer<Boolean> isAllowed) {
-
-            if (mIsPollingPaused) {
-                mNfcOemExtension.resumePolling();
-                mIsPollingPaused = false;
-            }
-
+            NxpNfcLogger.d(TAG, "onDisableRequested :");
             if (mNxpOemCallbacks != null) {
                 mNxpOemCallbacks.onDisableRequested();
             }
@@ -269,6 +292,7 @@ public class NfcOperations {
 
         @Override
         public void onEnableStarted(){
+           NxpNfcLogger.d(TAG, "onEnableStarted :");
         }
 
         @Override
@@ -281,6 +305,8 @@ public class NfcOperations {
 
         @Override
         public void onEnableFinished(int status){
+            NxpNfcLogger.d(TAG, "onEnableFinished :");
+            new EnableFinishedTask().execute(status);
         }
 
         @Override
@@ -292,7 +318,17 @@ public class NfcOperations {
         }
 
         @Override
-        public void onRoutingChanged(Consumer<Boolean> isSkipped) {}
+        public void onRoutingChanged(Consumer<Boolean> isSkipped) {
+            NxpNfcLogger.d(TAG, "onRoutingChanged :");
+            boolean skipValue = false;
+            synchronized (NfcOperations.this) {
+                if (mListenTechDisabled || mIsPollingPaused) {
+                    NxpNfcLogger.d(TAG, "skip Route will be updated after NFC Enable finish:");
+                    skipValue = true;
+                }
+            }
+            isSkipped.accept(skipValue);
+        }
 
         @Override
         public void onHceEventReceived(int action){
@@ -418,5 +454,35 @@ public class NfcOperations {
      */
     public boolean isControllerAlwaysOn() {
         return mNfcAdapter.isControllerAlwaysOn();
+    }
+
+    private class EnableFinishedTask extends AsyncTask<Integer, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Integer... params) {
+            NxpNfcLogger.d(TAG, "doInBackground");
+            boolean isListenDisabled = false;
+            boolean isPollingPaused = false;
+            synchronized (NfcOperations.this) {
+                isPollingPaused = mIsPollingPaused;
+                isListenDisabled = mListenTechDisabled;
+            }
+            if (isListenDisabled) {
+                NxpNfcLogger.d(TAG, "Enable Listen Tech : ");
+                setDiscoveryTechnology(NfcAdapter.FLAG_READER_KEEP | FLAG_USE_ALL_TECH,
+                        NfcAdapter.FLAG_LISTEN_KEEP | FLAG_USE_ALL_TECH);
+            }
+            if (isPollingPaused && mNfcOemExtension != null) {
+                NxpNfcLogger.d(TAG, "resume discovery :");
+                mNfcOemExtension.resumePolling();
+                synchronized (NfcOperations.this) {
+                    mIsPollingPaused = false;
+                }
+            }
+            if (mNxpOemCallbacks != null) {
+                mNxpOemCallbacks.onEnableFinished(params[0]);
+            }
+            return null;
+        }
     }
 }

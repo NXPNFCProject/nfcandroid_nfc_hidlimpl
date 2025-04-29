@@ -131,18 +131,24 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
 
     @Override
     public boolean onDisableRequested() {
-        NxpNfcLogger.d(TAG, "onEnableRequested: ");
+        NxpNfcLogger.d(TAG, "onDisableRequested: ");
         if (mIsEFDMStarted || isFieldDetectStarted()) {
             stopEFDMTimer();
-            if (setFieldDetectFlag(false) == STATUS_SUCCESS) {
+            if (setFieldDetectFlag(false) != STATUS_SUCCESS) {
                 NxpNfcLogger.e(TAG, "setFieldDetectFlag Failed");
             }
             mIsEFDMStarted = false;
-        } else if (!mIsNFCCStandByConfig) {
+        }
+        return true;
+    }
+
+    @Override
+    public void onEnableFinished(int status){
+        NxpNfcLogger.d(TAG, "onEnableFinished: ");
+        if (!mIsNFCCStandByConfig) {
             /*Need to remove when stand by issues fixed*/
             enableNFCCStandByConfig(true);
         }
-        return true;
     }
 
     /**
@@ -214,6 +220,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
 
     private void stopEFDMTimer() {
         NxpNfcLogger.d(TAG, "Entry stopEFDMTimer");
+        mIsFirstRFFieldOn = false;
         if (mEFDStopTimer != null) {
             mEFDStopTimer.cancel();
         }
@@ -405,7 +412,6 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             NxpNfcLogger.e(TAG, "Failed to reset Field detect flag");
         }
         mIsEFDMStarted = false;
-        mNfcOperations.unregisterNxpOemCallback();
         return status;
     }
 
@@ -419,10 +425,10 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
      */
     public @EfdmErrorCode int startCardEmulation() {
         NxpNfcLogger.d(TAG, "Entry startCardEmulation");
-        int status = EFDSTATUS_ERROR_UNKNOWN;
+        int status = STATUS_SUCCESS;
         if (mNfcOperations == null) {
             NxpNfcLogger.e(TAG, "NFC Operations is null");
-            return status;
+            return EFDSTATUS_ERROR_UNKNOWN;
         }
         if (!mNfcOperations.isEnabled()) {
             return EFDSTATUS_ERROR_NFC_IS_OFF;
@@ -437,7 +443,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             return STATUS_FAILED;
         }
         if (isFieldDetectStarted()) {
-            if (setFieldDetectFlag(false) == STATUS_SUCCESS) {
+            if (setFieldDetectFlag(false) != STATUS_SUCCESS) {
                 status = STATUS_FAILED;
             }
         }
@@ -719,6 +725,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
         byte lxFieldValue = (byte) (fieldValue & L2_DEBUG_BYTE0_MASK);
         byte[] cmdPayload = {0x01, (byte) 0xA1, 0x1D, 0x02, lxFieldValue, 0x00};
         try {
+            mNxpNciPacketHandler.setCurrentNtfHandler(this);
             mNxpNciPacketHandler.shouldCheckResponseSubGid(false);
             byte[] vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(CONF_GID,
                     SET_CONF_OID, cmdPayload);
