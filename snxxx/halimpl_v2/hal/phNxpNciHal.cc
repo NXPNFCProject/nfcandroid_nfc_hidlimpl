@@ -546,6 +546,7 @@ int phNxpNciHal_MinOpen() {
   NciDiscoveryCommandBuilderInstance.setRfDiscoveryReceived(false);
   NXPLOG_NCIHAL_D("phNxpNci_MinOpen(): enter");
 
+  CONCURRENCY_LOCK();
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_MIN_OPEN) {
     NXPLOG_NCIHAL_D("phNxpNciHal_MinOpen(): already open");
     return NFCSTATUS_SUCCESS;
@@ -570,7 +571,6 @@ int phNxpNciHal_MinOpen() {
     return NFCSTATUS_FAILED;
   }
 
-  CONCURRENCY_LOCK();
   memset(&tOsalConfig, 0x00, sizeof(tOsalConfig));
   memset(&tTmlConfig, 0x00, sizeof(tTmlConfig));
   memset(&nxpprofile_ctrl, 0, sizeof(phNxpNciProfile_Control_t));
@@ -1978,6 +1978,7 @@ int phNxpNciHal_close(bool bShutdown) {
 
   phNxpNciHal_deinitializeRegRfFwDnld();
   NfcHalAutoThreadMutex a(sHalFnLock);
+  CONCURRENCY_LOCK();
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
     NXPLOG_NCIHAL_D("phNxpNciHal_close is already closed, ignoring close");
     return NFCSTATUS_FAILED;
@@ -2003,7 +2004,6 @@ int phNxpNciHal_close(bool bShutdown) {
     }
   }
 
-  CONCURRENCY_LOCK();
   int sem_val;
   sem_getvalue(&(nxpncihal_ctrl.syncSpiNfc), &sem_val);
   if (sem_val == 0) {
