@@ -16,6 +16,8 @@
 
 package com.nxp.nfc.core;
 
+import android.os.AsyncTask;
+
 import android.nfc.NfcAdapter;
 import android.nfc.NfcAdapter.NfcVendorNciCallback;
 
@@ -140,12 +142,24 @@ public class NxpNciPacketHandler {
         @Override
         public void onVendorNciNotification(int gid, int oid, byte[] payload) {
             NxpNfcLogger.d(TAG, "onVendorNciNotification Gid " + gid + " Oid " + oid
-                            + ", payload: " + NxpNfcUtils.toHexString(payload));
-            if (mINxpNfcNtfHandler != null) {
-                mINxpNfcNtfHandler.onVendorNciNotification(gid, oid, payload);
-            }
+                    + ", payload: " + NxpNfcUtils.toHexString(payload));
+            new HandlerCallbackTask().execute(gid, oid, payload);
         }
 
     };
 
+    private class HandlerCallbackTask extends AsyncTask<Object, Void, Void> {
+        @Override
+        protected Void doInBackground(Object... params) {
+            NxpNfcLogger.d(TAG, "HandlerCallbackTask: doInBackground");
+            int gid = (int) params[0];
+            int oid = (int) params[1];
+            byte[] payload = (byte[]) params[2];
+            if (mINxpNfcNtfHandler != null) {
+                NxpNfcLogger.d(TAG, "Invoking Handler Callback");
+                mINxpNfcNtfHandler.onVendorNciNotification(gid, oid, payload);
+            }
+            return null;
+        }
+    }
 }
