@@ -280,10 +280,11 @@ public class NfcOperations {
         @Override
         public void onDisableRequested(Consumer<Boolean> isAllowed) {
             NxpNfcLogger.d(TAG, "onDisableRequested :");
+            boolean allowDisable = true;
             if (mNxpOemCallbacks != null) {
-                mNxpOemCallbacks.onDisableRequested();
+                allowDisable = mNxpOemCallbacks.onDisableRequested();
             }
-            isAllowed.accept(true);
+            isAllowed.accept(allowDisable);
         }
 
         @Override
