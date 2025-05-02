@@ -45,11 +45,9 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
 
     private static final String TAG = "LxDebugEventHandler";
 
-    public static final byte LX_DEBUG_SUB_GID_OID = (byte) 0xF0;
-
-    public static final byte FIELD_DETECT_MODE_SET_SUB_OID = (byte) 0x0F;
-    public static final byte IS_FIELD_DETECT_ENABLED_SUB_OID = (byte) 0x0E;
-    public static final byte IS_FIELD_DETECT_MODE_STARTED_SUB_OID = (byte) 0x0D;
+    public static final byte FIELD_DETECT_MODE_SET_SUB_GID_OID = (byte) 0x7F;
+    public static final byte IS_FIELD_DETECT_ENABLED_SUB_GID_OID = (byte) 0x7E;
+    public static final byte IS_FIELD_DETECT_MODE_STARTED_SUB_GID_OID = (byte) 0x7D;
 
     public static final byte MODE_ENABLE = 0x01;
     public static final byte MODE_DISABLE = 0x00;
@@ -233,14 +231,14 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
         }
 
         mNxpNciPacketHandler.setCurrentNtfHandler(this);
-        byte[] cmd = {LX_DEBUG_SUB_GID_OID, FIELD_DETECT_MODE_SET_SUB_OID,
+        byte[] cmd = {FIELD_DETECT_MODE_SET_SUB_GID_OID,
             (byte) (mode ? MODE_ENABLE : MODE_DISABLE)};
         try {
             byte[] vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(
                     NxpNfcConstants.NFC_NCI_PROP_GID, NxpNfcConstants.NXP_NFC_PROP_OID,
                     cmd);
             if (vendorRsp != null && vendorRsp.length > 1
-                    && vendorRsp[0] == LX_DEBUG_SUB_GID_OID
+                    && vendorRsp[0] == FIELD_DETECT_MODE_SET_SUB_GID_OID
                     && vendorRsp[1] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
                 return STATUS_SUCCESS;
             } else {
@@ -261,13 +259,13 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             return false;
         }
         mNxpNciPacketHandler.setCurrentNtfHandler(this);
-        byte[] cmd = {LX_DEBUG_SUB_GID_OID, IS_FIELD_DETECT_MODE_STARTED_SUB_OID};
+        byte[] cmd = {IS_FIELD_DETECT_MODE_STARTED_SUB_GID_OID};
         try {
             byte[] vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(
                     NxpNfcConstants.NFC_NCI_PROP_GID, NxpNfcConstants.NXP_NFC_PROP_OID,
                     cmd);
             if (vendorRsp != null && vendorRsp.length > 2
-                    && vendorRsp[0] == LX_DEBUG_SUB_GID_OID
+                    && vendorRsp[0] == IS_FIELD_DETECT_MODE_STARTED_SUB_GID_OID
                     && vendorRsp[1] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
                 return (vendorRsp[2] == MODE_ENABLE);
             } else {
@@ -287,12 +285,13 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             return STATUS_FAILED;
         }
         mNxpNciPacketHandler.setCurrentNtfHandler(this);
-        byte[] efdm_status_cmd = {LX_DEBUG_SUB_GID_OID, IS_FIELD_DETECT_ENABLED_SUB_OID};
+        byte[] efdm_status_cmd = {IS_FIELD_DETECT_ENABLED_SUB_GID_OID};
         try {
             byte[] vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(
                     NxpNfcConstants.NFC_NCI_PROP_GID, NxpNfcConstants.NXP_NFC_PROP_OID,
                     efdm_status_cmd);
-            if (vendorRsp != null && vendorRsp.length > 1 && vendorRsp[0] == LX_DEBUG_SUB_GID_OID
+            if (vendorRsp != null && vendorRsp.length > 1
+                    && vendorRsp[0] == IS_FIELD_DETECT_ENABLED_SUB_GID_OID
                     && vendorRsp[1] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
                 if (vendorRsp.length >= 3) {
                     switch (vendorRsp[2]) {
