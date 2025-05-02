@@ -241,6 +241,23 @@ public class NfcOperations {
     }
 
     /**
+     * @brief provides information is listen param disabled
+     * @return true if disabled else false.
+     */
+    public synchronized boolean isListenDisabled() {
+        return mListenTechDisabled;
+    }
+
+    /**
+     * @brief provides information if polling paused
+     * @return true if paused else false.
+     */
+    public synchronized boolean isPollingPaused() {
+        return mIsPollingPaused;
+    }
+
+
+    /**
      * @brief unregisters to OEM callbacks through NXP extenstions
      */
     public void unregisterNxpOemCallback() {
@@ -322,11 +339,9 @@ public class NfcOperations {
         public void onRoutingChanged(Consumer<Boolean> isSkipped) {
             NxpNfcLogger.d(TAG, "onRoutingChanged :");
             boolean skipValue = false;
-            synchronized (NfcOperations.this) {
-                if (mListenTechDisabled || mIsPollingPaused) {
-                    NxpNfcLogger.d(TAG, "skip Route will be updated after NFC Enable finish:");
-                    skipValue = true;
-                }
+            if (isListenDisabled() || isPollingPaused()) {
+                NxpNfcLogger.d(TAG, "skip Route will be updated after NFC Enable finish:");
+                skipValue = true;
             }
             isSkipped.accept(skipValue);
         }
@@ -462,18 +477,12 @@ public class NfcOperations {
         @Override
         protected Void doInBackground(Integer... params) {
             NxpNfcLogger.d(TAG, "doInBackground");
-            boolean isListenDisabled = false;
-            boolean isPollingPaused = false;
-            synchronized (NfcOperations.this) {
-                isPollingPaused = mIsPollingPaused;
-                isListenDisabled = mListenTechDisabled;
-            }
-            if (isListenDisabled) {
+            if (isListenDisabled()) {
                 NxpNfcLogger.d(TAG, "Enable Listen Tech : ");
                 setDiscoveryTechnology(NfcAdapter.FLAG_READER_KEEP | FLAG_USE_ALL_TECH,
                         NfcAdapter.FLAG_LISTEN_KEEP | FLAG_USE_ALL_TECH);
             }
-            if (isPollingPaused && mNfcOemExtension != null) {
+            if (isPollingPaused() && mNfcOemExtension != null) {
                 NxpNfcLogger.d(TAG, "resume discovery :");
                 mNfcOemExtension.resumePolling();
                 synchronized (NfcOperations.this) {
