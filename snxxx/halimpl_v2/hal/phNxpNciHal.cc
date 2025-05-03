@@ -670,7 +670,13 @@ int phNxpNciHal_MinOpen() {
   bool bIsNfccDlState = false;
   phNxpNciHal_ext_init();
 
-  phTmlNfc_IoCtl(phTmlNfc_e_EnableVen);
+  if (chipInfo == pn557) {
+    NXPLOG_NCIHAL_D("phTmlNfc_e_ResetDevice\n");
+    phTmlNfc_IoCtl(phTmlNfc_e_ResetDevice);
+  } else {
+    NXPLOG_NCIHAL_D("phTmlNfc_e_EnableVen\n");
+    phTmlNfc_IoCtl(phTmlNfc_e_EnableVen);
+  }
 
   if (phNxpNciHal_isULPDetSupported()) {
     status = phTmlNfc_IoCtl(phTmlNfc_e_PullVenHigh);
