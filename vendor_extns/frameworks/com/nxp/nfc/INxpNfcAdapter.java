@@ -20,8 +20,12 @@ import android.app.Activity;
 
 import com.nxp.nfc.NxpNfcAdapter.NxpReaderCallback;
 import com.nxp.nfc.vendor.lxdebug.ILxDebugCallbacks;
+import com.nxp.nfc.vendor.srd.ISrdCallbacks;
 
 import java.io.IOException;
+import android.annotation.IntDef;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * @class INxpNfcAdapter
@@ -239,4 +243,43 @@ public interface INxpNfcAdapter {
    *          0xFF - Service Unavialable
    */
   int enableDebugNtf(byte fieldValue);
+  /**
+   * This API registers the callback to get SRD Timout Events.
+   * @param callbacks : callback object to be register.
+   */
+  void registerSrdCallbacks(ISrdCallbacks callbacks);
+
+  /**
+   * This API unregisters the Application callbacks to be called
+   * for SRD Timout notifications.
+   */
+  void unregisterSrdCallbacks();
+  public static final int SRD_STATUS_SUCCESS = 0;
+  public static final int SRD_INPROGESS = 1;
+  public static final int SRD_STATUS_FAILED = 2;
+    /**
+     * Possible status from {@link #setSRDMode}.
+     *
+     */
+    @IntDef(prefix = { "STATUS_" }, value = {
+            SRD_STATUS_SUCCESS,
+            SRD_INPROGESS,
+            SRD_STATUS_FAILED,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SRDStatus{}
+
+    /**
+     * This API is called by application to stop RF discovery
+     * <p>Requires {@link android.Manifest.permission#NFC} permission.
+     * <li>This api shall be called only Nfcservice is enabled.
+     * </ul>
+     * @param  None
+     * @return whether  the polling is disable
+     *          success or not.
+     *          0xFF - failure
+     *          0x00 - success
+     * @throws IOException If a failure occurred during stop discovery
+    */
+    public @SRDStatus int setSRDMode(boolean on) throws IOException;
 }

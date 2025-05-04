@@ -23,12 +23,18 @@ import android.nfc.Tag;
 import com.nxp.nfc.vendor.fw.NfcFirmwareInfo;
 import com.nxp.nfc.vendor.lxdebug.ILxDebugCallbacks;
 import com.nxp.nfc.vendor.lxdebug.LxDebugEventHandler;
+import com.nxp.nfc.vendor.srd.ISrdCallbacks;
+import com.nxp.nfc.vendor.srd.SrdHandler;
 import com.nxp.nfc.vendor.mpos.MposHandler;
 import com.nxp.nfc.vendor.qtag.QTagHandler;
 import com.nxp.nfc.vendor.transit.TransitConfigHandler;
 
 import java.io.IOException;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
+import com.nxp.nfc.INxpNfcAdapter.SRDStatus.*;
 /**
  * @class NxpNfcAdapter
  * @brief Concrete implementation of NFC Extension features
@@ -48,6 +54,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     private LxDebugEventHandler mLxDebugEventHandler;
     private TransitConfigHandler mTransitHandler;
     private NfcFirmwareInfo mFwHandler;
+    private SrdHandler mSrdHandler;
 
     /**
      * @brief supported chipsets
@@ -95,6 +102,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
         mLxDebugEventHandler = new LxDebugEventHandler(nfcAdapter);
         mTransitHandler = new TransitConfigHandler(nfcAdapter);
         mFwHandler = new NfcFirmwareInfo(nfcAdapter);
+        mSrdHandler = new SrdHandler(nfcAdapter);
     }
 
     public interface NxpReaderCallback {
@@ -350,5 +358,30 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     @Override
     public int enableDebugNtf(byte fieldValue) {
         return mLxDebugEventHandler.enableDebugNtf(fieldValue);
+    }
+    /**
+     * This API registers the callback to SRD Events.
+     * @param callbacks : callback object to be register.
+     */
+    @Override
+    public void registerSrdCallbacks(ISrdCallbacks callbacks) {
+        mSrdHandler.registerSrdCallbacks(callbacks);
+    }
+
+    /**
+     * This API unregisters the Application callbacks to be called
+     * for SRD notifications.
+     */
+    @Override
+    public void unregisterSrdCallbacks() {
+        mSrdHandler.unregisterSrdCallbacks();
+    }
+    /**
+     * @brief To be called to start or stop the srd mode
+     * @return {@link INxpNfcAdapter.setSRDMode} instance
+     */
+    @Override
+    public @SRDStatus int setSRDMode(boolean on) throws IOException{
+      return mSrdHandler.setSRDMode(on);
     }
 }
