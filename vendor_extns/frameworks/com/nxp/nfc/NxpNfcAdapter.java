@@ -28,13 +28,10 @@ import com.nxp.nfc.vendor.srd.SrdHandler;
 import com.nxp.nfc.vendor.mpos.MposHandler;
 import com.nxp.nfc.vendor.qtag.QTagHandler;
 import com.nxp.nfc.vendor.transit.TransitConfigHandler;
-
+import com.nxp.nfc.INxpNfcAdapter.SRDStatus.*;
 import java.io.IOException;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
-import com.nxp.nfc.INxpNfcAdapter.SRDStatus.*;
+
 /**
  * @class NxpNfcAdapter
  * @brief Concrete implementation of NFC Extension features
