@@ -25,9 +25,11 @@ import com.nxp.nfc.vendor.lxdebug.ILxDebugCallbacks;
 import com.nxp.nfc.vendor.lxdebug.LxDebugEventHandler;
 import com.nxp.nfc.vendor.srd.ISrdCallbacks;
 import com.nxp.nfc.vendor.srd.SrdHandler;
+import com.nxp.nfc.vendor.autoCard.AutoCardHandler;
 import com.nxp.nfc.vendor.mpos.MposHandler;
 import com.nxp.nfc.vendor.qtag.QTagHandler;
 import com.nxp.nfc.vendor.transit.TransitConfigHandler;
+import com.nxp.nfc.INxpNfcAdapter.AutoCardStatus.*;
 import com.nxp.nfc.INxpNfcAdapter.SRDStatus.*;
 import android.os.RemoteException;
 import android.util.Log;
@@ -48,6 +50,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     private static NxpNfcAdapter sNxpNfcAdapter;
 
     private NfcAdapter mNfcAdapter;
+    private AutoCardHandler mAutoCardHandler;
     private MposHandler mMposHandler;
     private QTagHandler mQTagHandler;
     private LxDebugEventHandler mLxDebugEventHandler;
@@ -96,6 +99,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     private NxpNfcAdapter(NfcAdapter nfcAdapter) {
         printComNxpNfcVersion();
         mNfcAdapter = nfcAdapter;
+        mAutoCardHandler = new AutoCardHandler(nfcAdapter);
         mMposHandler = new MposHandler(nfcAdapter);
         mQTagHandler = new QTagHandler(nfcAdapter);
         mLxDebugEventHandler = new LxDebugEventHandler(nfcAdapter);
@@ -139,6 +143,25 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
                 + " NXP NFC APIs");
         }
         return ((INxpNfcAdapter) sNxpNfcAdapter);
+    }
+
+    /**
+     * @brief To be called to get the configured AID,s.
+     * @return {@link INxpNfcAdapter.getAutoCardAID} instance
+     */
+    @Override
+    public byte[] getAutoCardAID() throws IOException {
+      return mAutoCardHandler.getAutoCardAID();
+    }
+
+    /**
+     * @brief To be called to set autocard AID's
+     * @return {@link INxpNfcAdapter.setAutoCardAID} instance
+     */
+    @Override
+    public @AutoCardStatus int setAutoCardAID(byte[] aids, int cmaReadyCount)
+        throws IOException {
+      return mAutoCardHandler.setAutoCardAID(aids, cmaReadyCount);
     }
 
     /**

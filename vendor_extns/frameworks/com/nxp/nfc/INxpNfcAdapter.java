@@ -35,6 +35,7 @@ import java.lang.annotation.RetentionPolicy;
  */
 public interface INxpNfcAdapter {
 
+
   /**
    * This is the first API to be called to start or stop the mPOS mode
    * <li>This api shall be called only Nfcservice is enabled.
@@ -62,6 +63,74 @@ public interface INxpNfcAdapter {
    * @throws IOException If a failure occurred during reader mode set or reset
    */
   public boolean mPOSGetReaderMode(String pkg) throws IOException;
+
+  /**
+   * Possible status from {@link #setAutocard}.
+   *
+   */
+  public static final int EACSTATUS_ERROR_REJECTED = 0x01;
+  public static final int EACSTATUS_SYNTAX_ERROR = 0x05;
+  public static final int EACSTATUS_SEMANTIC_ERROR = 0x06;
+  public static final int EACSTATUS_ERROR_NFC_IS_OFF = 0x07;
+  public static final int EACSTATUS_ERROR_FEATURE_NOT_SUPPORTED = 0x0D;
+  public static final int EACSTATUS_ERROR_FEATURE_NOT_CONFIGURED = 0x0C;
+  public static final int EACSTATUS_ERROR_FEATURE_DISABLED_IN_CONFIG = 0x0B;
+  public static final int EACSTATUS_ERROR_INVALID_PARAM = 0x0E;
+
+  public static final int STATUS_SUCCESS = 0x00;
+  public static final int STATUS_FAILED = 0x03;
+
+  @IntDef(value =
+              {
+                  STATUS_SUCCESS,
+                  STATUS_FAILED,
+                  EACSTATUS_SYNTAX_ERROR,
+                  EACSTATUS_SEMANTIC_ERROR,
+                  EACSTATUS_ERROR_REJECTED,
+                  EACSTATUS_ERROR_FEATURE_NOT_SUPPORTED,
+                  EACSTATUS_ERROR_FEATURE_NOT_CONFIGURED,
+                  EACSTATUS_ERROR_FEATURE_DISABLED_IN_CONFIG,
+                  EACSTATUS_ERROR_NFC_IS_OFF,
+                  EACSTATUS_ERROR_INVALID_PARAM,
+              })
+  @Retention(RetentionPolicy.SOURCE)
+  public @interface AutoCardStatus {}
+
+  /**
+   * This API get Autocard AID's  to NFCC using the vendor NCI message
+   * <li>This api shall be called only Nfcservice is enabled.
+   * @return status     :-0x00 :SUCCESS
+   *                      0x01 - 0x06: NCI Status Codes
+   *                           : Refer NCI spec v2.3 Table 140
+   *                      0x07 : NFC off
+   *                      0x0B : Disabled
+   *                      0x0C : Config not defined
+   *                      0x0D : Feature not supported by platform
+   *                      0x0E : EACSTATUS_ERROR_MESSAGE_CORRUPTED
+   * byte[0] indicates error, byte[1] cma ready count  and byte[2]
+   * onwards AID in TLV format.
+   * <p>Requires {@link   android.Manifest.permission#NFC} permission.
+   */
+  public byte[] getAutoCardAID() throws IOException;
+
+  /**
+   * This API sends Autocard AID's  to NFCC using the vendor NCI message
+   * <li>This api shall be called only Nfcservice is enabled.
+   * </ul>
+   * @param aids  No of AID's to configure.
+   * @param cmaReadyCount  CMA ready count.
+   * @return status     :-0x00 :SUCCESS
+   *                      0x01 - 0x06: NCI Status Codes
+   *                           : Refer NCI spec v2.3 Table 140
+   *                      0x07 : NFC off
+   *                      0x0B : Disabled
+   *                      0x0C : Config not defined
+   *                      0x0D : Feature not supported by platform
+   *                      0x0E : EACSTATUS_ERROR_MESSAGE_CORRUPTED
+   * <p>Requires {@link   android.Manifest.permission#NFC} permission.
+   */
+  public @AutoCardStatus int setAutoCardAID(byte[] aids, int cmaReadyCount)
+      throws IOException;
 
   /**
    * This is the API to be called to enable or disable QTag RF mode.
