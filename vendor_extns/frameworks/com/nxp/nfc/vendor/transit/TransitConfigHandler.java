@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Vector;
+import java.util.concurrent.Executors;
 
 public class TransitConfigHandler implements INxpNfcNtfHandler {
   private NfcAdapter mNfcAdapter;
@@ -164,7 +165,8 @@ public class TransitConfigHandler implements INxpNfcNtfHandler {
 
     byte[] payloadBytes = generateCmd(cmdBytes, configBytes);
     Boolean status = true;
-    mNxpNciPacketHandler.setCurrentNtfHandler(this);
+    mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(),
+                                          this);
     try {
       NxpNfcLogger.d(TAG, "Sending VendorNciMessage");
       vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(

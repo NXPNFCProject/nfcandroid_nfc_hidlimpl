@@ -27,6 +27,7 @@ import com.nxp.nfc.NxpNfcConstants;
 import com.nxp.nfc.NxpNfcLogger;
 import com.nxp.nfc.core.NfcOperations;
 import com.nxp.nfc.core.NxpNciPacketHandler;
+import java.util.concurrent.Executors;
 
 import java.io.IOException;
 
@@ -139,7 +140,7 @@ public class SrdHandler implements INxpNfcNtfHandler {
 
     public void sendDefautDiscoverMapCmd() {
         NxpNfcLogger.d(TAG, "Sending Default RF Discover Map cmd to controller");
-        mNxpNciPacketHandler.setCurrentNtfHandler(this);
+        mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
         byte[] prop_discover_map_cmd = new byte[]{0x03, 0x04, 0x03, 0x02, 0x03, 0x02, 0x01, (byte) 0x80, 0x01, (byte) 0x80};
         byte[] vendorInitRsp = mNxpNciPacketHandler.sendVendorNciMessage(0x21, 0x00, prop_discover_map_cmd);
         if (vendorInitRsp != null && vendorInitRsp.length < 1) {
@@ -155,7 +156,7 @@ public class SrdHandler implements INxpNfcNtfHandler {
     private @SRDStatus int sendSrdVendorNciMessage(byte[] srdCmd) throws IOException {
         try {
             NxpNfcLogger.d(TAG, "Sending SRD cmd through VendorNciMessage");
-            mNxpNciPacketHandler.setCurrentNtfHandler(this);
+            mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
             byte[] vendorInitRsp = mNxpNciPacketHandler.sendVendorNciMessage(NxpNfcConstants.NFC_NCI_PROP_GID, NxpNfcConstants.NXP_NFC_PROP_OID, srdCmd);
             if (vendorInitRsp != null && vendorInitRsp.length < 2) {
                 NxpNfcLogger.e(TAG, "Vendor Rsp length is less than 2 bytes");

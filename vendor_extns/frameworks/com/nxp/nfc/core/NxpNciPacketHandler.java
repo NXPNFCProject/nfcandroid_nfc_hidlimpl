@@ -17,7 +17,8 @@
 package com.nxp.nfc.core;
 
 import android.os.AsyncTask;
-
+import android.annotation.CallbackExecutor;
+import android.annotation.NonNull;
 import android.nfc.NfcAdapter;
 import android.nfc.NfcAdapter.NfcVendorNciCallback;
 
@@ -25,8 +26,10 @@ import com.nxp.nfc.INxpNfcNtfHandler;
 import com.nxp.nfc.NxpNfcConstants;
 import com.nxp.nfc.NxpNfcLogger;
 import com.nxp.nfc.NxpNfcUtils;
-
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -43,8 +46,8 @@ public class NxpNciPacketHandler {
     private static NxpNciPacketHandler sNxpNciPacketHandler;
 
     private NfcAdapter mNfcAdapter;
-    private INxpNfcNtfHandler mINxpNfcNtfHandler;
-
+    private final Map<INxpNfcNtfHandler, Executor> mCallbackMap =
+        new HashMap<>();
     private byte[] mVendorNciRsp;
     private byte mCurrentCmdSubGidOid;
     private boolean mIsSubGidCheckReq = true;
@@ -64,8 +67,14 @@ public class NxpNciPacketHandler {
       return sNxpNciPacketHandler;
     }
 
-    public void setCurrentNtfHandler(INxpNfcNtfHandler nxpNfcNtfHandler) {
-        this.mINxpNfcNtfHandler = nxpNfcNtfHandler;
+    public void registerCallback(@NonNull @CallbackExecutor Executor executor,
+                                 @NonNull INxpNfcNtfHandler nxpNfcNtfHandler) {
+      if (mCallbackMap.containsKey(nxpNfcNtfHandler)) {
+        NxpNfcLogger.d(TAG, "Callback already registered. Unregister"
+                                + "existing callback before registering");
+        throw new IllegalArgumentException();
+      }
+      mCallbackMap.put(nxpNfcNtfHandler, executor);
     }
 
     /**
@@ -76,8 +85,13 @@ public class NxpNciPacketHandler {
         mIsSubGidCheckReq = value;
     }
 
-    public void resetCurrentNtfHandler() {
-        this.mINxpNfcNtfHandler = null;
+    public void
+    unregisterCallback(@NonNull INxpNfcNtfHandler nxpNfcNtfHandler) {
+      if (!mCallbackMap.containsKey(nxpNfcNtfHandler)) {
+        NxpNfcLogger.d(TAG, "Callback not registered");
+        throw new IllegalArgumentException();
+      }
+      mCallbackMap.remove(nxpNfcNtfHandler);
     }
 
     /**
@@ -155,10 +169,11 @@ public class NxpNciPacketHandler {
             int gid = (int) params[0];
             int oid = (int) params[1];
             byte[] payload = (byte[]) params[2];
-            if (mINxpNfcNtfHandler != null) {
-                NxpNfcLogger.d(TAG, "Invoking Handler Callback");
-                mINxpNfcNtfHandler.onVendorNciNotification(gid, oid, payload);
-            }
+            if (mCallbackMap.size() >= 1)
+              mCallbackMap.forEach(
+                  (INxpNfcNtfHandler, Executor)
+                      -> INxpNfcNtfHandler.onVendorNciNotification(gid, oid,
+                                                                   payload));
             return null;
         }
     }

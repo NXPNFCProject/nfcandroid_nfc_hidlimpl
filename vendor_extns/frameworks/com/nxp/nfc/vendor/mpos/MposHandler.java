@@ -27,6 +27,7 @@ import com.nxp.nfc.NxpNfcLogger;
 import com.nxp.nfc.core.NfcOperations;
 import com.nxp.nfc.core.NxpNciPacketHandler;
 import java.io.IOException;
+import java.util.concurrent.Executors;
 
 /**
  * This class is responsible to start/stop the mPos reader and
@@ -222,7 +223,8 @@ public class MposHandler implements INxpNfcNtfHandler {
       }
       isMposEnabled = enable;
     }
-    mNxpNciPacketHandler.setCurrentNtfHandler(this);
+    mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(),
+                                          this);
     byte[] mpos = {MPOS_READER_MODE_SET_DEDICATED_MODE_CMD,
                    (byte)(enable ? DEDICATED_MODE_ON : DEDICATED_MODE_OFF)};
     try {

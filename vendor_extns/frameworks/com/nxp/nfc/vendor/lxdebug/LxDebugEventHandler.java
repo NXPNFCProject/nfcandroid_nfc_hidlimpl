@@ -29,6 +29,7 @@ import com.nxp.nfc.NxpNfcConstants;
 import com.nxp.nfc.NxpNfcLogger;
 import com.nxp.nfc.core.NfcOperations;
 import com.nxp.nfc.core.NxpNciPacketHandler;
+import java.util.concurrent.Executors;
 
 import java.io.IOException;
 import java.util.Timer;
@@ -230,7 +231,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             return STATUS_FAILED;
         }
 
-        mNxpNciPacketHandler.setCurrentNtfHandler(this);
+        mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
         byte[] cmd = {FIELD_DETECT_MODE_SET_SUB_GID_OID,
             (byte) (mode ? MODE_ENABLE : MODE_DISABLE)};
         try {
@@ -258,7 +259,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             NxpNfcLogger.e(TAG, "NxpNciPacketHandler is null");
             return false;
         }
-        mNxpNciPacketHandler.setCurrentNtfHandler(this);
+        mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
         byte[] cmd = {IS_FIELD_DETECT_MODE_STARTED_SUB_GID_OID};
         try {
             byte[] vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(
@@ -284,7 +285,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             NxpNfcLogger.e(TAG, " NXP Nci Pkt Handler is null");
             return STATUS_FAILED;
         }
-        mNxpNciPacketHandler.setCurrentNtfHandler(this);
+        mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
         byte[] efdm_status_cmd = {IS_FIELD_DETECT_ENABLED_SUB_GID_OID};
         try {
             byte[] vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(
@@ -536,7 +537,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
         byte[] cmdPayload = {0x01, (byte) 0xA1, 0x55, 0x02,
             (mode) ? MODE_ENABLE : MODE_DISABLE, rssiNtfTimeInterval};
         try {
-            mNxpNciPacketHandler.setCurrentNtfHandler(this);
+            mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
             mNxpNciPacketHandler.shouldCheckResponseSubGid(false);
             byte[] vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(CONF_GID,
                     SET_CONF_OID, cmdPayload);
@@ -666,7 +667,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
         }
         try {
             byte[] cmdPayload = {0x01, (byte) 0xA1, 0x55};
-            mNxpNciPacketHandler.setCurrentNtfHandler(this);
+            mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
             mNxpNciPacketHandler.shouldCheckResponseSubGid(false);
             byte[] vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(CONF_GID,
                     GET_CONF_OID, cmdPayload);
@@ -724,7 +725,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
         byte lxFieldValue = (byte) (fieldValue & L2_DEBUG_BYTE0_MASK);
         byte[] cmdPayload = {0x01, (byte) 0xA1, 0x1D, 0x02, lxFieldValue, 0x00};
         try {
-            mNxpNciPacketHandler.setCurrentNtfHandler(this);
+            mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
             mNxpNciPacketHandler.shouldCheckResponseSubGid(false);
             byte[] vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(CONF_GID,
                     SET_CONF_OID, cmdPayload);

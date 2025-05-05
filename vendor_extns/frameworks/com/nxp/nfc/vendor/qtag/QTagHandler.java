@@ -29,6 +29,8 @@ import com.nxp.nfc.NxpNfcAdapter;
 import com.nxp.nfc.NxpNfcAdapter.NxpReaderCallback;
 import com.nxp.nfc.NxpNfcConstants;
 import com.nxp.nfc.NxpNfcLogger;
+import com.nxp.nfc.NxpNfcUtils;
+import java.util.concurrent.Executors;
 import com.nxp.nfc.core.NfcOperations;
 import com.nxp.nfc.core.NxpNciPacketHandler;
 import java.io.IOException;
@@ -140,7 +142,8 @@ public class QTagHandler implements INxpNfcNtfHandler {
 
     synchronized (qtagSync) { sQTagDetected = false; }
 
-    mNxpNciPacketHandler.setCurrentNtfHandler(this);
+    mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(),
+                                          this);
     try {
       NxpNfcLogger.d(TAG, "Sending VendorNciMessage");
       byte[] vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(
