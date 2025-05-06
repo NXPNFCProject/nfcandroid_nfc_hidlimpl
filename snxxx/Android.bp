@@ -219,6 +219,7 @@ cc_library_shared {
         "halimpl_v2/mifare",
         "halimpl_v2/recovery",
         "halimpl_v2/observe_mode",
+        "halimpl_v2/autocard",
         "halimpl_v2/nfc_comm",
         "halimpl_v2/nfc_extn",
     ],
