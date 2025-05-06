@@ -28,7 +28,8 @@ import com.nxp.nfc.NxpNfcLogger;
 import com.nxp.nfc.core.NfcOperations;
 import com.nxp.nfc.core.NxpNciPacketHandler;
 import java.util.concurrent.Executors;
-
+import android.os.RemoteException;
+import android.util.Log;
 import java.io.IOException;
 
 /**
@@ -140,7 +141,11 @@ public class SrdHandler implements INxpNfcNtfHandler {
 
     public void sendDefautDiscoverMapCmd() {
         NxpNfcLogger.d(TAG, "Sending Default RF Discover Map cmd to controller");
-        mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
+        try {
+           mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
+        }catch(Exception e) {
+            NxpNfcLogger.e(TAG, "Callback registered already");
+        }
         byte[] prop_discover_map_cmd = new byte[]{0x03, 0x04, 0x03, 0x02, 0x03, 0x02, 0x01, (byte) 0x80, 0x01, (byte) 0x80};
         byte[] vendorInitRsp = mNxpNciPacketHandler.sendVendorNciMessage(0x21, 0x00, prop_discover_map_cmd);
         if (vendorInitRsp != null && vendorInitRsp.length < 1) {
@@ -156,7 +161,6 @@ public class SrdHandler implements INxpNfcNtfHandler {
     private @SRDStatus int sendSrdVendorNciMessage(byte[] srdCmd) throws IOException {
         try {
             NxpNfcLogger.d(TAG, "Sending SRD cmd through VendorNciMessage");
-            mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
             byte[] vendorInitRsp = mNxpNciPacketHandler.sendVendorNciMessage(NxpNfcConstants.NFC_NCI_PROP_GID, NxpNfcConstants.NXP_NFC_PROP_OID, srdCmd);
             if (vendorInitRsp != null && vendorInitRsp.length < 2) {
                 NxpNfcLogger.e(TAG, "Vendor Rsp length is less than 2 bytes");
@@ -170,13 +174,14 @@ public class SrdHandler implements INxpNfcNtfHandler {
             }
         } catch (Exception e) {
             NxpNfcLogger.d(TAG, "Exception in sendVendorNciMessage");
-            throw new IOException("Error sending VendorNciMessage", e);
+            return 0xFF;
         }
         return INxpNfcAdapter.SRD_STATUS_SUCCESS;
     }
 
     public @SRDStatus int setSRDMode(boolean enable) throws IOException {
         NxpNfcLogger.d(TAG, "setSRDMode Enter : " + enable);
+        //TODO: onSrdFeatureSupport to updated
         if (enable == isSrdEnabled) {
             return INxpNfcAdapter.SRD_INPROGESS;
         }
@@ -208,5 +213,53 @@ public class SrdHandler implements INxpNfcNtfHandler {
             NxpNfcLogger.d(TAG, "Please provide input true to SRD Mode.");
             return INxpNfcAdapter.SRD_STATUS_FAILED;
         }
+    }
+
+    public int activateSeInterface() throws IOException {
+        NxpNfcLogger.d(TAG, "registerCallback VendorNciMessage on activateSeInterface");
+        try {
+           mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
+        }catch(Exception e) {
+            NxpNfcLogger.e(TAG, "Callback registered already");
+        }
+        byte[] prop_init_cmd = new byte[2];
+        prop_init_cmd[0] = (byte) SRD_INIT_MODE;
+        prop_init_cmd[1] = 0x01;
+        NxpNfcLogger.d(TAG, "Sending VendorNciMessage to init SRD");
+        int srdInitStatus = sendSrdVendorNciMessage(prop_init_cmd);
+        NxpNfcLogger.d(TAG, "srdInitStatus:" + srdInitStatus);
+        if (srdInitStatus == INxpNfcAdapter.SRD_STATUS_FAILED) {
+            return 0x03;
+        }
+
+        mNfcOperations.setControllerAlwaysOn(true);
+
+        byte[] prop_start_cmd = new byte[2];
+        prop_start_cmd[0] = (byte) SRD_ENABLE_MODE;
+        prop_start_cmd[1] = 0x01;
+        NxpNfcLogger.d(TAG, "Sending VendorNciMessage to start SRD");
+        int srdStartStatus = sendSrdVendorNciMessage(prop_start_cmd);
+        NxpNfcLogger.d(TAG, "srdStartStatus:" + srdStartStatus);
+        if (srdStartStatus == INxpNfcAdapter.SRD_STATUS_FAILED) {
+            return 0x03;
+        }
+        return 0x00;
+    }
+
+    public int deactivateSeInterface() throws IOException {
+      NxpNfcLogger.d(TAG, "deactivateSeInterface");
+      mNfcOperations.setControllerAlwaysOn(false);
+      //TODO: Failure handling needs to be added
+      return 0x00;
+    }
+
+    public void stopPoll(int mode) throws IOException {
+       NxpNfcLogger.d(TAG, "stopPoll");
+       mNfcOperations.disableDiscovery();
+    }
+
+    public void startPoll() throws IOException {
+       NxpNfcLogger.d(TAG, "startPoll");
+       mNfcOperations.enableDiscovery();
     }
 }

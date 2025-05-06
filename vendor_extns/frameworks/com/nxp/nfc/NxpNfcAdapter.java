@@ -29,6 +29,8 @@ import com.nxp.nfc.vendor.mpos.MposHandler;
 import com.nxp.nfc.vendor.qtag.QTagHandler;
 import com.nxp.nfc.vendor.transit.TransitConfigHandler;
 import com.nxp.nfc.INxpNfcAdapter.SRDStatus.*;
+import android.os.RemoteException;
+import android.util.Log;
 import java.io.IOException;
 
 
@@ -380,5 +382,64 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     @Override
     public @SRDStatus int setSRDMode(boolean on) throws IOException{
       return mSrdHandler.setSRDMode(on);
+    }
+    /**
+     * This api is called by applications to Activate Secure Element Interface.
+     * <p>Requires {@link android.Manifest.permission#NFC} permission.<ul>
+     * <li>This api shall be called only Nfcservice is enabled.
+     * </ul>
+     * @return whether  the update of configuration is
+     *          success or not.
+     *          0x03 - failure
+     *          0x00 - success
+     *          0xFF - Service Unavialable
+     * @throws  IOException if any exception occurs during setting the NFC
+     * configuration.
+     */
+    public int activateSeInterface() throws IOException {
+        return mSrdHandler.activateSeInterface();
+    }
+    /**
+     * This api is called by applications to Deactivate Secure Element Interface.
+     * <p>Requires {@link android.Manifest.permission#NFC} permission.<ul>
+     * <li>This api shall be called only Nfcservice is enabled.
+     * </ul>
+     * @return whether  the update of configuration is
+     *          success or not.
+     *          0x03 - failure
+     *          0x00 - success
+     *          0xFF - Service Unavialable
+     * @throws  IOException if any exception occurs during setting the NFC
+     * configuration.
+     */
+    public int deactivateSeInterface() throws IOException {
+        return mSrdHandler.deactivateSeInterface();
+    }
+
+    /**
+     * This API is called by application to stop RF discovery
+     * <p>Requires {@link android.Manifest.permission#NFC} permission.
+     * <li>This api shall be called only Nfcservice is enabled.
+     * </ul>
+     * @param  mode
+     *         LOW_POWER
+     *         ULTRA_LOW_POWER
+     * @return None
+     * @throws IOException If a failure occurred during stop discovery
+    */
+    public void stopPoll(int mode) throws IOException {
+       mSrdHandler.stopPoll(mode);
+    }
+
+    /**
+     * This API is called by application to start RF discovery
+     * <p>Requires {@link android.Manifest.permission#NFC} permission.
+     * <li>This api shall be called only Nfcservice is enabled.
+     * </ul>
+     * @return None
+     * @throws IOException If a failure occurred during start discovery
+    */
+    public void startPoll() throws IOException {
+       mSrdHandler.startPoll();
     }
 }

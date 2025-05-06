@@ -28,7 +28,13 @@ public interface ISrdCallbacks {
     /**
      * This callback triggers on receiving the Srd Debug data.
      *
-     * @param SrdData : SRD Debug data received from NFCC
+     * @param void
      */
     void onSrdTimedout();
+    /**
+     * This callback triggers to indicate SRD feature is supported or not
+     *
+     * @param void
+     */
+    void onSrdFeatureSupport(boolean isSupported);
 }
