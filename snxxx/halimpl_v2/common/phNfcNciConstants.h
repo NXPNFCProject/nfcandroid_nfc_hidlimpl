@@ -48,6 +48,7 @@
 #define NCI_RSP_OK 0
 #define NCI_RSP_FAIL 3
 
+#define NCI_ROW_PROP_OID_VAL 0x70
 #define NCI_PROP_NTF_GID 0x6F
 #define NCI_PROP_LX_NTF_OID 0x36
 #define NCI_PROP_NTF_ANDROID_OID 0x0C
