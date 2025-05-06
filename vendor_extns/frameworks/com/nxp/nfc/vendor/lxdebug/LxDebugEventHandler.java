@@ -21,6 +21,8 @@
 package com.nxp.nfc.vendor.lxdebug;
 
 import android.annotation.IntDef;
+import android.content.Context;
+import android.content.Intent;
 import android.nfc.NfcAdapter;
 
 import com.nxp.nfc.INxpNfcNtfHandler;
@@ -63,6 +65,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
 
     private final NfcOperations mNfcOperations;
     private final NxpNciPacketHandler mNxpNciPacketHandler;
+    private final Context mContext;
     private ILxDebugCallbacks mLxDebugCallbacks = null;
 
     private static final int EFDSTATUS_ERROR_ALREADY_STARTED = 0x02;
@@ -71,7 +74,10 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
     private static final int EFDSTATUS_ERROR_FEATURE_NOT_SUPPORTED = 0x03;
     private static final int EFDSTATUS_ERROR_NFC_IS_OFF = 0x05;
     private static final int EFDSTATUS_ERROR_UNKNOWN = 0x06;
-
+    private static final String ACTION_EXTENDED_FIELD_TIMEOUT =
+        "com.android.nfc.action.ACTION_EXTENDED_FIELD_TIMEOUT";
+    private static final String ACTION_LX_DATA_RECVD =
+            "com.android.nfc.action.LX_DATA";
 
     private static final int FDSTATUS_ERROR_NFC_IS_OFF = 0x01;
 
@@ -114,7 +120,8 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
     @Retention(RetentionPolicy.SOURCE)
     public @interface FdErrorCode {}
 
-    public LxDebugEventHandler(NfcAdapter nfcAdapter) {
+    public LxDebugEventHandler(NfcAdapter nfcAdapter, Context context) {
+        this.mContext = context;
         this.mNxpNciPacketHandler = NxpNciPacketHandler.getInstance(nfcAdapter);
         this.mNfcOperations = NfcOperations.getInstance(nfcAdapter);
     }
@@ -212,6 +219,11 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
                 }
                 if (mLxDebugCallbacks != null) {
                     mLxDebugCallbacks.onEFDMTimedout();
+                }
+                if (mContext != null) {
+                    Intent efdmTimeoutIntent = new Intent(ACTION_EXTENDED_FIELD_TIMEOUT);
+                    NxpNfcLogger.d(TAG, "BroadCasting " + ACTION_EXTENDED_FIELD_TIMEOUT);
+                    mContext.sendBroadcast(efdmTimeoutIntent);
                 }
             }
         }
@@ -769,6 +781,14 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
                     mLxDebugCallbacks.onLxDebugDataReceived(payload);
                 } else {
                     NxpNfcLogger.i(TAG, "No callback registered for Lx Debug");
+                }
+                if (mContext != null) {
+                    NxpNfcLogger.d(TAG, "BroadCasting " + ACTION_LX_DATA_RECVD);
+                    Intent lxDataRecvdIntent = new Intent();
+                    lxDataRecvdIntent.putExtra("LxDebugCfgs", payload);
+                    lxDataRecvdIntent.putExtra("lxDbgDataLen", payload.length);
+                    lxDataRecvdIntent.setAction(ACTION_LX_DATA_RECVD);
+                    mContext.sendBroadcast(lxDataRecvdIntent);
                 }
                 break;
             case NCI_OID_SYSTEM_DEBUG_STATE_L3_MESSAGE:

@@ -17,6 +17,7 @@
 package com.nxp.nfc;
 
 import android.app.Activity;
+import android.content.Context;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 
@@ -95,17 +96,18 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     /**
      * @brief private constructor to create the instance of {@link NxpNfcAdapter}
      * @param nfcAdapter
+     * @param context
      */
-    private NxpNfcAdapter(NfcAdapter nfcAdapter) {
+    private NxpNfcAdapter(NfcAdapter nfcAdapter, Context context) {
         printComNxpNfcVersion();
         mNfcAdapter = nfcAdapter;
         mAutoCardHandler = new AutoCardHandler(nfcAdapter);
         mMposHandler = new MposHandler(nfcAdapter);
         mQTagHandler = new QTagHandler(nfcAdapter);
-        mLxDebugEventHandler = new LxDebugEventHandler(nfcAdapter);
+        mLxDebugEventHandler = new LxDebugEventHandler(nfcAdapter, context);
         mTransitHandler = new TransitConfigHandler(nfcAdapter);
         mFwHandler = new NfcFirmwareInfo(nfcAdapter);
-        mSrdHandler = new SrdHandler(nfcAdapter);
+        mSrdHandler = new SrdHandler(nfcAdapter, context);
     }
 
     public interface NxpReaderCallback {
@@ -117,17 +119,29 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
      * or throws UnsupportedOperationException nfcAdapter is null.
      *
      * @param nfcAdapter
+     * @param context
      * @return {@link NxpNfcAdapter} instance
      */
-    public static synchronized NxpNfcAdapter getNxpNfcAdapter(NfcAdapter nfcAdapter) {
+    public static synchronized NxpNfcAdapter getNxpNfcAdapter(NfcAdapter nfcAdapter, Context context) {
         if (sNxpNfcAdapter == null) {
             if (nfcAdapter == null) {
                 NxpNfcLogger.e(TAG, "nfcAdapter is null");
                 throw new UnsupportedOperationException();
             }
-            sNxpNfcAdapter = new NxpNfcAdapter(nfcAdapter);
+            sNxpNfcAdapter = new NxpNfcAdapter(nfcAdapter, context);
         }
         return sNxpNfcAdapter;
+    }
+
+    /**
+     * @brief NxpNfcAdapter for application context,
+     * or throws UnsupportedOperationException nfcAdapter is null.
+     *
+     * @param nfcAdapter
+     * @return {@link NxpNfcAdapter} instance
+     */
+    public static synchronized NxpNfcAdapter getNxpNfcAdapter(NfcAdapter nfcAdapter) {
+        return getNxpNfcAdapter(nfcAdapter, null);
     }
 
     /**

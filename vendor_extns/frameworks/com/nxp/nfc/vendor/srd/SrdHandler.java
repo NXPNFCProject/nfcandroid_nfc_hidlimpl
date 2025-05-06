@@ -19,7 +19,8 @@
 */
 package com.nxp.nfc.vendor.srd;
 
-import android.nfc.NfcAdapter; 
+import android.content.Context;
+import android.nfc.NfcAdapter;
 import com.nxp.nfc.INxpNfcAdapter;
 import com.nxp.nfc.INxpNfcAdapter.SRDStatus;
 import com.nxp.nfc.INxpNfcNtfHandler;
@@ -53,9 +54,17 @@ public class SrdHandler implements INxpNfcNtfHandler {
     private static boolean isSrdEnabled = false;
     private final NxpNciPacketHandler mNxpNciPacketHandler;
     private final NfcOperations mNfcOperations;
+    private final Context mContext;
     private ISrdCallbacks mSrdCallbacks = null;
+       /*SRD EVT Timeout*/
+    private static final String ACTION_SRD_EVT_TIMEOUT =
+            "com.nxp.nfc_extras.ACTION_SRD_EVT_TIMEOUT";
+    /*SRD Feature not supported */
+    private static final String ACTION_SRD_EVT_FEATURE_NOT_SUPPORT =
+            "com.nxp.nfc_extras.ACTION_SRD_EVT_FEATURE_NOT_SUPPORT";
 
-    public SrdHandler(NfcAdapter nfcAdapter) {
+    public SrdHandler(NfcAdapter nfcAdapter, Context context) {
+        this.mContext = context;
         this.mNxpNciPacketHandler = NxpNciPacketHandler.getInstance(nfcAdapter);
         this.mNfcOperations = NfcOperations.getInstance(nfcAdapter);
         mSRDStarted(false);
@@ -105,6 +114,11 @@ public class SrdHandler implements INxpNfcNtfHandler {
                 } else {
                     NxpNfcLogger.i(TAG, "No callback registered for SRD");
                 }
+                if (mContext != null) {
+                    NxpNfcLogger.d(TAG, "Broadcasting " + ACTION_SRD_EVT_TIMEOUT);
+                    Intent srdTimeoutIntent = new Intent(ACTION_SRD_EVT_TIMEOUT);
+                    mContext.sendBroadcast(srdTimeoutIntent);
+                }
                 break;
             case SRD_START_DEFAULT_RF_DISCOVERY:
                 NxpNfcLogger.d(TAG, "ACTION_NFC_SRD_START_DEFAULT_RF_DISCOVERY");
@@ -113,6 +127,14 @@ public class SrdHandler implements INxpNfcNtfHandler {
                 sendDefautDiscoverMapCmd();
                 mNfcOperations.enableDiscovery();
                 break;
+                /*
+                 * Need to enable when this case will be supported
+            case SRD_EVT_FEATURE_NOT_SUPPORT:
+                if (mContext != null) {
+                    NxpNfcLogger.d(TAG, "Broadcasting " + ACTION_SRD_EVT_FEATURE_NOT_SUPPORT);
+                    Intent srdTimeoutIntent = new Intent(ACTION_SRD_EVT_FEATURE_NOT_SUPPORT);
+                    mContext.sendBroadcast(srdTimeoutIntent);
+                }*/
             default:
                 NxpNfcLogger.d(TAG, "Unknown message received");
                 break;
