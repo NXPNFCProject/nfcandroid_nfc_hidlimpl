@@ -141,11 +141,8 @@ public class SrdHandler implements INxpNfcNtfHandler {
 
     public void sendDefautDiscoverMapCmd() {
         NxpNfcLogger.d(TAG, "Sending Default RF Discover Map cmd to controller");
-        try {
-           mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
-        }catch(Exception e) {
-            NxpNfcLogger.e(TAG, "Callback registered already");
-        }
+
+        mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
         byte[] prop_discover_map_cmd = new byte[]{0x03, 0x04, 0x03, 0x02, 0x03, 0x02, 0x01, (byte) 0x80, 0x01, (byte) 0x80};
         byte[] vendorInitRsp = mNxpNciPacketHandler.sendVendorNciMessage(0x21, 0x00, prop_discover_map_cmd);
         if (vendorInitRsp != null && vendorInitRsp.length < 1) {
@@ -217,11 +214,8 @@ public class SrdHandler implements INxpNfcNtfHandler {
 
     public int activateSeInterface() throws IOException {
         NxpNfcLogger.d(TAG, "registerCallback VendorNciMessage on activateSeInterface");
-        try {
-           mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
-        }catch(Exception e) {
-            NxpNfcLogger.e(TAG, "Callback registered already");
-        }
+        mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
+
         byte[] prop_init_cmd = new byte[2];
         prop_init_cmd[0] = (byte) SRD_INIT_MODE;
         prop_init_cmd[1] = 0x01;

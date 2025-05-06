@@ -69,12 +69,10 @@ public class NxpNciPacketHandler {
 
     public void registerCallback(@NonNull @CallbackExecutor Executor executor,
                                  @NonNull INxpNfcNtfHandler nxpNfcNtfHandler) {
-      if (mCallbackMap.containsKey(nxpNfcNtfHandler)) {
-        NxpNfcLogger.d(TAG, "Callback already registered. Unregister"
-                                + "existing callback before registering");
-        throw new IllegalArgumentException();
-      }
-      mCallbackMap.put(nxpNfcNtfHandler, executor);
+      if (!mCallbackMap.containsKey(nxpNfcNtfHandler))
+        mCallbackMap.put(nxpNfcNtfHandler, executor);
+      else
+        NxpNfcLogger.e(TAG, "Callback already registered.");
     }
 
     /**
@@ -87,11 +85,10 @@ public class NxpNciPacketHandler {
 
     public void
     unregisterCallback(@NonNull INxpNfcNtfHandler nxpNfcNtfHandler) {
-      if (!mCallbackMap.containsKey(nxpNfcNtfHandler)) {
-        NxpNfcLogger.d(TAG, "Callback not registered");
-        throw new IllegalArgumentException();
-      }
-      mCallbackMap.remove(nxpNfcNtfHandler);
+      if (mCallbackMap.containsKey(nxpNfcNtfHandler))
+        mCallbackMap.remove(nxpNfcNtfHandler);
+      else
+        NxpNfcLogger.e(TAG, "Callback not registered");
     }
 
     /**
