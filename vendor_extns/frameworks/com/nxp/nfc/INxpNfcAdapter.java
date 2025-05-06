@@ -338,17 +338,4 @@ public interface INxpNfcAdapter {
     @Retention(RetentionPolicy.SOURCE)
     public @interface SRDStatus{}
 
-    /**
-     * This API is called by application to stop RF discovery
-     * <p>Requires {@link android.Manifest.permission#NFC} permission.
-     * <li>This api shall be called only Nfcservice is enabled.
-     * </ul>
-     * @param  None
-     * @return whether  the polling is disable
-     *          success or not.
-     *          0xFF - failure
-     *          0x00 - success
-     * @throws IOException If a failure occurred during stop discovery
-    */
-    public @SRDStatus int setSRDMode(boolean on) throws IOException;
 }

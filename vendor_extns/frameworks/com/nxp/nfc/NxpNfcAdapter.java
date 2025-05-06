@@ -413,14 +413,6 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
         mSrdHandler.unregisterSrdCallbacks();
     }
     /**
-     * @brief To be called to start or stop the srd mode
-     * @return {@link INxpNfcAdapter.setSRDMode} instance
-     */
-    @Override
-    public @SRDStatus int setSRDMode(boolean on) throws IOException{
-      return mSrdHandler.setSRDMode(on);
-    }
-    /**
      * This api is called by applications to Activate Secure Element Interface.
      * <p>Requires {@link android.Manifest.permission#NFC} permission.<ul>
      * <li>This api shall be called only Nfcservice is enabled.
