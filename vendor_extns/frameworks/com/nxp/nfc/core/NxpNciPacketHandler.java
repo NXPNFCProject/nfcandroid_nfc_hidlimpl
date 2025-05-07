@@ -32,6 +32,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @class NxpNciPacketHandler
@@ -47,7 +48,7 @@ public class NxpNciPacketHandler {
 
     private NfcAdapter mNfcAdapter;
     private final Map<INxpNfcNtfHandler, Executor> mCallbackMap =
-        new HashMap<>();
+        new ConcurrentHashMap<>();
     private byte[] mVendorNciRsp;
     private byte mCurrentCmdSubGidOid;
     private boolean mIsSubGidCheckReq = true;
