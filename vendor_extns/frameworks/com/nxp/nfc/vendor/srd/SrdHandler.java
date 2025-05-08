@@ -183,10 +183,13 @@ public class SrdHandler implements INxpNfcNtfHandler {
         mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
         byte[] prop_discover_map_cmd = new byte[]{0x03, 0x04, 0x03, 0x02, 0x03, 0x02, 0x01, (byte) 0x80, 0x01, (byte) 0x80};
         byte[] vendorInitRsp = mNxpNciPacketHandler.sendVendorNciMessage(0x21, 0x00, prop_discover_map_cmd);
-        if (vendorInitRsp != null && vendorInitRsp.length < 1) {
-            NxpNfcLogger.e(TAG, "Vendor Init Rsp length is less than 2 bytes");
+        if (vendorInitRsp == null) {
+            NxpNfcLogger.e(TAG, "Vendor Init Rsp  is null");
         }
-        if (vendorInitRsp[0] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
+        else if (vendorInitRsp.length < 1) {
+            NxpNfcLogger.e(TAG, "Vendor Init Rsp length is less than 1 bytes");
+        }
+        else if (vendorInitRsp[0] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
             NxpNfcLogger.d(TAG, "RD Discover map command is success success");
         } else {
             NxpNfcLogger.d(TAG, "Wrong VendorNciMessage Response");
@@ -197,8 +200,8 @@ public class SrdHandler implements INxpNfcNtfHandler {
         try {
             NxpNfcLogger.d(TAG, "Sending SRD cmd through VendorNciMessage");
             byte[] vendorInitRsp = mNxpNciPacketHandler.sendVendorNciMessage(NxpNfcConstants.NFC_NCI_PROP_GID, NxpNfcConstants.NXP_NFC_PROP_OID, srdCmd);
-            if (vendorInitRsp != null && vendorInitRsp.length < 2) {
-                NxpNfcLogger.e(TAG, "Vendor Rsp length is less than 2 bytes");
+            if (vendorInitRsp == null || vendorInitRsp.length < 2) {
+                NxpNfcLogger.e(TAG, "Vendor Init is null or Rsp length is less than 2 bytes");
                 return INxpNfcAdapter.SRD_STATUS_FAILED;
             }
             if (vendorInitRsp[1] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
