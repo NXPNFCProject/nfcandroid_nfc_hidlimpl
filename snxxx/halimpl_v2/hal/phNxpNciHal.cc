@@ -549,6 +549,7 @@ int phNxpNciHal_MinOpen() {
   CONCURRENCY_LOCK();
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_MIN_OPEN) {
     NXPLOG_NCIHAL_D("phNxpNciHal_MinOpen(): already open");
+    CONCURRENCY_UNLOCK();
     return NFCSTATUS_SUCCESS;
   }
   phNxpExtn_LibSetup();
@@ -568,6 +569,7 @@ int phNxpNciHal_MinOpen() {
 
   if (phNxpNciHal_init_monitor() == NULL) {
     NXPLOG_NCIHAL_E("Init monitor failed");
+    CONCURRENCY_UNLOCK();
     return NFCSTATUS_FAILED;
   }
 
@@ -1987,6 +1989,7 @@ int phNxpNciHal_close(bool bShutdown) {
   CONCURRENCY_LOCK();
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
     NXPLOG_NCIHAL_D("phNxpNciHal_close is already closed, ignoring close");
+    CONCURRENCY_UNLOCK();
     return NFCSTATUS_FAILED;
   }
   NXPLOG_NCIHAL_D("phNxpNciHal_close Closing extension library");
