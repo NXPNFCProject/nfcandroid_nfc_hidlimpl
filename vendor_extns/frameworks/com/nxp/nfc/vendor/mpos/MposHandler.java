@@ -113,8 +113,10 @@ public class MposHandler implements INxpNfcNtfHandler {
     case SE_READER_START_DEFAULT_RF_DISCOVERY:
       NxpNfcLogger.d(TAG, "ACTION_NFC_MPOS_READER_START_DEFAULT_RF_DISCOVERY");
       mNfcOperations.enableDiscovery();
-      if (mposState == MposState.MPOS_STOP_INPROGRESS) {
-        mposState = MposState.MPOS_STOP_COMPLETED;
+      synchronized (mposStateSync) {
+        if (mposState == MposState.MPOS_STOP_INPROGRESS) {
+          mposState = MposState.MPOS_STOP_COMPLETED;
+        }
       }
       break;
     case SE_READER_TAG_DISCOVERY_STARTED:
