@@ -338,12 +338,7 @@ public class NfcOperations {
         @Override
         public void onRoutingChanged(Consumer<Boolean> isSkipped) {
             NxpNfcLogger.d(TAG, "onRoutingChanged :");
-            boolean skipValue = false;
-            if (isListenDisabled() || isPollingPaused()) {
-                NxpNfcLogger.d(TAG, "skip Route will be updated after NFC Enable finish:");
-                skipValue = true;
-            }
-            isSkipped.accept(skipValue);
+            isSkipped.accept(false);
         }
 
         @Override
