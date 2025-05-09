@@ -29,6 +29,7 @@ import com.nxp.nfc.NxpNfcConstants;
 import com.nxp.nfc.NxpNfcLogger;
 import com.nxp.nfc.core.NfcOperations;
 import com.nxp.nfc.core.NxpNciPacketHandler;
+import com.nxp.nfc.INxpOEMCallbacks;
 import java.util.concurrent.Executors;
 import android.os.RemoteException;
 import android.util.Log;
@@ -38,7 +39,7 @@ import java.io.IOException;
 * This class is responsible to start/stop the Srd reader and
 * handles the srd action notfications
 */
-public class SrdHandler implements INxpNfcNtfHandler {
+public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
 
     public static final byte SRD_MODE_NTF_SUB_GID_OID = (byte) 0xBC;
     /**
@@ -122,6 +123,7 @@ public class SrdHandler implements INxpNfcNtfHandler {
                     Intent srdTimeoutIntent = new Intent(ACTION_SRD_EVT_TIMEOUT);
                     mContext.sendBroadcast(srdTimeoutIntent);
                 }
+                mNfcOperations.unregisterNxpOemCallback();
                 break;
             case SRD_START_DEFAULT_RF_DISCOVERY:
                 NxpNfcLogger.d(TAG, "ACTION_NFC_SRD_START_DEFAULT_RF_DISCOVERY");
@@ -129,6 +131,7 @@ public class SrdHandler implements INxpNfcNtfHandler {
                 mNfcOperations.disableDiscovery();
                 sendDefautDiscoverMapCmd();
                 mNfcOperations.enableDiscovery();
+                mNfcOperations.unregisterNxpOemCallback();
                 break;
             case SRD_FEATURE_SUPPORTED:
                 if (mSrdCallbacks != null) {
@@ -181,8 +184,10 @@ public class SrdHandler implements INxpNfcNtfHandler {
         NxpNfcLogger.d(TAG, "Sending Default RF Discover Map cmd to controller");
 
         mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
+        mNxpNciPacketHandler.shouldCheckResponseSubGid(false);
         byte[] prop_discover_map_cmd = new byte[]{0x03, 0x04, 0x03, 0x02, 0x03, 0x02, 0x01, (byte) 0x80, 0x01, (byte) 0x80};
         byte[] vendorInitRsp = mNxpNciPacketHandler.sendVendorNciMessage(0x21, 0x00, prop_discover_map_cmd);
+        mNxpNciPacketHandler.shouldCheckResponseSubGid(true);
         if (vendorInitRsp == null) {
             NxpNfcLogger.e(TAG, "Vendor Init Rsp  is null");
         }
@@ -220,6 +225,7 @@ public class SrdHandler implements INxpNfcNtfHandler {
 
     public int activateSeInterface() throws IOException {
         NxpNfcLogger.d(TAG, "registerCallback VendorNciMessage on activateSeInterface");
+        mNfcOperations.registerNxpOemCallback(this);
         mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
 
         byte[] prop_init_cmd = new byte[2];
@@ -246,6 +252,20 @@ public class SrdHandler implements INxpNfcNtfHandler {
         return 0x00;
     }
 
+    public int stopSrd() throws IOException {
+        NxpNfcLogger.d(TAG, "stopSrd");
+        byte[] prop_stop_cmd = new byte[2];
+        prop_stop_cmd[0] = (byte) SRD_DISABLE_MODE;
+        prop_stop_cmd[1] = 0x01;
+        NxpNfcLogger.d(TAG, "Sending VendorNciMessage to start SRD");
+        int srdStartStatus = sendSrdVendorNciMessage(prop_stop_cmd);
+        NxpNfcLogger.d(TAG, "srdStartStatus:" + srdStartStatus);
+        if (srdStartStatus == INxpNfcAdapter.SRD_STATUS_FAILED) {
+            return 0x03;
+        }
+        return 0x00;
+    }
+
     public int deactivateSeInterface() throws IOException {
       NxpNfcLogger.d(TAG, "deactivateSeInterface");
       mNfcOperations.setControllerAlwaysOn(false);
@@ -261,5 +281,26 @@ public class SrdHandler implements INxpNfcNtfHandler {
     public void startPoll() throws IOException {
        NxpNfcLogger.d(TAG, "startPoll");
        mNfcOperations.enableDiscovery();
+    }
+    @Override
+    public boolean onDisableRequested() {
+        NxpNfcLogger.d(TAG, "onDisableRequested: ");
+        try {
+            stopSrd();
+            mNfcOperations.setControllerAlwaysOn(false);
+        } catch(IOException e) {
+            NxpNfcLogger.e(TAG, "Exception in onDisableRequested");
+        }
+        return true;
+    }
+
+    @Override
+    public void onEnableFinished(int status) {
+        NxpNfcLogger.d(TAG, "onEnableFinished: ");
+        mNfcOperations.disableDiscovery();
+        sendDefautDiscoverMapCmd();
+        mNfcOperations.enableDiscovery();
+        isSrdEnabled = false;
+        mNfcOperations.unregisterNxpOemCallback();
     }
 }
