@@ -82,6 +82,8 @@ typedef enum {
 } NfcExtEvent_t;
 
 typedef enum {
+  NFCC_HAL_INPUT_CLK_ERR_CODE = 4u,
+  NFCC_HAL_ASSERT_ERR_CODE = 5u,
   NFCC_HAL_TRANS_ERR_CODE = 6u,
   NFCC_HAL_FATAL_ERR_CODE = 8u,
 } NfcExtHal_NFCC_ERROR_CODE_t;

@@ -431,7 +431,9 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
     return status;
   } else if (p_ntf[0] == 0x61 && p_ntf[1] == 0x21 && p_ntf[2] == 0x00) {
     status = NFCSTATUS_FAILED;
-    NXPLOG_NCIHAL_D("ignore core generic error");
+    NXPLOG_NCIHAL_D("notify  PLL_UNLOCK error to upper layer");
+    /* Post to extentsion lib */
+    phNxpExtn_HandleHalEvent(NFCC_HAL_INPUT_CLK_ERR_CODE);
     return status;
   }
   // 4200 02 00 01

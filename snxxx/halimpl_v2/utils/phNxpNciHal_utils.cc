@@ -583,7 +583,6 @@ void phNxpNciHal_emergency_recovery(uint8_t status) {
 
   switch (status) {
     case NCI2_0_CORE_RESET_TRIGGER_TYPE_OVER_TEMPERATURE:
-    case CORE_RESET_TRIGGER_TYPE_FW_ASSERT:
     case CORE_RESET_TRIGGER_TYPE_WATCHDOG_RESET:
     case CORE_RESET_TRIGGER_TYPE_INPUT_CLOCK_LOST:
     case CORE_RESET_TRIGGER_TYPE_UNRECOVERABLE_ERROR: {
@@ -592,6 +591,12 @@ void phNxpNciHal_emergency_recovery(uint8_t status) {
       phNxpExtn_HandleHalEvent(NFCC_HAL_FATAL_ERR_CODE);
       abort();
     }
+    case CORE_RESET_TRIGGER_TYPE_FW_ASSERT: {
+      phNxpExtn_HandleHalEvent(NFCC_HAL_ASSERT_ERR_CODE);
+      phNxpNciHal_decodeGpioStatus();
+      NXPLOG_NCIHAL_E("abort()");
+      abort();
+    } break;
     case CORE_RESET_TRIGGER_TYPE_POWERED_ON: {
       if (nxpncihal_ctrl.halStatus != HAL_STATUS_CLOSE &&
           nxpncihal_ctrl.power_reset_triggered == false) {
