@@ -97,7 +97,12 @@ int NfcWriter::write(uint16_t data_len, const uint8_t* p_data) {
              p_data[NCI_OID_INDEX] == NCI_RF_DISC_COMMAND_OID) {
     vector<uint8_t> v_data =
         NciDiscoveryCommandBuilderInstance.reConfigRFDiscCmd();
-    return this->direct_write(v_data.size(), v_data.data());
+    uint16_t len = static_cast<uint16_t>(v_data.size());
+    NFCSTATUS status = phNxpExtn_HandleNciMsg(&len, v_data.data());
+    if (status != NFCSTATUS_EXTN_FEATURE_SUCCESS)
+      return this->direct_write(v_data.size(), v_data.data());
+    else
+      return len;
   } else if (IS_HCI_PACKET(p_data)) {
     // Inform WiredSe service that HCI Pkt is sending from libnfc layer
     phNxpNciHal_WiredSeDispatchEvent(gWiredSeHandle, SENDING_HCI_PKT);
