@@ -72,6 +72,19 @@ void phNxpExtn_LibSetup() {
            p_oem_extn_handle, vendor_nfc_handle_event_name.c_str())) == NULL) {
     NXPLOG_NCIHAL_E("%s Failed to find %s !!", __func__, vendor_nfc_handle_event_name.c_str());
   }
+  // Allocate Transaction buffers
+  nciMsgDeferredData.tTransactionInfo.pBuff =
+      (uint8_t*)calloc(NCI_MAX_DATA_LEN, sizeof(uint8_t));
+  if (nciMsgDeferredData.tTransactionInfo.pBuff == NULL) {
+    NXPLOG_NCIHAL_E("%s Failed to allocate transaction buffer");
+    phNxpExtn_LibClose();
+  }
+  nciRspNtfDeferredData.tTransactionInfo.pBuff =
+      (uint8_t*)calloc(NCI_MAX_DATA_LEN, sizeof(uint8_t));
+  if (nciRspNtfDeferredData.tTransactionInfo.pBuff == NULL) {
+    NXPLOG_NCIHAL_E("%s Failed to allocate transaction buffer");
+    phNxpExtn_LibClose();
+  }
 
   phNxpExtn_Init();
 }
@@ -108,6 +121,15 @@ void phNxpExtn_LibClose() {
     fp_extn_deinit = NULL;
     fp_extn_handle_nfc_event = NULL;
     p_oem_extn_handle = NULL;
+  }
+  // Free transaction buffers
+  if (nciMsgDeferredData.tTransactionInfo.pBuff != NULL) {
+    free(nciMsgDeferredData.tTransactionInfo.pBuff);
+    nciMsgDeferredData.tTransactionInfo.pBuff = NULL;
+  }
+  if (nciRspNtfDeferredData.tTransactionInfo.pBuff != NULL) {
+    free(nciRspNtfDeferredData.tTransactionInfo.pBuff);
+    nciRspNtfDeferredData.tTransactionInfo.pBuff = NULL;
   }
 }
 
@@ -195,9 +217,9 @@ void phNxpExtn_NfcHalControlGranted() {
 NFCSTATUS phNxpHal_EnqueueWrite(uint8_t* pBuffer, uint16_t wLength) {
   NXPLOG_NCIHAL_D("%s Enter wLength:%d", __func__, wLength);
   nciMsgDeferredData.tTransactionInfo.wStatus = NFCSTATUS_SUCCESS;
-  nciMsgDeferredData.tTransactionInfo.oem_cmd_len = wLength;
-  phNxpNciHal_Memcpy(nciMsgDeferredData.tTransactionInfo.p_oem_cmd_data,
-                     wLength, pBuffer, wLength);
+  nciMsgDeferredData.tTransactionInfo.wLength = wLength;
+  phNxpNciHal_Memcpy(nciMsgDeferredData.tTransactionInfo.pBuff, wLength,
+                     pBuffer, wLength);
   nciMsgDeferredData.tDeferredInfo.pParameter =
       &nciMsgDeferredData.tTransactionInfo;
   nciMsgDeferredData.tMsg.pMsgData = &nciMsgDeferredData.tDeferredInfo;
@@ -211,9 +233,9 @@ NFCSTATUS phNxpHal_EnqueueWrite(uint8_t* pBuffer, uint16_t wLength) {
 NFCSTATUS phNxpHal_EnqueueRsp(uint8_t* pBuffer, uint16_t wLength) {
   NXPLOG_NCIHAL_D("%s Enter wLength:%d", __func__, wLength);
   nciRspNtfDeferredData.tTransactionInfo.wStatus = NFCSTATUS_SUCCESS;
-  nciRspNtfDeferredData.tTransactionInfo.oem_rsp_ntf_len = wLength;
-  phNxpNciHal_Memcpy(nciRspNtfDeferredData.tTransactionInfo.p_oem_rsp_ntf_data,
-                     wLength, pBuffer, wLength);
+  nciRspNtfDeferredData.tTransactionInfo.wLength = wLength;
+  phNxpNciHal_Memcpy(nciRspNtfDeferredData.tTransactionInfo.pBuff, wLength,
+                     pBuffer, wLength);
   nciRspNtfDeferredData.tDeferredInfo.pParameter =
       &nciRspNtfDeferredData.tTransactionInfo;
   nciRspNtfDeferredData.tMsg.pMsgData = &nciRspNtfDeferredData.tDeferredInfo;

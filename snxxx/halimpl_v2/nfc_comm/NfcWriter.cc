@@ -200,36 +200,6 @@ clean_and_return:
 }
 
 /******************************************************************************
- * Function         enqueue_write
- *
- * Description      This is the actual function which is being called by
- *                  nxp_nfc_extn_lib. This function writes the data to queue.
- *
- ******************************************************************************/
-
-void NfcWriter::enqueue_write(const uint8_t* pBuffer, uint16_t wLength) {
-  phLibNfc_DeferredCall_t tDeferredInfo;
-  phLibNfc_Message_t tMsg = {0, NULL, 0};
-  phTmlNfc_TransactInfo_t tTransactionInfo;
-
-  if ((pBuffer == NULL) || (wLength == 0x00) || (wLength > NCI_MAX_DATA_LEN)) {
-    NXPLOG_NCIHAL_E("Invalid Parameter");
-    return;
-  }
-
-  tTransactionInfo.wStatus = NFCSTATUS_SUCCESS;
-  tTransactionInfo.oem_cmd_len = wLength;
-  phNxpNciHal_Memcpy(tTransactionInfo.p_oem_cmd_data, wLength, pBuffer,
-                     wLength);
-  tDeferredInfo.pCallback = NULL;
-  tDeferredInfo.pParameter = &tTransactionInfo;
-  tMsg.eMsgType = NCI_HAL_TML_WRITE_MSG;
-  tMsg.pMsgData = &tDeferredInfo;
-  tMsg.Size = sizeof(tDeferredInfo);
-  phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &tMsg);
-}
-
-/******************************************************************************
  * Function         write_unlocked
  *
  * Description      This is the actual function which is being called by
