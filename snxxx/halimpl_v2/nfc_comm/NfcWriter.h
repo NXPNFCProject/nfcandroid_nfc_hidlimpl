@@ -77,17 +77,6 @@ class NfcWriter {
   int direct_write(uint16_t data_len, const uint8_t* p_data);
 
   /******************************************************************************
-   * Function         enqueue_write
-   *
-   * Description      This is the actual function which is being called by
-   *                  nxp_nfc_extn_lib. This function writes the data to queue.
-   *
-   * Returns          void
-   *
-   ******************************************************************************/
-  void enqueue_write(const uint8_t* pBuffer, uint16_t wLength);
-
-  /******************************************************************************
    * Function         write_unlocked
    *
    * Description      This is the actual function which is being called by

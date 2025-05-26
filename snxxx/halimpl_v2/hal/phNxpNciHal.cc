@@ -1008,10 +1008,6 @@ int phNxpNciHal_write_internal(uint16_t data_len, const uint8_t* p_data) {
   return nfcData.direct_write(data_len, p_data);
 }
 
-void phNxpHal_EnqueueWrite(const uint8_t* pBuffer, uint16_t wLength) {
-  nfcData.enqueue_write(pBuffer, wLength);
-}
-
 /******************************************************************************
  * Function         phNxpNciHal_write_unlocked
  *
