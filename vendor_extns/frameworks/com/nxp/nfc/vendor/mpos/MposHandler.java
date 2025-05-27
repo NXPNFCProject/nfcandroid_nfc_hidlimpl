@@ -87,10 +87,12 @@ public class MposHandler implements INxpNfcNtfHandler {
 
     byte subGidOid = payload[0];
     byte notificationType = payload[1];
-    NxpNfcLogger.d(TAG, "Sub-GidOid: " + subGidOid +
-                            ", Notification Type: " + notificationType);
+    NxpNfcLogger.d(TAG, "Oid: " + oid +
+                        ", Sub-GidOid: " + subGidOid +
+                        ", Notification Type: " + notificationType);
 
-    if (subGidOid == MPOS_READER_MODE_NTF_SUB_GID_OID) {
+    if ((oid == NxpNfcConstants.NXP_NFC_OEM_PROP_OID) &&
+        (subGidOid == MPOS_READER_MODE_NTF_SUB_GID_OID)) {
       handleMposNotification(notificationType);
     }
   }
