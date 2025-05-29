@@ -141,7 +141,7 @@ NFCSTATUS phNxpExtn_HandleNciMsg(uint16_t *dataLen, const uint8_t* pData) {
   nfc_ext_event_data.nci_msg = nci_data;
 
   if (fp_extn_handle_nfc_event != NULL) {
-    return fp_extn_handle_nfc_event(HANDLE_VENDOR_NCI_MSG, nfc_ext_event_data);
+    return fp_extn_handle_nfc_event(HANDLE_VENDOR_NCI_MSG, &nfc_ext_event_data);
   } else {
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
   }
@@ -152,7 +152,7 @@ NFCSTATUS phNxpExtn_HandleHalEvent(uint8_t handle_event) {
   nfc_ext_event_data.hal_event = handle_event;
 
   if (fp_extn_handle_nfc_event != NULL) {
-    return fp_extn_handle_nfc_event(HANDLE_HAL_EVENT, nfc_ext_event_data);
+    return fp_extn_handle_nfc_event(HANDLE_HAL_EVENT, &nfc_ext_event_data);
   } else {
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
   }
@@ -162,7 +162,7 @@ void phNxpExtn_WriteCompleteStatusUpdate(NFCSTATUS status) {
   NXPLOG_NCIHAL_D("%s Enter status:%d", __func__, status);
   nfc_ext_event_data.write_status = status;
   if (fp_extn_handle_nfc_event != NULL) {
-    fp_extn_handle_nfc_event(HANDLE_WRITE_COMPLETE_STATUS, nfc_ext_event_data);
+    fp_extn_handle_nfc_event(HANDLE_WRITE_COMPLETE_STATUS, &nfc_ext_event_data);
   }
 }
 
@@ -175,7 +175,7 @@ NFCSTATUS phNxpExtn_HandleNciRspNtf(uint16_t *dataLen, const uint8_t* pData) {
 
   if (fp_extn_handle_nfc_event != NULL) {
     return fp_extn_handle_nfc_event(HANDLE_VENDOR_NCI_RSP_NTF,
-                                    nfc_ext_event_data);
+                                    &nfc_ext_event_data);
   } else {
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
   }
@@ -185,30 +185,30 @@ void phNxpExtn_FwDnldStatusUpdate(uint8_t status) {
   NXPLOG_NCIHAL_D("%s Enter status:%d", __func__, status);
   nfc_ext_event_data.hal_event_status = status;
   if (fp_extn_handle_nfc_event != NULL) {
-    fp_extn_handle_nfc_event(HANDLE_FW_DNLD_STATUS_UPDATE, nfc_ext_event_data);
+    fp_extn_handle_nfc_event(HANDLE_FW_DNLD_STATUS_UPDATE, &nfc_ext_event_data);
   }
 }
 
-// TODO: Shall it be directly maintained in Extension library
-void phNxpExtn_NfcRfStateUpdate(uint8_t state) {
-  NXPLOG_NCIHAL_D("%s Enter state:%d", __func__, state);
-  nfc_ext_event_data.rf_state = state;
+NfcRfState_t phNxpExtn_NfcGetRfState() {
+  NXPLOG_NCIHAL_D("%s Enter", __func__);
   if (fp_extn_handle_nfc_event != NULL) {
-    fp_extn_handle_nfc_event(HANDLE_RF_HAL_STATE_UPDATE, nfc_ext_event_data);
+    fp_extn_handle_nfc_event(HANDLE_RF_HAL_STATE_GET, &nfc_ext_event_data);
   }
+  return nfc_ext_event_data.rf_state;
 }
+
 void phNxpExtn_NfcHalStateUpdate(uint8_t state) {
   NXPLOG_NCIHAL_D("%s Enter state:%d", __func__, state);
   nfc_ext_event_data.hal_state = state;
   if (fp_extn_handle_nfc_event != NULL) {
-    fp_extn_handle_nfc_event(HANDLE_NFC_HAL_STATE_UPDATE, nfc_ext_event_data);
+    fp_extn_handle_nfc_event(HANDLE_NFC_HAL_STATE_UPDATE, &nfc_ext_event_data);
   }
 }
 
 void phNxpExtn_NfcHalControlGranted() {
   NXPLOG_NCIHAL_D("%s Enter", __func__);
   if (fp_extn_handle_nfc_event != NULL) {
-    fp_extn_handle_nfc_event(HANDLE_HAL_CONTROL_GRANTED, nfc_ext_event_data);
+    fp_extn_handle_nfc_event(HANDLE_HAL_CONTROL_GRANTED, &nfc_ext_event_data);
   }
 }
 /* Extension feature API's End */
