@@ -36,6 +36,20 @@ static NciDeferredData_t nciMsgDeferredData;
 static NciDeferredData_t nciRspNtfDeferredData;
 
 /**
+ * @brief Defines the Nfc Rf State
+ *
+ */
+typedef enum {
+  IDLE,
+  DISCOVER,
+  W4_ALL_DISCOVERIES,
+  W4_HOST_SELECT,
+  POLL_ACTIVE,
+  LISTEN_ACTIVE,
+  LISTEN_SLEEP,
+} NfcRfState_t;
+
+/**
  * @brief Holds NCI packet data length and data buffer
  *
  */
@@ -54,7 +68,7 @@ typedef union {
   NciData_t nci_rsp_ntf;
   uint8_t write_status;
   uint8_t hal_state;
-  uint8_t rf_state;
+  NfcRfState_t rf_state;
   uint8_t hal_event;
   uint8_t hal_event_status;
 } NfcExtEventData_t;
@@ -69,7 +83,7 @@ typedef enum {
   HANDLE_WRITE_COMPLETE_STATUS,
   HANDLE_HAL_CONTROL_GRANTED,
   HANDLE_NFC_HAL_STATE_UPDATE,
-  HANDLE_RF_HAL_STATE_UPDATE,
+  HANDLE_RF_HAL_STATE_GET,
   HANDLE_HAL_EVENT,
   HANDLE_FW_DNLD_STATUS_UPDATE,
   HANDLE_DOWNLOAD_FIRMWARE_REQUEST,
@@ -91,7 +105,7 @@ typedef enum {
 typedef bool (*fp_extn_init_t)(VendorExtnCb*);
 typedef bool (*fp_extn_deinit_t)();
 typedef NFCSTATUS (*fp_extn_handle_nfc_event_t)(NfcExtEvent_t,
-                                                NfcExtEventData_t);
+                                                NfcExtEventData_t*);
 
 /**
  * @brief This function sets up and initialize the extension feature
@@ -108,12 +122,11 @@ void phNxpExtn_LibSetup();
 void phNxpExtn_LibClose();
 
 /**
- * @brief updates the RF state
- * @param  state represents RF state of NFC
- * @return void
+ * @brief get the RF state
+ * @return RF state. IDLE/SLEEP/DISCOVERY
  *
  */
-void phNxpExtn_NfcRfStateUpdate(uint8_t state);
+NfcRfState_t phNxpExtn_NfcGetRfState();
 
 /**
  * @brief updates the NFC HAL state
