@@ -99,9 +99,8 @@ void phNxpNciHal_WorkerThread::Run() {
         phTmlNfc_TransactInfo_t* pInfo =
             (phTmlNfc_TransactInfo_t*)deferCall->pParameter;
         int bytesWritten = phNxpNciHal_write_unlocked(
-            (uint16_t)pInfo->oem_cmd_len, (uint8_t*)pInfo->p_oem_cmd_data,
-            ORIG_EXTNS);
-        if (bytesWritten == pInfo->oem_cmd_len) {
+            (uint16_t)pInfo->wLength, (uint8_t*)pInfo->pBuff, ORIG_EXTNS);
+        if (bytesWritten == pInfo->wLength) {
           phNxpExtn_WriteCompleteStatusUpdate(NFCSTATUS_SUCCESS);
         } else {
           phNxpExtn_WriteCompleteStatusUpdate(NFCSTATUS_FAILED);
@@ -116,8 +115,8 @@ void phNxpNciHal_WorkerThread::Run() {
         phTmlNfc_TransactInfo_t* pInfo =
             (phTmlNfc_TransactInfo_t*)deferCall->pParameter;
         if (nxpncihal_ctrl.p_nfc_stack_data_cback != NULL) {
-          (*nxpncihal_ctrl.p_nfc_stack_data_cback)(pInfo->oem_rsp_ntf_len,
-                                                   pInfo->p_oem_rsp_ntf_data);
+          (*nxpncihal_ctrl.p_nfc_stack_data_cback)(pInfo->wLength,
+                                                   pInfo->pBuff);
         }
         REENTRANCE_UNLOCK();
         break;

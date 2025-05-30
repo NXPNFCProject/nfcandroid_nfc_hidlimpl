@@ -396,7 +396,7 @@ NFCSTATUS phNxpNciHal_CheckValidFwVersion(void);
 NFCSTATUS phNxpNciHal_send_nfcee_pwr_cntl_cmd(uint8_t type);
 NFCSTATUS phNxpNciHal_nfccClockCfgApply(void);
 NFCSTATUS phNxpNciHal_enableTmlRead();
-void phNxpHal_EnqueueWrite(const uint8_t* pBuffer, uint16_t wLength);
+
 /*******************************************************************************
 **
 ** Function         phNxpNciHal_configFeatureList
