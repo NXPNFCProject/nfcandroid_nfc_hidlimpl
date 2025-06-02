@@ -127,7 +127,7 @@ public class TransitConfigHandler implements INxpNfcNtfHandler {
   }
 
   public boolean setConfig(String configs) throws IOException {
-    if ((!mNfcOperations.isEnabled()) && (mNfcOperations.isCardEmulationActivated()) &&
+    if ((!mNfcOperations.isEnabled()) || (mNfcOperations.isCardEmulationActivated()) ||
         (mNfcOperations.isTagConnected())) {
       NxpNfcLogger.e(TAG, "NFC is disabled or busy, Rejecting request..");
       return false;
