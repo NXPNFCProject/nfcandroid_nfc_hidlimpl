@@ -17,7 +17,7 @@
 #if (NXP_NFC_RECOVERY == TRUE)
 
 #include "phNxpNciHal_Recovery.h"
-
+#include "NfccTransportFactory.h"
 #include <cutils/properties.h>
 #include <phDnldNfc.h>
 #include <phNfcStatus.h>
@@ -458,6 +458,7 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
   phOsalNfc_Config_t tOsalConfig;
   phTmlNfc_Config_t tTmlConfig;
   char* nfc_dev_node = NULL;
+  unsigned long value = 0;
 
   CONCURRENCY_LOCK();
   NXPLOG_NCIHAL_D("phnxpNciHal_partialOpen(): enter");
@@ -505,7 +506,13 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
   }
   /* Configure hardware link */
   nxpncihal_ctrl.gDrvCfg.nClientId = phDal4Nfc_msgget(0, 0600);
-  nxpncihal_ctrl.gDrvCfg.nLinkType = ENUM_LINK_TYPE_I2C; /* For NFCC */
+  int isfound = GetNxpNumValue(NAME_NXP_TRANSPORT, &value, sizeof(value));
+  if (isfound > 0 && value == I3C) {
+    nxpncihal_ctrl.gDrvCfg.nLinkType = ENUM_LINK_TYPE_I3C; /* For NFCC */
+    strcat(nfc_dev_node, "-i3c");
+  } else {
+    nxpncihal_ctrl.gDrvCfg.nLinkType = ENUM_LINK_TYPE_I2C; /* For NFCC */
+  }
   tTmlConfig.pDevName = (int8_t*)nfc_dev_node;
   tOsalConfig.dwCallbackThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
   tOsalConfig.pLogFile = NULL;

@@ -36,18 +36,6 @@
 #include <string.h>
 #include "phNxpNciHal_utils.h"
 
-#define CRC_LEN 2
-#define NORMAL_MODE_HEADER_LEN 3
-#define FW_DNLD_HEADER_LEN 2
-#define FW_DNLD_LEN_OFFSET 1
-#define NORMAL_MODE_LEN_OFFSET 2
-#define FLUSH_BUFFER_SIZE 0xFF
-#define FLUSH_READ_TIMEOUT_MS 10
-//To enable the VBAT monitor feature.
-// #define NXP_NFC_VBAT_MONITOR
-
-extern phTmlNfc_i2cfragmentation_t fragmentation_enabled;
-extern phTmlNfc_Context_t* gpphTmlNfc_Context;
 /*******************************************************************************
 **
 ** Function         Close
