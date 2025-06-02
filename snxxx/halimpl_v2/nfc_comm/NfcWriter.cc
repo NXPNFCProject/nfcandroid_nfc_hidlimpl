@@ -87,10 +87,15 @@ int NfcWriter::write(uint16_t data_len, const uint8_t* p_data) {
 
   if (bEnableMfcExtns && p_data[NCI_GID_INDEX] == 0x00) {
     return NxpMfcReaderInstance.Write(data_len, p_data);
-  } else if (phNxpNciHal_isVendorSpecificCommand(data_len, p_data)) {
-    phNxpNciHal_print_packet("SEND", p_data, data_len,
-                             RfFwRegionDnld_handle == NULL);
-    return phNxpNciHal_handleVendorSpecificCommand(data_len, p_data);
+  } else if (phNxpNciHal_isVndSpecificAndroidCmd(data_len, p_data)) {
+    if (!(data_len >= 4 && (p_data[NCI_MSG_INDEX_FOR_FEATURE] ==
+                                NCI_ANDROID_SET_PASSIVE_OBSERVER_EXIT_FRAME ||
+                            p_data[NCI_MSG_INDEX_FOR_FEATURE] ==
+                                NCI_ANDROID_GET_PASSIVE_OBSERVER_EXIT_FRAME))) {
+      phNxpNciHal_print_packet("SEND", p_data, data_len,
+                               RfFwRegionDnld_handle == NULL);
+    }
+    return phNxpNciHal_hndlVndSpecificAndroidCmd(data_len, p_data);
   } else if (isObserveModeEnabled() &&
              p_data[NCI_GID_INDEX] == NCI_RF_DISC_COMMD_GID &&
              p_data[NCI_OID_INDEX] == NCI_RF_DISC_COMMAND_OID) {

@@ -873,13 +873,13 @@ void phNxpNciHal_setDCDCConfig(void) {
 
 /*******************************************************************************
 **
-** Function         phNxpNciHal_isVendorSpecificCommand()
+** Function         phNxpNciHal_isVndSpecificAndroidCmd()
 **
 ** Description      this function checks vendor specific command or not
 **
 ** Returns          true if the command is vendor specific otherwise false
 *******************************************************************************/
-bool phNxpNciHal_isVendorSpecificCommand(uint16_t data_len,
+bool phNxpNciHal_isVndSpecificAndroidCmd(uint16_t data_len,
                                          const uint8_t* p_data) {
   if (data_len > 3 && p_data[NCI_GID_INDEX] == (NCI_MT_CMD | NCI_GID_PROP) &&
       (p_data[NCI_OID_INDEX] == NCI_PROP_NTF_ANDROID_OID)) {
@@ -890,13 +890,13 @@ bool phNxpNciHal_isVendorSpecificCommand(uint16_t data_len,
 
 /*******************************************************************************
 **
-** Function         phNxpNciHal_handleVendorSpecificCommand()
+** Function         phNxpNciHal_hndlVndSpecificAndroidCmd()
 **
 ** Description      This handles the vendor specific command
 **
 ** Returns          It returns number of bytes received.
 *******************************************************************************/
-int phNxpNciHal_handleVendorSpecificCommand(uint16_t data_len,
+int phNxpNciHal_hndlVndSpecificAndroidCmd(uint16_t data_len,
                                             const uint8_t* p_data) {
   if (data_len > 4 &&
       p_data[NCI_MSG_INDEX_FOR_FEATURE] == NCI_ANDROID_POWER_SAVING) {
