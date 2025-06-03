@@ -18,6 +18,7 @@
 #include <dlfcn.h>
 #include <phNxpLog.h>
 #include <phNxpNciHal.h>
+#include "NxpNfcExtension.h"
 #include "NxpNfcThreadMutex.h"
 
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
@@ -140,11 +141,14 @@ NFCSTATUS phNxpExtn_HandleNciMsg(uint16_t *dataLen, const uint8_t* pData) {
   nci_data.p_data = (uint8_t*)pData;
   nfc_ext_event_data.nci_msg = nci_data;
 
-  if (fp_extn_handle_nfc_event != NULL) {
+  if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
+      phNxpNfcExtn_HandleNciMsg(dataLen, pData))
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+
+  if (fp_extn_handle_nfc_event != NULL)
     return fp_extn_handle_nfc_event(HANDLE_VENDOR_NCI_MSG, &nfc_ext_event_data);
-  } else {
+  else
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
-  }
 }
 
 NFCSTATUS phNxpExtn_HandleHalEvent(uint8_t handle_event) {
@@ -174,11 +178,17 @@ NFCSTATUS phNxpExtn_HandleNciRspNtf(uint16_t *dataLen, const uint8_t* pData) {
   nfc_ext_event_data.nci_rsp_ntf = nci_data;
 
   if (fp_extn_handle_nfc_event != NULL) {
-    return fp_extn_handle_nfc_event(HANDLE_VENDOR_NCI_RSP_NTF,
-                                    &nfc_ext_event_data);
+    if (NFCSTATUS_EXTN_FEATURE_SUCCESS !=
+        fp_extn_handle_nfc_event(HANDLE_VENDOR_NCI_RSP_NTF,
+                                 &nfc_ext_event_data)) {
+      if (NFCSTATUS_EXTN_FEATURE_SUCCESS !=
+          phNxpNfcExtn_HandleNciRspNtf(dataLen, pData))
+        return NFCSTATUS_EXTN_FEATURE_FAILURE;
+    }
   } else {
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
   }
+  return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 }
 
 void phNxpExtn_FwDnldStatusUpdate(uint8_t status) {
