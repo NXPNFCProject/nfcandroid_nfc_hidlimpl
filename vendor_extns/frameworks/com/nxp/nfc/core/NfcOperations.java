@@ -16,29 +16,27 @@
 
 package com.nxp.nfc.core;
 
+import android.content.ComponentName;
+import android.content.Intent;
+import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
 import android.nfc.NfcAdapter.ControllerAlwaysOnListener;
 import android.nfc.NfcOemExtension;
-import android.nfc.Tag;
-import android.content.ComponentName;
-import android.content.Intent;
-import android.nfc.cardemulation.ApduServiceInfo;
-import android.nfc.NdefMessage;
 import android.nfc.OemLogItems;
-
+import android.nfc.Tag;
+import android.nfc.cardemulation.ApduServiceInfo;
 import android.os.AsyncTask;
-
 import com.nxp.nfc.INxpOEMCallbacks;
 import com.nxp.nfc.NxpNfcConstants;
 import com.nxp.nfc.NxpNfcLogger;
-
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.List;
 
- /**
+/**
  * @class NfcOperations
  * @brief A wrapper class for Nfc functionality.
  *
@@ -285,7 +283,8 @@ public class NfcOperations {
         }
 
         @Override
-        public void onNdefRead(Consumer<Boolean> isSkipped){
+        public void onNdefRead(Consumer<Boolean> isSkipped) {
+          isSkipped.accept(false);
         }
 
         @Override
@@ -332,7 +331,8 @@ public class NfcOperations {
         }
 
         @Override
-        public void onTagDispatch(Consumer<Boolean> isSkipped){
+        public void onTagDispatch(Consumer<Boolean> isSkipped) {
+          isSkipped.accept(false);
         }
 
         @Override
@@ -382,11 +382,13 @@ public class NfcOperations {
         @Override
         public void onGetOemAppSearchIntent(List<String> packages,
                                     Consumer<Intent> intentConsumer) {
+          intentConsumer.accept(new Intent());
         }
 
         @Override
         public void onNdefMessage(Tag tag, NdefMessage message,
                            Consumer<Boolean> hasOemExecutableContent) {
+          hasOemExecutableContent.accept(false);
         }
 
         @Override
@@ -410,7 +412,9 @@ public class NfcOperations {
 
         @Override
         public void onExtractOemPackages(
-            NdefMessage message, Consumer<List<String>> packageConsumer) {}
+            NdefMessage message, Consumer<List<String>> packageConsumer) {
+          packageConsumer.accept(Collections.emptyList());
+        }
     };
 
     ControllerAlwaysOnListener mControllerAlwaysOnListener = new ControllerAlwaysOnListener() {
