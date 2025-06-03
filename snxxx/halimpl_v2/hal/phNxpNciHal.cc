@@ -40,6 +40,7 @@
 #include "NfcExtension.h"
 #include "NfcWriter.h"
 #include "NfccTransportFactory.h"
+#include "NxpNfcExtension.h"
 #include "NxpNfcThreadMutex.h"
 #include "ObserveMode.h"
 #include "ReaderPollConfigParser.h"
@@ -48,8 +49,8 @@
 #include "phNxpNciHal_PowerTrackerIface.h"
 #include "phNxpNciHal_ULPDet.h"
 #include "phNxpNciHal_VendorProp.h"
-#include "phNxpNciHal_WorkerThread.h"
 #include "phNxpNciHal_WiredSeIface.h"
+#include "phNxpNciHal_WorkerThread.h"
 #include "phNxpNciHal_extOperations.h"
 
 using android::base::StringPrintf;
@@ -1116,9 +1117,10 @@ static void phNxpNciHal_read_complete(void* pContext,
     else if (status == NFCSTATUS_SUCCESS) {
       NFCSTATUS extStatus = phNxpExtn_HandleNciRspNtf(
           &nxpncihal_ctrl.rx_data_len, nxpncihal_ctrl.p_rx_data);
+
       NXPLOG_NCIHAL_D("extStatus = 0x%d", extStatus);
-      // Send the response to upper layer, if it is not handled by Nfc extension
-      // library
+      // Send the response to upper layer, if it is not handled by Nfc
+      // extension library
       if (NFCSTATUS_EXTN_FEATURE_SUCCESS != extStatus) {
         phNxpNciHal_client_data_callback();
       }
@@ -1370,7 +1372,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
       NXPLOG_NCIHAL_E("Failed to retrieve NFCC hard fault counter debug info");
     }
   }
-
+  phNxpNfcExtn_core_initialized();
   num = 0;
   if (GetNxpNumValue("NXP_I3C_MODE", &num, sizeof(num))) {
     if (num == 1) {
