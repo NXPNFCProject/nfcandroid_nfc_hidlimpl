@@ -64,6 +64,8 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     private TransitConfigHandler mTransitHandler;
     private NfcFirmwareInfo mFwHandler;
     private SrdHandler mSrdHandler;
+    private boolean mIsSrdMode = false;
+
 
     /**
      * @brief supported chipsets
@@ -476,7 +478,10 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
      * configuration.
      */
     public int activateSeInterface() throws IOException {
-        return mSrdHandler.activateSeInterface();
+        if (mIsSrdMode)
+            return mSrdHandler.activateSeInterface();
+        else
+            return 0xFF;
     }
     /**
      * This api is called by applications to Deactivate Secure Element Interface.
@@ -492,7 +497,12 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
      * configuration.
      */
     public int deactivateSeInterface() throws IOException {
-        return mSrdHandler.deactivateSeInterface();
+        if (mIsSrdMode) {
+            mIsSrdMode = false;
+            return mSrdHandler.deactivateSeInterface();
+        }
+        else
+            return 0xFF;
     }
 
     /**
@@ -503,11 +513,15 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
      * @param  mode
      *         LOW_POWER
      *         ULTRA_LOW_POWER
+     *         SRD MODE
      * @return None
      * @throws IOException If a failure occurred during stop discovery
     */
     public void stopPoll(int mode) throws IOException {
-       mSrdHandler.stopPoll(mode);
+        if (mode == 0x03) { //SRD Mode
+            mIsSrdMode = true;
+            mSrdHandler.stopPoll();
+        }
     }
 
     /**
