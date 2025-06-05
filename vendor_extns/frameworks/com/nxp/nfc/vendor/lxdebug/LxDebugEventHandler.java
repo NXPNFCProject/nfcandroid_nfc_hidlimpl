@@ -736,7 +736,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
         }
         /* As of now, bit0, bit4 and bit5 is allowed by this API */
         byte lxFieldValue = (byte) (fieldValue & L2_DEBUG_BYTE0_MASK);
-        byte[] cmdPayload = {0x01, (byte) 0xA1, 0x1D, 0x02, lxFieldValue, 0x00};
+        byte[] cmdPayload = {0x01, (byte) 0xA0, 0x1D, 0x02, lxFieldValue, 0x00};
         try {
             mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
             mNxpNciPacketHandler.shouldCheckResponseSubGid(false);
