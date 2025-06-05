@@ -37,6 +37,12 @@ public interface INxpNfcAdapter {
 
 
   /**
+   * @brief gets the NxpNfc Extensions interface
+   *
+   * @return NxpNfc Extensions interface
+   */
+  INxpNfcExtentions getNxpNfcExtentionsInterface();
+  /**
    * This is the first API to be called to start or stop the mPOS mode
    * <li>This api shall be called only Nfcservice is enabled.
    * <li>This api shall be called only when there are no NFC transactions

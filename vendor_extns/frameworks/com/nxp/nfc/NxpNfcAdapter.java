@@ -50,6 +50,12 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
      */
     private static NxpNfcAdapter sNxpNfcAdapter;
 
+    /**
+     * @brief Reflection variables for loading {@link NxpNfcExtentions}
+     */
+    private Class mNxpNfcExtentionsClass;
+    private Object mNxpNfcExtentionsObj;
+
     private NfcAdapter mNfcAdapter;
     private AutoCardHandler mAutoCardHandler;
     private MposHandler mMposHandler;
@@ -101,6 +107,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     private NxpNfcAdapter(NfcAdapter nfcAdapter, Context context) {
         printComNxpNfcVersion();
         mNfcAdapter = nfcAdapter;
+        getNxpNfcExtnAdapter();
         mAutoCardHandler = new AutoCardHandler(nfcAdapter);
         mMposHandler = new MposHandler(nfcAdapter);
         mQTagHandler = new QTagHandler(nfcAdapter);
@@ -108,6 +115,49 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
         mTransitHandler = new TransitConfigHandler(nfcAdapter);
         mFwHandler = new NfcFirmwareInfo(nfcAdapter);
         mSrdHandler = new SrdHandler(nfcAdapter, context);
+    }
+
+    /**
+     * @brief Creates the Instance of {@link NxpNfcExtentions}
+     * @param nfcAdapter
+     * @return None
+     */
+    private void getNxpNfcExtnAdapter() {
+      try {
+        mNxpNfcExtentionsClass = Class.forName("com.nxp.nfc.NxpNfcExtentions");
+        logExtentionsInterface();
+        Constructor<?> nxpNfcExtentionsCon =
+            mNxpNfcExtentionsClass.getDeclaredConstructor(NfcAdapter.class);
+        mNxpNfcExtentionsObj = nxpNfcExtentionsCon.newInstance(mNfcAdapter);
+      } catch (ClassNotFoundException | InstantiationException |
+               IllegalAccessException | IllegalArgumentException |
+               InvocationTargetException | NoSuchMethodException e) {
+        NxpNfcLogger.e(TAG, "Error in Instantiating NxpNfcExtentions! Msg: " +
+                                e.getLocalizedMessage());
+      }
+    }
+
+    /**
+     * @brief method to print {@link INxpNfcAdapter} declared methods
+     * @return None
+     */
+    private void logExtentionsInterface() {
+      Method[] methods = mNxpNfcExtentionsClass.getDeclaredMethods();
+      NxpNfcLogger.d(TAG, "Total methods:" + methods.length);
+      for (Method method : methods) {
+        NxpNfcLogger.d(TAG, "Method: " + method.getName());
+      }
+    }
+
+    /**
+     * @brief getter for accessing {@link INxpNfcExtras}
+     * @return {@link INxpNfcExtras} instance
+     */
+    @Override
+    public INxpNfcExtentions getNxpNfcExtentionsInterface() {
+      if (mNxpNfcExtentionsObj != null)
+        return ((INxpNfcExtentions) mNxpNfcExtentionsObj);
+      return null;
     }
 
     public interface NxpReaderCallback {
