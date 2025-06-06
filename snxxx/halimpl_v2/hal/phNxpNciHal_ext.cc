@@ -41,7 +41,6 @@
 #define NXP_EN_PN560 1
 #define NXP_EN_SN300U 1
 #define NXP_EN_SN330U 1
-#define NXP_NDEF_TAG_EMULATION_LOGICAL_CHANNEL 5
 #define NFC_NXP_MW_ANDROID_VER (16U)  /* Android version used by NFC MW */
 #define NFC_NXP_MW_VERSION_MAJ (0x06) /* MW Major Version */
 #define NFC_NXP_MW_VERSION_MIN (0x00) /* MW Minor Version */
@@ -552,15 +551,7 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
       NXPLOG_NCIHAL_D("CORE_INIT_RSP NCI2.0 and above received !");
       /* Remove NFC-DEP interface support from INIT RESP */
       RemoveNfcDepIntfFromInitResp(p_ntf, p_len);
-      /* If NDEF T4T is enabled, then change Max Logical Connections to 5
-      By default FW will return 0x01 but nfc_alloc_conn_cb will fail this way*/
-      uint8_t retlen = 0;
-      if (GetNxpNumValue(NAME_T4T_NFCEE_ENABLE, (void*)&retlen,
-                         sizeof(retlen))) {
-        if (retlen > 0 && *p_len > 8) {
-          p_ntf[8] = NXP_NDEF_TAG_EMULATION_LOGICAL_CHANNEL;
-        }
-      }
+      phNxpExtn_T4tUpdatePropParam(p_ntf, *p_len);
     } else {
       NXPLOG_NCIHAL_D("CORE_INIT_RSP NCI1.0 received !");
       if (!nxpncihal_ctrl.halStatus &&

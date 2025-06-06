@@ -1572,22 +1572,9 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
     }
 #endif
     config_access = true;
-    retlen = 0;
-    NXPLOG_NCIHAL_D("Performing ndef nfcee config settings");
-    uint8_t cmd_t4t_nfcee_cfg;
 
-    if (!GetNxpNumValue(NAME_T4T_NFCEE_ENABLE, (void*)&retlen,
-                        sizeof(retlen))) {
-      retlen = 0x00;
-      NXPLOG_NCIHAL_D(
-          "T4T_NFCEE_ENABLE not found. Taking default value : 0x%02lx", retlen);
-    }
-    cmd_t4t_nfcee_cfg = (uint8_t)retlen;
-    mEEPROM_info.buffer = &cmd_t4t_nfcee_cfg;
-    mEEPROM_info.bufflen = sizeof(cmd_t4t_nfcee_cfg);
-    mEEPROM_info.request_type = EEPROM_T4T_NFCEE_ENABLE;
-    mEEPROM_info.request_mode = SET_EEPROM_DATA;
-    request_EEPROM(&mEEPROM_info);
+    phNxpExtn_EnableT4t();
+
     if (IS_CHIP_TYPE_GE(sn100u)) {
       if (phNxpNciHal_configure_merge_sak() != NFCSTATUS_SUCCESS) {
         NXPLOG_NCIHAL_E("Applying iso_dep sak merge settings failed");
