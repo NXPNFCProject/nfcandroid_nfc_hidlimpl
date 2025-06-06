@@ -1627,10 +1627,18 @@ void RemoveNfcDepIntfFromInitResp(uint8_t* coreInitResp,
     supportedRfInterfaces =
         coreInitResp + indexOfSupportedRfIntf + 1 + NCI_HEADER_SIZE;
   }
+  if (*coreInitRespLen < indexOfSupportedRfIntf + 1 + NCI_HEADER_SIZE) {
+    NXPLOG_NCIHAL_E("%s: coreInitResp too short", __func__);
+    return;
+  }
   uint8_t* supportedRfInterfacesDetails = supportedRfInterfaces;
   /* Get the index of Supported RF Interface for NFC-DEP interface in CORE_INIT
    * Response*/
   for (int i = 0; i < noOfSupportedInterface; i++) {
+    if ((supportedRfInterfaces + 2) > (coreInitResp + *coreInitRespLen)) {
+      NXPLOG_NCIHAL_E("%s: Buffer overrun detected", __func__);
+      return;
+    }
     if (*supportedRfInterfaces == NCI_NFC_DEP_RF_INTF) {
       removeNfcDepRequired = true;
       break;
@@ -1647,6 +1655,11 @@ void RemoveNfcDepIntfFromInitResp(uint8_t* coreInitResp,
   } else {
     coreInitResp[16] = noOfSupportedInterface - 1;
     uint8_t noBytesToSkipForNfcDep = 2 + *(supportedRfInterfaces + 1);
+    if (rfInterfacesLength <
+        (supportedRfInterfaces - supportedRfInterfacesDetails) +
+            noBytesToSkipForNfcDep) {
+      return;
+    }
     memcpy(supportedRfInterfaces,
            supportedRfInterfaces + noBytesToSkipForNfcDep,
            (rfInterfacesLength -
