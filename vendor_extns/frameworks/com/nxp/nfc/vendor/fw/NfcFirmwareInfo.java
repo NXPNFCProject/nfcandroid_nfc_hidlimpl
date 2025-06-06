@@ -31,7 +31,7 @@ public class NfcFirmwareInfo {
   private final NxpNciPacketHandler mNxpNciPacketHandler;
 
   private static final String TAG = "NfcFirmwareInfo";
-  public static final int GET_FW_VERSION = 0x9F;
+  public static final int GET_FW_VERSION = 0x6F;
 
   public NfcFirmwareInfo(NfcAdapter nfcAdapter) {
       this.mNfcAdapter = nfcAdapter;
