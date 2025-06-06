@@ -50,9 +50,6 @@
 
 #define NCI_MAX_DATA_LEN 300
 
-#define GET_EEPROM_DATA (1U)
-#define SET_EEPROM_DATA (2U)
-
 #define BITWISE (1U)
 #define BYTEWISE (2U)
 
