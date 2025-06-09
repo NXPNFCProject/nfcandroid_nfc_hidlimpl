@@ -267,22 +267,28 @@ public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
        NxpNfcLogger.d(TAG, "startPoll");
        mNfcOperations.enableDiscovery();
     }
+
+    private void resetSRD() {
+        mSRDStarted(false);
+        mNfcOperations.unregisterNxpOemCallback();
+    }
+
     @Override
     public boolean onDisableRequested() {
         NxpNfcLogger.d(TAG, "onDisableRequested: ");
-        try {
-            stopSrd();
-            mNfcOperations.setControllerAlwaysOn(false);
-        } catch(IOException e) {
-            NxpNfcLogger.e(TAG, "Exception in onDisableRequested");
-        }
+        resetSRD();
         return true;
     }
 
     @Override
     public void onEnableFinished(int status) {
         NxpNfcLogger.d(TAG, "onEnableFinished: ");
-        isSrdEnabled = false;
-        mNfcOperations.unregisterNxpOemCallback();
+        resetSRD();
+    }
+
+    @Override
+    public void onBootFinished(int status) {
+        NxpNfcLogger.d(TAG, "onBootFinished: ");
+        resetSRD();
     }
 }

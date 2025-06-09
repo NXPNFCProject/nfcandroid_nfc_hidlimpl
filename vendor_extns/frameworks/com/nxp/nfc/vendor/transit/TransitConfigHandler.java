@@ -176,7 +176,7 @@ public class TransitConfigHandler implements INxpNfcNtfHandler {
       NxpNfcLogger.e(TAG, "Exception in sendVendorNciMessage");
       throw new IOException("Error sending VendorNciMessage", e);
     } finally {
-      if (vendorRsp != null && vendorRsp.length > 0 &&
+      if (vendorRsp != null && vendorRsp.length > 1 &&
           vendorRsp[1] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
         if(resetStatus == TRANSIT_CONFIG_REQUIRE_NFC_RESET) {
           try {

@@ -318,6 +318,8 @@ public class NfcOperations {
 
         @Override
         public void onBootFinished(int status){
+            NxpNfcLogger.d(TAG, "onBootFinished :");
+            new BootFinishedTask().execute(status);
         }
 
         @Override
@@ -476,22 +478,39 @@ public class NfcOperations {
         @Override
         protected Void doInBackground(Integer... params) {
             NxpNfcLogger.d(TAG, "doInBackground");
-            if (isListenDisabled()) {
-                NxpNfcLogger.d(TAG, "Enable Listen Tech : ");
-                setDiscoveryTechnology(NfcAdapter.FLAG_READER_KEEP | FLAG_USE_ALL_TECH,
-                        NfcAdapter.FLAG_LISTEN_KEEP | FLAG_USE_ALL_TECH);
-            }
-            if (isPollingPaused() && mNfcOemExtension != null) {
-                NxpNfcLogger.d(TAG, "resume discovery :");
-                mNfcOemExtension.resumePolling();
-                synchronized (NfcOperations.this) {
-                    mIsPollingPaused = false;
-                }
-            }
+            handleDiscoveryParams();
             if (mNxpOemCallbacks != null) {
                 mNxpOemCallbacks.onEnableFinished(params[0]);
             }
             return null;
+        }
+    }
+
+    private class BootFinishedTask extends AsyncTask<Integer, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Integer... params) {
+            NxpNfcLogger.d(TAG, "doInBackground");
+            handleDiscoveryParams();
+            if (mNxpOemCallbacks != null) {
+                mNxpOemCallbacks.onBootFinished(params[0]);
+            }
+            return null;
+        }
+    }
+
+    private void handleDiscoveryParams() {
+        if (isListenDisabled()) {
+            NxpNfcLogger.d(TAG, "Enable Listen Tech : ");
+            setDiscoveryTechnology(NfcAdapter.FLAG_READER_KEEP | FLAG_USE_ALL_TECH,
+                    NfcAdapter.FLAG_LISTEN_KEEP | FLAG_USE_ALL_TECH);
+        }
+        if (isPollingPaused() && mNfcOemExtension != null) {
+            NxpNfcLogger.d(TAG, "resume discovery :");
+            mNfcOemExtension.resumePolling();
+            synchronized (NfcOperations.this) {
+                mIsPollingPaused = false;
+            }
         }
     }
 }

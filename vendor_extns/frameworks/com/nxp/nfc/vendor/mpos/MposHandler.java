@@ -22,6 +22,7 @@ package com.nxp.nfc.vendor.mpos;
 
 import android.nfc.NfcAdapter;
 import com.nxp.nfc.INxpNfcNtfHandler;
+import com.nxp.nfc.INxpOEMCallbacks;
 import com.nxp.nfc.NxpNfcConstants;
 import com.nxp.nfc.NxpNfcLogger;
 import com.nxp.nfc.core.NfcOperations;
@@ -33,7 +34,7 @@ import java.util.concurrent.Executors;
  * This class is responsible to start/stop the mPos reader and
  * handles the mPos action notfications
  */
-public class MposHandler implements INxpNfcNtfHandler {
+public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
 
   private static final String TAG = "MposHandler";
 
@@ -239,10 +240,15 @@ public class MposHandler implements INxpNfcNtfHandler {
       if (vendorRsp != null && vendorRsp.length > 0 &&
           vendorRsp[1] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
         synchronized (mposStateSync) {
-          if (enable)
-            mposState = MposState.MPOS_START_INPROGRESS;
-          else
-            mposState = MposState.MPOS_STOP_INPROGRESS;
+            if (enable) {
+                mNfcOperations.registerNxpOemCallback(this);
+                mposState = MposState.MPOS_START_INPROGRESS;
+
+            }
+            else {
+                mNfcOperations.unregisterNxpOemCallback();
+                mposState = MposState.MPOS_STOP_INPROGRESS;
+            }
         }
         return MPOS_STATUS_SUCCESS;
       } else {
@@ -262,5 +268,31 @@ public class MposHandler implements INxpNfcNtfHandler {
       e.printStackTrace();
       throw new IOException("RemoteException in mPOSGetReaderMode (int state)");
     }
+  }
+
+  private void resetMPOS() {
+      NxpNfcLogger.d(TAG, "reset MPOS");
+      mPOSStarted(false);
+      mposState = MposState.MPOS_IDLE;
+      mNfcOperations.unregisterNxpOemCallback();
+  }
+
+  @Override
+  public boolean onDisableRequested() {
+      NxpNfcLogger.d(TAG, "onDisableRequested: ");
+      resetMPOS();
+      return true;
+  }
+
+  @Override
+  public void onEnableFinished(int status) {
+      NxpNfcLogger.d(TAG, "onEnableFinished: ");
+      resetMPOS();
+  }
+
+  @Override
+  public void onBootFinished(int status) {
+      NxpNfcLogger.d(TAG, "onBootFinished: ");
+      resetMPOS();
   }
 }

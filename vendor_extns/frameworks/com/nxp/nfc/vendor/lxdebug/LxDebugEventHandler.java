@@ -138,6 +138,23 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
     @Override
     public boolean onDisableRequested() {
         NxpNfcLogger.d(TAG, "onDisableRequested: ");
+        stopFieldDetectIfStarted();
+        return true;
+    }
+
+    @Override
+    public void onEnableFinished(int status){
+        NxpNfcLogger.d(TAG, "onEnableFinished: ");
+        stopFieldDetectIfStarted();
+    }
+
+    @Override
+    public void onBootFinished(int status) {
+        NxpNfcLogger.d(TAG, "onBootFinished: ");
+        stopFieldDetectIfStarted();
+    }
+
+    private void stopFieldDetectIfStarted() {
         if (mIsEFDMStarted || isFieldDetectStarted()) {
             stopEFDMTimer();
             if (setFieldDetectFlag(false) != STATUS_SUCCESS) {
@@ -145,16 +162,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             }
             mIsEFDMStarted = false;
         }
-        return true;
-    }
-
-    @Override
-    public void onEnableFinished(int status){
-        NxpNfcLogger.d(TAG, "onEnableFinished: ");
-        if (!mIsNFCCStandByConfig) {
-            /*Need to remove when stand by issues fixed*/
-            enableNFCCStandByConfig(true);
-        }
+        mNfcOperations.unregisterNxpOemCallback();
     }
 
     /**
@@ -469,6 +477,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             NxpNfcLogger.e(TAG, "Failed to start discovery");
             status = STATUS_FAILED;
         }
+        mNfcOperations.unregisterNxpOemCallback();
         return status;
     }
 
@@ -505,6 +514,13 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             NxpNfcLogger.e(TAG, "Not able to stop discovery");
             return status;
         }
+
+        if (mode) {
+            mNfcOperations.registerNxpOemCallback(this);
+        } else {
+            mNfcOperations.unregisterNxpOemCallback();
+        }
+
         if (setFieldDetectFlag(mode) == STATUS_SUCCESS) {
             status = STATUS_SUCCESS;
         }
@@ -596,6 +612,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
         if (isRssiEnabled()) {
             return STATUS_SUCCESS;
         }
+        mNfcOperations.registerNxpOemCallback(this);
         if (mNfcOperations.isDiscoveryStarted()) {
             mNfcOperations.disableDiscovery();
         }
@@ -661,6 +678,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             NxpNfcLogger.e(TAG, "Not able to start discovery");
             status = ERROR_UNKNOWN;
         }
+        mNfcOperations.unregisterNxpOemCallback();
         return status;
     }
 
