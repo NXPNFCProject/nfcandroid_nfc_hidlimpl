@@ -1991,6 +1991,8 @@ int phNxpNciHal_close(bool bShutdown) {
 
   phNxpNciHal_deinitializeRegRfFwDnld();
   NfcHalAutoThreadMutex a(sHalFnLock);
+  phNxpNciHal_WiredSeDispatchEvent(gWiredSeHandle, NFC_STATE_CHANGE,
+                                   createWiredSeEvtData(NfcState::NFC_OFF));
   CONCURRENCY_LOCK();
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
     NXPLOG_NCIHAL_D("phNxpNciHal_close is already closed, ignoring close");
@@ -2002,8 +2004,6 @@ int phNxpNciHal_close(bool bShutdown) {
   if (gPowerTrackerHandle.stop != NULL) {
     gPowerTrackerHandle.stop();
   }
-  phNxpNciHal_WiredSeDispatchEvent(gWiredSeHandle, NFC_STATE_CHANGE,
-                                   createWiredSeEvtData(NfcState::NFC_OFF));
   if (IS_CHIP_TYPE_L(sn100u)) {
     if (!(GetNxpNumValue(NAME_NXP_UICC_LISTEN_TECH_MASK, &uiccListenMask,
                          sizeof(uiccListenMask)))) {
