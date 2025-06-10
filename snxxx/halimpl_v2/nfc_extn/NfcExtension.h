@@ -68,7 +68,7 @@ typedef union {
   NciData_t nci_rsp_ntf;
   uint8_t write_status;
   uint8_t hal_state;
-  NfcRfState_t rf_state;
+  uint8_t rf_state;
   uint8_t hal_event;
   uint8_t hal_event_status;
 } NfcExtEventData_t;
@@ -83,7 +83,7 @@ typedef enum {
   HANDLE_WRITE_COMPLETE_STATUS,
   HANDLE_HAL_CONTROL_GRANTED,
   HANDLE_NFC_HAL_STATE_UPDATE,
-  HANDLE_RF_HAL_STATE_GET,
+  HANDLE_RF_HAL_STATE_UPDATE, /* This is used to get the RF state */
   HANDLE_HAL_EVENT,
   HANDLE_FW_DNLD_STATUS_UPDATE,
   HANDLE_DOWNLOAD_FIRMWARE_REQUEST,

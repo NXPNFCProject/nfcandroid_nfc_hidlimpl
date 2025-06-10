@@ -202,9 +202,9 @@ void phNxpExtn_FwDnldStatusUpdate(uint8_t status) {
 NfcRfState_t phNxpExtn_NfcGetRfState() {
   NXPLOG_NCIHAL_D("%s Enter", __func__);
   if (fp_extn_handle_nfc_event != NULL) {
-    fp_extn_handle_nfc_event(HANDLE_RF_HAL_STATE_GET, &nfc_ext_event_data);
+    fp_extn_handle_nfc_event(HANDLE_RF_HAL_STATE_UPDATE, &nfc_ext_event_data);
   }
-  return nfc_ext_event_data.rf_state;
+  return (NfcRfState_t)nfc_ext_event_data.rf_state;
 }
 
 void phNxpExtn_NfcHalStateUpdate(uint8_t state) {
