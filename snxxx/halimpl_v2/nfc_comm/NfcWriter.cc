@@ -206,22 +206,38 @@ clean_and_return:
  ******************************************************************************/
 int NfcWriter::write_unlocked(uint16_t data_len, const uint8_t* p_data,
                               int origin) {
+  write_unlocked_status = NFCSTATUS_FAILED;
+  /* check for write synchronyztion */
+  if (this->check_ncicmd_write_window(data_len, (uint8_t*)p_data) !=
+      NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_D("NfcWriter::write_unlocked  CMD window  check failed");
+    return 0;
+  }
+  return write_window_checked_unlocked(data_len, p_data, origin);
+}
+
+/******************************************************************************
+ * Function         write_window_checked_unlocked
+ *
+ * Description      Same as write_unlocked but without waiting for  command
+ *                  window. It will be used whenever write is to be invoked
+ *                  in HAL worker thread context to avoid blocking HAL worker
+ *                  thread for command window on which previous responses
+ *                  also needs to be processed.
+ *
+ * Returns          It returns number of bytes successfully written to NFCC.
+ *
+ ******************************************************************************/
+int NfcWriter::write_window_checked_unlocked(uint16_t data_len,
+                                             const uint8_t* p_data,
+                                             int origin) {
   NFCSTATUS status = NFCSTATUS_INVALID_PARAMETER;
   phNxpNciHal_Sem_t cb_data;
   nxpncihal_ctrl.retry_cnt = 0;
   int sem_val = 0;
   write_unlocked_status = NFCSTATUS_FAILED;
 
-  /* check for write synchronyztion */
-  if (this->check_ncicmd_write_window(data_len, (uint8_t*)p_data) !=
-      NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_D("NfcWriter::write_unlocked  CMD window  check failed");
-    data_len = 0;
-    goto clean_and_return;
-  }
-
   if (origin == ORIG_NXPHAL) HAL_ENABLE_EXT();
-
   do {
     if (!phNxpTempMgr::GetInstance().IsICTempOk()) {
       phNxpTempMgr::GetInstance().Wait();
