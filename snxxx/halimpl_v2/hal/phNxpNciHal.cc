@@ -1029,6 +1029,11 @@ int phNxpNciHal_write_internal(uint16_t data_len, const uint8_t* p_data) {
  ******************************************************************************/
 int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t* p_data,
                                int origin) {
+  // For EXTNS library command window check is done before
+  // enque packet. Hence should not do window check again.
+  if (origin == ORIG_EXTNS) {
+    return nfcData.write_window_checked_unlocked(data_len, p_data, origin);
+  }
   return nfcData.write_unlocked(data_len, p_data, origin);
 }
 /******************************************************************************
