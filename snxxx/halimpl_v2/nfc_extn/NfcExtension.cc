@@ -18,6 +18,7 @@
 #include <dlfcn.h>
 #include <phNxpLog.h>
 #include <phNxpNciHal.h>
+#include "NfcWriter.h"
 #include "NxpNfcExtension.h"
 #include "NxpNfcThreadMutex.h"
 
@@ -236,6 +237,13 @@ NFCSTATUS phNxpHal_EnqueueWrite(uint8_t* pBuffer, uint16_t wLength) {
   nciMsgDeferredData.tMsg.pMsgData = &nciMsgDeferredData.tDeferredInfo;
   nciMsgDeferredData.tMsg.Size = sizeof(nciMsgDeferredData.tDeferredInfo);
   nciMsgDeferredData.tMsg.eMsgType = NCI_HAL_TML_WRITE_MSG;
+  // Check command window availability before enque packet
+  // to free hal worker thread from blocking for command window
+  if (NfcWriter::getInstance().check_ncicmd_write_window(wLength, pBuffer) !=
+      NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("%s  CMD window  check failed", __func__);
+    return NFCSTATUS_FAILED;
+  }
   phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId,
                         &nciMsgDeferredData.tMsg);
   return NFCSTATUS_SUCCESS;
