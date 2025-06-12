@@ -15,17 +15,29 @@
  */
 
 #include "phNxpNTag.h"
+#include "phNxpAutoCard.h"
 #include "NxpNfcExtension.h"
 #include <phNxpLog.h>
 
+void phNxpNfcExtn_deInit() { AutoCard::finalize(); }
+
 NFCSTATUS phNxpNfcExtn_HandleNciMsg(uint16_t* dataLen, const uint8_t* pData) {
   NXPLOG_NCIHAL_D("%s Enter dataLen:%d", __func__, *dataLen);
+
+  if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
+      AutoCard::getInstance()->processAutoCardNciMsg(*dataLen, (uint8_t*)pData))
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+
   return NxpNTagInstance.phNxpNciHal_HandleNtagCmd(*dataLen, (uint8_t*)pData);
 }
 
 NFCSTATUS phNxpNfcExtn_HandleNciRspNtf(uint16_t* dataLen,
                                        const uint8_t* pData) {
   NXPLOG_NCIHAL_D("%s Enter dataLen:%d", __func__, *dataLen);
+  if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
+      AutoCard::getInstance()->processAutoCardNciRspNtf(*dataLen,
+                                                        (uint8_t*)pData))
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 
   return NxpNTagInstance.phNxpNciHal_HandleNtagRspNtf(*dataLen,
                                                       (uint8_t*)pData);

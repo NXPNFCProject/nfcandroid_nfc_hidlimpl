@@ -19,6 +19,14 @@
 #include "phNfcStatus.h"
 
 /**
+ * @brief De init the extension library
+ *        and resets all it's states
+ * @return none.
+ *
+ */
+void phNxpNfcExtn_deInit();
+
+/**
  * @brief sends the NCI packet to handle extension feature
  * @param  dataLen length of the NCI packet
  * @param  pData data buffer pointer
