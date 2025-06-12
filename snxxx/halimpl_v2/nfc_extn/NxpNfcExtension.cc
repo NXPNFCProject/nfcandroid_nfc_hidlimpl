@@ -19,7 +19,10 @@
 #include "NxpNfcExtension.h"
 #include <phNxpLog.h>
 
-void phNxpNfcExtn_deInit() { AutoCard::finalize(); }
+void phNxpNfcExtn_deInit() {
+  AutoCard::finalize();
+  NxpNTag::finalize();
+}
 
 NFCSTATUS phNxpNfcExtn_HandleNciMsg(uint16_t* dataLen, const uint8_t* pData) {
   NXPLOG_NCIHAL_D("%s Enter dataLen:%d", __func__, *dataLen);
@@ -28,7 +31,8 @@ NFCSTATUS phNxpNfcExtn_HandleNciMsg(uint16_t* dataLen, const uint8_t* pData) {
       AutoCard::getInstance()->processAutoCardNciMsg(*dataLen, (uint8_t*)pData))
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 
-  return NxpNTagInstance.phNxpNciHal_HandleNtagCmd(*dataLen, (uint8_t*)pData);
+  return NxpNTag::getInstance()->handleVendorNciMessage(*dataLen,
+                                                        (uint8_t*)pData);
 }
 
 NFCSTATUS phNxpNfcExtn_HandleNciRspNtf(uint16_t* dataLen,
@@ -39,10 +43,10 @@ NFCSTATUS phNxpNfcExtn_HandleNciRspNtf(uint16_t* dataLen,
                                                         (uint8_t*)pData))
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 
-  return NxpNTagInstance.phNxpNciHal_HandleNtagRspNtf(*dataLen,
-                                                      (uint8_t*)pData);
+  return NxpNTag::getInstance()->handleVendorNciRspNtf(*dataLen,
+                                                       (uint8_t*)pData);
 }
 
 void phNxpNfcExtn_core_initialized() {
-  NxpNTagInstance.phNxpNciHal_disableNtagNtfConfig();
+  NxpNTag::getInstance()->phNxpNciHal_disableNtagNtfConfig();
 }
