@@ -111,6 +111,7 @@ void phNxpExtn_LibClose() {
           __func__, vendor_nfc_de_init_name.c_str());
     }
   }
+  phNxpNfcExtn_deInit();
   if (p_oem_extn_handle != NULL) {
     NXPLOG_NCIHAL_D("%s Closing libnfc_vendor_extn.so lib", __func__);
     int32_t status = dlclose(p_oem_extn_handle);
