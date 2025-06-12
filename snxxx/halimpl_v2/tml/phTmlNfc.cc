@@ -18,7 +18,6 @@
  * TML Implementation.
  */
 
-#include <hardware_legacy/power.h>
 #include <phDal4Nfc_messageQueueLib.h>
 #include <phNxpConfig.h>
 #include <phNxpLog.h>
@@ -41,7 +40,6 @@
 /* Indicates a Initial or offset value */
 #define PH_TMLNFC_VALUE_ONE (0x01)
 
-constexpr const char kChannelWakelockName[] = "nxp_nfc_write_channel";
 spTransport gpTransportObj;
 extern bool_t gsIsFirstHalMinOpen;
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
@@ -442,8 +440,6 @@ NFCSTATUS phTmlNfc_Write(uint8_t* pBuffer, uint16_t wLength) {
   if (NULL != gpphTmlNfc_Context) {
     if ((NULL != gpphTmlNfc_Context->pDevHandle) && (NULL != pBuffer) &&
         (PH_TMLNFC_RESET_VALUE != wLength)) {
-      /* Acquire wake lock */
-      acquire_wake_lock(PARTIAL_WAKE_LOCK, kChannelWakelockName);
       NXPLOG_TML_D("NFCC - Write requested.....\n");
       do {
         /* Variable to fetch the actual number of bytes written */
@@ -478,8 +474,6 @@ NFCSTATUS phTmlNfc_Write(uint8_t* pBuffer, uint16_t wLength) {
           break;
         }
       } while (true);
-      /* release wake lock */
-      release_wake_lock(kChannelWakelockName);
     } else {
       wStatus = PHNFCSTVAL(CID_NFC_TML, NFCSTATUS_INVALID_PARAMETER);
     }
