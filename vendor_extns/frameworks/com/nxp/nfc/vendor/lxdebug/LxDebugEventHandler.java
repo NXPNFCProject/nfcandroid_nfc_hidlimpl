@@ -58,8 +58,6 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
 
     private boolean mIsEFDMStarted = false;
     private boolean mIsFirstRFFieldOn = false;
-    /*Need to remove when stand by issues fixed*/
-    private boolean mIsNFCCStandByConfig = true;
     private int mDetectionTimeout = 0;
     private Timer mEFDStopTimer;
 
@@ -184,25 +182,6 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
         mLxDebugCallbacks = null;
     }
 
-    /*Need to remove when stand by issues fixed*/
-    private void enableNFCCStandByConfig(boolean value) {
-        mIsNFCCStandByConfig = value;
-        byte[] cmdPayload = {(byte) ((value == true) ? 0x01 : 0x00)};
-        try {
-            mNxpNciPacketHandler.shouldCheckResponseSubGid(false);
-            byte[] vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(0x2F,
-                    0x00, cmdPayload);
-            mNxpNciPacketHandler.shouldCheckResponseSubGid(true);
-            if (vendorRsp != null && vendorRsp.length > 0
-                    && vendorRsp[0] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
-                NxpNfcLogger.d(TAG, "NFCC Standby Mode command success");
-            }
-        } catch (Exception e) {
-            NxpNfcLogger.d(TAG, "Exception in sendVendorNciMessage ");
-            e.printStackTrace();
-        }
-    }
-
     private void startEFDMTimer() {
         NxpNfcLogger.d(TAG, "Entry startEFDMTimer");
         if (!mIsEFDMStarted) {
@@ -222,8 +201,6 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             if (mIsEFDMStarted) {
                 if (mNfcOperations.isDiscoveryStarted()) {
                     mNfcOperations.disableDiscovery();
-                    /*Need to remove when stand by issues fixed*/
-                    enableNFCCStandByConfig(false);
                 }
                 if (mLxDebugCallbacks != null) {
                     mLxDebugCallbacks.onEFDMTimedout();
@@ -390,10 +367,6 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             NxpNfcLogger.e(TAG, "Failed to start discovery");
             status = STATUS_FAILED;
         }
-        /*Need to remove when stand by issues fixed*/
-        if (!mIsNFCCStandByConfig) {
-            enableNFCCStandByConfig(true);
-        }
         return status;
     }
 
@@ -419,8 +392,6 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
         }
         if (mNfcOperations.isDiscoveryStarted()) {
             mNfcOperations.disableDiscovery();
-            /*Need to remove when stand by issues fixed*/
-            enableNFCCStandByConfig(false);
         }
         /* check if discovery stopped */
         if (mNfcOperations.isDiscoveryStarted()) {
@@ -469,9 +440,6 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
         }
         mIsEFDMStarted = false;
         mNfcOperations.enableDiscovery();
-        if (!mIsNFCCStandByConfig) {
-            enableNFCCStandByConfig(true);
-        }
         /* check if discovery started */
         if (!mNfcOperations.isDiscoveryStarted()) {
             NxpNfcLogger.e(TAG, "Failed to start discovery");
