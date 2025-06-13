@@ -48,9 +48,9 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
 
     private static final String TAG = "LxDebugEventHandler";
 
-    public static final byte FIELD_DETECT_MODE_SET_SUB_GID_OID = (byte) 0x7F;
-    public static final byte IS_FIELD_DETECT_ENABLED_SUB_GID_OID = (byte) 0x7E;
-    public static final byte IS_FIELD_DETECT_MODE_STARTED_SUB_GID_OID = (byte) 0x7D;
+    public static final byte FIELD_DETECT_MODE_SET_SUB_GID_OID = (byte) 0x10;
+    public static final byte IS_FIELD_DETECT_ENABLED_SUB_GID_OID = (byte) 0x11;
+    public static final byte IS_FIELD_DETECT_MODE_STARTED_SUB_GID_OID = (byte) 0x12;
 
     public static final byte MODE_ENABLE = 0x01;
     public static final byte MODE_DISABLE = 0x00;
