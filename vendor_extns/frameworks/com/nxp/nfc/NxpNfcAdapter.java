@@ -26,6 +26,7 @@ import com.nxp.nfc.vendor.lxdebug.ILxDebugCallbacks;
 import com.nxp.nfc.vendor.lxdebug.LxDebugEventHandler;
 import com.nxp.nfc.vendor.srd.ISrdCallbacks;
 import com.nxp.nfc.vendor.srd.SrdHandler;
+import com.nxp.nfc.vendor.utils.UtilsHandler;
 import com.nxp.nfc.vendor.autoCard.AutoCardHandler;
 import com.nxp.nfc.vendor.mpos.MposHandler;
 import com.nxp.nfc.vendor.qtag.QTagHandler;
@@ -64,6 +65,8 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     private TransitConfigHandler mTransitHandler;
     private NfcFirmwareInfo mFwHandler;
     private SrdHandler mSrdHandler;
+    private UtilsHandler mUtilsHandler;
+
     private boolean mIsSrdMode = false;
 
 
@@ -117,6 +120,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
         mTransitHandler = new TransitConfigHandler(nfcAdapter);
         mFwHandler = new NfcFirmwareInfo(nfcAdapter);
         mSrdHandler = new SrdHandler(nfcAdapter, context);
+        mUtilsHandler = new UtilsHandler(nfcAdapter, context);
     }
 
     /**
@@ -478,10 +482,11 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
      * configuration.
      */
     public int activateSeInterface() throws IOException {
-        if (mIsSrdMode)
+        if (mIsSrdMode) {
             return mSrdHandler.activateSeInterface();
-        else
-            return 0xFF;
+        } else {
+            return mUtilsHandler.activateSeInterface();
+        }
     }
     /**
      * This api is called by applications to Deactivate Secure Element Interface.
@@ -500,9 +505,9 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
         if (mIsSrdMode) {
             mIsSrdMode = false;
             return mSrdHandler.deactivateSeInterface();
+        } else {
+            return mUtilsHandler.deactivateSeInterface();
         }
-        else
-            return 0xFF;
     }
 
     /**
@@ -521,6 +526,8 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
         if (mode == 0x03) { //SRD Mode
             mIsSrdMode = true;
             mSrdHandler.stopPoll();
+        } else {
+            mUtilsHandler.stopPoll();
         }
     }
 
@@ -533,6 +540,10 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
      * @throws IOException If a failure occurred during start discovery
     */
     public void startPoll() throws IOException {
-       mSrdHandler.startPoll();
+        if (mIsSrdMode) {
+            mSrdHandler.startPoll();
+        } else {
+            mUtilsHandler.startPoll();
+        }
     }
 }
