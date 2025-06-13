@@ -35,6 +35,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.Map;
 
 /**
  * @class NfcOperations
@@ -260,6 +261,15 @@ public class NfcOperations {
      */
     public void unregisterNxpOemCallback() {
         mNxpOemCallbacks = null;
+    }
+
+    /**
+     * @brief API to get the list  of all activated secure elements
+     * @return map of active secure element SE name as key
+     *         and secure element id as value.
+     */
+    public Map<String, Integer> getActiveEEList() {
+        return mNfcOemExtension.getActiveNfceeList();
     }
 
     private NfcOemExtension.Callback mOemExtensionCallback = new NfcOemExtension.Callback() {
