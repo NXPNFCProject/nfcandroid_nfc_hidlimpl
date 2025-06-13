@@ -41,7 +41,7 @@ public class TransitConfigHandler implements INxpNfcNtfHandler {
   public static final int TRANSIT_CONFIG_REQUIRE_NFC_RESET = 0x01;
   public static final int TRANSIT_CONFIG_REQUIRE_RF_RESET = 0x02;
   public static final int TRANSIT_SETCONFIG_STAT_FAILED  = 0xFF;
-  public static final int TRANSIT_CONFIG_SUB_GID = 0xC0;
+  public static final int TRANSIT_CONFIG_SUB_GID = 0x70;
   public static final int TRANSIT_CONFIG_SUB_OID = 0x01;
   public static final int RF_REGISTER_SUB_OID = 0x02;
   private static final String TAG = "TransitConfigHandler";
