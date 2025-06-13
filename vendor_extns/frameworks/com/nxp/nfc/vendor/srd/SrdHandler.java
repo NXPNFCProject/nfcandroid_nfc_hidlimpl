@@ -41,20 +41,17 @@ import java.io.IOException;
 */
 public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
 
-    public static final byte SRD_MODE_NTF_SUB_GID_OID = (byte) 0xBE;
+    public static final byte SRD_MODE_NTF_SUB_GID_OID = (byte) 0x23;
     /**
      * srd mode status
      */
 
-    public static final int SRD_START_RF_DISCOVERY = 0xFF;
-    public static final int SRD_START_DEFAULT_RF_DISCOVERY = 0xFE;
-    public static final int SRD_EVT_TIMEOUT = 0xFD;
-    public static final int SRD_FEATURE_SUPPORTED = 0xFC;
-    public static final int SRD_FEATURE_NOT_SUPPORTED = 0xFB;
-    public static final int SRD_INIT_MODE = 0xBF;
-    public static final int ACTIVE_SE = 0xBE;
-    public static final int DEACTIVE_SE = 0xBD;
-    public static final int SRD_DISABLE_MODE = 0xBC;
+    public static final int SRD_MODE_NTF_START_SRD_DISCOVERY = 0x00;
+    public static final int SRD_MODE_NTF_SRD_TIMED_OUT = 0x01;
+    public static final int SRD_MODE_NTF_SRD_FEATURE_NOT_SUPPORTED = 0x02;
+    public static final int SRD_INIT_MODE = 0x20;
+    public static final int ACTIVE_SE = 0x21;
+    public static final int DEACTIVE_SE = 0x22;
 
     public static final int STATUS_SUCCESS = 0x00;
     public static final int STATUS_FAILED = 0x03;
@@ -106,10 +103,10 @@ public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
         int ntfType = Byte.toUnsignedInt(notificationType);
         NxpNfcLogger.d(TAG, "ntfType:" + ntfType);
         switch (ntfType) {
-            case SRD_START_RF_DISCOVERY:
+            case SRD_MODE_NTF_START_SRD_DISCOVERY:
                 NxpNfcLogger.d(TAG, "ACTION_NFC_SRD_START_RF_DISCOVERY");
                 break;
-            case SRD_EVT_TIMEOUT:
+            case SRD_MODE_NTF_SRD_TIMED_OUT:
                 NxpNfcLogger.d(TAG, "SRD_EVT_TIMEOUT");
                 isSrdEnabled = false;
                 if (mSrdCallbacks != null) {
@@ -125,20 +122,7 @@ public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
                 }
                 mNfcOperations.unregisterNxpOemCallback();
                 break;
-            case SRD_START_DEFAULT_RF_DISCOVERY:
-                NxpNfcLogger.d(TAG, "ACTION_NFC_SRD_START_DEFAULT_RF_DISCOVERY");
-                isSrdEnabled = false;
-                mNfcOperations.unregisterNxpOemCallback();
-                break;
-            case SRD_FEATURE_SUPPORTED:
-                if (mSrdCallbacks != null) {
-                    NxpNfcLogger.d(TAG, "Sending SRD_FEATURE_SUPPORTED Callabck to Application");
-                    mSrdCallbacks.onSrdFeatureSupport(true);
-                } else {
-                    NxpNfcLogger.e(TAG, "No callback registered for SRD");
-                }
-                break;
-            case SRD_FEATURE_NOT_SUPPORTED:
+            case SRD_MODE_NTF_SRD_FEATURE_NOT_SUPPORTED:
                 if (mSrdCallbacks != null) {
                     NxpNfcLogger.d(TAG, "Sending SRD_FEATURE_NOT_SUPPORTED Callabck to Application");
                     mSrdCallbacks.onSrdFeatureSupport(false);
@@ -216,19 +200,6 @@ public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
 
     }
 
-    public int stopSrd() throws IOException {
-        NxpNfcLogger.d(TAG, "stopSrd");
-        byte[] prop_stop_cmd = new byte[2];
-        prop_stop_cmd[0] = (byte) SRD_DISABLE_MODE;
-        prop_stop_cmd[1] = 0x01;
-        NxpNfcLogger.d(TAG, "Sending VendorNciMessage to stop SRD");
-        int srdStartStatus = sendSrdVendorNciMessage(prop_stop_cmd);
-        NxpNfcLogger.d(TAG, "srdStartStatus:" + srdStartStatus);
-        if (srdStartStatus == INxpNfcAdapter.SRD_STATUS_FAILED) {
-            return STATUS_FAILED;
-        }
-        return STATUS_SUCCESS;
-    }
 
     public int deactivateSeInterface() throws IOException {
         NxpNfcLogger.d(TAG, "deactivateSeInterface");
