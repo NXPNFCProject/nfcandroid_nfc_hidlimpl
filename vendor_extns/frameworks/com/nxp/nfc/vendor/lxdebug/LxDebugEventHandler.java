@@ -51,6 +51,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
     public static final byte FIELD_DETECT_MODE_SET_SUB_GID_OID = (byte) 0x10;
     public static final byte IS_FIELD_DETECT_ENABLED_SUB_GID_OID = (byte) 0x11;
     public static final byte IS_FIELD_DETECT_MODE_STARTED_SUB_GID_OID = (byte) 0x12;
+    public static final byte FIELD_DETECT_SET_FLAG_SUB_GID_OID = (byte) 0x01;
 
     public static final byte MODE_ENABLE = 0x01;
     public static final byte MODE_DISABLE = 0x00;
@@ -229,9 +230,21 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
         }
 
         mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
-        byte[] cmd = {FIELD_DETECT_MODE_SET_SUB_GID_OID,
-            (byte) (mode ? MODE_ENABLE : MODE_DISABLE)};
+
         try {
+            byte[] preCmd = {FIELD_DETECT_SET_FLAG_SUB_GID_OID,
+                (byte) (mode ? MODE_ENABLE : MODE_DISABLE)};
+            mNxpNciPacketHandler.shouldCheckResponseSubGid(false);
+            byte[] preRsp = mNxpNciPacketHandler.sendVendorNciMessage(
+                NxpNfcConstants.STR_SET_FLAG_GID, NxpNfcConstants.STR_SET_FLAG_OID, preCmd);
+            mNxpNciPacketHandler.shouldCheckResponseSubGid(true);
+            if (preRsp == null || preRsp.length == 0) {
+                NxpNfcLogger.e(TAG, "Pre-command failed or returned no response");
+                return STATUS_FAILED;
+            }
+
+            byte[] cmd = {FIELD_DETECT_MODE_SET_SUB_GID_OID,
+                (byte) (mode ? MODE_ENABLE : MODE_DISABLE)};
             byte[] vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(
                     NxpNfcConstants.NFC_NCI_PROP_GID, NxpNfcConstants.NXP_NFC_PROP_OID,
                     cmd);

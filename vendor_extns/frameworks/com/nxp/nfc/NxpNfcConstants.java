@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,4 +32,6 @@ public interface NxpNfcConstants {
     int NFC_NCI_PROP_GID = 0x2F;
     int NXP_NFC_PROP_OID = 0x70;
 
+    int STR_SET_FLAG_GID = 0x2F;
+    int STR_SET_FLAG_OID = 0x48;
 }
