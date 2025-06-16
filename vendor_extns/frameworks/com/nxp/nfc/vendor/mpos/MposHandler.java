@@ -273,7 +273,9 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
   private void resetMPOS() {
       NxpNfcLogger.d(TAG, "reset MPOS");
       mPOSStarted(false);
-      mposState = MposState.MPOS_IDLE;
+      synchronized (mposStateSync) {
+          mposState = MposState.MPOS_IDLE;
+      }
       mNfcOperations.unregisterNxpOemCallback();
   }
 
