@@ -92,7 +92,7 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
                         ", Sub-GidOid: " + subGidOid +
                         ", Notification Type: " + notificationType);
 
-    if ((oid == NxpNfcConstants.NXP_NFC_OEM_PROP_OID) &&
+    if ((oid == NxpNfcConstants.NXP_NFC_PROP_OID) &&
         (subGidOid == MPOS_READER_MODE_NTF_SUB_GID_OID)) {
       handleMposNotification(notificationType);
     }

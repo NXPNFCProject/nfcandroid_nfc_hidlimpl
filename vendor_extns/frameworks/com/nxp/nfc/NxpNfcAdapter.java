@@ -37,7 +37,9 @@ import android.os.RemoteException;
 import android.util.Log;
 import java.io.IOException;
 
-
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 /**
  * @class NxpNfcAdapter
  * @brief Concrete implementation of NFC Extension features
