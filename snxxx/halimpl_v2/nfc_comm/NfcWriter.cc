@@ -252,7 +252,8 @@ int NfcWriter::write_window_checked_unlocked(uint16_t data_len,
     if (status == NFCSTATUS_SUCCESS) {
       if (origin == ORIG_EXTNS &&
           p_data[NCI_GID_INDEX] == NCI_RF_DISC_COMMD_GID &&
-          p_data[NCI_OID_INDEX] == NCI_RF_DISC_COMMAND_OID) {
+          p_data[NCI_OID_INDEX] == NCI_RF_DISC_COMMAND_OID && data_len > 2 &&
+          p_data[data_len - 2] != 0xFF && p_data[data_len - 1] != 0x01) {
         NciDiscoveryCommandBuilderInstance.setDiscoveryCommand(data_len,
                                                                p_data);
       }
