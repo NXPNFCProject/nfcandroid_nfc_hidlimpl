@@ -190,8 +190,10 @@ public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
         byte[] activeSECmd = new byte[2];
         activeSECmd[0] = (byte) ACTIVE_SE;
         activeSECmd[1] = 0x01;
+        mNxpNciPacketHandler.shouldCheckResponseSubGid(false);
         NxpNfcLogger.d(TAG, "Sending VendorNciMessage to ACTIVE_SE");
         int srdSeStatus = sendSrdVendorNciMessage(activeSECmd);
+        mNxpNciPacketHandler.shouldCheckResponseSubGid(true);
         NxpNfcLogger.d(TAG, "srdSeStatus:" + srdSeStatus);
         if (srdSeStatus != INxpNfcAdapter.SRD_STATUS_SUCCESS) {
             return STATUS_FAILED;
@@ -206,8 +208,10 @@ public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
         byte[] deactiveSECmd = new byte[2];
         deactiveSECmd[0] = (byte) DEACTIVE_SE;
         deactiveSECmd[1] = 0x01;
+        mNxpNciPacketHandler.shouldCheckResponseSubGid(false);
         NxpNfcLogger.d(TAG, "Sending VendorNciMessage to deactivate SE");
         int seDeactiveStatus = sendSrdVendorNciMessage(deactiveSECmd);
+        mNxpNciPacketHandler.shouldCheckResponseSubGid(true);
         NxpNfcLogger.d(TAG, "seDeactiveStatus:" + seDeactiveStatus);
         if (seDeactiveStatus != INxpNfcAdapter.SRD_STATUS_SUCCESS) {
             return STATUS_FAILED;
