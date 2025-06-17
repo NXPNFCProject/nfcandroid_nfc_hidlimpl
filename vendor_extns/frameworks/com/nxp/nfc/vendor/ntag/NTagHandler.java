@@ -101,7 +101,7 @@ public class NTagHandler implements INxpNfcNtfHandler {
         } else {
           sNTagDetected = false;
         }
-      } else if ((subGidOid == (QTAG_SUB_GID | NTagSubOid.Enable.value)) &&
+      } else if ((subGidOid == (QTAG_SUB_GID | NTagSubOid.NTagEnable.value)) &&
                  (notificationType ==
                   NfcAdapter.SEND_VENDOR_NCI_STATUS_REJECTED)) {
         sIsQPollEnabled = false;
@@ -145,6 +145,7 @@ public class NTagHandler implements INxpNfcNtfHandler {
         return true;
       } else {
         NxpNfcLogger.d(TAG, "NTagMode disabled!!");
+        sIsQPollEnabled = false;
         return false;
       }
     } catch (Exception e) {
@@ -174,13 +175,11 @@ public class NTagHandler implements INxpNfcNtfHandler {
       return status;
     }
 
-    byte[] ntag = {(byte)(QTAG_SUB_GID | NTagSubOid.Enable.value),
-                   (byte)NTagSubOid.Disable.value};
+    byte[] ntag = {(byte)(QTAG_SUB_GID | NTagSubOid.NTagDisable.value),
+                   (byte)NTagSubOid.NTagDisable.value};
 
-    if (qMode == NTagSubOid.Disable.value) {
-      ntag[1] = (byte)NTagSubOid.NTagDisable.value;
-    } else if ((qMode == NTagSubOid.Enable.value) ||
-               (qMode == NTagSubOid.Append.value)) {
+    if (qMode == NTagSubOid.Enable.value) {
+      ntag[0] = (byte)(QTAG_SUB_GID | NTagSubOid.NTagEnable.value);
       ntag[1] = (byte)NTagSubOid.NTagEnable.value;
     }
 
