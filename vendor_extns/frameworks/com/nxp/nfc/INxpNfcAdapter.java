@@ -171,7 +171,7 @@ public interface INxpNfcAdapter {
      * This api is called by applications to update the NFC configurations which
      * are already part of libnfc-nci.conf <p>Requires
      * {@link android.Manifest.permission#NFC} permission.
-     * <ul> 
+     * <ul>
      * <li>This api shall be called only Nfcservice is enabled.
      * <li>This api shall be called only when there are no NFC transactions ongoing
      * </ul>
