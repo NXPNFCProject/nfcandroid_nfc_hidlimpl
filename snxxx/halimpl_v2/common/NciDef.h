@@ -35,6 +35,8 @@
 /* OID: Opcode Identifier (byte 1) */
 #define NCI_OID_MASK 0x3F
 #define NCI_OID_SHIFT 0
+#define SUB_GID_MASK 0xF0
+#define SUB_OID_MASK 0x0F
 
 /* builds byte0 of NCI Command and Notification packet */
 #define NCI_MSG_BLD_HDR0(p, mt, gid) \
@@ -89,5 +91,13 @@
 #define NCI_MSG_RF_ISO_DEP_NAK_PRESENCE 16
 #define NCI_MSG_RF_REMOVAL_DETECTION 18
 #define NCI_MSG_WPT_START 21
+
+/**********************************************
+ * NCI Deactivation Type
+ **********************************************/
+#define NCI_DEACTIVATE_TYPE_IDLE 0      /* Idle Mode     */
+#define NCI_DEACTIVATE_TYPE_SLEEP 1     /* Sleep Mode    */
+#define NCI_DEACTIVATE_TYPE_SLEEP_AF 2  /* Sleep_AF Mode */
+#define NCI_DEACTIVATE_TYPE_DISCOVERY 3 /* Discovery     */
 
 #endif /* _PHNXPNCIDEF_H_ */
