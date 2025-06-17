@@ -223,25 +223,6 @@ void phNxpExtn_NfcHalControlGranted() {
     fp_extn_handle_nfc_event(HANDLE_HAL_CONTROL_GRANTED, &nfc_ext_event_data);
   }
 }
-
-NFCSTATUS phNxpExtn_EnableT4t() {
-  NXPLOG_NCIHAL_D("%s Enter", __func__);
-  if (fp_extn_handle_nfc_event != NULL) {
-    return fp_extn_handle_nfc_event(HANDLE_T4T_ENABLE, &nfc_ext_event_data);
-  }
-  return NFCSTATUS_FAILED;
-}
-
-NFCSTATUS phNxpExtn_T4tUpdatePropParam(const uint8_t* pData, uint16_t dataLen) {
-  NciData_t nci_data;
-  nci_data.data_len = dataLen;
-  nci_data.p_data = (uint8_t*)pData;
-  nfc_ext_event_data.nci_rsp_ntf = nci_data;
-  if (fp_extn_handle_nfc_event != NULL) {
-    return fp_extn_handle_nfc_event(HANDLE_T4T_UPDATE_PROP_PARAM, &nfc_ext_event_data);
-  }
-  return NFCSTATUS_FAILED;
-}
 /* Extension feature API's End */
 
 /* HAL API's Start */
@@ -310,4 +291,5 @@ uint8_t phNxpHal_GetNxpNumValue(const char* name, void* pValue,
                                 unsigned long len) {
   return GetNxpNumValue(name, pValue, len);
 }
+
 /* HAL API's End */
