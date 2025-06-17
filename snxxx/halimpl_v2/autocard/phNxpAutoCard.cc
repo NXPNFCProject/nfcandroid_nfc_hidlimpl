@@ -38,7 +38,7 @@ AutoCard* AutoCard::getInstance() {
   return sAutoCard;
 }
 
-NFCSTATUS AutoCard::processAutoCardNciRspNtf(uint16_t dataLen, uint8_t* pData) {
+NFCSTATUS AutoCard::handleVendorNciRspNtf(uint16_t dataLen, uint8_t* pData) {
   NXPLOG_NCIHAL_D("AutoCard::%s Enter ", __func__);
 
   if ((pData[NCI_GID_INDEX] != (NCI_MT_RSP | NCI_GID_PROP)) ||
@@ -70,7 +70,7 @@ NFCSTATUS AutoCard::processAutoCardNciRspNtf(uint16_t dataLen, uint8_t* pData) {
   return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 }
 
-NFCSTATUS AutoCard::processAutoCardNciMsg(uint16_t dataLen, uint8_t* pData) {
+NFCSTATUS AutoCard::handleVendorNciMessage(uint16_t dataLen, uint8_t* pData) {
   NXPLOG_NCIHAL_D("AutoCard::%s Enter", __func__);
 
   if ((pData[NCI_GID_INDEX] != (NCI_MT_CMD | NCI_GID_PROP)) ||

@@ -39,7 +39,7 @@ class AutoCard {
    * @return returns NFCSTATUS_EXTN_FEATURE_SUCCESS, if it is vendor specific
    * feature and handled it internally otherwise NFCSTATUS_EXTN_FEATURE_FAILURE.
    */
-  NFCSTATUS processAutoCardNciMsg(uint16_t dataLen, uint8_t* pData);
+  NFCSTATUS handleVendorNciMessage(uint16_t dataLen, uint8_t* pData);
 
   /**
    * @brief Process NCI response/notification for ntag.
@@ -48,7 +48,7 @@ class AutoCard {
    * @return returns NFCSTATUS_EXTN_FEATURE_SUCCESS, if it is vendor specific
    * feature and handled it internally otherwise NFCSTATUS_EXTN_FEATURE_FAILURE.
    */
-  NFCSTATUS processAutoCardNciRspNtf(uint16_t dataLen, uint8_t* pData);
+  NFCSTATUS handleVendorNciRspNtf(uint16_t dataLen, uint8_t* pData);
 
   void notifyAutocardRsp(uint8_t status, uint8_t cmdType);
 

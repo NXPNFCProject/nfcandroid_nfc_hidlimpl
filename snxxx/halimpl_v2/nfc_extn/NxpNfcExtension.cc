@@ -28,7 +28,7 @@ NFCSTATUS phNxpNfcExtn_HandleNciMsg(uint16_t* dataLen, const uint8_t* pData) {
   NXPLOG_NCIHAL_D("%s Enter dataLen:%d", __func__, *dataLen);
 
   if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
-      AutoCard::getInstance()->processAutoCardNciMsg(*dataLen, (uint8_t*)pData))
+      AutoCard::getInstance()->handleVendorNciMessage(*dataLen, (uint8_t*)pData))
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 
   return NxpNTag::getInstance()->handleVendorNciMessage(*dataLen,
@@ -39,7 +39,7 @@ NFCSTATUS phNxpNfcExtn_HandleNciRspNtf(uint16_t* dataLen,
                                        const uint8_t* pData) {
   NXPLOG_NCIHAL_D("%s Enter dataLen:%d", __func__, *dataLen);
   if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
-      AutoCard::getInstance()->processAutoCardNciRspNtf(*dataLen,
+      AutoCard::getInstance()->handleVendorNciRspNtf(*dataLen,
                                                         (uint8_t*)pData))
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 
