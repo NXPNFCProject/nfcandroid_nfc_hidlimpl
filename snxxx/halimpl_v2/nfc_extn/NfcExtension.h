@@ -93,8 +93,6 @@ typedef enum {
   HANDLE_NFC_HAL_POWER_CYCLE,
   HANDLE_NFC_GET_MAX_NFCEE,
   HANDLE_NFC_HAL_CLOSE,
-  HANDLE_T4T_ENABLE,
-  HANDLE_T4T_UPDATE_PROP_PARAM,
 } NfcExtEvent_t;
 
 typedef enum {
@@ -268,7 +266,5 @@ uint8_t phNxpHal_GetNxpByteArrayValue(const char* name, char* pValue,
  */
 uint8_t phNxpHal_GetNxpNumValue(const char* name, void* pValue,
                                 unsigned long len);
-NFCSTATUS phNxpExtn_EnableT4t();
 
-NFCSTATUS phNxpExtn_T4tUpdatePropParam(const uint8_t* pData, uint16_t dataLen);
 #endif  // NFC_EXTENSION_H
