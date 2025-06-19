@@ -32,7 +32,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  Copyright 2013-2021, 2023 NXP
+ *  Copyright 2013-2021, 2023,2025 NXP
  *
  ******************************************************************************/
 
@@ -391,8 +391,8 @@ bool CNfcConfig::readConfig(const char* name, bool bResetContent) {
             int n = (i + 1) / 2;
             while (n-- > 0) {
               numValue = numValue >> (n * 8);
-              unsigned char c = (numValue)&0xFF;
-              strValue.push_back(c);
+              unsigned char chVal = (numValue) & 0xFF;
+              strValue.push_back(chVal);
             }
           }
 

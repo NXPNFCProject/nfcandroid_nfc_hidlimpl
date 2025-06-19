@@ -1047,11 +1047,14 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t** pp_cmd_data,
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_send_ext_cmd(uint16_t cmd_len, uint8_t* p_cmd) {
   NFCSTATUS status = NFCSTATUS_FAILED;
-  nxpncihal_ctrl.cmd_len = cmd_len;
-  memcpy(nxpncihal_ctrl.p_cmd_data, p_cmd, cmd_len);
-  status = phNxpNciHal_process_ext_cmd_rsp(nxpncihal_ctrl.cmd_len,
-                                           nxpncihal_ctrl.p_cmd_data);
-
+  if (p_cmd && cmd_len > 0) {
+    nxpncihal_ctrl.cmd_len = cmd_len;
+    memcpy(nxpncihal_ctrl.p_cmd_data, p_cmd, cmd_len);
+    status = phNxpNciHal_process_ext_cmd_rsp(nxpncihal_ctrl.cmd_len,
+      nxpncihal_ctrl.p_cmd_data);
+  } else {
+    NXPLOG_NCIHAL_E("%s: invalid arguments", __func__);
+  }
   return status;
 }
 
