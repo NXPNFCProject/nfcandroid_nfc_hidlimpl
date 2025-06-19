@@ -123,9 +123,6 @@ uint8_t write_unlocked_status = NFCSTATUS_SUCCESS;
 uint8_t wFwUpdateReq = false;
 uint8_t wRfUpdateReq = false;
 uint32_t timeoutTimerId = 0;
-#ifndef FW_DWNLD_FLAG
-uint8_t fw_dwnld_flag = false;
-#endif
 bool nfc_debug_enabled = true;
 PowerTrackerHandle gPowerTrackerHandle;
 WiredSeHandle* gWiredSeHandle;
@@ -1416,7 +1413,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   request_EEPROM(&mEEPROM_info);
 
   if (IS_CHIP_TYPE_GE(sn100u)) {
-    unsigned long num = 0;
+    num = 0;
     if ((GetNxpNumValue(NAME_NXP_CE_SUPPORT_IN_NFC_OFF_PHONE_OFF, &num,
                         sizeof(num))) &&
         (IS_CHIP_TYPE_EQ(sn220u) || IS_CHIP_TYPE_EQ(sn300u))) {

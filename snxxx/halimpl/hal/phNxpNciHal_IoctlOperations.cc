@@ -54,9 +54,6 @@ extern phNxpNciHal_Control_t nxpncihal_ctrl;
 extern phNxpNci_getCfg_info_t* mGetCfg_info;
 extern EseAdaptation* gpEseAdapt;
 extern nfc_stack_callback_t* p_nfc_stack_cback_backup;
-#ifndef FW_DWNLD_FLAG
-extern uint8_t fw_dwnld_flag;
-#endif
 
 /* TML Context */
 extern phTmlNfc_Context_t* gpphTmlNfc_Context;

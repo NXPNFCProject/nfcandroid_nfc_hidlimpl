@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 NXP
+ * Copyright 2012-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,9 +114,6 @@ static uint8_t write_unlocked_status = NFCSTATUS_SUCCESS;
 uint8_t wFwUpdateReq = false;
 uint8_t wRfUpdateReq = false;
 uint32_t timeoutTimerId = 0;
-#ifndef FW_DWNLD_FLAG
-uint8_t fw_dwnld_flag = false;
-#endif
 bool nfc_debug_enabled = true;
 PowerTrackerHandle gPowerTrackerHandle;
 sem_t sem_reset_ntf_received;
@@ -1299,16 +1296,8 @@ retry:
       if (nxpncihal_ctrl.p_nfc_stack_data_cback != NULL &&
           nxpncihal_ctrl.hal_open_status != HAL_CLOSED) {
         if (nxpncihal_ctrl.p_rx_data != NULL) {
-          NXPLOG_NCIHAL_D(
-              "Send the Core Reset NTF to upper layer, which will trigger the "
-              "recovery\n");
-          // Send the Core Reset NTF to upper layer, which will trigger the
-          // recovery.
+          NXPLOG_NCIHAL_D("abort() trigger the recovery\n");
           abort();
-          nxpncihal_ctrl.rx_data_len = sizeof(reset_ntf);
-          memcpy(nxpncihal_ctrl.p_rx_data, reset_ntf, sizeof(reset_ntf));
-          (*nxpncihal_ctrl.p_nfc_stack_data_cback)(nxpncihal_ctrl.rx_data_len,
-                                                   nxpncihal_ctrl.p_rx_data);
         } else {
           (*nxpncihal_ctrl.p_nfc_stack_data_cback)(0x00, NULL);
         }
