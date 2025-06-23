@@ -147,7 +147,7 @@ class NxpNTag {
    * @param None
    * @return None
    */
-  void phNxpNciHal_disableNtagNtfConfig();
+  static void phNxpNciHal_disableNtagNtfConfig();
 
  private:
   static NxpNTag* sNxpNTag;
@@ -169,10 +169,9 @@ class NxpNTag {
   constexpr static uint8_t NTAG_READ_COMPLETE = 0x04;
   constexpr static uint8_t NTAG_REMOVAL_STATUS = 0x08;
 
-  constexpr static uint8_t NTAG_REPLACE_QPOLL_STATUS = 0x10;
-  constexpr static uint8_t NTAG_DETECT_TIMER_STATUS = 0x20;
-  constexpr static uint8_t NTAG_PRESENCE_CHECK_TIMER_STATUS = 0x40;
-  constexpr static uint8_t NTAG_PRESENCE_CHECK_TIMEOUT = 0x80;
+  constexpr static uint8_t NTAG_DETECT_TIMER_STATUS = 0x10;
+  constexpr static uint8_t NTAG_PRESENCE_CHECK_TIMER_STATUS = 0x20;
+  constexpr static uint8_t NTAG_PRESENCE_CHECK_TIMEOUT = 0x40;
 
   constexpr static uint8_t NTAG_DETECTION_OID = 0x03;
   constexpr static uint8_t NTAG_ENABLE_PROP_OID = 0x04;
@@ -197,7 +196,7 @@ class NxpNTag {
    * @param None
 
    */
-  NTagState getState();
+  NTagState getState() const { return mNTagState; }
 
   /**
    * @brief Process NTag event based on the current state.
@@ -347,7 +346,7 @@ class NxpNTag {
   NFCSTATUS waitForRfDiscRsp(NFCSTATUS status);
 
   static void QPollTimerTimeoutCallback(union sigval val);
-  bool QPollTimerStart(unsigned long millisecs);
+  bool QPollTimerStart(unsigned long sec);
   void QPollTimerStop();
   void clearNTagFlags();
   NxpNTag();
