@@ -35,6 +35,7 @@
 #include <phNxpTempMgr.h>
 #include <phTmlNfc.h>
 #include <sys/stat.h>
+#include <thread>
 
 #include "NciDiscoveryCommandBuilder.h"
 #include "NfcExtension.h"
@@ -1202,7 +1203,31 @@ void phNxpNciHal_client_data_callback(uint16_t rx_data_len, uint8_t* p_rx_data) 
     readerPollConfigParser.setNotificationType(notificationType);
     readerPollConfigParser.setReaderPollCallBack(
         phNxpNciHal_notifyPollingFrame);
+
     readerPollConfigParser.parseAndSendReaderPollInfo(p_rx_data, rx_data_len);
+  }
+  if (rx_data_len > 6 &&
+      p_rx_data[NCI_GID_INDEX] == NCI_RF_DISC_NTF_GID &&
+      p_rx_data[NCI_OID_INDEX] == NCI_RF_DEACTIVATE_NTY_OID &&
+      (p_rx_data[RF_DISC_NTF_TECH_AND_MODE_INDEX] ==
+           NCI_A_PASSIVE_POLL_MODE ||
+       p_rx_data[RF_DISC_NTF_TECH_AND_MODE_INDEX] ==
+           NCI_B_PASSIVE_POLL_MODE)) {
+    NciDiscoveryCommandBuilderInstance.setRfDiscoveryReceived(false);
+  }
+  if (rx_data_len >= 5 &&
+      p_rx_data[NCI_GID_INDEX] == NCI_RF_DISC_NTF_GID &&
+      p_rx_data[NCI_OID_INDEX] == NCI_RF_DEACTIVATE_OID &&
+      p_rx_data[NCI_MSG_LEN_INDEX] == RF_DEACTIVATE_NTF_LEN &&
+      p_rx_data[RF_DEACTIVATE_TYPE_INDEX] == RF_DEACTIVATE_TYPE_DISCOVERY &&
+      (p_rx_data[RF_DEACTIVATE_REASON_INDEX] == RF_DEACTIVATE_REASON_DH_REQUEST ||
+       p_rx_data[RF_DEACTIVATE_REASON_INDEX] == RF_DEACTIVATE_REASON_REMOTE_END_POINT_REMOVED)) {
+    (*nxpncihal_ctrl.p_nfc_stack_data_cback)(rx_data_len,
+                                             p_rx_data);
+    // Check if observe mode request was received during tag read in progress
+    // and reset the discovery with observe mode flags
+    resetDiscovery();
+    return;
   } else {
     (*nxpncihal_ctrl.p_nfc_stack_data_cback)(rx_data_len, p_rx_data);
   }

@@ -80,6 +80,7 @@ int NfcWriter::write(uint16_t data_len, const uint8_t* p_data) {
   if (p_data[NCI_GID_INDEX] == NCI_RF_DISC_COMMD_GID &&
       p_data[NCI_OID_INDEX] == NCI_RF_DISC_COMMAND_OID) {
     NciDiscoveryCommandBuilderInstance.setDiscoveryCommand(data_len, p_data);
+    setObserveChangeInProgress(false);
   } else if (p_data[NCI_GID_INDEX] == NCI_RF_DISC_COMMD_GID &&
              p_data[NCI_OID_INDEX] == NCI_RF_DEACTIVATE_OID) {
     NciDiscoveryCommandBuilderInstance.setRfDiscoveryReceived(false);

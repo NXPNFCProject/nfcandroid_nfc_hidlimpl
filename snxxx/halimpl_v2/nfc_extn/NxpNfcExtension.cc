@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-#include "phNxpNTag.h"
-#include "phNxpAutoCard.h"
 #include "NxpNfcExtension.h"
+#include <ObserveMode.h>
 #include <phNxpLog.h>
+#include "phNxpAutoCard.h"
+#include "phNxpNTag.h"
 
 void phNxpNfcExtn_deInit() {
   AutoCard::finalize();
@@ -38,6 +39,12 @@ NFCSTATUS phNxpNfcExtn_HandleNciMsg(uint16_t* dataLen, const uint8_t* pData) {
 NFCSTATUS phNxpNfcExtn_HandleNciRspNtf(uint16_t* dataLen,
                                        const uint8_t* pData) {
   NXPLOG_NCIHAL_D("%s Enter dataLen:%d", __func__, *dataLen);
+
+  if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
+      handleObserveModeRfStateRspNtf(*dataLen, (uint8_t*)pData)) {
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+  }
+
   if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
       AutoCard::getInstance()->handleVendorNciRspNtf(*dataLen,
                                                         (uint8_t*)pData))
