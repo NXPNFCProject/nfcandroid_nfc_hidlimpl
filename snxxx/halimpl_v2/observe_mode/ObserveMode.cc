@@ -16,13 +16,19 @@
 #include <ObserveMode.h>
 #include <phNfcNciConstants.h>
 
+#include <NxpNfcThreadMutex.h>
+#include <mutex>
 #include <vector>
 #include "NciDiscoveryCommandBuilder.h"
+#include "NfcExtension.h"
 #include "phNxpNciHal_extOperations.h"
 
 using namespace std;
 
+bool gWaitingforDiscRsp;
+bool gWaitingforRfDeActivateRsp;
 bool bIsObserveModeEnabled;
+bool bIsObserveChangeInProgress;
 
 /*******************************************************************************
  *
@@ -50,6 +56,11 @@ void setObserveModeFlag(bool flag) { bIsObserveModeEnabled = flag; }
  ******************************************************************************/
 bool isObserveModeEnabled() { return bIsObserveModeEnabled; }
 
+void setObserveChangeInProgress(bool flag) {
+  bIsObserveChangeInProgress = flag;
+}
+
+bool isObserveChangeInProgress() { return bIsObserveChangeInProgress; }
 /*******************************************************************************
  *
  * Function         handleObserveMode()
@@ -97,6 +108,7 @@ NFCSTATUS deactivateRfDiscovery() {
     return phNxpNciHal_send_ext_cmd(sizeof(rf_deactivate_cmd),
                                     rf_deactivate_cmd, &rsp_len, rsp);
   } else {
+    setObserveChangeInProgress(true);  // ObserveMode Recocery needed
     return NFCSTATUS_SUCCESS;
   }
 }
@@ -127,6 +139,71 @@ NFCSTATUS sendRfDiscoveryCommand(bool isObserveModeEnable) {
   } else {
     return NFCSTATUS_SUCCESS;
   }
+}
+
+/*******************************************************************************
+ *
+ * Function         resetDiscovery()
+ *
+ * Description      Resets RF discovery by sending deactivate command followed
+ *                  by discovery command. This function handles observe mode
+ *                  recovery by checking if observe mode change is in progress.
+ *                  Uses synchronous communication with timeout mechanism.
+ *
+ * Parameters       None
+ *
+ * Returns          None
+ *
+ ******************************************************************************/
+void resetDiscovery() {
+  NciDiscoveryCommandBuilderInstance.setRfDiscoveryReceived(true);
+  if (isObserveChangeInProgress()) {
+    NXPLOG_NCIHAL_D("%s reset discovery ", __func__);
+
+    gWaitingforRfDeActivateRsp = true;
+    uint8_t rf_deactivate_cmd[] = {0x21, 0x06, 0x01, 0x00};
+    setObserveChangeInProgress(false);
+    phNxpHal_EnqueueWrite(&rf_deactivate_cmd[0], sizeof(rf_deactivate_cmd));
+  }
+}
+
+/*******************************************************************************
+ *
+ * Function         handleObserveModeRfStateRspNtf()
+ *
+ * Description      Handles RF state response and notification messages for
+ *                  observe mode operations. Processes RF deactivate and
+ *                  discovery responses to synchronize command execution.
+ *
+ * Parameters       dataLen - Length of the response data
+ *                  pData   - Pointer to response data buffer
+ *
+ * Returns          NFCSTATUS_EXTN_FEATURE_SUCCESS if response is handled
+ *                  successfully, otherwise appropriate error status
+ *
+ ******************************************************************************/
+NFCSTATUS handleObserveModeRfStateRspNtf(uint16_t dataLen, uint8_t* pData) {
+  if (gWaitingforRfDeActivateRsp && dataLen >= NCI_RSP_SIZE &&
+      pData[NCI_GID_INDEX] == NCI_RF_DISC_RSP_GID &&
+      pData[NCI_OID_INDEX] == NCI_RF_DEACTIVATE_OID) {
+    gWaitingforRfDeActivateRsp = false;
+    gWaitingforDiscRsp = true;
+    vector<uint8_t> discoveryCommand =
+        isObserveModeEnabled()
+            ? NciDiscoveryCommandBuilderInstance.reConfigRFDiscCmd()
+            : NciDiscoveryCommandBuilderInstance.getDiscoveryCommand();
+    phNxpHal_EnqueueWrite(&discoveryCommand[0], discoveryCommand.size());
+
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+  }
+  if (gWaitingforDiscRsp && dataLen >= 2 &&
+      pData[NCI_GID_INDEX] == NCI_RF_DISC_RSP_GID &&
+      pData[NCI_OID_INDEX] == NCI_RF_DISC_COMMAND_OID) {
+    gWaitingforDiscRsp = false;
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+  }
+
+  return NFCSTATUS_EXTN_FEATURE_FAILURE;
 }
 
 /*******************************************************************************
