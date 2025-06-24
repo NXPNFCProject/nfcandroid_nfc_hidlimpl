@@ -180,8 +180,8 @@ public class NfcOperations {
      */
     private void setDiscoveryTechnology(int pollTechnology, int listenTechnology) {
       NxpNfcLogger.d(TAG, "setDiscoveryTechnology");
-      mNfcAdapter.setDiscoveryTechnology(null, pollTechnology | NfcAdapter.FLAG_SET_DEFAULT_TECH,
-                                         listenTechnology | NfcAdapter.FLAG_SET_DEFAULT_TECH);
+      mNfcAdapter.setDiscoveryTechnology(null, pollTechnology,
+                                         listenTechnology);
       synchronized (NfcOperations.this) {
           if (listenTechnology == NfcAdapter.FLAG_LISTEN_DISABLE)  {
               NxpNfcLogger.d(TAG, "Listen Disabled");
@@ -488,7 +488,6 @@ public class NfcOperations {
         @Override
         protected Void doInBackground(Integer... params) {
             NxpNfcLogger.d(TAG, "doInBackground");
-            handleDiscoveryParams();
             if (mNxpOemCallbacks != null) {
                 mNxpOemCallbacks.onEnableFinished(params[0]);
             }
@@ -501,26 +500,10 @@ public class NfcOperations {
         @Override
         protected Void doInBackground(Integer... params) {
             NxpNfcLogger.d(TAG, "doInBackground");
-            handleDiscoveryParams();
             if (mNxpOemCallbacks != null) {
                 mNxpOemCallbacks.onBootFinished(params[0]);
             }
             return null;
-        }
-    }
-
-    private void handleDiscoveryParams() {
-        if (isListenDisabled()) {
-            NxpNfcLogger.d(TAG, "Enable Listen Tech : ");
-            setDiscoveryTechnology(NfcAdapter.FLAG_READER_KEEP | FLAG_USE_ALL_TECH,
-                    NfcAdapter.FLAG_LISTEN_KEEP | FLAG_USE_ALL_TECH);
-        }
-        if (isPollingPaused() && mNfcOemExtension != null) {
-            NxpNfcLogger.d(TAG, "resume discovery :");
-            mNfcOemExtension.resumePolling();
-            synchronized (NfcOperations.this) {
-                mIsPollingPaused = false;
-            }
         }
     }
 }
