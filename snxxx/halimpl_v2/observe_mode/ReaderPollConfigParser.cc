@@ -364,7 +364,7 @@ void ReaderPollConfigParser::notifyPollingLoopInfoEvent(
  ****************************************************************************/
 bool ReaderPollConfigParser::parseAndSendReaderPollInfo(uint8_t* p_ntf,
                                                         uint16_t p_len) {
-  if (!p_ntf || (p_ntf && !isLxNotification(p_ntf, p_len))) {
+  if (!p_ntf || (!isLxNotification(p_ntf, p_len))) {
     return false;
   }
   vector<uint8_t> lxNotification = vector<uint8_t>(p_ntf, p_ntf + p_len);
@@ -405,8 +405,7 @@ bool ReaderPollConfigParser::parseAndSendReaderPollInfo(uint8_t* p_ntf,
     idx += entryLength;
   }
 
-  if (readerPollInfoNotifications.size() <= 0 ||
-      readerPollInfoNotifications.size() >= 0xFF) {
+  if (readerPollInfoNotifications.size() >= 0xFF) {
     return false;
   }
 

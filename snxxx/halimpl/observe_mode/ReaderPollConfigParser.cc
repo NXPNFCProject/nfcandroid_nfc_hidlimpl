@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -319,7 +319,7 @@ void ReaderPollConfigParser::notifyPollingLoopInfoEvent(
  ****************************************************************************/
 bool ReaderPollConfigParser::parseAndSendReaderPollInfo(uint8_t* p_ntf,
                                                         uint16_t p_len) {
-  if (!p_ntf || (p_ntf && !isLxNotification(p_ntf, p_len))) {
+  if (!p_ntf || (!isLxNotification(p_ntf, p_len))) {
     return false;
   }
   vector<uint8_t> lxNotification = vector<uint8_t>(p_ntf, p_ntf + p_len);
@@ -360,8 +360,7 @@ bool ReaderPollConfigParser::parseAndSendReaderPollInfo(uint8_t* p_ntf,
     idx += entryLength;
   }
 
-  if (readerPollInfoNotifications.size() <= 0 ||
-      readerPollInfoNotifications.size() >= 0xFF) {
+  if (readerPollInfoNotifications.size() >= 0xFF) {
     return false;
   }
 
