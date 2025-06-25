@@ -1,5 +1,5 @@
 /*
- *  Copyright 2010-2024 NXP
+ *  Copyright 2010-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -593,7 +593,6 @@ NFCSTATUS phDnldNfc_Force(pphDnldNfc_Buff_t pInputs, pphDnldNfc_RspCb_t pNotify,
           bClkSrc = phDnldNfc_ClkSrcPLL;
         }
 
-        bPldVal[0] = 0U;
         bPldVal[0] = ((bClkSrc << 3U) | bClkFreq);
       } else {
         NXPLOG_FWDNLD_E("Clk src inputs not provided!! Using default values..");

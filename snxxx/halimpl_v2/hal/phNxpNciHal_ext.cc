@@ -839,21 +839,19 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t** pp_cmd_data,
         p_cmd_data[6] == 0x83) {
       mfc_mode = true;
     } else {
-      if (bEnableMfcReader) {
-        NXPLOG_NCIHAL_D("Going through extns - Adding Mifare in RF Discovery");
-        // Modification is required. Reallocate new buffer
-        *pp_cmd_data = REALLOC_BUFFER(p_cmd_data, *cmd_len, (*cmd_len + 3),
-                                      free_old_memory);
-        p_cmd_data[2] += 3;
-        p_cmd_data[3] += 1;
-        p_cmd_data[*cmd_len] = 0x80;
-        p_cmd_data[*cmd_len + 1] = 0x01;
-        p_cmd_data[*cmd_len + 2] = 0x80;
-        *cmd_len += 3;
-        status = NFCSTATUS_SUCCESS;
-        NXPLOG_NCIHAL_D(
-            "Going through extns - Adding Mifare in RF Discovery - END");
-      }
+      NXPLOG_NCIHAL_D("Going through extns - Adding Mifare in RF Discovery");
+      // Modification is required. Reallocate new buffer
+      *pp_cmd_data = REALLOC_BUFFER(p_cmd_data, *cmd_len, (*cmd_len + 3),
+                                    free_old_memory);
+      p_cmd_data[2] += 3;
+      p_cmd_data[3] += 1;
+      p_cmd_data[*cmd_len] = 0x80;
+      p_cmd_data[*cmd_len + 1] = 0x01;
+      p_cmd_data[*cmd_len + 2] = 0x80;
+      *cmd_len += 3;
+      status = NFCSTATUS_SUCCESS;
+      NXPLOG_NCIHAL_D(
+          "Going through extns - Adding Mifare in RF Discovery - END");
     }
   } else if (icode_detected) {
     if (IS_CHIP_TYPE_L(sn100u) && IS_CHIP_TYPE_NE(pn557) &&
