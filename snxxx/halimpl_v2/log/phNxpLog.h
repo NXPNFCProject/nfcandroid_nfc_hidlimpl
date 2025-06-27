@@ -28,6 +28,7 @@ typedef struct nci_log_level {
   uint8_t tml_log_level;
   uint8_t ncix_log_level;
   uint8_t ncir_log_level;
+  bool_t is_lx_logging_enabled;
 } nci_log_level_t;
 
 /* global log level Ref */
@@ -411,5 +412,7 @@ extern const char* NXPLOG_ITEM_HCPR; /* Android logging tag for NxpHcpR   */
 void phNxpLog_InitializeLogLevel(void);
 
 uint8_t phNxpLog_EnableDisableLogLevel(uint8_t enable);
+
+bool_t phNxpLog_isLxLoggingEnabled();
 
 #endif /* NXPLOG__H_INCLUDED */
