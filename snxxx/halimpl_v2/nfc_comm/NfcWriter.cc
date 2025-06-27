@@ -155,6 +155,8 @@ int NfcWriter::direct_write(uint16_t data_len, const uint8_t* p_data) {
   NFCSTATUS status = NFCSTATUS_FAILED;
   int wdata_len = 0;
   uint8_t cmd_icode_eof[] = {0x00, 0x00, 0x00};
+  uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+  uint16_t rsp_len = 0;
   static phLibNfc_Message_t msg;
   if (nxpncihal_ctrl.halStatus != HAL_STATUS_OPEN) {
     return NFCSTATUS_FAILED;
@@ -187,7 +189,7 @@ int NfcWriter::direct_write(uint16_t data_len, const uint8_t* p_data) {
   if (IS_CHIP_TYPE_L(sn100u) && IS_CHIP_TYPE_NE(pn557) && icode_send_eof == 1) {
     usleep(10000);
     icode_send_eof = 2;
-    status = phNxpNciHal_send_ext_cmd(3, cmd_icode_eof);
+    status = phNxpNciHal_send_ext_cmd(3, cmd_icode_eof, &rsp_len, rsp);
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("ICODE end of frame command failed");
     }
@@ -281,15 +283,10 @@ int NfcWriter::write_window_checked_unlocked(uint16_t data_len,
       }
       if (nxpncihal_ctrl.p_nfc_stack_data_cback != NULL &&
           nxpncihal_ctrl.halStatus != HAL_STATUS_CLOSE) {
-        if (nxpncihal_ctrl.p_rx_data != NULL) {
-          NXPLOG_NCIHAL_D("Doing abort which will trigger the recovery\n");
-          // abort which will trigger the recovery.
-          phNxpExtn_HandleHalEvent(NFCC_HAL_FATAL_ERR_CODE);
-          abort();
-        } else {
-          (*nxpncihal_ctrl.p_nfc_stack_data_cback)(0x00, NULL);
-        }
-        write_unlocked_status = NFCSTATUS_FAILED;
+        NXPLOG_NCIHAL_D("Doing abort which will trigger the recovery\n");
+        // abort which will trigger the recovery.
+        phNxpExtn_HandleHalEvent(NFCC_HAL_FATAL_ERR_CODE);
+        abort();
       }
       break;
     }

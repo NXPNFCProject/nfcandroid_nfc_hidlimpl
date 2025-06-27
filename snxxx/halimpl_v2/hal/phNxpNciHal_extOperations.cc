@@ -183,6 +183,8 @@ void phNxpNciHal_read_and_update_se_state() {
   int16_t num_se = 0;
   uint8_t retry_cnt = 0;
   int8_t values[NUM_SE_TYPES];
+  uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+  uint16_t rsp_len = 0;
 
   for (i = 0; i < NUM_SE_TYPES; i++) {
     val = get_system_property_se_type(i);
@@ -273,7 +275,8 @@ void phNxpNciHal_read_and_update_se_state() {
   }
 
   while (status != NFCSTATUS_SUCCESS && retry_cnt < 3) {
-    status = phNxpNciHal_send_ext_cmd(sizeof(set_cfg_cmd), set_cfg_cmd);
+    status = phNxpNciHal_send_ext_cmd(sizeof(set_cfg_cmd), set_cfg_cmd,
+                                      &rsp_len, rsp);
     retry_cnt++;
     NXPLOG_NCIHAL_E("set Cfg Retry cnt=%x", retry_cnt);
   }
@@ -540,6 +543,8 @@ NFCSTATUS phNxpNciHal_send_get_cfg(const uint8_t* cmd_get_cfg, long cmd_len) {
   NXPLOG_NCIHAL_D("%s Enter", __func__);
   NFCSTATUS status = NFCSTATUS_FAILED;
   uint8_t retry_cnt = 0;
+  uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+  uint16_t rsp_len = 0;
 
   if (cmd_get_cfg == NULL || cmd_len <= NCI_GET_CONFI_MIN_LEN) {
     NXPLOG_NCIHAL_E("%s invalid command..! returning... ", __func__);
@@ -547,7 +552,8 @@ NFCSTATUS phNxpNciHal_send_get_cfg(const uint8_t* cmd_get_cfg, long cmd_len) {
   }
 
   do {
-    status = phNxpNciHal_send_ext_cmd(cmd_len, (uint8_t*)cmd_get_cfg);
+    status =
+        phNxpNciHal_send_ext_cmd(cmd_len, (uint8_t*)cmd_get_cfg, &rsp_len, rsp);
   } while ((status != NFCSTATUS_SUCCESS) &&
            (retry_cnt++ < NXP_MAX_RETRY_COUNT));
 
@@ -808,6 +814,9 @@ void phNxpNciHal_decodeGpioStatus(void) {
  *****************************************************************************/
 
 void phNxpNciHal_setDCDCConfig(void) {
+  uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+  uint16_t rsp_len = 0;
+
   uint8_t NXP_CONF_DCDC_ON[] = {
       0x20, 0x02, 0xDA, 0x04, 0xA0, 0x0E, 0x30, 0x7B, 0x00, 0xDE, 0xBA, 0xC4,
       0xC4, 0xC9, 0x00, 0x00, 0x00, 0xA8, 0x00, 0x37, 0xBE, 0xFF, 0xFF, 0x03,
@@ -860,11 +869,11 @@ void phNxpNciHal_setDCDCConfig(void) {
   if (enable == 1) {
     // DCDC On
     status = phNxpNciHal_send_ext_cmd(sizeof(NXP_CONF_DCDC_ON),
-                                      &(NXP_CONF_DCDC_ON[0]));
+                                      &(NXP_CONF_DCDC_ON[0]), &rsp_len, rsp);
   } else {
     // DCDC Off
     status = phNxpNciHal_send_ext_cmd(sizeof(NXP_CONF_DCDC_OFF),
-                                      &(NXP_CONF_DCDC_OFF[0]));
+                                      &(NXP_CONF_DCDC_OFF[0]), &rsp_len, rsp);
   }
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("SetConfig for DCDC failed");

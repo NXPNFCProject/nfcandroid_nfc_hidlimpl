@@ -42,7 +42,6 @@
 
 spTransport gpTransportObj;
 extern bool_t gsIsFirstHalMinOpen;
-extern phNxpNciHal_Control_t nxpncihal_ctrl;
 
 /* Initialize Context structure pointer used to access context structure */
 phTmlNfc_Context_t* gpphTmlNfc_Context = NULL;

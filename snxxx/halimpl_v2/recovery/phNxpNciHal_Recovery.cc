@@ -95,8 +95,10 @@ static void phNxpNciHal_read_callback(void* pContext,
   if (pInfo != NULL) {
     NXPLOG_NCIHAL_E("%s Status %d", __func__, pInfo->wStatus);
     if (pInfo->wStatus == NFCSTATUS_SUCCESS) {
-      nxpncihal_ctrl.p_rx_data = pInfo->pBuff;
-      nxpncihal_ctrl.rx_data_len = pInfo->wLength;
+      if (phNxpNciHal_update_ext_buffer(pInfo->wLength, pInfo->pBuff) !=
+          NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("%s Failed to update response buffer", __func__);
+      }
     }
     nxpncihal_ctrl.ext_cb_data.status = pInfo->wStatus;
   } else {
@@ -179,7 +181,7 @@ static NFCSTATUS phNxpNciHal_writeCmd(uint16_t data_len, const uint8_t* p_data,
  * Returns          NFCSTATUS
  *
  ******************************************************************************/
-static NFCSTATUS phNxpNciHal_ReadResponse(uint16_t* len, uint8_t** rsp_buffer,
+static NFCSTATUS phNxpNciHal_ReadResponse(uint16_t* len, uint8_t* rsp_buffer,
                                           long timeout) {
   NFCSTATUS status = NFCSTATUS_FAILED;
   const char context[] = "RecoveryRead";
@@ -188,18 +190,21 @@ static NFCSTATUS phNxpNciHal_ReadResponse(uint16_t* len, uint8_t** rsp_buffer,
     NXPLOG_NCIHAL_E("%s Invalid Parameters", __func__);
     return NFCSTATUS_INVALID_PARAMETER;
   }
+  if (phNxpNciHal_set_ext_buffer(len, rsp_buffer) != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("%s Fail to set ext response buffer", __func__);
+    return NFCSTATUS_FAILED;
+  }
   status = phTmlNfc_Read(
       nxpncihal_ctrl.p_rsp_data, NCI_MAX_DATA_LEN,
       (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_callback,
       (void*)context);
   if (phNxpNciHal_semWaitTimeout(timeout) == NFCSTATUS_SUCCESS) {
-    if (nxpncihal_ctrl.p_rx_data != NULL && nxpncihal_ctrl.rx_data_len > 0) {
-      *rsp_buffer = nxpncihal_ctrl.p_rx_data;
-      *len = nxpncihal_ctrl.rx_data_len;
+    if (*len > 0) {
       status = NFCSTATUS_SUCCESS;
     } else
       status = NFCSTATUS_FAILED;
   }
+  phNxpNciHal_reset_ext_buffer();
   return status;
 }
 
@@ -235,7 +240,7 @@ static void phNxpNciHal_readNFCCClockCfgValues(void) {
  ******************************************************************************/
 static bool phNxpNciHal_determineChipType(void) {
   const uint8_t cmd_reset_nci[] = {0x20, 0x00, 0x01, 0x00};
-  uint8_t* rsp_buffer = NULL;
+  uint8_t rsp_buffer[PHNCI_MAX_DATA_LEN] = {0};
   uint16_t rsp_len = 0;
   uint8_t retry = 0;
   bool status = false;
@@ -248,18 +253,18 @@ static bool phNxpNciHal_determineChipType(void) {
     }
     // 10ms delay  for first core reset response to avoid nfcc standby
     usleep(NCI_RESET_RESP_READ_DELAY_US);
-    if ((phNxpNciHal_ReadResponse(&rsp_len, &rsp_buffer,
+    if ((phNxpNciHal_ReadResponse(&rsp_len, rsp_buffer,
                                   RESPONSE_READ_TIMEOUT_NS) !=
          NFCSTATUS_SUCCESS) ||
-        (rsp_buffer == NULL)) {
+        (rsp_len == 0)) {
       NXPLOG_NCIHAL_E("NCI_CORE_RESET read response failed");
       break;
     }
     if (rsp_buffer[NCI_RSP_IDX] == NCI_MSG_RSP) {
-      if ((phNxpNciHal_ReadResponse(&rsp_len, &rsp_buffer,
+      if ((phNxpNciHal_ReadResponse(&rsp_len, rsp_buffer,
                                     RESPONSE_READ_TIMEOUT_NS) !=
            NFCSTATUS_SUCCESS) ||
-          (rsp_buffer == NULL)) {
+          (rsp_len == 0)) {
         NXPLOG_NCIHAL_E("NCI_CORE_RESET NTF read failed");
         break;
       }
@@ -286,15 +291,15 @@ static bool phNxpNciHal_determineChipType(void) {
 bool phNxpNciHal_isSessionClosed(void) {
   const uint8_t get_session_cmd[] = {0x00, 0x04, 0xF2, 0x00,
                                      0x00, 0x00, 0xF5, 0x33};
-  uint8_t* rsp_buffer = NULL;
+  uint8_t rsp_buffer[PHNCI_MAX_DATA_LEN] = {0};
   uint16_t rsp_len = 0;
 
   if ((phNxpNciHal_writeCmd(sizeof(get_session_cmd), get_session_cmd,
                             WRITE_TIMEOUT_NS) == NFCSTATUS_SUCCESS)) {
-    if ((phNxpNciHal_ReadResponse(&rsp_len, &rsp_buffer,
+    if ((phNxpNciHal_ReadResponse(&rsp_len, rsp_buffer,
                                   RESPONSE_READ_TIMEOUT_NS) !=
          NFCSTATUS_SUCCESS) ||
-        (rsp_buffer == NULL)) {
+        (rsp_len == 0)) {
       NXPLOG_NCIHAL_E("Get Session read response failed");
     } else if (rsp_buffer[DL_RSP_STAT_IDX] == DL_MSG_STAT_RSP &&
                rsp_buffer[DL_RSP_IDX] == DL_MSG_RSP) {
@@ -318,15 +323,15 @@ bool phNxpNciHal_isSessionClosed(void) {
 static bool phNxpNciHal_determineChipTypeDlMode(void) {
   const uint8_t get_version_cmd[] = {0x00, 0x04, 0xF1, 0x00,
                                      0x00, 0x00, 0x6E, 0xEF};
-  uint8_t* rsp_buffer = NULL;
+  uint8_t rsp_buffer[PHNCI_MAX_DATA_LEN] = {0};
   uint16_t rsp_len = 0;
 
   if ((phNxpNciHal_writeCmd(sizeof(get_version_cmd), get_version_cmd,
                             WRITE_TIMEOUT_NS) == NFCSTATUS_SUCCESS)) {
-    if ((phNxpNciHal_ReadResponse(&rsp_len, &rsp_buffer,
+    if ((phNxpNciHal_ReadResponse(&rsp_len, rsp_buffer,
                                   RESPONSE_READ_TIMEOUT_NS) !=
          NFCSTATUS_SUCCESS) ||
-        (rsp_buffer == NULL)) {
+        (rsp_len == 0)) {
       NXPLOG_NCIHAL_E("Get Version read response failed");
     } else if (rsp_buffer[DL_RSP_STAT_IDX] == DL_MSG_STAT_RSP &&
                rsp_buffer[DL_RSP_IDX] == DL_MSG_RSP) {

@@ -95,6 +95,8 @@ NFCSTATUS phNxpNciHal_propConfULPDetMode(bool bEnable) {
   NXPLOG_NCIHAL_E("%s flag %d", __func__, bEnable);
   if (!phNxpNciHal_isULPDetSupported()) return false;
 
+  uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+  uint16_t rsp_len = 0;
   uint8_t cmd_coreULPDET[] = {0x2F, 0x00, 0x01, 0x03};
   uint8_t getConfig_A015[] = {0x20, 0x03, 0x03, 0x01, 0xA0, 0x15};
   uint8_t setConfig_A015[] = {0x20, 0x02, 0x05, 0x01, 0xA0, 0x15, 0x01, 0x01};
@@ -107,14 +109,15 @@ NFCSTATUS phNxpNciHal_propConfULPDetMode(bool bEnable) {
 
   do {
     if (bEnable) {
-      status =
-          phNxpNciHal_send_ext_cmd(sizeof(setUlpdetConfig), setUlpdetConfig);
+      status = phNxpNciHal_send_ext_cmd(sizeof(setUlpdetConfig),
+                                        setUlpdetConfig, &rsp_len, rsp);
       if (status != NFCSTATUS_SUCCESS) {
         NXPLOG_NCIHAL_E("ulpdet configs set: Failed");
         break;
       }
 
-      status = phNxpNciHal_send_ext_cmd(sizeof(cmd_coreULPDET), cmd_coreULPDET);
+      status = phNxpNciHal_send_ext_cmd(sizeof(cmd_coreULPDET), cmd_coreULPDET,
+                                        &rsp_len, rsp);
       if (status != NFCSTATUS_SUCCESS) {
         NXPLOG_NCIHAL_E("coreULPDET: Failed");
         break;
@@ -128,21 +131,21 @@ NFCSTATUS phNxpNciHal_propConfULPDetMode(bool bEnable) {
       }
       (void)phTmlNfc_IoCtl(phTmlNfc_e_PullVenLow);
     } else {
-      status = phNxpNciHal_send_ext_cmd(sizeof(getConfig_A015), getConfig_A015);
-      if ((status == NFCSTATUS_SUCCESS) &&
-          (nxpncihal_ctrl.p_rx_data[8] != 0x01)) {
-        status =
-            phNxpNciHal_send_ext_cmd(sizeof(setConfig_A015), setConfig_A015);
+      status = phNxpNciHal_send_ext_cmd(sizeof(getConfig_A015), getConfig_A015,
+                                        &rsp_len, rsp);
+      if ((status == NFCSTATUS_SUCCESS) && (rsp[8] != 0x01)) {
+        status = phNxpNciHal_send_ext_cmd(sizeof(setConfig_A015),
+                                          setConfig_A015, &rsp_len, rsp);
         if (status != NFCSTATUS_SUCCESS) {
           NXPLOG_NCIHAL_E("Set Config : Failed");
         }
       }
 
-      status = phNxpNciHal_send_ext_cmd(sizeof(getConfig_A10F), getConfig_A10F);
-      if ((status == NFCSTATUS_SUCCESS) &&
-          (nxpncihal_ctrl.p_rx_data[8] != 0x00)) {
-        status =
-            phNxpNciHal_send_ext_cmd(sizeof(setConfig_A10F), setConfig_A10F);
+      status = phNxpNciHal_send_ext_cmd(sizeof(getConfig_A10F), getConfig_A10F,
+                                        &rsp_len, rsp);
+      if ((status == NFCSTATUS_SUCCESS) && (rsp[8] != 0x00)) {
+        status = phNxpNciHal_send_ext_cmd(sizeof(setConfig_A10F),
+                                          setConfig_A10F, &rsp_len, rsp);
         if (status != NFCSTATUS_SUCCESS) {
           NXPLOG_NCIHAL_E("Set Config: Failed");
         }

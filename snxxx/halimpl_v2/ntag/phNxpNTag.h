@@ -304,10 +304,11 @@ class NxpNTag {
   /**
    * @brief Process NTag NCi responses
    * @param pData Pointer to the data
+   * @param dataLen Length of the data
    * @return returns NFCSTATUS_EXTN_FEATURE_SUCCESS, if it is vendor specific
    * feature and handled it internally otherwise NFCSTATUS_EXTN_FEATURE_FAILURE.
    */
-  NFCSTATUS handleNTagNciRsp(uint8_t* pData);
+  NFCSTATUS handleNTagNciRsp(uint8_t* pData, uint16_t dataLen);
 
   /**
    * @brief Process RF interface activated notification

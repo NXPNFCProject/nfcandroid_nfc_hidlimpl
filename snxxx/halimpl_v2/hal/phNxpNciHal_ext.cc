@@ -82,6 +82,20 @@ static uint32_t iCoreInitRspLen;
 extern uint32_t timeoutTimerId;
 extern sem_t sem_reset_ntf_received;
 
+typedef struct phNxpExtRxData_Control {
+  uint8_t* p_rx_data;
+  uint16_t* p_rx_data_len;
+  pthread_mutex_t rx_mutex;
+  pthread_cond_t rx_cond;
+} phNxpExtRxData_Control_t;
+
+static phNxpExtRxData_Control_t gExtRxDataCtrl = {
+  .p_rx_data = NULL,
+  .p_rx_data_len = NULL,
+  .rx_mutex = PTHREAD_MUTEX_INITIALIZER,
+  .rx_cond = PTHREAD_COND_INITIALIZER
+};
+
 /************** HAL extension functions ***************************************/
 static void hal_extns_write_rsp_timeout_cb(uint32_t TimerId, void* pContext);
 
@@ -147,12 +161,89 @@ void phNxpNciHal_ext_init(void) {
 *******************************************************************************/
 NFCSTATUS phNxpNciHal_ext_send_sram_config_to_flash() {
   NXPLOG_NCIHAL_D("phNxpNciHal_ext_send_sram_config_to_flash  send");
+  uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+  uint16_t rsp_len = 0;
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   uint8_t send_sram_flash[] = {NXP_PROPCMD_GID, NXP_FLUSH_SRAM_AO_TO_FLASH,
                                0x00};
-  status = phNxpNciHal_send_ext_cmd(sizeof(send_sram_flash), send_sram_flash);
+  status = phNxpNciHal_send_ext_cmd(sizeof(send_sram_flash), send_sram_flash,
+                                    &rsp_len, rsp);
   return status;
 }
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_set_ext_buffer
+**
+** Description      Sets the buffer on which ext response to be received
+**
+** Returns          NFCSTATUS_SUCCESS if success
+**
+*******************************************************************************/
+NFCSTATUS phNxpNciHal_set_ext_buffer(uint16_t* rsp_len, uint8_t* p_rsp) {
+  pthread_mutex_lock(&gExtRxDataCtrl.rx_mutex);
+  if (gExtRxDataCtrl.p_rx_data != NULL || gExtRxDataCtrl.p_rx_data_len != NULL) {
+    pthread_mutex_unlock(&gExtRxDataCtrl.rx_mutex);
+    NXPLOG_NCIHAL_D("%s: Response buffer is already set!!!", __func__);
+    return NFCSTATUS_FAILED;
+  }
+  // Set application buffer on which received Ext response to be copied.
+  gExtRxDataCtrl.p_rx_data = p_rsp;
+  gExtRxDataCtrl.p_rx_data_len = rsp_len;
+  pthread_cond_signal(&gExtRxDataCtrl.rx_cond);
+  pthread_mutex_unlock(&gExtRxDataCtrl.rx_mutex);
+  return NFCSTATUS_SUCCESS;
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_update_ext_buffer
+**
+** Description      Update the response buffer with passed buffer
+**
+** Returns          NFCSTATUS_SUCCESS if success
+**
+*******************************************************************************/
+NFCSTATUS phNxpNciHal_update_ext_buffer(uint16_t rsp_len, uint8_t* p_rsp) {
+  // If response buffer is not yet set wait for it to set
+  struct timespec timeout_spec;
+  clock_gettime(CLOCK_REALTIME, &timeout_spec);
+  timeout_spec.tv_sec += 1;
+  pthread_mutex_lock(&gExtRxDataCtrl.rx_mutex);
+  int status = 0;
+  while ((gExtRxDataCtrl.p_rx_data == NULL || gExtRxDataCtrl.p_rx_data_len == NULL) && status == 0) {
+    NXPLOG_NCIHAL_D("%s: Waiting for response buffer to set", __func__);
+    status = pthread_cond_timedwait(&gExtRxDataCtrl.rx_cond, &gExtRxDataCtrl.rx_mutex, &timeout_spec);
+  }
+  if ((gExtRxDataCtrl.p_rx_data == NULL || gExtRxDataCtrl.p_rx_data_len == NULL)) {
+    pthread_mutex_unlock(&gExtRxDataCtrl.rx_mutex);
+    NXPLOG_NCIHAL_D("%s: Response buffer is not set !!!", __func__);
+    return NFCSTATUS_FAILED;
+  }
+  // Copy Ext response to the application buffer
+  memcpy(gExtRxDataCtrl.p_rx_data, p_rsp, rsp_len);
+  *gExtRxDataCtrl.p_rx_data_len = rsp_len;
+  pthread_mutex_unlock(&gExtRxDataCtrl.rx_mutex);
+  return NFCSTATUS_SUCCESS;
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_reset_ext_buffer
+**
+** Description      Resets the response buffer
+**
+** Returns          NFCSTATUS_SUCCESS if success
+**
+*******************************************************************************/
+NFCSTATUS phNxpNciHal_reset_ext_buffer() {
+  pthread_mutex_lock(&gExtRxDataCtrl.rx_mutex);
+  gExtRxDataCtrl.p_rx_data = NULL;
+  gExtRxDataCtrl.p_rx_data_len = NULL;
+  pthread_mutex_unlock(&gExtRxDataCtrl.rx_mutex);
+  return NFCSTATUS_SUCCESS;
+}
+
 /*******************************************************************************
 **
 ** Function         phNxpNciHal_process_ext_rsp
@@ -559,7 +650,9 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
  *
  ******************************************************************************/
 static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
-                                                 uint8_t* p_cmd) {
+                                                 uint8_t* p_cmd,
+                                                 uint16_t* rsp_len,
+                                                 uint8_t* p_rsp) {
   NFCSTATUS status = NFCSTATUS_FAILED;
   uint16_t data_written = 0;
 
@@ -578,14 +671,18 @@ static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
   }
 
   nxpncihal_ctrl.ext_cb_data.status = NFCSTATUS_SUCCESS;
-
   /* Send ext command */
   data_written = phNxpNciHal_write_unlocked(cmd_len, p_cmd, ORIG_NXPHAL);
   if (data_written != cmd_len) {
     NXPLOG_NCIHAL_D("phNxpNciHal_write failed for hal ext");
     goto clean_and_return;
   }
-
+  /* Set Ext response buffer on which response to be received. */
+  status = phNxpNciHal_set_ext_buffer(rsp_len, p_rsp);
+  if (NFCSTATUS_SUCCESS != status) {
+    NXPLOG_NCIHAL_E("%s: Failed to set ext response buffer", __func__);
+    goto clean_and_return;
+  }
   /* Start timer */
   status = phOsalNfc_Timer_Start(timeoutTimerId, HAL_EXTNS_WRITE_RSP_TIMEOUT,
                                  &hal_extns_write_rsp_timeout_cb, NULL);
@@ -664,10 +761,8 @@ static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
 
   /*Response check for Set config, Core Reset & Core init command sent part of
    * HAL_EXT*/
-  if (nxpncihal_ctrl.p_rx_data[0] == 0x40 &&
-      nxpncihal_ctrl.p_rx_data[1] <= 0x02 &&
-      nxpncihal_ctrl.p_rx_data[2] != 0x00) {
-    status = nxpncihal_ctrl.p_rx_data[3];
+  if (p_rsp[0] == 0x40 && p_rsp[1] <= 0x02 && p_rsp[2] != 0x00) {
+    status = p_rsp[3];
     if (status != NCI_STATUS_OK) {
       if (nxpncihal_ctrl.halStatus == HAL_OPEN_CORE_INITIALIZING) {
         /*Add 500ms delay for FW to flush circular buffer */
@@ -679,13 +774,13 @@ static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
 
   /*Response check for SYSTEM SET SERVICE STATUS command sent as part of
    * HAL_EXT*/
-  if (IS_CHIP_TYPE_GE(sn220u) && nxpncihal_ctrl.p_rx_data[0] == 0x4F &&
-      nxpncihal_ctrl.p_rx_data[1] == 0x01 &&
-      nxpncihal_ctrl.p_rx_data[2] != 0x00) {
-    status = nxpncihal_ctrl.p_rx_data[3];
+  if (IS_CHIP_TYPE_GE(sn220u) && p_rsp[0] == 0x4F && p_rsp[1] == 0x01 &&
+      p_rsp[2] != 0x00) {
+    status = p_rsp[3];
   }
 
 clean_and_return:
+  phNxpNciHal_reset_ext_buffer();
   phNxpNciHal_cleanup_cb_data(&nxpncihal_ctrl.ext_cb_data);
   nxpncihal_ctrl.nci_info.wait_for_ntf = FALSE;
   HAL_DISABLE_EXT();
@@ -982,13 +1077,14 @@ NFCSTATUS phNxpNciHal_write_ext(uint16_t* cmd_len, uint8_t* p_cmd_data,
  *                  response is received.
  *
  ******************************************************************************/
-NFCSTATUS phNxpNciHal_send_ext_cmd(uint16_t cmd_len, uint8_t* p_cmd) {
+NFCSTATUS phNxpNciHal_send_ext_cmd(uint16_t cmd_len, uint8_t* p_cmd,
+                                   uint16_t* p_rsp_len, uint8_t* p_rsp) {
   NFCSTATUS status = NFCSTATUS_FAILED;
-  if (p_cmd && cmd_len > 0) {
+  if (p_cmd && cmd_len > 0 && p_rsp && p_rsp_len) {
     nxpncihal_ctrl.cmd_len = cmd_len;
     memcpy(nxpncihal_ctrl.p_cmd_data, p_cmd, cmd_len);
-    status = phNxpNciHal_process_ext_cmd_rsp(nxpncihal_ctrl.cmd_len,
-      nxpncihal_ctrl.p_cmd_data);
+    status = phNxpNciHal_process_ext_cmd_rsp(
+        nxpncihal_ctrl.cmd_len, nxpncihal_ctrl.p_cmd_data, p_rsp_len, p_rsp);
   } else {
     NXPLOG_NCIHAL_E("%s: invalid arguments", __func__);
   }
@@ -1050,7 +1146,8 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
   bool_t update_req = false;
   uint16_t set_cfg_cmd_len = 0;
   uint8_t *set_cfg_eeprom, *base_addr;
-
+  uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+  uint16_t rsp_len = 0;
   mEEPROM_info->update_mode = BITWISE;
 
   switch (mEEPROM_info->request_type) {
@@ -1302,9 +1399,10 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
   memcpy(set_cfg_eeprom, set_cfg_cmd_hdr, sizeof(set_cfg_cmd_hdr));
 
 retryget:
-  status = phNxpNciHal_send_ext_cmd(sizeof(get_cfg_eeprom), get_cfg_eeprom);
+  status = phNxpNciHal_send_ext_cmd(sizeof(get_cfg_eeprom), get_cfg_eeprom,
+                                    &rsp_len, rsp);
   if (status == NFCSTATUS_SUCCESS) {
-    status = nxpncihal_ctrl.p_rx_data[3];
+    status = rsp[3];
     if (status != NFCSTATUS_SUCCESS) {
       ALOGE("failed to get requested memory address");
     } else if (mEEPROM_info->request_mode == GET_EEPROM_DATA) {
@@ -1312,11 +1410,9 @@ retryget:
         /* Max bufferlenth for single Get Config Command is 0xFF.
          * If buffer length set to max value, reassign buffer value
          * depends on response from Get Config command */
-        mEEPROM_info->bufflen =
-            *(nxpncihal_ctrl.p_rx_data + getCfgStartIndex + memIndex - 1);
+        mEEPROM_info->bufflen = *(rsp + getCfgStartIndex + memIndex - 1);
       }
-      memcpy(mEEPROM_info->buffer,
-             nxpncihal_ctrl.p_rx_data + getCfgStartIndex + memIndex,
+      memcpy(mEEPROM_info->buffer, rsp + getCfgStartIndex + memIndex,
              mEEPROM_info->bufflen);
     } else if (mEEPROM_info->request_mode == SET_EEPROM_DATA) {
       // Clear the buffer first
@@ -1324,8 +1420,8 @@ retryget:
              (set_cfg_cmd_len - setCfgStartIndex));
 
       // copy get config data into set_cfg_eeprom
-      memcpy(set_cfg_eeprom + setCfgStartIndex,
-             nxpncihal_ctrl.p_rx_data + getCfgStartIndex, fieldLen);
+      memcpy(set_cfg_eeprom + setCfgStartIndex, rsp + getCfgStartIndex,
+             fieldLen);
       if (mEEPROM_info->update_mode == BITWISE) {
         cur_value =
             (set_cfg_eeprom[setCfgStartIndex + memIndex] >> b_position) & 0x01;
@@ -1351,7 +1447,8 @@ retryget:
       if (update_req) {
       // do set config
       retryset:
-        status = phNxpNciHal_send_ext_cmd(set_cfg_cmd_len, set_cfg_eeprom);
+        status = phNxpNciHal_send_ext_cmd(set_cfg_cmd_len, set_cfg_eeprom,
+                                          &rsp_len, rsp);
         if (status != NFCSTATUS_SUCCESS && retry_cnt < 3) {
           retry_cnt++;
           ALOGE("Set Cfg Retry cnt=%x", retry_cnt);
@@ -1388,6 +1485,8 @@ NFCSTATUS phNxpNciHal_enableDefaultUICC2SWPline(uint8_t uicc2_sel) {
   NFCSTATUS status = NFCSTATUS_FAILED;
   uint8_t p_data[255] = {NCI_MT_CMD, NXP_CORE_SET_CONFIG_CMD};
   uint8_t LEN_INDEX = 2, PARAM_INDEX = 3;
+  uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+  uint16_t rsp_len = 0;
   uint8_t* p = p_data;
   NXPLOG_NCIHAL_D("phNxpNciHal_enableDefaultUICC2SWPline %d", uicc2_sel);
   p_data[LEN_INDEX] = 1;
@@ -1409,7 +1508,7 @@ NFCSTATUS phNxpNciHal_enableDefaultUICC2SWPline(uint8_t uicc2_sel) {
     p_data[PARAM_INDEX] += 1;
   }
   if (p_data[PARAM_INDEX] > 0x00)
-    status = phNxpNciHal_send_ext_cmd(p - p_data, p_data);
+    status = phNxpNciHal_send_ext_cmd(p - p_data, p_data, &rsp_len, rsp);
   return status;
 }
 
@@ -1425,28 +1524,28 @@ NFCSTATUS phNxpNciHal_enableDefaultUICC2SWPline(uint8_t uicc2_sel) {
 void phNxpNciHal_prop_conf_lpcd(bool enableLPCD) {
   uint8_t cmd_get_lpcdval[] = {0x20, 0x03, 0x03, 0x01, 0xA0, 0x68};
   vector<uint8_t> cmd_set_lpcdval{0x20, 0x02, 0x2E};
-
-  if (NFCSTATUS_SUCCESS ==
-      phNxpNciHal_send_ext_cmd(sizeof(cmd_get_lpcdval), cmd_get_lpcdval)) {
-    if (NFCSTATUS_SUCCESS == nxpncihal_ctrl.p_rx_data[3]) {
-      if (!(nxpncihal_ctrl.p_rx_data[17] & (1 << 7)) && enableLPCD) {
-        nxpncihal_ctrl.p_rx_data[17] |= (1 << 7);
-        cmd_set_lpcdval.insert(
-            cmd_set_lpcdval.end(), &nxpncihal_ctrl.p_rx_data[4],
-            (&nxpncihal_ctrl.p_rx_data[4] + cmd_set_lpcdval[2]));
+  uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+  uint16_t rsp_len = 0;
+  if (NFCSTATUS_SUCCESS == phNxpNciHal_send_ext_cmd(sizeof(cmd_get_lpcdval),
+                                                    cmd_get_lpcdval, &rsp_len,
+                                                    rsp)) {
+    if (NFCSTATUS_SUCCESS == rsp[3]) {
+      if (!(rsp[17] & (1 << 7)) && enableLPCD) {
+        rsp[17] |= (1 << 7);
+        cmd_set_lpcdval.insert(cmd_set_lpcdval.end(), &rsp[4],
+                               (&rsp[4] + cmd_set_lpcdval[2]));
         if (NFCSTATUS_SUCCESS ==
             phNxpNciHal_send_ext_cmd(cmd_set_lpcdval.size(),
-                                     &cmd_set_lpcdval[0])) {
+                                     &cmd_set_lpcdval[0], &rsp_len, rsp)) {
           return;
         }
-      } else if (!enableLPCD && (nxpncihal_ctrl.p_rx_data[17] & (1 << 7))) {
-        nxpncihal_ctrl.p_rx_data[17] &= ~(1 << 7);
-        cmd_set_lpcdval.insert(
-            cmd_set_lpcdval.end(), &nxpncihal_ctrl.p_rx_data[4],
-            (&nxpncihal_ctrl.p_rx_data[4] + cmd_set_lpcdval[2]));
+      } else if (!enableLPCD && (rsp[17] & (1 << 7))) {
+        rsp[17] &= ~(1 << 7);
+        cmd_set_lpcdval.insert(cmd_set_lpcdval.end(), &rsp[4],
+                               (&rsp[4] + cmd_set_lpcdval[2]));
         if (NFCSTATUS_SUCCESS ==
             phNxpNciHal_send_ext_cmd(cmd_set_lpcdval.size(),
-                                     &cmd_set_lpcdval[0])) {
+                                     &cmd_set_lpcdval[0], &rsp_len, rsp)) {
           return;
         }
       } else {
@@ -1474,21 +1573,23 @@ void phNxpNciHal_prop_conf_rssi() {
   vector<uint8_t> cmd_get_rssival = {0x20, 0x03, 0x03, 0x01, 0xA1, 0x55};
   vector<uint8_t> cmd_set_rssival = {0x20, 0x02, 0x06, 0x01, 0xA1,
                                      0x55, 0x02, 0x00, 0x00};
+  uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+  uint16_t rsp_len = 0;
 
-  if (NFCSTATUS_SUCCESS !=
-      phNxpNciHal_send_ext_cmd(cmd_get_rssival.size(), &cmd_get_rssival[0])) {
+  if (NFCSTATUS_SUCCESS != phNxpNciHal_send_ext_cmd(cmd_get_rssival.size(),
+                                                    &cmd_get_rssival[0],
+                                                    &rsp_len, rsp)) {
     NXPLOG_NCIHAL_E("%s: failed!! Line:%d", __func__, __LINE__);
     return;
   }
-  if ((nxpncihal_ctrl.rx_data_len <= 9) ||
-      (NFCSTATUS_SUCCESS != nxpncihal_ctrl.p_rx_data[3])) {
+  if ((rsp_len <= 9) || (NFCSTATUS_SUCCESS != rsp[3])) {
     NXPLOG_NCIHAL_E("%s: failed!! Line:%d", __func__, __LINE__);
     return;
   }
-  if ((nxpncihal_ctrl.p_rx_data[8] != 0x00) ||
-      (nxpncihal_ctrl.p_rx_data[9] != 0x00)) {
-    if (NFCSTATUS_SUCCESS !=
-        phNxpNciHal_send_ext_cmd(cmd_set_rssival.size(), &cmd_set_rssival[0])) {
+  if ((rsp[8] != 0x00) || (rsp[9] != 0x00)) {
+    if (NFCSTATUS_SUCCESS != phNxpNciHal_send_ext_cmd(cmd_set_rssival.size(),
+                                                      &cmd_set_rssival[0],
+                                                      &rsp_len, rsp)) {
       NXPLOG_NCIHAL_E("%s: failed!! Line:%d", __func__, __LINE__);
       return;
     }
@@ -1511,6 +1612,8 @@ void phNxpNciHal_conf_nfc_forum_mode() {
   uint8_t cmd_reset_emvcocfg[8];
   long cmdlen = 8;
   long retlen = 0;
+  uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+  uint16_t rsp_len = 0;
 
   if (GetNxpByteArrayValue(NAME_NXP_PROP_RESET_EMVCO_CMD,
                            (char*)cmd_reset_emvcocfg, cmdlen, &retlen)) {
@@ -1523,13 +1626,14 @@ void phNxpNciHal_conf_nfc_forum_mode() {
   cmd_get_emvcocfg[4] = cmd_reset_emvcocfg[4];
   cmd_get_emvcocfg[5] = cmd_reset_emvcocfg[5];
 
-  if (NFCSTATUS_SUCCESS ==
-      phNxpNciHal_send_ext_cmd(sizeof(cmd_get_emvcocfg), cmd_get_emvcocfg)) {
-    if (NFCSTATUS_SUCCESS == nxpncihal_ctrl.p_rx_data[3]) {
-      if (0x01 & nxpncihal_ctrl.p_rx_data[8]) {
+  if (NFCSTATUS_SUCCESS == phNxpNciHal_send_ext_cmd(sizeof(cmd_get_emvcocfg),
+                                                    cmd_get_emvcocfg, &rsp_len,
+                                                    rsp)) {
+    if (NFCSTATUS_SUCCESS == rsp[3]) {
+      if (0x01 & rsp[8]) {
         if (NFCSTATUS_SUCCESS ==
             phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_emvcocfg),
-                                     cmd_reset_emvcocfg)) {
+                                     cmd_reset_emvcocfg, &rsp_len, rsp)) {
           return;
         }
       } else {

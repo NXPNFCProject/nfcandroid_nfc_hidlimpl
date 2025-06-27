@@ -285,6 +285,8 @@ void NxpMfcReader::BuildIncDecCmd() {
 void NxpMfcReader::AuthForWrite() {
   sendRspToUpperLayer = false;
   NFCSTATUS status = NFCSTATUS_FAILED;
+  uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+  uint16_t rsp_len = 0;
   uint8_t authForWriteBuff[] = {0x00,
                                 0x00,
                                 0x03,
@@ -293,7 +295,8 @@ void NxpMfcReader::AuthForWrite() {
                                 (uint8_t)mMfcTagCmdIntfData.sendBuf[1]};
 
   status = phNxpNciHal_send_ext_cmd(
-      sizeof(authForWriteBuff) / sizeof(authForWriteBuff[0]), authForWriteBuff);
+      sizeof(authForWriteBuff) / sizeof(authForWriteBuff[0]), authForWriteBuff,
+      &rsp_len, rsp);
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("Mifare Auth for Transceive failed");
   }
@@ -313,6 +316,9 @@ void NxpMfcReader::SendIncDecRestoreCmdPart2(uint16_t mfcDataLen,
                                              const uint8_t* mfcData) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   bool isError = false;
+  uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+  uint16_t rsp_len = 0;
+
   /* Build TAG_CMD part 2 for Mifare increment ,decrement and restore commands*/
   uint8_t incDecRestorePart2[] = {0x00, 0x00, 0x05, (uint8_t)eMfRawDataXchgHdr,
                                   0x00, 0x00, 0x00, 0x00};
@@ -334,7 +340,8 @@ void NxpMfcReader::SendIncDecRestoreCmdPart2(uint16_t mfcDataLen,
     incDecRestorePart2[i] = mfcData[i + 1];
   }
   sendRspToUpperLayer = false;
-  status = phNxpNciHal_send_ext_cmd(incDecRestorePart2Size, incDecRestorePart2);
+  status = phNxpNciHal_send_ext_cmd(incDecRestorePart2Size, incDecRestorePart2,
+                                    &rsp_len, rsp);
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("Mifare Cmd for inc/dec/Restore part 2 failed");
   }

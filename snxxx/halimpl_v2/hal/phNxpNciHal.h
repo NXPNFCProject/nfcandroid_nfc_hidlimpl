@@ -186,10 +186,6 @@ typedef struct phNxpNciHal_Control {
   phLibNfc_sConfig_t gDrvCfg;   /* Driver config data */
 
   /* Rx data */
-  uint8_t* p_rx_data;
-  uint16_t rx_data_len;
-
-  /* Rx data */
   uint8_t* p_rx_ese_data;
   uint16_t rx_ese_data_len;
 
@@ -491,7 +487,7 @@ NFCSTATUS phNxpNciHal_restore_uicc_params();
  * Returns          void
  *
  ******************************************************************************/
-void phNxpNciHal_client_data_callback();
+void phNxpNciHal_client_data_callback(uint16_t rx_data_len, uint8_t* p_rx_data);
 
 /******************************************************************************
  * Function         phNxpNciHal_UpdateRfMiscSettings
