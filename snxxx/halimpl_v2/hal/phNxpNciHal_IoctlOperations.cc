@@ -617,6 +617,8 @@ void phNxpNciHal_txNfccClockSetCmd(void) {
   uint8_t* pCmd4DpllSetting = NULL;
   uint32_t pllCmdLen = 0, dpllCmdLen = 0;
   int srcCfgFound = 0, freqCfgFound = 0;
+  uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+  uint16_t rsp_len = 0;
 
   srcCfgFound = (GetNxpNumValue(NAME_NXP_SYS_CLK_SRC_SEL, &clockSource,
                                 sizeof(clockSource)) > 0);
@@ -698,22 +700,26 @@ void phNxpNciHal_txNfccClockSetCmd(void) {
       set_clock_cmd[setClkCmdLen - 1] = 0x00;
       while (status != NFCSTATUS_SUCCESS &&
              setClockCmdWriteRetryCnt++ < MAX_RETRY_COUNT)
-        status = phNxpNciHal_send_ext_cmd(setClkCmdLen, set_clock_cmd);
+        status = phNxpNciHal_send_ext_cmd(setClkCmdLen, set_clock_cmd, &rsp_len,
+                                          rsp);
 
       status = NFCSTATUS_FAILED;
 
       while (status != NFCSTATUS_SUCCESS && pllSetRetryCount-- > 0)
-        status = phNxpNciHal_send_ext_cmd(pllCmdLen, pCmd4PllSetting);
+        status =
+            phNxpNciHal_send_ext_cmd(pllCmdLen, pCmd4PllSetting, &rsp_len, rsp);
 
       status = NFCSTATUS_FAILED;
 
       while (status != NFCSTATUS_SUCCESS && dpllSetRetryCount-- > 0)
-        status = phNxpNciHal_send_ext_cmd(dpllCmdLen, pCmd4DpllSetting);
+        status = phNxpNciHal_send_ext_cmd(dpllCmdLen, pCmd4DpllSetting,
+                                          &rsp_len, rsp);
 
       break;
     }
     case CLK_SRC_XTAL: {
-      status = phNxpNciHal_send_ext_cmd(setClkCmdLen, set_clock_cmd);
+      status =
+          phNxpNciHal_send_ext_cmd(setClkCmdLen, set_clock_cmd, &rsp_len, rsp);
       if (status != NFCSTATUS_SUCCESS) {
         NXPLOG_NCIHAL_E("XTAL clock setting failed !!");
       }

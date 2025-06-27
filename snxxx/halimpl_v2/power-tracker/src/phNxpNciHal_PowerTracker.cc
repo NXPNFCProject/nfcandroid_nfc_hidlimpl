@@ -88,9 +88,6 @@ typedef struct {
   bool_t isUlpdetOn;
 } PowerTrackerContext;
 
-/******************* External variables ***************************************/
-extern phNxpNciHal_Control_t nxpncihal_ctrl;
-
 /*********************** Global Variables *************************************/
 static PowerTrackerContext gContext = {
     .pollDurationMilliSec = 0,
@@ -265,6 +262,8 @@ static void* phNxpNciHal_pollPowerTrackerData(void* pCtx) {
 
 static NFCSTATUS phNxpNciHal_syncPowerTrackerData() {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
+  uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+  uint16_t rsp_len = 0;
   struct timespec currentTime = {.tv_sec = 0, .tv_nsec = 0};
   uint8_t cmd_getPowerTrackerData[] = {0x2F,
                                        0x2E,  // NCI_PROP_GET_PWR_TRACK_DATA_CMD
@@ -273,19 +272,18 @@ static NFCSTATUS phNxpNciHal_syncPowerTrackerData() {
 
   CONCURRENCY_LOCK();  // This lock is to protect origin field.
   status = phNxpNciHal_send_ext_cmd(sizeof(cmd_getPowerTrackerData),
-                                    cmd_getPowerTrackerData);
+                                    cmd_getPowerTrackerData, &rsp_len, rsp);
   CONCURRENCY_UNLOCK();
   if (status != NFCSTATUS_SUCCESS) {
     return status;
   }
-  if (nxpncihal_ctrl.p_rx_data[3] != NFCSTATUS_SUCCESS) {
-    return (NFCSTATUS)nxpncihal_ctrl.p_rx_data[3];
+  if (rsp[3] != NFCSTATUS_SUCCESS) {
+    return (NFCSTATUS)rsp[3];
   }
 
   if (clock_gettime(CLOCK_MONOTONIC, &currentTime) == -1) {
     NXPLOG_NCIHAL_E("%s Fail get time; errno=0x%X", __func__, errno);
   }
-  uint8_t* rsp = nxpncihal_ctrl.p_rx_data;
   activeCounter = ((uint64_t)rsp[4] << 0) | ((uint64_t)rsp[5] << 8) |
                   ((uint64_t)rsp[6] << 16) | ((uint64_t)rsp[7] << 24);
   activeTick = ((uint64_t)rsp[8] << 0) | ((uint64_t)rsp[9] << 8) |

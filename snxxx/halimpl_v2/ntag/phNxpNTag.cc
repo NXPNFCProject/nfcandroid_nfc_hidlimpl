@@ -22,8 +22,6 @@
 #include "NxpNfcExtension.h"
 #include "ObserveMode.h"
 
-extern phNxpNciHal_Control_t nxpncihal_ctrl;
-
 NxpNTag* NxpNTag::sNxpNTag = nullptr;
 
 NxpNTag::NxpNTag() {
@@ -63,14 +61,16 @@ void NxpNTag::phNxpNciHal_disableNtagNtfConfig() {
 
   uint8_t getNtagNtfConfig[] = {0x20, 0x03, 0x03, 0x01, 0xA1, 0xDA};
   constexpr uint8_t PROP_NTF_STATUS_INDEX = 8;
-  status = phNxpNciHal_send_ext_cmd(sizeof(getNtagNtfConfig), getNtagNtfConfig);
+  uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+  uint16_t rsp_len = 0;
+  status = phNxpNciHal_send_ext_cmd(sizeof(getNtagNtfConfig), getNtagNtfConfig,
+                                    &rsp_len, rsp);
   if ((status == NFCSTATUS_SUCCESS) &&
-      (nxpncihal_ctrl.p_rx_data[PROP_NTF_STATUS_INDEX] ==
-       NTAG_NTF_ENABLE_STATE)) {
+      (rsp[PROP_NTF_STATUS_INDEX] == NTAG_NTF_ENABLE_STATE)) {
     uint8_t setNtagNtfConfig[] = {0x20, 0x02, 0x05, 0x01,
                                   0xA1, 0xDA, 0x01, 0x00};
-    status =
-        phNxpNciHal_send_ext_cmd(sizeof(setNtagNtfConfig), setNtagNtfConfig);
+    status = phNxpNciHal_send_ext_cmd(sizeof(setNtagNtfConfig),
+                                      setNtagNtfConfig, &rsp_len, rsp);
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("Ntag Set Config : Failed");
     }
@@ -394,7 +394,7 @@ void NxpNTag::handleNTagPresenceCheckNtf(uint8_t* pData) {
   }
 }
 
-NFCSTATUS NxpNTag::handleNTagNciRsp(uint8_t* pData) {
+NFCSTATUS NxpNTag::handleNTagNciRsp(uint8_t* pData, uint16_t dataLen) {
   NXPLOG_NCIHAL_D("NxpNTag::%s Enter", __func__);
   const int NCI_CMD_STATUS_INDEX = 3;
   switch (pData[NCI_OID_INDEX] & NCI_OID_MASK) {
@@ -458,7 +458,7 @@ NFCSTATUS NxpNTag::handleNTagNciRsp(uint8_t* pData) {
       handleNTagPresenceCheckRsp();
       break;
   }
-  phNxpNciHal_client_data_callback();
+  phNxpNciHal_client_data_callback(dataLen, pData);
   return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 }
 
@@ -491,7 +491,7 @@ NFCSTATUS NxpNTag::handleNTagNciNtf(uint8_t* pData, uint16_t dataLen) {
         return NFCSTATUS_EXTN_FEATURE_FAILURE;
       break;
   }
-  phNxpNciHal_client_data_callback();
+  phNxpNciHal_client_data_callback(dataLen, pData);
   return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 }
 
@@ -521,7 +521,7 @@ NFCSTATUS NxpNTag::handleVendorNciRspNtf(uint16_t dataLen, uint8_t* pData) {
 
   NFCSTATUS status = NFCSTATUS_EXTN_FEATURE_SUCCESS;
   if (msgType == NCI_MT_RSP)
-    status = handleNTagNciRsp(pData);
+    status = handleNTagNciRsp(pData, dataLen);
   else if (msgType == NCI_MT_NTF)
     status = handleNTagNciNtf(pData, dataLen);
 

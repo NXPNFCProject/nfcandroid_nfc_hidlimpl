@@ -92,8 +92,10 @@ int handleObserveMode(uint16_t data_len, const uint8_t* p_data) {
 NFCSTATUS deactivateRfDiscovery() {
   if (NciDiscoveryCommandBuilderInstance.isRfDiscoveryCommandReceived()) {
     uint8_t rf_deactivate_cmd[] = {0x21, 0x06, 0x01, 0x00};
+    uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+    uint16_t rsp_len = 0;
     return phNxpNciHal_send_ext_cmd(sizeof(rf_deactivate_cmd),
-                                    rf_deactivate_cmd);
+                                    rf_deactivate_cmd, &rsp_len, rsp);
   } else {
     return NFCSTATUS_SUCCESS;
   }
@@ -114,12 +116,14 @@ NFCSTATUS deactivateRfDiscovery() {
  ******************************************************************************/
 NFCSTATUS sendRfDiscoveryCommand(bool isObserveModeEnable) {
   if (NciDiscoveryCommandBuilderInstance.isRfDiscoveryCommandReceived()) {
+    uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+    uint16_t rsp_len = 0;
     vector<uint8_t> discoveryCommand =
         isObserveModeEnable
             ? NciDiscoveryCommandBuilderInstance.reConfigRFDiscCmd()
             : NciDiscoveryCommandBuilderInstance.getDiscoveryCommand();
     return phNxpNciHal_send_ext_cmd(discoveryCommand.size(),
-                                    &discoveryCommand[0]);
+                                    &discoveryCommand[0], &rsp_len, rsp);
   } else {
     return NFCSTATUS_SUCCESS;
   }
@@ -139,6 +143,9 @@ int handleObserveModeTechCommand(uint16_t data_len, const uint8_t* p_data) {
   NFCSTATUS nciStatus = NFCSTATUS_FAILED;
   uint8_t status = NCI_RSP_FAIL;
   uint8_t techValue = p_data[NCI_MSG_INDEX_FEATURE_VALUE];
+  uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+  uint16_t rsp_len = 0;
+
   if (phNxpNciHal_isObserveModeSupported() &&
       (techValue == OBSERVE_MODE_TECH_COMMAND_SUPPORT_FLAG ||
        techValue == OBSERVE_MODE_TECH_COMMAND_SUPPORT_FLAG_FOR_ALL_TECH ||
@@ -156,7 +163,8 @@ int handleObserveModeTechCommand(uint16_t data_len, const uint8_t* p_data) {
         // send Observe Mode Tech command
         NciDiscoveryCommandBuilderInstance.setObserveModePerTech(techValue);
 
-        nciStatus = phNxpNciHal_send_ext_cmd(data_len, (uint8_t*)p_data);
+        nciStatus =
+            phNxpNciHal_send_ext_cmd(data_len, (uint8_t*)p_data, &rsp_len, rsp);
         if (nciStatus != NFCSTATUS_SUCCESS) {
           NXPLOG_NCIHAL_E("%s ObserveMode tech command failed", __func__);
         }
