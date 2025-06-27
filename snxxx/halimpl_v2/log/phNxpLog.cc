@@ -26,6 +26,7 @@
 #endif
 #include <log/log.h>
 #include "phNxpNciHal_IoctlOperations.h"
+#include "phNxpNciHal_LxDebug.h"
 
 const char* NXPLOG_ITEM_EXTNS = "NxpExtns";
 const char* NXPLOG_ITEM_NCIHAL = "NxpHal";
@@ -232,6 +233,41 @@ static void phNxpLog_SetNciTxLogLevel(uint8_t level) {
   }
 }
 
+/*******************************************************************************
+ * Function         phNxpLog_setLxLoggingEnabled
+ *
+ * Description      Enables LX logs based on ro.debuggable and
+ *                  CORE_PROP_SYSTEM_DEBUG flag.
+ *
+ * Returns          void
+ ******************************************************************************/
+static void phNxpLog_setLxLoggingEnabled() {
+  gLog_level.is_lx_logging_enabled = false;
+  unsigned long lx_debug_cfg = 0;
+  bool isfound = GetNxpNumValue(NAME_NXP_CORE_PROP_SYSTEM_DEBUG, &lx_debug_cfg,
+                                sizeof(lx_debug_cfg));
+  if (!isfound) {
+    return;
+  }
+
+  if ((property_get_bool("ro.debuggable", 0) != 0) &&
+      lx_debug_cfg != LX_DEBUG_CFG_DISABLE) {
+    gLog_level.is_lx_logging_enabled = true;
+  }
+}
+
+/*******************************************************************************
+ * Function         phNxpLog_isLxLoggingEnabled
+ *
+ * Description      Determines whether lx notifications should be printed.
+ *
+ * Returns          bool_t - true if lx notification print is required, false
+ *		    otherwise.
+ ******************************************************************************/
+bool_t phNxpLog_isLxLoggingEnabled() {
+  return gLog_level.is_lx_logging_enabled;
+}
+
 /******************************************************************************
  * Function         phNxpLog_InitializeLogLevel
  *
@@ -273,6 +309,7 @@ void phNxpLog_InitializeLogLevel(void) {
   phNxpLog_SetTmlLogLevel(level);
   phNxpLog_SetDnldLogLevel(level);
   phNxpLog_SetNciTxLogLevel(level);
+  phNxpLog_setLxLoggingEnabled();
 
   ALOGD_IF(nfc_debug_enabled,
            "%s: global =%u, Fwdnld =%u, extns =%u, \

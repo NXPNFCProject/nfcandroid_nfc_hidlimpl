@@ -34,8 +34,8 @@ void setInterplolatedRssi8Am(uint16_t rssiAt8Am, uint8_t measuredFieldStrength);
 class ReaderPollConfigParser {
  private:
   reader_poll_info_callback_t* callback = nullptr;
-  uint8_t lastKnownGain = 0x00;
-  uint8_t lastKnownModEvent = 0x00;
+  static uint8_t lastKnownGain;
+  static uint8_t lastKnownModEvent;
 
   /*****************************************************************************
    *
@@ -227,6 +227,19 @@ class ReaderPollConfigParser {
    *
    ****************************************************************************/
   vector<uint8_t> getTimestampInMicroSeconds(vector<uint8_t> rawFrame);
+
+  /*****************************************************************************
+   *
+   * Function         resetLastKnownValues
+   *
+   * Description      This function resets the gain and last know mod type
+   *
+   * Parameters       None
+   *
+   * Returns          void
+   *
+   ****************************************************************************/
+  static void resetLastKnownValues();
 };
 
 #endif /* _PHNXPNCIHAL_READER_POLLCONFIG_PARSER_H_ */

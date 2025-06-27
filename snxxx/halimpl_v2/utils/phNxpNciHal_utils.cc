@@ -19,18 +19,21 @@
 #include <log/log.h>
 #include <pthread.h>
 
+#include <phNfcNciConstants.h>
 #include <phNxpLog.h>
 #include <phNxpNciHal.h>
 #include <phNxpNciHal_utils.h>
 #include <iomanip>
 #include <sstream>
 #include "NfcExtension.h"
+#include "ObserveMode.h"
 #include "phNxpNciHal_extOperations.h"
 
 #define ASCII_OFFSET_NUM 48
 #define ASCII_OFFSET_CHAR 55
 
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
+extern bool_t phNxpLog_isLxLoggingEnabled();
 /*********************** Link list functions **********************************/
 
 /*******************************************************************************
@@ -476,12 +479,26 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
         break;
       }
       case PRINT_RECV: {
+#if (NXP_DEBUG_LOG == TRUE)
         if (isNxpAvcNciPrint) {
           NXPAVCLOG_NCIR_I("len = %3d > %s", len, print_buffer);
         } else {
           NXPLOG_NCIR_I("len = %3d > %s", len, print_buffer);
         }
         break;
+#else
+        if (!phNxpLog_isLxLoggingEnabled() && len >= NCI_MSG_LEN_INDEX &&
+            p_data[NCI_GID_INDEX] == NCI_PROP_NTF_GID &&
+            p_data[NCI_OID_INDEX] == NCI_PROP_LX_NTF_OID) {
+          break;
+        }
+        if (isNxpAvcNciPrint) {
+          NXPAVCLOG_NCIR_I("len = %3d > %s", len, print_buffer);
+        } else {
+          NXPLOG_NCIR_I("len = %3d > %s", len, print_buffer);
+        }
+        break;
+#endif
       }
       case PRINT_DEBUG:
         NXPLOG_NCIHAL_D(" Debug Info > len = %3d > %s", len, print_buffer);
