@@ -121,8 +121,6 @@ public class NxpNciPacketHandler {
                                             TimeUnit.MILLISECONDS)) {
                         NxpNfcLogger.d(TAG, "sendVendorNciMessage: error in wait " + status);
                         mVendorNciRsp = new byte[] { (byte) NxpNfcConstants.TIMEOUT_ERR_CODE };
-                    } else {
-                        mVendorNciRsp = new byte[] { (byte) status };
                     }
                 }
             }
