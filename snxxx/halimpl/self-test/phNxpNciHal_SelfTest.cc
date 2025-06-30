@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 NXP
+ * Copyright 2012-2022, 2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -880,10 +880,8 @@ static void hal_read_cb(void* pContext, phTmlNfc_TransactInfo_t* pInfo) {
     } else {
       if (pInfo->wStatus == NFCSTATUS_SUCCESS) {
         NXPLOG_NCIHAL_D("hal_read_cb successful status = 0x%x", pInfo->wStatus);
-        p_cb_data->status = NFCSTATUS_SUCCESS;
       } else {
         NXPLOG_NCIHAL_E("hal_read_cb error status = 0x%x", pInfo->wStatus);
-        p_cb_data->status = NFCSTATUS_FAILED;
       }
 
       p_cb_data->status = pInfo->wStatus;
@@ -1251,8 +1249,8 @@ void phNxpNciHal_TestMode_close() {
 
   if (NULL != gpphTmlNfc_Context->pDevHandle) {
     /* Abort any pending read and write */
-    status = phTmlNfc_ReadAbort();
-    status = phTmlNfc_WriteAbort();
+    (void)phTmlNfc_ReadAbort();
+    (void)phTmlNfc_WriteAbort();
 
     phOsalNfc_Timer_Cleanup();
 
@@ -1264,7 +1262,7 @@ void phNxpNciHal_TestMode_close() {
 
     phDal4Nfc_msgrelease(gDrvCfg.nClientId);
 
-    status = phOsalNfc_Timer_Delete(timeoutTimerId);
+    (void)phOsalNfc_Timer_Delete(timeoutTimerId);
   }
 
   CONCURRENCY_UNLOCK();
@@ -1608,7 +1606,6 @@ NFCSTATUS phNxpNciHal_DownloadPinTest(void) {
     return status;
   }
 
-  status = NFCSTATUS_FAILED;
   status = phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadMode);
   if (NFCSTATUS_SUCCESS != status) {
     NXPLOG_NCIHAL_D("phNxpNciHal_DownloadPinTest - FAILED\n");

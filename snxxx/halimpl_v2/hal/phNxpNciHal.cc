@@ -653,8 +653,7 @@ int phNxpNciHal_MinOpen() {
       NULL);
   if (status != NFCSTATUS_PENDING) {
     NXPLOG_NCIHAL_E("TML Read status error status = %x", status);
-    wConfigStatus = phTmlNfc_Shutdown_CleanUp();
-    wConfigStatus = NFCSTATUS_FAILED;
+    (void)phTmlNfc_Shutdown_CleanUp();
     return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
   }
 
@@ -2168,10 +2167,10 @@ close_and_return:
   if (NULL != gpphTmlNfc_Context->pDevHandle) {
     phNxpNciHal_complete(NFCSTATUS_SUCCESS, PHNXP_NCIHAL_OP_CLOSE);
     /* Abort any pending read and write */
-    status = phTmlNfc_ReadAbort();
+    (void)phTmlNfc_ReadAbort();
     phOsalNfc_Timer_Cleanup();
 
-    status = phTmlNfc_Shutdown();
+    (void)phTmlNfc_Shutdown();
 
     if (true != g_workerThread.Stop()) {
       NXPLOG_TML_E("Fail to kill Worker thread!");

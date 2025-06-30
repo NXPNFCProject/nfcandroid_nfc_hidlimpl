@@ -591,7 +591,6 @@ NFCSTATUS phDnldNfc_Force(pphDnldNfc_Buff_t pInputs, pphDnldNfc_RspCb_t pNotify,
           bClkSrc = phDnldNfc_ClkSrcPLL;
         }
 
-        bPldVal[0] = 0U;
         bPldVal[0] = ((bClkSrc << 3U) | bClkFreq);
       } else {
         NXPLOG_FWDNLD_E("Clk src inputs not provided!! Using default values..");
