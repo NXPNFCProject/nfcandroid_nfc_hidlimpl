@@ -312,9 +312,10 @@ public interface INxpNfcAdapter {
   boolean isRssiEnabled() throws IOException;
 
   /**
-   * This api is called by application to enable various debug notigications
+   * @deprecated This api is called by application to enable various debug notigications
    * of NFCC.
    * This api shall be called only if Nfcservice is enabled.
+   *
    * @return whether  the update of configuration is
    *          success or not.
    *          0x00 - success
@@ -322,7 +323,26 @@ public interface INxpNfcAdapter {
    *          0x03 - NFCC command failed
    *          0xFF - Service Unavialable
    */
+  @Deprecated
   int enableDebugNtf(byte fieldValue);
+  /**
+   * This api is called by application to enable various debug notigications
+   * of NFCC.
+   * This api shall be called only if Nfcservice is enabled.
+   * @param fieldValue : bytes to be set for lxdebug config.
+   * @return whether  the update of configuration is
+   *          success or not.
+   *          0x00 - success
+   *          0x01 - NFC is not initialized
+   *          0x03 - NFCC command failed
+   *          0x04 - Invalid argument In case of fieldValue
+   *                 is not 2 bytes.
+   *          0xFF - Service Unavialable
+   */
+  int enableDebugNtf(byte[] fieldValue);
+  /**
+   * This API registers the callback to get SRD Timout Events.
+   * @param callbacks : callback object to be register.
   /**
    * This API registers the callback to get SRD Timout Events.
    * @param callbacks : callback object to be register.
