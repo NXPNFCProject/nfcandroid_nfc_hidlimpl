@@ -83,6 +83,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
     private static final int STATUS_SUCCESS = 0x00;
     private static final int STATUS_FAILED = 0x01;
     private static final int ERROR_UNKNOWN = 0x03;
+    private static final int INVALID_ARGUMENTS = 0x04;
     private static final int SERVICE_UNAVIABLE = 0xFF;
 
     private static final byte NCI_OID_SYSTEM_DEBUG_STATE_L1_MESSAGE = 0x35;
@@ -705,7 +706,8 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
     }
 
     /**
-     * This api is called by application to enable various debug notigications
+     *
+     * @deprecated This api is called by application to enable various debug notigications
      * of NFCC.
      * This api shall be called only if Nfcservice is enabled.
      * @return whether  the update of configuration is
@@ -715,12 +717,40 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
      *          0x03 - NFCC command failed
      *          0xFF - Service Unavialable
      */
+    @Deprecated
     public @FdErrorCode int enableDebugNtf(byte fieldValue) {
+        byte[] lxFieldValue = {0x00, 0x00};
+        int offset = 0;
+        /* As of now, bit0, bit4 and bit5 is allowed by this API */
+        lxFieldValue[offset++] = (byte) (fieldValue & L2_DEBUG_BYTE0_MASK);
+        return enableDebugNtf(lxFieldValue);
+    }
+
+    /**
+     * This api is called by application to enable various debug notigications
+     * of NFCC.
+     * This api shall be called only if Nfcservice is enabled.
+     * @param fieldValue : bytes to be set for lxdebug config.
+     * @return whether  the update of configuration is
+     *          success or not.
+     *          0x00 - success
+     *          0x01 - NFC is not initialized
+     *          0x03 - NFCC command failed
+     *          0x04 - Invalid argument In case of fieldValue
+     *                 is not 2 bytes.
+     *          0xFF - Service Unavialable
+     */
+    public @FdErrorCode int enableDebugNtf(byte[] fieldValue) {
         NxpNfcLogger.d(TAG, "Entry enableDebugNtf");
         int status = SERVICE_UNAVIABLE;
         if (mNfcOperations == null) {
             NxpNfcLogger.e(TAG, "NFC Operations is null");
             return status;
+        }
+        /* currently only supports 2 bytes */
+        if (fieldValue == null || fieldValue.length != 2) {
+            NxpNfcLogger.e(TAG, "Invalid field value");
+            return INVALID_ARGUMENTS;
         }
         if (!mNfcOperations.isEnabled()) {
             return FDSTATUS_ERROR_NFC_IS_OFF;
@@ -733,9 +763,24 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             NxpNfcLogger.e(TAG, "Not able to stop discovery");
             return status;
         }
-        /* As of now, bit0, bit4 and bit5 is allowed by this API */
-        byte lxFieldValue = (byte) (fieldValue & L2_DEBUG_BYTE0_MASK);
-        byte[] cmdPayload = {0x01, (byte) 0xA0, 0x1D, 0x02, lxFieldValue, 0x00};
+        int fieldValueLen = fieldValue.length;
+        if (fieldValue.length == 1) {
+            fieldValueLen++;
+        }
+        byte[] cmdPayload = new byte[4 + fieldValueLen];
+        int offset = 0;
+        cmdPayload[offset++] = 0x01;
+        cmdPayload[offset++] = (byte) 0xA0;
+        cmdPayload[offset++] = 0x1D;
+        if (fieldValueLen == 1) {
+            NxpNfcLogger.e(TAG, "Only Byte 0 passed fallback to legecy");
+            cmdPayload[offset++] = (byte) (fieldValueLen);
+            cmdPayload[offset++] = (byte) (fieldValue[0] & L2_DEBUG_BYTE0_MASK);
+            cmdPayload[offset++]  = 0x00;
+        } else {
+            cmdPayload[offset++] = (byte) fieldValue.length;
+            System.arraycopy(fieldValue, 0, cmdPayload, offset, fieldValue.length);
+        }
         try {
             mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
             mNxpNciPacketHandler.shouldCheckResponseSubGid(false);
