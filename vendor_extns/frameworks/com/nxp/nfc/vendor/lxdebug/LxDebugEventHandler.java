@@ -763,24 +763,13 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             NxpNfcLogger.e(TAG, "Not able to stop discovery");
             return status;
         }
-        int fieldValueLen = fieldValue.length;
-        if (fieldValue.length == 1) {
-            fieldValueLen++;
-        }
-        byte[] cmdPayload = new byte[4 + fieldValueLen];
+        byte[] cmdPayload = new byte[4 + fieldValue.length];
         int offset = 0;
         cmdPayload[offset++] = 0x01;
         cmdPayload[offset++] = (byte) 0xA0;
         cmdPayload[offset++] = 0x1D;
-        if (fieldValueLen == 1) {
-            NxpNfcLogger.e(TAG, "Only Byte 0 passed fallback to legecy");
-            cmdPayload[offset++] = (byte) (fieldValueLen);
-            cmdPayload[offset++] = (byte) (fieldValue[0] & L2_DEBUG_BYTE0_MASK);
-            cmdPayload[offset++]  = 0x00;
-        } else {
-            cmdPayload[offset++] = (byte) fieldValue.length;
-            System.arraycopy(fieldValue, 0, cmdPayload, offset, fieldValue.length);
-        }
+        cmdPayload[offset++] = (byte) fieldValue.length;
+        System.arraycopy(fieldValue, 0, cmdPayload, offset, fieldValue.length);
         try {
             mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
             mNxpNciPacketHandler.shouldCheckResponseSubGid(false);
