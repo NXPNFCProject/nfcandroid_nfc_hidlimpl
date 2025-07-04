@@ -57,8 +57,6 @@ bool phNxpNciHal_WorkerThread::Start() {
 }
 
 bool phNxpNciHal_WorkerThread::Stop() {
-  nxpncihal_ctrl.p_nfc_stack_cback = NULL;
-  nxpncihal_ctrl.p_nfc_stack_data_cback = NULL;
   thread_running.store(false);
 
   if ((thread_running.load()) &&
