@@ -2000,8 +2000,6 @@ int phNxpNciHal_close(bool bShutdown) {
     CONCURRENCY_UNLOCK();
     return NFCSTATUS_FAILED;
   }
-  NXPLOG_NCIHAL_D("phNxpNciHal_close Closing extension library");
-  phNxpExtn_LibClose();
   if (gPowerTrackerHandle.stop != NULL) {
     gPowerTrackerHandle.stop();
   }
@@ -2185,6 +2183,10 @@ close_and_return:
 
     NXPLOG_NCIHAL_D("phNxpNciHal_close - phOsalNfc_DeInit completed");
   }
+  NXPLOG_NCIHAL_D("phNxpNciHal_close Closing extension library");
+  phNxpExtn_LibClose();
+  nxpncihal_ctrl.p_nfc_stack_cback = NULL;
+  nxpncihal_ctrl.p_nfc_stack_data_cback = NULL;
 
   CONCURRENCY_UNLOCK();
 
@@ -2239,6 +2241,8 @@ void phNxpNciHal_clean_resources() {
 
     memset(&nxpncihal_ctrl, 0x00, sizeof(nxpncihal_ctrl));
   }
+  nxpncihal_ctrl.p_nfc_stack_cback = NULL;
+  nxpncihal_ctrl.p_nfc_stack_data_cback = NULL;
 
   phNxpNciHal_cleanup_monitor();
   write_unlocked_status = NFCSTATUS_SUCCESS;
