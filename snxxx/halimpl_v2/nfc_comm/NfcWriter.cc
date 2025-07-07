@@ -99,14 +99,16 @@ int NfcWriter::write(uint16_t data_len, const uint8_t* p_data) {
   } else if (isObserveModeEnabled() &&
              p_data[NCI_GID_INDEX] == NCI_RF_DISC_COMMD_GID &&
              p_data[NCI_OID_INDEX] == NCI_RF_DISC_COMMAND_OID) {
-    vector<uint8_t> v_data =
-        NciDiscoveryCommandBuilderInstance.reConfigRFDiscCmd();
-    uint16_t len = static_cast<uint16_t>(v_data.size());
-    NFCSTATUS status = phNxpExtn_HandleNciMsg(&len, v_data.data());
+    //Pre-allocate vector with NCI buffer size.
+    vector<uint8_t> v_data(NCI_MAX_DATA_LEN, 0x00);
+    auto rfDiscCmd = NciDiscoveryCommandBuilderInstance.reConfigRFDiscCmd();
+    uint16_t actualLen = static_cast<uint16_t>(rfDiscCmd.size());
+    copy(rfDiscCmd.begin(), rfDiscCmd.end(),v_data.begin());
+    NFCSTATUS status = phNxpExtn_HandleNciMsg(&actualLen, v_data.data());
     if (status != NFCSTATUS_EXTN_FEATURE_SUCCESS)
-      return this->direct_write(v_data.size(), v_data.data());
+      return this->direct_write(actualLen, v_data.data());
     else
-      return len;
+      return actualLen;
   } else if (IS_HCI_PACKET(p_data)) {
     // Inform WiredSe service that HCI Pkt is sending from libnfc layer
     phNxpNciHal_WiredSeDispatchEvent(gWiredSeHandle, SENDING_HCI_PKT);
@@ -117,7 +119,10 @@ int NfcWriter::write(uint16_t data_len, const uint8_t* p_data) {
         gWiredSeHandle, DISABLING_NFCEE,
         createWiredSeEvtData((uint8_t*)p_data, data_len));
   } else {
-    NFCSTATUS status = phNxpExtn_HandleNciMsg(&data_len, p_data);
+    //Pre-allocate vector with NCI buffer size.
+    vector<uint8_t> v_data(NCI_MAX_DATA_LEN, 0x00);
+    copy(p_data, p_data + data_len, v_data.begin());
+    NFCSTATUS status = phNxpExtn_HandleNciMsg(&data_len, v_data.data());
     NXPLOG_NCIHAL_D("Vendor specific status: %d", status);
     if (status == NFCSTATUS_EXTN_FEATURE_SUCCESS) return data_len;
   }
