@@ -3272,7 +3272,7 @@ static void phNxpNciHal_DownloadFw(bool isMinFwVer, bool degradedFwDnld) {
  ******************************************************************************/
 void phNxpNciHal_CheckAndHandleFwTearDown() {
   NFCSTATUS status = NFCSTATUS_FAILED;
-  uint8_t session_state = -1;
+  uint8_t session_state = 0xFF;
   unsigned long minimal_fw_version = DEFAULT_MINIMAL_FW_VERSION;
   bool isMinFwVer = false;
   status = phNxpNciHal_getChipInfoInFwDnldMode();
