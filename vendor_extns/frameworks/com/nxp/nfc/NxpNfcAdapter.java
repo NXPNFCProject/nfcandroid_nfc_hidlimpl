@@ -116,7 +116,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
         mNfcAdapter = nfcAdapter;
         getNxpNfcExtnAdapter();
         mAutoCardHandler = new AutoCardHandler(nfcAdapter);
-        mMposHandler = new MposHandler(nfcAdapter);
+        mMposHandler = new MposHandler(nfcAdapter, context);
         mQTagHandler = new QTagHandler(nfcAdapter);
         mLxDebugEventHandler = new LxDebugEventHandler(nfcAdapter, context);
         mTransitHandler = new TransitConfigHandler(nfcAdapter);

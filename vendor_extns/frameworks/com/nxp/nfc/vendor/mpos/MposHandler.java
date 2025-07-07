@@ -20,6 +20,8 @@
 
 package com.nxp.nfc.vendor.mpos;
 
+import android.content.Context;
+import android.content.Intent;
 import android.nfc.NfcAdapter;
 import com.nxp.nfc.INxpNfcNtfHandler;
 import com.nxp.nfc.INxpOEMCallbacks;
@@ -42,6 +44,26 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
   public static final byte MPOS_READER_MODE_SET_DEDICATED_MODE_CMD = (byte) 0xAE;
   public static final byte DEDICATED_MODE_OFF = 0x00;
   public static final byte DEDICATED_MODE_ON = 0x01;
+  private final Context mContext;
+
+  private static final String ACTION_NFC_MPOS_READER_MODE_START_SUCCESS =
+            "com.nxp.nfc_extras.ACTION_NFC_MPOS_READER_MODE_START_SUCCESS";
+  private static final String ACTION_NFC_MPOS_READER_MODE_ACTIVATED =
+            "com.nxp.nfc_extras.ACTION_NFC_MPOS_READER_MODE_ACTIVATED";
+  private static final String ACTION_NFC_MPOS_READER_MODE_START_FAIL =
+            "com.nxp.nfc_extras.ACTION_NFC_MPOS_READER_MODE_START_FAIL";
+  private static final String ACTION_NFC_MPOS_READER_MODE_RESTART =
+            "com.nxp.nfc_extras.ACTION_NFC_MPOS_READER_MODE_RESTART";
+  private static final String ACTION_NFC_MPOS_READER_MODE_STOP_SUCCESS =
+            "com.nxp.nfc_extras.ACTION_NFC_MPOS_READER_MODE_STOP_SUCCESS";
+  private static final String ACTION_NFC_MPOS_READER_MODE_STOP_FAIL =
+            "com.nxp.nfc_extras.ACTION_NFC_MPOS_READER_MODE_STOP_FAIL";
+  private static final String ACTION_NFC_MPOS_READER_MODE_REMOVE_CARD =
+            "com.nxp.nfc_extras.ACTION_NFC_MPOS_READER_MODE_REMOVE_CARD";
+  private static final String ACTION_NFC_MPOS_READER_MODE_TIMEOUT =
+            "com.nxp.nfc_extras.ACTION_NFC_MPOS_READER_MODE_TIMEOUT";
+  private static final String ACTION_NFC_MPOS_READER_MODE_MULTIPLE_TARGET_DETECTED =
+            "com.nxp.nfc_extras.ACTION_NFC_MPOS_READER_MODE_MULTIPLE_TARGET_DETECTED";
 
   /**
    * mpos state
@@ -69,7 +91,8 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
   private final Object mposStateSync = new Object();
   private boolean isCardActivated = false;
 
-  public MposHandler(NfcAdapter nfcAdapter) {
+  public MposHandler(NfcAdapter nfcAdapter, Context context) {
+    this.mContext = context;
     this.mNxpNciPacketHandler = NxpNciPacketHandler.getInstance(nfcAdapter);
     this.mNfcOperations = NfcOperations.getInstance(nfcAdapter);
     mPOSStarted(false);
@@ -78,6 +101,16 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
   public boolean isMposModeEnabled() { return isMposEnabled; }
 
   public void mPOSStarted(boolean enabled) { isMposEnabled = enabled; }
+
+  private void broadcastMposEvent(String mposEvent) {
+    if (mContext != null && mposEvent != null) {
+      NxpNfcLogger.d(TAG, "Broadcasting " + mposEvent);
+      Intent intent = new Intent(mposEvent);
+      mContext.sendBroadcast(intent);
+    } else {
+      NxpNfcLogger.e(TAG, "mContext/mposEvent is null");
+    }
+  }
 
   @Override
   public void onVendorNciNotification(int gid, int oid, byte[] payload) {
@@ -122,6 +155,7 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
           mNxpNciPacketHandler.unregisterNtfCallback(this);
         }
       }
+      broadcastMposEvent(ACTION_NFC_MPOS_READER_MODE_STOP_SUCCESS);
       break;
     case SE_READER_TAG_DISCOVERY_STARTED:
       NxpNfcLogger.d(TAG, "ACTION_NFC_MPOS_READER_MODE_START_SUCCESS");
@@ -131,20 +165,24 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
           mposState = MposState.MPOS_START_COMPLETED;
         }
       }
+      broadcastMposEvent(ACTION_NFC_MPOS_READER_MODE_START_SUCCESS);
       break;
     case SE_READER_TAG_DISCOVERY_START_FAILED:
       NxpNfcLogger.d(TAG, "ACTION_NFC_MPOS_READER_MODE_START_FAIL");
       isMposEnabled = false;
       mNfcOperations.enableDiscovery();
+      broadcastMposEvent(ACTION_NFC_MPOS_READER_MODE_START_FAIL);
       break;
     case SE_READER_TAG_DISCOVERY_RESTARTED:
       NxpNfcLogger.d(TAG, "ACTION_NFC_MPOS_READER_MODE_RESTART");
+      broadcastMposEvent(ACTION_NFC_MPOS_READER_MODE_RESTART);
       break;
     case SE_READER_TAG_ACTIVATED:
       NxpNfcLogger.d(TAG, "ACTION_NFC_MPOS_READER_MODE_ACTIVATED");
       synchronized (lock) {
         isCardActivated = true;
       }
+      broadcastMposEvent(ACTION_NFC_MPOS_READER_MODE_ACTIVATED);
       break;
     case SE_READER_STOP_RF_DISCOVERY:
       NxpNfcLogger.d(TAG, "ACTION_NFC_MPOS_READER_MODE_STOP_RF_DISCOVERY");
@@ -167,19 +205,24 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
           mNxpNciPacketHandler.unregisterNtfCallback(this);
         }
       }
+      broadcastMposEvent(ACTION_NFC_MPOS_READER_MODE_STOP_SUCCESS);
       break;
     case SE_READER_STOP_FAILED:
       NxpNfcLogger.d(TAG, "ACTION_NFC_MPOS_READER_MODE_STOP_FAIL");
+      broadcastMposEvent(ACTION_NFC_MPOS_READER_MODE_STOP_FAIL);
       break;
     case SE_READER_TAG_TIMEOUT:
       NxpNfcLogger.d(TAG, "ACTION_NFC_MPOS_READER_MODE_TIMEOUT");
+      broadcastMposEvent(ACTION_NFC_MPOS_READER_MODE_TIMEOUT);
       break;
     case SE_READER_TAG_REMOVE_TIMEOUT:
       NxpNfcLogger.d(TAG, "ACTION_NFC_MPOS_READER_MODE_REMOVE_CARD");
+      broadcastMposEvent(ACTION_NFC_MPOS_READER_MODE_REMOVE_CARD);
       break;
     case SE_READER_MULTIPLE_TAG_DETECTED:
       NxpNfcLogger.d(TAG,
                      "ACTION_NFC_MPOS_READER_MODE_MULTIPLE_TARGET_DETECTED");
+      broadcastMposEvent(ACTION_NFC_MPOS_READER_MODE_MULTIPLE_TARGET_DETECTED);
       break;
     default:
       NxpNfcLogger.d(TAG, "Unknown message received");
