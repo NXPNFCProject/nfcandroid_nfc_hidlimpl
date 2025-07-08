@@ -75,7 +75,7 @@ void phNxpNciHal_getExtVendorConfig() {
  *
  ******************************************************************************/
 uint8_t phNxpNciHal_updateAutonomousPwrState(uint8_t num) {
-  if ((config_ext.autonomous_mode == true) &&
+  if ((config_ext.autonomous_mode) &&
       ((num & SWITCH_OFF_MASK) == SWITCH_OFF_MASK)) {
     num = (num | AUTONOMOUS_SCREEN_OFF_LOCK_MASK);
   }
@@ -98,7 +98,7 @@ NFCSTATUS phNxpNciHal_setAutonomousMode() {
   }
   phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
   uint8_t autonomous_mode_value = 0x01;
-  if (config_ext.autonomous_mode == true) autonomous_mode_value = 0x02;
+  if (config_ext.autonomous_mode) autonomous_mode_value = 0x02;
 
   mEEPROM_info.request_mode = SET_EEPROM_DATA;
   mEEPROM_info.buffer = (uint8_t*)&autonomous_mode_value;
@@ -120,7 +120,7 @@ NFCSTATUS phNxpNciHal_setGuardTimer() {
   NFCSTATUS status = NFCSTATUS_FEATURE_NOT_SUPPORTED;
 
   if (IS_CHIP_TYPE_GE(sn100u)) {
-    if (config_ext.autonomous_mode != true) config_ext.guard_timer_value = 0x00;
+    if (!config_ext.autonomous_mode) config_ext.guard_timer_value = 0x00;
 
     mEEPROM_info.request_mode = SET_EEPROM_DATA;
     mEEPROM_info.buffer = &config_ext.guard_timer_value;
