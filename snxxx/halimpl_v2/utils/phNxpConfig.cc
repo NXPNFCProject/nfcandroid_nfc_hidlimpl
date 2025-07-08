@@ -89,7 +89,7 @@ char Fw_Lib_Path[256] = "/vendor/lib64/libsn100u_fw.so";
 char Fw_Lib_Path[256] = "/vendor/lib/libsn100u_fw.so";
 #endif
 
-const char transit_config_path[] = "/data/vendor/nfc/libnfc-nxpTransit.conf";
+const char nci_update_config_path[] = "/data/vendor/nfc/libnfc-nci-update.conf";
 void readOptionalConfig(const char* optional);
 
 size_t readConfigFile(const char* fileName, uint8_t** p_data) {
@@ -151,7 +151,7 @@ class CNfcConfig : public vector<const CNfcParam*> {
   bool getValue(const char* name, unsigned short& rValue) const;
   bool getValue(const char* name, char* pValue, long len, long* readlen) const;
   const CNfcParam* find(const char* p_name) const;
-  void readNxpTransitConfig(const char* fileName) const;
+  void readNciUpdateConfig(const char* fileName) const;
   void readNxpRFConfig(const char* fileName) const;
   void clean();
 
@@ -298,7 +298,7 @@ bool CNfcConfig::readConfig(const char* name, bool bResetContent) {
   ALOGD("readConfig; filename is %s", name);
   if (strcmp(name, nxp_rf_config_path) == 0) {
     config_rf_crc32_ = sparse_crc32(0, (const void*)p_config, (int)config_size);
-  } else if (strcmp(name, transit_config_path) == 0) {
+  } else if (strcmp(name, nci_update_config_path) == 0) {
     config_tr_crc32_ = sparse_crc32(0, (const void*)p_config, (int)config_size);
   } else {
     config_crc32_ = sparse_crc32(0, (const void*)p_config, (int)config_size);
@@ -512,7 +512,7 @@ CNfcConfig& CNfcConfig::GetInstance() {
 
     theInstance.readConfig(strPath.c_str(), true);
     theInstance.readNxpRFConfig(nxp_rf_config_path);
-    theInstance.readNxpTransitConfig(transit_config_path);
+    theInstance.readNciUpdateConfig(nci_update_config_path);
   }
   return theInstance;
 }
@@ -632,15 +632,15 @@ const CNfcParam* CNfcConfig::find(const char* p_name) const {
 
 /*******************************************************************************
 **
-** Function:    CNfcConfig::readNxpTransitConfig()
+** Function:    CNfcConfig::readNciUpdateConfig()
 **
-** Description: read Config settings from transit conf file
+** Description: read Config settings from nci_update conf file
 **
 ** Returns:     none
 **
 *******************************************************************************/
-void CNfcConfig::readNxpTransitConfig(const char* fileName) const {
-  ALOGD("readNxpTransitConfig-Enter..Reading %s", fileName);
+void CNfcConfig::readNciUpdateConfig(const char* fileName) const {
+  ALOGD("readNciUpdateConfig-Enter..Reading %s", fileName);
   CNfcConfig::GetInstance().readConfig(fileName, false);
 }
 
@@ -688,7 +688,7 @@ void CNfcConfig::add(const CNfcParam* pParam) {
     m_list.push_back(pParam);
     return;
   }
-  if ((mCurrentFile.find("nxpTransit") != std::string::npos) &&
+  if ((mCurrentFile.find("libnfc-nci-update.conf") != std::string::npos) &&
       !isAllowed(pParam->c_str())) {
     ALOGD("%s Token restricted. Returning", __func__);
     return;
