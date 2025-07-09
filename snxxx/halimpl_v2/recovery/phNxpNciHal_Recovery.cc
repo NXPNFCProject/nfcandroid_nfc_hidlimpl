@@ -436,7 +436,6 @@ void phNxpNciHal_RecoverFWTearDown(void) {
 static int phnxpNciHal_partialOpenCleanUp(char* nfc_dev_node) {
   if (nfc_dev_node != NULL) {
     free(nfc_dev_node);
-    nfc_dev_node = NULL;
   }
   /* Report error status */
   phNxpNciHal_cleanup_monitor();
