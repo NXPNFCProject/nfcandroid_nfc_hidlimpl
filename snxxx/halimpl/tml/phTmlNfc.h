@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2024 NXP
+ * Copyright 2010-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -173,7 +173,7 @@ typedef struct phTmlNfc_Context {
   phTmlNfc_ConfigRetrans_t
       eConfig;             /*Retransmission of Nci Packet during timeout */
   uint8_t bRetryCount;     /*Number of times retransmission shall happen */
-  uint8_t bWriteCbInvoked; /* Indicates whether write callback is invoked during
+  bool bWriteCbInvoked; /* Indicates whether write callback is invoked during
                               retransmission */
   uint32_t dwTimerId;      /* Timer used to retransmit nci packet */
   phTmlNfc_ReadWriteInfo_t tReadInfo;  /*Pointer to Reader Thread Structure */
