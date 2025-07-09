@@ -445,28 +445,15 @@ NFCSTATUS NxpMfcReader::AnalyzeMfcResp(uint8_t* pBuff, uint16_t* pBufflen) {
 *******************************************************************************/
 NFCSTATUS NxpMfcReader::CheckMfcResponse(uint8_t* pTransceiveData,
                                          uint16_t transceiveDataLen) {
-  NFCSTATUS status = NFCSTATUS_SUCCESS;
-
-  if (transceiveDataLen == 3) {
-    if ((pTransceiveData)[0] == 0x10 && (pTransceiveData)[1] != 0x0A) {
+  if (transceiveDataLen == 3 && pTransceiveData[0] == 0x10 &&
+      pTransceiveData[1] != 0x0A) {
       NXPLOG_NCIHAL_E("Mifare Error in payload response");
-      transceiveDataLen = 0x1;
-      pTransceiveData += 1;
       return NFCSTATUS_FAILED;
-    }
   }
-  if ((pTransceiveData)[0] == 0x40) {
-    pTransceiveData += 1;
-    transceiveDataLen = 0x01;
-    if ((pTransceiveData)[0] == 0x03) {
-      transceiveDataLen = 0x00;
-      status = NFCSTATUS_FAILED;
-    }
-  } else if ((pTransceiveData)[0] == 0x10) {
-    pTransceiveData += 1;
-    transceiveDataLen = 0x10;
+  if (pTransceiveData[0] == 0x40 && pTransceiveData[1] == 0x03) {
+    return NFCSTATUS_FAILED;
   }
-  return status;
+  return NFCSTATUS_SUCCESS;
 }
 
 /*******************************************************************************
