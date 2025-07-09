@@ -79,7 +79,6 @@ const char* core_reset_ntf_count_prop_name = "nfc.core_reset_ntf_count";
 /* FW download success flag */
 static uint8_t fw_download_success = 0;
 static uint8_t config_access = false;
-static uint8_t config_success = true;
 static bool sIsHalOpenErrorRecovery = false;
 
 NfcWriter& nfcData = NfcWriter::getInstance();
@@ -1088,7 +1087,7 @@ static void phNxpNciHal_read_complete(void* pContext,
       }
       /* Unlock semaphore only for responses*/
       if ((nxpncihal_ctrl.p_rx_data[0x00] & NCI_MT_MASK) == NCI_MT_RSP ||
-          (IS_CHIP_TYPE_L(sn100u) && (icode_detected == true) &&
+          (IS_CHIP_TYPE_L(sn100u) && (icode_detected == 1) &&
            (icode_send_eof == 3))) {
         /* Unlock semaphore */
         SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
@@ -1250,7 +1249,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   uint8_t* buffer = NULL;
   uint8_t isfound = 0;
-  uint8_t fw_dwnld_flag = false;
+  uint8_t fw_dwnld_flag = 0;
   uint8_t setConfigAlways = false;
 
   uint8_t swp_full_pwr_mode_on_cmd[] = {0x20, 0x02, 0x05, 0x01,
@@ -1260,8 +1259,6 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
 
   uint8_t swp_switch_timeout_cmd[] = {0x20, 0x02, 0x06, 0x01, 0xA0,
                                       0xF3, 0x02, 0x00, 0x00};
-
-  config_success = true;
   long bufflen = 260;
   long retlen = 0;
   phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
@@ -1435,8 +1432,8 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("%s: NXP get FW DW Flag failed", __FUNCTION__);
   }
-  fw_dwnld_flag |= (bool)fw_download_success;
-  if (fw_dwnld_flag == true) {
+  fw_dwnld_flag |= fw_download_success;
+  if (fw_dwnld_flag) {
     phNxpNciHal_hci_network_reset();
   }
   if (IS_CHIP_TYPE_L(sn100u)) {
@@ -1458,7 +1455,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   NXPLOG_NCIHAL_D("EEPROM_fw_dwnld_flag : 0x%02x SetConfigAlways flag : 0x%02x",
                   fw_dwnld_flag, setConfigAlways);
 
-  if (isNxpConfigModified() || (fw_dwnld_flag == true)) {
+  if (isNxpConfigModified() || fw_dwnld_flag) {
     retlen = 0;
     fw_download_success = 0;
 
@@ -1530,7 +1527,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
       }
     }
   }
-  if ((true == fw_dwnld_flag) || (true == setConfigAlways) ||
+  if (fw_dwnld_flag || (true == setConfigAlways) ||
       isNxpConfigModified()) {
     config_access = true;
 
@@ -1596,7 +1593,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
     NXPLOG_NCIHAL_D("Get Interplolated Rssi 8 A/m command failed");
   }
 
-  if ((true == fw_dwnld_flag) || (true == setConfigAlways) ||
+  if (fw_dwnld_flag || (true == setConfigAlways) ||
       isNxpConfigModified() || (wRfUpdateReq == true)) {
     retlen = 0;
     NXPLOG_NCIHAL_D("Performing NAME_NXP_CORE_CONF_EXTN Settings");
@@ -1636,7 +1633,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
     }
   }
   config_access = false;
-  if ((true == fw_dwnld_flag) || (true == setConfigAlways) ||
+  if (fw_dwnld_flag || (true == setConfigAlways) ||
       isNxpRFConfigModified()) {
     unsigned long loopcnt = 0;
 
@@ -1826,7 +1823,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
 
       phNxpNciHal_prop_conf_rssi();
 
-      fw_dwnld_flag = false;
+      fw_dwnld_flag = 0;
       status = phNxpNciHal_write_fw_dw_status(fw_dwnld_flag);
       if (status != NFCSTATUS_SUCCESS) {
         NXPLOG_NCIHAL_E("%s: NXP Set FW Download Flag failed", __FUNCTION__);
@@ -3511,7 +3508,6 @@ static void phNxpNciHal_print_res_status(uint8_t* p_rx_data, uint16_t* p_len) {
   if (p_rx_data[2] && (config_access == true)) {
     if (p_rx_data[3] != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_W("Invalid Data from config file.");
-      config_success = false;
     }
   }
 }
