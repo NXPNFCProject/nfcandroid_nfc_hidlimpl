@@ -1540,7 +1540,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   uint8_t* buffer = NULL;
   uint8_t isfound = 0;
   uint8_t fw_dwnld_flag = 0;
-  uint8_t setConfigAlways = false;
+  bool setConfigAlways = false;
 
   uint8_t swp_full_pwr_mode_on_cmd[] = {0x20, 0x02, 0x05, 0x01,
                                         0xA0, 0xF1, 0x01, 0x01};
@@ -1735,10 +1735,10 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   setConfigAlways = false;
   isfound = GetNxpNumValue(NAME_NXP_SET_CONFIG_ALWAYS, &num, sizeof(num));
   if (isfound > 0) {
-    setConfigAlways = num;
+    setConfigAlways = static_cast<bool>(num);
   }
   NXPLOG_NCIHAL_D("EEPROM_fw_dwnld_flag : 0x%02x SetConfigAlways flag : 0x%02x",
-                  fw_dwnld_flag, setConfigAlways);
+                  fw_dwnld_flag, static_cast<uint8_t>(setConfigAlways));
 
   if (isNxpConfigModified() || fw_dwnld_flag) {
     retlen = 0;
@@ -1812,8 +1812,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
       }
     }
   }
-  if (fw_dwnld_flag || (true == setConfigAlways) ||
-      isNxpConfigModified()) {
+  if (fw_dwnld_flag || setConfigAlways || isNxpConfigModified()) {
     config_access = true;
 
     if (IS_CHIP_TYPE_NE(pn547C2)) {
@@ -1872,8 +1871,8 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
       }
     }
   }
-  if (fw_dwnld_flag || (true == setConfigAlways) ||
-      isNxpConfigModified() || (wRfUpdateReq == true)) {
+  if (fw_dwnld_flag || setConfigAlways || isNxpConfigModified() ||
+      (wRfUpdateReq == true)) {
     retlen = 0;
     NXPLOG_NCIHAL_D("Performing NAME_NXP_CORE_CONF_EXTN Settings");
     isfound = GetNxpByteArrayValue(NAME_NXP_CORE_CONF_EXTN, (char*)buffer,
@@ -1912,8 +1911,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
     }
   }
   config_access = false;
-  if (fw_dwnld_flag || (true == setConfigAlways) ||
-      isNxpRFConfigModified()) {
+  if (fw_dwnld_flag || setConfigAlways || isNxpRFConfigModified()) {
     unsigned long loopcnt = 0;
 
     do {
