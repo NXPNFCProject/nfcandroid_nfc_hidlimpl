@@ -74,7 +74,6 @@ const char* core_reset_ntf_count_prop_name = "nfc.core_reset_ntf_count";
 /* FW download success flag */
 static uint8_t fw_download_success = 0;
 static bool config_access = false;
-static uint8_t config_success = true;
 static bool sIsHalOpenErrorRecovery = false;
 NfcHalThreadMutex sHalFnLock;
 
@@ -168,7 +167,7 @@ static NFCSTATUS phNxpNciHal_resetDefaultSettings(uint8_t fw_update_req,
                                                   bool keep_config);
 static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset = 0,
                                                bool bIsNfccDlState = false);
-static int phNxpNciHal_MinOpen_Clean(char* nfc_dev_node);
+static int phNxpNciHal_MinOpen_Clean(char** nfc_dev_node);
 static void phNxpNciHal_DownloadFw(bool isMinFwVer,
                                    bool degradedFwDnld = false);
 static void phNxpNciHal_CheckAndHandleFwTearDown(void);
@@ -655,10 +654,10 @@ NFCSTATUS phNxpNciHal_CheckValidFwVersion(void) {
  * Returns          This function always returns Failure
  *
  ******************************************************************************/
-static int phNxpNciHal_MinOpen_Clean(char* nfc_dev_node) {
+static int phNxpNciHal_MinOpen_Clean(char** nfc_dev_node) {
   if (nfc_dev_node != NULL) {
-    free(nfc_dev_node);
-    nfc_dev_node = NULL;
+    free(*nfc_dev_node);
+    *nfc_dev_node = NULL;
   }
   if (mGetCfg_info != NULL) {
     free(mGetCfg_info);
@@ -725,7 +724,7 @@ int phNxpNciHal_MinOpen() {
   if (0 != sem_init(&nxpncihal_ctrl.syncSpiNfc, 0, 1)) {
     NXPLOG_NCIHAL_E("sem_init() FAiled, errno = 0x%02X", errno);
     CONCURRENCY_UNLOCK();
-    return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
+    return phNxpNciHal_MinOpen_Clean(&nfc_dev_node);
   }
 
   /* By default HAL status is HAL_STATUS_OPEN */
@@ -738,7 +737,7 @@ int phNxpNciHal_MinOpen() {
   if (nfc_dev_node == NULL) {
     NXPLOG_NCIHAL_D("malloc of nfc_dev_node failed ");
     CONCURRENCY_UNLOCK();
-    return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
+    return phNxpNciHal_MinOpen_Clean(&nfc_dev_node);
   } else if (!GetNxpStrValue(NAME_NXP_NFC_DEV_NODE, nfc_dev_node, max_len)) {
     NXPLOG_NCIHAL_D(
         "Invalid nfc device node name keeping the default device node "
@@ -757,7 +756,7 @@ int phNxpNciHal_MinOpen() {
       (phNxpNci_getCfg_info_t*)nxp_malloc(sizeof(phNxpNci_getCfg_info_t));
   if (mGetCfg_info == NULL) {
     CONCURRENCY_UNLOCK();
-    return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
+    return phNxpNciHal_MinOpen_Clean(&nfc_dev_node);
   }
   memset(mGetCfg_info, 0x00, sizeof(phNxpNci_getCfg_info_t));
 
@@ -766,7 +765,7 @@ int phNxpNciHal_MinOpen() {
   if (wConfigStatus != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("phTmlNfc_Init Failed");
     CONCURRENCY_UNLOCK();
-    return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
+    return phNxpNciHal_MinOpen_Clean(&nfc_dev_node);
   } else {
     if (nfc_dev_node != NULL) {
       free(nfc_dev_node);
@@ -781,7 +780,7 @@ int phNxpNciHal_MinOpen() {
     NXPLOG_NCIHAL_E("pthread_create failed");
     wConfigStatus = phTmlNfc_Shutdown_CleanUp();
     CONCURRENCY_UNLOCK();
-    return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
+    return phNxpNciHal_MinOpen_Clean(&nfc_dev_node);
   }
 
   CONCURRENCY_UNLOCK();
@@ -796,7 +795,7 @@ int phNxpNciHal_MinOpen() {
   if (status != NFCSTATUS_PENDING) {
     NXPLOG_NCIHAL_E("TML Read status error status = %x", status);
     (void)phTmlNfc_Shutdown_CleanUp();
-    return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
+    return phNxpNciHal_MinOpen_Clean(&nfc_dev_node);
   }
 
   /* Get the chip-type to know if it is PN557
@@ -884,7 +883,7 @@ int phNxpNciHal_MinOpen() {
       status =
           phNxpNciHal_force_fw_download(seq_handler_offset, bIsNfccDlState);
       if (status == NFCSTATUS_CMD_ABORTED) {
-        return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
+        return phNxpNciHal_MinOpen_Clean(&nfc_dev_node);
       } else if (fw_download_success) {
         wConfigStatus = NFCSTATUS_SUCCESS;
       }
@@ -901,7 +900,7 @@ int phNxpNciHal_MinOpen() {
       fw_update_req = 1;
       dnld_retry_cnt++;
     } else if (status != NFCSTATUS_SUCCESS) {
-      return phNxpNciHal_MinOpen_Clean(nfc_dev_node);
+      return phNxpNciHal_MinOpen_Clean(&nfc_dev_node);
     } else {
       if (sIsHalOpenErrorRecovery) {
         NXPLOG_NCIHAL_D(
@@ -1551,7 +1550,6 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   uint8_t swp_switch_timeout_cmd[] = {0x20, 0x02, 0x06, 0x01, 0xA0,
                                       0xF3, 0x02, 0x00, 0x00};
 
-  config_success = true;
   long bufflen = 260;
   long retlen = 0;
   phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
@@ -3790,7 +3788,6 @@ static void phNxpNciHal_print_res_status(uint8_t* p_rx_data, uint16_t* p_len) {
   if (p_rx_data[2] && (config_access == true)) {
     if (p_rx_data[3] != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_W("Invalid Data from config file.");
-      config_success = false;
     }
   }
 }
