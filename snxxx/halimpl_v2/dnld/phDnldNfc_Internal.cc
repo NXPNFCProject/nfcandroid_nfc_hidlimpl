@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2024 NXP
+ * Copyright (C) 2010-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,6 +74,10 @@
 #define PHDNLDNFC_USERDATA_EEPROM_OFFSIZE (0x02U)
 
 #define PH_LIBNFC_VEN_RESET_ON_DOWNLOAD_TIMEOUT (1)
+
+#define PH_DNLDNFC_UINT16_GET_MSB(n) ((n & 0xFF00 ) >> 8)
+
+#define PH_DNLDNFC_UINT16_GET_LSB(n) (n & 0x00FF)
 
 static NfcHalThreadMutex sProcessSeqStateLock;
 static NfcHalThreadMutex sProcessRwSeqStateLock;
@@ -534,7 +538,6 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   uint16_t wFrameLen = 0;
   uint16_t wCrcVal;
-  uint8_t* pFrameByte;
 
   if (NULL == pDlContext) {
     NXPLOG_FWDNLD_E("Invalid Input Parameter!!");
@@ -602,12 +605,11 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
 
       if (phDnldNfc_FTRaw != (pDlContext->FrameInp.Type)) {
         if (phDnldNfc_FTWrite != (pDlContext->FrameInp.Type)) {
-          pFrameByte = (uint8_t*)&wFrameLen;
-
           pDlContext->tCmdRspFrameInfo.aFrameBuff[PHDNLDNFC_FRAME_HDR_OFFSET] =
-              pFrameByte[1];
+              PH_DNLDNFC_UINT16_GET_MSB(wFrameLen);
           pDlContext->tCmdRspFrameInfo
-              .aFrameBuff[PHDNLDNFC_FRAME_HDR_OFFSET + 1] = pFrameByte[0];
+              .aFrameBuff[PHDNLDNFC_FRAME_HDR_OFFSET + 1] =
+                  PH_DNLDNFC_UINT16_GET_LSB(wFrameLen);
 
           NXPLOG_FWDNLD_D("Inserting FrameId ..");
           pDlContext->tCmdRspFrameInfo.aFrameBuff[PHDNLDNFC_FRAMEID_OFFSET] =
@@ -625,12 +627,12 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
               }
             }
 
-            pFrameByte = (uint8_t*)&wFrameLen;
-
             pDlContext->tCmdRspFrameInfo
-                .aFrameBuff[PHDNLDNFC_FRAME_HDR_OFFSET] = pFrameByte[1];
+                .aFrameBuff[PHDNLDNFC_FRAME_HDR_OFFSET] =
+                    PH_DNLDNFC_UINT16_GET_MSB(wFrameLen);
             pDlContext->tCmdRspFrameInfo
-                .aFrameBuff[PHDNLDNFC_FRAME_HDR_OFFSET + 1] = pFrameByte[0];
+                .aFrameBuff[PHDNLDNFC_FRAME_HDR_OFFSET + 1] =
+                    PH_DNLDNFC_UINT16_GET_LSB(wFrameLen);
 
             /* To ensure we have no frag bit set for crc calculation */
             if (IS_CHIP_TYPE_GE(sn220u) || IS_CHIP_TYPE_EQ(pn560)) {
@@ -650,12 +652,11 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
         /* calculate CRC16 */
         wCrcVal = phDnldNfc_CalcCrc16((pDlContext->tCmdRspFrameInfo.aFrameBuff),
                                       wFrameLen);
-
-        pFrameByte = (uint8_t*)&wCrcVal;
-
         /* Insert the computed Crc value */
-        pDlContext->tCmdRspFrameInfo.aFrameBuff[wFrameLen] = pFrameByte[1];
-        pDlContext->tCmdRspFrameInfo.aFrameBuff[wFrameLen + 1] = pFrameByte[0];
+        pDlContext->tCmdRspFrameInfo.aFrameBuff[wFrameLen] =
+            PH_DNLDNFC_UINT16_GET_MSB(wCrcVal);;
+        pDlContext->tCmdRspFrameInfo.aFrameBuff[wFrameLen + 1] =
+            PH_DNLDNFC_UINT16_GET_LSB(wCrcVal);
 
         wFrameLen += PHDNLDNFC_FRAME_CRC_LEN;
       }
