@@ -334,16 +334,19 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
  *
  ****************************************************************************/
 void ReaderPollConfigParser::notifyPollingLoopInfoEvent(
-    vector<uint8_t> p_data) {
+    vector<uint8_t>& p_data) {
   if (this->callback == NULL) return;
 
-  vector<uint8_t> readerPollInfoNotifications;
+  const size_t NCI_HEADER_SIZE = 3;
+  // Pre-allocation will avoid re-allocation on every push_back()
+  vector<uint8_t> readerPollInfoNotifications(
+      NCI_HEADER_SIZE + p_data.size() + 1);
   readerPollInfoNotifications.push_back(NCI_PROP_NTF_GID);
   readerPollInfoNotifications.push_back(NCI_PROP_NTF_ANDROID_OID);
   readerPollInfoNotifications.push_back((int)p_data.size() + 1);
   readerPollInfoNotifications.push_back(OBSERVE_MODE_OP_CODE);
-  readerPollInfoNotifications.insert(std::end(readerPollInfoNotifications),
-                                     std::begin(p_data), std::end(p_data));
+  readerPollInfoNotifications.insert(readerPollInfoNotifications.end(),
+                                     p_data.begin(), p_data.end());
   this->callback((int)readerPollInfoNotifications.size(),
                  readerPollInfoNotifications.data());
 }
@@ -394,12 +397,12 @@ bool ReaderPollConfigParser::parseAndSendReaderPollInfo(uint8_t* p_ntf,
 
       if ((int)(readerPollInfoNotifications.size() + readerPollInfo.size()) >=
           0xFF) {
-        notifyPollingLoopInfoEvent(std::move(readerPollInfoNotifications));
+        notifyPollingLoopInfoEvent(readerPollInfoNotifications);
         readerPollInfoNotifications.clear();
       }
-      readerPollInfoNotifications.insert(std::end(readerPollInfoNotifications),
-                                         std::begin(readerPollInfo),
-                                         std::end(readerPollInfo));
+      readerPollInfoNotifications.insert(readerPollInfoNotifications.end(),
+                                         readerPollInfo.begin(),
+                                         readerPollInfo.end());
     }
 
     idx += entryLength;
@@ -409,7 +412,7 @@ bool ReaderPollConfigParser::parseAndSendReaderPollInfo(uint8_t* p_ntf,
     return false;
   }
 
-  notifyPollingLoopInfoEvent(std::move(readerPollInfoNotifications));
+  notifyPollingLoopInfoEvent(readerPollInfoNotifications);
 
   return true;
 }
