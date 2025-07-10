@@ -44,6 +44,10 @@ public class TransitConfigHandler implements INxpNfcNtfHandler {
   public static final int TRANSIT_CONFIG_SUB_GID = 0x70;
   public static final int TRANSIT_CONFIG_SUB_OID = 0x01;
   public static final int RF_REGISTER_SUB_OID = 0x02;
+  public static final int MAX_CONFIG_LEN = 249;
+  public static final int SUB_GIDOID_INDEX = 0x00;
+  public static final int PAYLOAD_LEN_INDEX = 0x01;
+  public static final int PBF_INDEX = 0x02;
   private static final String TAG = "TransitConfigHandler";
 
   public TransitConfigHandler(NfcAdapter nfcAdapter) {
@@ -88,6 +92,10 @@ public class TransitConfigHandler implements INxpNfcNtfHandler {
   }
 
   private byte[] generateCmd(byte[] cmdBytes, byte[] configBytes) {
+    if ((configBytes.length == 0) || (cmdBytes.length == 0)) {
+      NxpNfcLogger.e(TAG, "payload is null");
+      return new byte[0];
+    }
     byte[] payloadBytes = new byte[cmdBytes.length + configBytes.length];
     System.arraycopy(cmdBytes, 0, payloadBytes, 0, cmdBytes.length);
     System.arraycopy(configBytes, 0, payloadBytes, cmdBytes.length, configBytes.length);
@@ -126,45 +134,8 @@ public class TransitConfigHandler implements INxpNfcNtfHandler {
     return rfRegisterBytes;
   }
 
-  public boolean setConfig(String configs) throws IOException {
-    if ((!mNfcOperations.isEnabled()) || (mNfcOperations.isCardEmulationActivated()) ||
-        (mNfcOperations.isTagConnected())) {
-      NxpNfcLogger.e(TAG, "NFC is disabled or busy, Rejecting request..");
-      return false;
-    }
-
-    int resetStatus = checkResetRequired(configs);
-    byte[] cmdBytes = {0x00, 0x00};
-    byte[] configBytes = {DISABLE_TRANSIT};
+  public boolean sendCmd(byte[] payloadBytes) {
     byte[] vendorRsp = {};
-
-    if (resetStatus == TRANSIT_CONFIG_REQUIRE_RF_RESET) {
-      if (mNfcOperations.isDiscoveryStarted()) {
-        mNfcOperations.disableDiscovery();
-      }
-      byte[] rfRegisterPayload  = generateRfRegisterPayload(configs);
-      cmdBytes[0] = (byte)(TRANSIT_CONFIG_SUB_GID|RF_REGISTER_SUB_OID);
-      cmdBytes[1] = (byte)rfRegisterPayload.length;
-      configBytes = rfRegisterPayload;
-    } else if(resetStatus == TRANSIT_CONFIG_REQUIRE_NFC_RESET) {
-      cmdBytes[0] = (byte)(TRANSIT_CONFIG_SUB_GID|TRANSIT_CONFIG_SUB_OID);
-      if (configs == null) {
-        NxpNfcLogger.d(TAG, "Removing libnfc-nci-update.conf");
-        cmdBytes[1] = 0x00;
-      } else {
-        NxpNfcLogger.d(TAG, "Updating libnfc-nci-update.conf");
-        configBytes = configs.getBytes(StandardCharsets.UTF_8);
-        cmdBytes[1] = (byte)configBytes.length;
-      }
-    }
-
-    if ((configBytes.length == 0) || (cmdBytes.length == 0)) {
-      NxpNfcLogger.e(TAG, "payload is null");
-      return false;
-    }
-
-    byte[] payloadBytes = generateCmd(cmdBytes, configBytes);
-    Boolean status = true;
     mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(),
                                           this);
     try {
@@ -174,26 +145,102 @@ public class TransitConfigHandler implements INxpNfcNtfHandler {
         payloadBytes);
     } catch (Exception e) {
       NxpNfcLogger.e(TAG, "Exception in sendVendorNciMessage");
-      throw new IOException("Error sending VendorNciMessage", e);
-    } finally {
-      if (vendorRsp != null && vendorRsp.length > 1 &&
-          vendorRsp[1] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
-        if(resetStatus == TRANSIT_CONFIG_REQUIRE_NFC_RESET) {
-          try {
-            mNfcAdapter.disable();
-            mNfcAdapter.enable();
-          } catch (Exception e) {
-            NxpNfcLogger.e(TAG, e.getMessage());
-          }
-        }
-      } else {
-        NxpNfcLogger.e(TAG, "setConfig() failed...");
-        status = false;
+    }
+    if (vendorRsp != null && vendorRsp.length > 1 &&
+      vendorRsp[1] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS)
+      return true;
+    else
+      return false;
+  }
+
+  public boolean setConfig(String configs) throws IOException {
+    if ((!mNfcOperations.isEnabled()) || (mNfcOperations.isCardEmulationActivated()) ||
+        (mNfcOperations.isTagConnected())) {
+      NxpNfcLogger.e(TAG, "NFC is disabled or busy, Rejecting request..");
+      return false;
+    }
+
+    int resetStatus = checkResetRequired(configs);
+    byte[] configBytes = {DISABLE_TRANSIT};
+    Boolean cmdStatus = false;
+
+    if (resetStatus == TRANSIT_CONFIG_REQUIRE_RF_RESET) {
+      if (mNfcOperations.isDiscoveryStarted()) {
+        mNfcOperations.disableDiscovery();
       }
-      if (resetStatus == TRANSIT_CONFIG_REQUIRE_RF_RESET) {
-        mNfcOperations.enableDiscovery();
+      byte[] rfRegisterPayload  = generateRfRegisterPayload(configs);
+      byte[] cmdBytes = {(byte)(TRANSIT_CONFIG_SUB_GID|RF_REGISTER_SUB_OID),
+                        (byte)rfRegisterPayload.length};
+      configBytes = rfRegisterPayload;
+      byte[] payloadBytes = generateCmd(cmdBytes, configBytes);
+      try {
+        if (payloadBytes.length == 0)
+          cmdStatus = false;
+        else
+          cmdStatus = sendCmd(payloadBytes);
+      } catch (Exception e) {
+        NxpNfcLogger.e(TAG, "Exception in sendCmd");
+        throw new IOException("Error sending VendorNciMessage", e);
+      }
+    } else if(resetStatus == TRANSIT_CONFIG_REQUIRE_NFC_RESET) {
+      int startIndex = 0;
+      int endIndex = 0;
+      byte[] cmdBytes = {0x00, 0x00, 0x00};
+      cmdBytes[SUB_GIDOID_INDEX] = (byte)(TRANSIT_CONFIG_SUB_GID|TRANSIT_CONFIG_SUB_OID);
+      if (configs == null) {
+        NxpNfcLogger.d(TAG, "Removing libnfc-nci-update.conf");
+        cmdBytes[PAYLOAD_LEN_INDEX] = 0x00;
+      } else {
+        NxpNfcLogger.d(TAG, "Updating libnfc-nci-update.conf");
+        configBytes = configs.getBytes(StandardCharsets.UTF_8);
+        cmdBytes[PAYLOAD_LEN_INDEX] = (byte)configBytes.length;
+      }
+      while (startIndex < configBytes.length) {
+        int pbf = 1;
+        endIndex = startIndex + MAX_CONFIG_LEN;
+        if (endIndex >= configBytes.length) {
+          pbf = 0;
+          endIndex = configBytes.length;
+        }
+        byte[] partialPayload = Arrays.copyOfRange(configBytes, startIndex, endIndex);
+        startIndex = endIndex;
+
+        cmdBytes[PAYLOAD_LEN_INDEX] = (byte)(partialPayload.length + 1);
+        cmdBytes[PBF_INDEX] = (byte)pbf;
+        byte[] payloadBytes = generateCmd(cmdBytes, partialPayload);
+        try {
+          if (payloadBytes.length == 0)
+            cmdStatus = false;
+          else
+            cmdStatus = sendCmd(payloadBytes);
+          if (!cmdStatus) {
+            NxpNfcLogger.e(TAG, "Error in sendCmd, clearing stored config...");
+            byte[] emptyPayload = {(byte)(TRANSIT_CONFIG_SUB_GID|TRANSIT_CONFIG_SUB_OID),
+                        DISABLE_TRANSIT};
+            sendCmd(emptyPayload);
+            break;
+          }
+        } catch (Exception e) {
+          NxpNfcLogger.e(TAG, "Exception in sendCmd");
+          throw new IOException("Error sending VendorNciMessage", e);
+        }
       }
     }
-    return status;
+    if(cmdStatus) {
+      if(resetStatus == TRANSIT_CONFIG_REQUIRE_NFC_RESET) {
+        try {
+          mNfcAdapter.disable();
+          mNfcAdapter.enable();
+        } catch (Exception e) {
+          NxpNfcLogger.e(TAG, e.getMessage());
+        }
+      }
+    } else {
+      NxpNfcLogger.e(TAG, "setConfig() failed...");
+    }
+    if (resetStatus == TRANSIT_CONFIG_REQUIRE_RF_RESET) {
+      mNfcOperations.enableDiscovery();
+    }
+    return cmdStatus;
   }
 }
