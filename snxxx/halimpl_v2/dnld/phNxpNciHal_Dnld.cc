@@ -1830,7 +1830,7 @@ static NFCSTATUS phNxpNciHal_releasePendingRead() {
   }
   int isfound = GetNxpNumValue(NAME_NXP_TRANSPORT, &value, sizeof(value));
   if (isfound > 0 && value == I3C) {
-    strcat(nfc_dev_node, "-i3c");
+    strlcat(nfc_dev_node, "-i3c", sizeof(nfc_dev_node));
   }
   tTmlConfig.pDevName = (int8_t*)nfc_dev_node;
   gpTransportObj->Close(gpphTmlNfc_Context->pDevHandle);

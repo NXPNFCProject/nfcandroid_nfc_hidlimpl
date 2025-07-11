@@ -604,7 +604,7 @@ int phNxpNciHal_MinOpen() {
   int isfound = GetNxpNumValue(NAME_NXP_TRANSPORT, &value, sizeof(value));
   if (isfound > 0 && value == I3C) {
     nxpncihal_ctrl.gDrvCfg.nLinkType = ENUM_LINK_TYPE_I3C; /* For NFCC */
-    strcat(nfc_dev_node, "-i3c");
+    strlcat(nfc_dev_node, "-i3c", sizeof(nfc_dev_node));
   } else {
     nxpncihal_ctrl.gDrvCfg.nLinkType = ENUM_LINK_TYPE_I2C; /* For NFCC */
   }
