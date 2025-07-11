@@ -655,7 +655,7 @@ NFCSTATUS phNxpNciHal_CheckValidFwVersion(void) {
  *
  ******************************************************************************/
 static int phNxpNciHal_MinOpen_Clean(char** nfc_dev_node) {
-  if (nfc_dev_node != NULL) {
+  if (*nfc_dev_node != NULL) {
     free(*nfc_dev_node);
     *nfc_dev_node = NULL;
   }
