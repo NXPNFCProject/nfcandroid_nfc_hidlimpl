@@ -58,7 +58,7 @@ public class NxpNciPacketHandler {
       this.mNfcAdapter = nfcAdapter;
       NxpNfcLogger.d(TAG, "registerNfcVendorNciCallback");
       mNfcAdapter.registerNfcVendorNciCallback(
-          Executors.newSingleThreadExecutor(), mNfcVendorNciCallback);
+          Executors.newCachedThreadPool(), mNfcVendorNciCallback);
     }
 
     public static NxpNciPacketHandler getInstance(NfcAdapter nfcAdapter) {
@@ -155,24 +155,11 @@ public class NxpNciPacketHandler {
         public void onVendorNciNotification(int gid, int oid, byte[] payload) {
             NxpNfcLogger.d(TAG, "onVendorNciNotification Gid " + gid + " Oid " + oid
                     + ", payload: " + NxpNfcUtils.toHexString(payload));
-            new HandlerCallbackTask().execute(gid, oid, payload);
-        }
-
-    };
-
-    private class HandlerCallbackTask extends AsyncTask<Object, Void, Void> {
-        @Override
-        protected Void doInBackground(Object... params) {
-            NxpNfcLogger.d(TAG, "HandlerCallbackTask: doInBackground");
-            int gid = (int) params[0];
-            int oid = (int) params[1];
-            byte[] payload = (byte[]) params[2];
             if (mCallbackMap.size() >= 1)
               mCallbackMap.forEach(
                   (INxpNfcNtfHandler, Executor)
                       -> INxpNfcNtfHandler.onVendorNciNotification(gid, oid,
                                                                    payload));
-            return null;
         }
-    }
+    };
 }
