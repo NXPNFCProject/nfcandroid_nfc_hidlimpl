@@ -103,6 +103,26 @@ static void phNxpLog_SetHALLogLevel(uint8_t level) {
 
 /*******************************************************************************
  *
+ * Function         phNxpLog_SetAvcLogLevel
+ *
+ * Description      Sets the Android Vendor GID OID log level.
+ *
+ * Returns          void
+ *
+ ******************************************************************************/
+static void phNxpLog_SetAvcLogLevel(uint8_t level) {
+  unsigned long num = 0;
+  char valueStr[PROPERTY_VALUE_MAX] = {0};
+
+  if (GetNxpNumValue(NAME_NXPLOG_AVCNCI_LOGLEVEL, &num, sizeof(num))) {
+    gLog_level.avc_log_level =
+        (level > (unsigned char)num) ? level : (unsigned char)num;
+  }
+}
+
+
+/*******************************************************************************
+ *
  * Function         phNxpLog_SetExtnsLogLevel
  *
  * Description      Sets the Extensions layer log level.
@@ -248,6 +268,7 @@ static void phNxpLog_SetNciTxLogLevel(uint8_t level) {
 void phNxpLog_InitializeLogLevel(void) {
   uint8_t level = phNxpLog_SetGlobalLogLevel();
   phNxpLog_SetHALLogLevel(level);
+  phNxpLog_SetAvcLogLevel(level);
   phNxpLog_SetExtnsLogLevel(level);
   phNxpLog_SetTmlLogLevel(level);
   phNxpLog_SetDnldLogLevel(level);
