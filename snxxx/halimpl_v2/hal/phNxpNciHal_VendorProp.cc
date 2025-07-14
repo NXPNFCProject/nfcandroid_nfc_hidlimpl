@@ -72,29 +72,33 @@ int phNxpNciHal_getVendorProp(const char* key, char* value) {
  * Description      This function will read and return property
  *                  value of input key which is stored in multiple fragments.
  * Parameters       key - property string for which value to be read.
- *                  value - output value of property.
  *
- * Returns          actual length of the property value.
+ * Returns          The property value on success, empty string on failure.
  *
  ******************************************************************************/
-int phNxpNciHal_getFragmentedVendorProp(const char* key, char* value) {
-  if (key == NULL || value == NULL) {
-    return 0;
+std::string phNxpNciHal_getFragmentedVendorProp(const std::string& key) {
+
+  if (key.empty()) {
+    return std::string(); // return empty string
   }
+
+  std::string strPropValue;
+  char propValue[PROPERTY_VALUE_MAX];
+  // Values exceeding PROPERTY_VALUE_MAX are fragmented into sequential parts.
+  // Fragment naming: <baseName><index> where index starts from 1
+  // Example: "uiccProp" becomes "uiccProp1", "uiccProp2", "uiccProp3", etc.
+  std::string propName = key + to_string(0);
   // Check for fragmented property
   for (int i = 1;; i++) {
-    std::string propName = key;
-    propName.append(std::to_string(i));
-    char propValue[PROPERTY_VALUE_MAX];
-
+    propName.back() = '0' + i;
     if (property_get(propName.c_str(), propValue, NULL) < 1) {
       // Completed reading of all chunks
       break;
     } else {
-      strcat(value, propValue);
+      strPropValue += propValue;
     }
   }
-  return strlen(value);
+  return strPropValue;
 }
 
 /******************************************************************************
@@ -116,9 +120,9 @@ int phNxpNciHal_setFragmentedVendorProp(const char* key, const char* value) {
   }
   int fragmentSize = PROPERTY_VALUE_MAX - 1;  // One byte for null character
   // Clear all previous fragments
-  char previousValue[1024];
-  size_t prevLen = phNxpNciHal_getFragmentedVendorProp(key, previousValue);
-  for (size_t i = 0; i < prevLen; i += fragmentSize) {
+  std::string previousValue = phNxpNciHal_getFragmentedVendorProp(key);
+
+  for (size_t i = 0; i < previousValue.length(); i += fragmentSize) {
     std::string propName = key;
     propName.append(std::to_string((i / fragmentSize) + 1));
     property_set(propName.c_str(), NULL);
