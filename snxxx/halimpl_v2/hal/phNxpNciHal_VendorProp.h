@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
+#ifndef PHNXPNCIHAL_VENDORPROP_H
+#define PHNXPNCIHAL_VENDORPROP_H
+
 #include <stdint.h>
+#include <string>
+#include <iostream>
+using namespace ::std;
 
 /******************************************************************************
  * Function         phNxpNciHal_getVendorProp_int32
@@ -63,12 +69,11 @@ int phNxpNciHal_setVendorProp(const char* key, const char* value);
  * Description      This function will read and return property
  *                  value of input key which is stored in multiple fragments.
  * Parameters       key - property string for which value to be read.
- *                  value - output value of property.
  *
- * Returns          actual length of the property value.
+ * Returns          The property value on success, empty string on failure.
  *
  ******************************************************************************/
-int phNxpNciHal_getFragmentedVendorProp(const char* key, char* value);
+string phNxpNciHal_getFragmentedVendorProp(const std::string& key);
 
 /******************************************************************************
  * Function         phNxpNciHal_setFragmentedVendorProp
@@ -84,3 +89,5 @@ int phNxpNciHal_getFragmentedVendorProp(const char* key, char* value);
  *
  ******************************************************************************/
 int phNxpNciHal_setFragmentedVendorProp(const char* key, const char* value);
+
+#endif
