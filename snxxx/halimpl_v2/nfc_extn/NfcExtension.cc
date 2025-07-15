@@ -21,6 +21,7 @@
 #include <phNxpNciHal.h>
 #include "NfcWriter.h"
 #include "NxpNfcExtension.h"
+#include "phNxpNciHal_WriterThread.h"
 
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 extern phTmlNfc_Context_t* gpphTmlNfc_Context;
@@ -51,6 +52,8 @@ std::string mLibPathName = "/system/vendor/lib64/" + mLibName;
 std::string mLibPathName = "/system/vendor/lib/" + mLibName;
 #endif
 
+extern phNxpNciHal_WriterThread& g_writerThread;
+
 void phNxpExtn_LibSetup() {
   NXPLOG_NCIHAL_D("%s Enter", __func__);
   p_oem_extn_handle = dlopen(mLibPathName.c_str(), RTLD_NOW);
@@ -80,14 +83,15 @@ void phNxpExtn_LibSetup() {
   if (nciMsgDeferredData.tTransactionInfo.pBuff == NULL) {
     NXPLOG_NCIHAL_E("%s Failed to allocate transaction buffer");
     phNxpExtn_LibClose();
+    return;
   }
   nciRspNtfDeferredData.tTransactionInfo.pBuff =
       (uint8_t*)calloc(NCI_MAX_DATA_LEN, sizeof(uint8_t));
   if (nciRspNtfDeferredData.tTransactionInfo.pBuff == NULL) {
     NXPLOG_NCIHAL_E("%s Failed to allocate transaction buffer");
     phNxpExtn_LibClose();
+    return;
   }
-
   phNxpExtn_Init();
 }
 
@@ -226,49 +230,16 @@ void phNxpExtn_NfcHalControlGranted() {
 /* Extension feature API's End */
 
 /* HAL API's Start */
-void phNxpHal_EnqueueWriteInternal(
-    std::shared_ptr<std::vector<uint8_t>> pBuffer, uint16_t wLength) {
-  NXPLOG_NCIHAL_D("%s Enter wLength:%d", __func__, wLength);
-
-  if (pBuffer && pBuffer->size() < wLength) return;
-
-  nciMsgDeferredData.tTransactionInfo.wStatus = NFCSTATUS_SUCCESS;
-  nciMsgDeferredData.tTransactionInfo.wLength = wLength;
-
-  // Check command window availability before enque packet
-  // to free hal worker thread from blocking for command window
-  if (NfcWriter::getInstance().check_ncicmd_write_window(
-          wLength, pBuffer->data()) != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("%s  CMD window  check failed", __func__);
-    return;
-  }
-
-  phNxpNciHal_Memcpy(nciMsgDeferredData.tTransactionInfo.pBuff, wLength,
-                     pBuffer->data(), wLength);
-
-  nciMsgDeferredData.tDeferredInfo.pParameter =
-      &nciMsgDeferredData.tTransactionInfo;
-  nciMsgDeferredData.tMsg.pMsgData = &nciMsgDeferredData.tDeferredInfo;
-  nciMsgDeferredData.tMsg.Size = sizeof(nciMsgDeferredData.tDeferredInfo);
-  nciMsgDeferredData.tMsg.eMsgType = NCI_HAL_TML_WRITE_MSG;
-  phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId,
-                        &nciMsgDeferredData.tMsg);
-}
-
-/* HAL API's Start */
 NFCSTATUS phNxpHal_EnqueueWrite(uint8_t* pBuffer, uint16_t wLength) {
   NXPLOG_NCIHAL_D("%s Enter wLength:%d", __func__, wLength);
   if (!pBuffer || wLength == 0) {
     NXPLOG_NCIHAL_E("%s Invalid input buffer", __func__);
     return NFCSTATUS_FAILED;
   }
-
-  // Create a shared_ptr to manage the buffer safely
-  auto pBufferCpy =
-      std::make_shared<std::vector<uint8_t>>(pBuffer, pBuffer + wLength);
-
-  thread(phNxpHal_EnqueueWriteInternal, pBufferCpy, wLength).detach();
-
+  if (!g_writerThread.Post(pBuffer, wLength)) {
+    NXPLOG_NCIHAL_E("%s Failed to post msg to WriterThread", __func__);
+    return NFCSTATUS_FAILED;
+  }
   return NFCSTATUS_SUCCESS;
 }
 

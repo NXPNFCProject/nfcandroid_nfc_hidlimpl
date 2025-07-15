@@ -14,27 +14,27 @@
  * limitations under the License.
  */
 
-#ifndef NXPNCIHALWORKER_H
-#define NXPNCIHALWORKER_H
+#ifndef NXPNCIHALREADER_H
+#define NXPNCIHALREADER_H
 
 #include <pthread.h>
 #include <atomic>
 #include <cstdbool>
 
-class phNxpNciHal_WorkerThread {
+class phNxpNciHal_ReaderThread {
  public:
-  static phNxpNciHal_WorkerThread& getInstance();
+  static phNxpNciHal_ReaderThread& getInstance();
 
-  phNxpNciHal_WorkerThread(const phNxpNciHal_WorkerThread&) = delete;
-  phNxpNciHal_WorkerThread& operator=(const phNxpNciHal_WorkerThread&) = delete;
+  phNxpNciHal_ReaderThread(const phNxpNciHal_ReaderThread&) = delete;
+  phNxpNciHal_ReaderThread& operator=(const phNxpNciHal_ReaderThread&) = delete;
 
   /******************************************************************************
    * Function:       Start()
    *
-   * Description:    This method creates & initiates the worker thread for
+   * Description:    This method creates & initiates the reader thread for
    *                 handling NFCC communication.
    *
-   * Returns:        bool: True if the worker thread was successfully started
+   * Returns:        bool: True if the reader thread was successfully started
    *                 otherwise false.
    ******************************************************************************/
   bool Start();
@@ -42,20 +42,20 @@ class phNxpNciHal_WorkerThread {
   /******************************************************************************
    * Function:       Stop()
    *
-   * Description:    This method stops the worker thread and clear the resources
+   * Description:    This method stops the reader thread and clear the resources
    *
-   * Returns:        bool: True if the worker thread was successfully stoped
+   * Returns:        bool: True if the reader thread was successfully stoped
    *                 otherwise false.
    ******************************************************************************/
   bool Stop();
 
  private:
-  phNxpNciHal_WorkerThread();
-  ~phNxpNciHal_WorkerThread();
+  phNxpNciHal_ReaderThread();
+  ~phNxpNciHal_ReaderThread();
 
-  static void* WorkerThread(void* arg);
+  static void* ReaderThread(void* arg);
   void Run();
-  pthread_t worker_thread;
+  pthread_t reader_thread;
   volatile std::atomic<bool> thread_running;
 };
-#endif  // NXPNCIHALWORKER_H
+#endif  // NXPNCIHALREADER_H

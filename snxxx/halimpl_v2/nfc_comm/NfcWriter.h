@@ -90,21 +90,6 @@ class NfcWriter {
   int write_unlocked(uint16_t data_len, const uint8_t* p_data, int origin);
 
   /******************************************************************************
-   * Function         write_window_checked_unlocked
-   *
-   * Description      Same as write_unlocked but without waiting for  command
-   *                  window. It will be used whenever write is to be invoked
-   *                  in HAL worker thread context to avoid blocking HAL worker
-   *                  thread for command window on which previous responses
-   *                  also needs to be processed.
-   *
-   * Returns          It returns number of bytes successfully written to NFCC.
-   *
-   ******************************************************************************/
-  int write_window_checked_unlocked(uint16_t data_len, const uint8_t* p_data,
-                                    int origin);
-
-  /******************************************************************************
    * Function         check_ncicmd_write_window
    *
    * Description      This function is called to check the write synchroniztion
