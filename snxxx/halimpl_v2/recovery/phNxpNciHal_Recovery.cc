@@ -17,7 +17,6 @@
 #if (NXP_NFC_RECOVERY == TRUE)
 
 #include "phNxpNciHal_Recovery.h"
-#include "NfccTransportFactory.h"
 #include <cutils/properties.h>
 #include <phDnldNfc.h>
 #include <phNfcStatus.h>
@@ -28,7 +27,8 @@
 #include <phNxpNciHal_ext.h>
 #include <phOsalNfc_Timer.h>
 #include <phTmlNfc.h>
-#include "phNxpNciHal_WorkerThread.h"
+#include "NfccTransportFactory.h"
+#include "phNxpNciHal_ReaderThread.h"
 #define MAX_CORE_RESET 3
 
 extern phNxpNciProfile_Control_t nxpprofile_ctrl;
@@ -41,8 +41,8 @@ static NFCSTATUS phnxpNciHal_partialOpen();
 // property name for storing boot time init status
 const char* halInitProperty = "vendor.nfc.min_firmware";
 
-phNxpNciHal_WorkerThread& g_workerThread_rcvr =
-    phNxpNciHal_WorkerThread::getInstance();
+phNxpNciHal_ReaderThread& g_readThread =
+    phNxpNciHal_ReaderThread::getInstance();
 /******************************************************************************
  * Function         getHalInitStatus
  *
@@ -523,7 +523,7 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
   tTmlConfig.dwGetMsgThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
 
   /* Create the client thread */
-  if (g_workerThread_rcvr.Start() == false) {
+  if (g_readThread.Start() == false) {
     NXPLOG_NCIHAL_E("pthread_create failed");
     CONCURRENCY_UNLOCK();
     return phnxpNciHal_partialOpenCleanUp(nfc_dev_node);
@@ -568,8 +568,8 @@ static void phnxpNciHal_partialClose(void) {
     /* Abort any pending read and write */
     phTmlNfc_ReadAbort();
     phTmlNfc_Shutdown();
-    if (true != g_workerThread_rcvr.Stop()) {
-      NXPLOG_TML_E("Fail to kill Worker thread!");
+    if (true != g_readThread.Stop()) {
+      NXPLOG_TML_E("Fail to kill Reader thread!");
     }
     phTmlNfc_CleanUp();
     phDal4Nfc_msgrelease(nxpncihal_ctrl.gDrvCfg.nClientId);

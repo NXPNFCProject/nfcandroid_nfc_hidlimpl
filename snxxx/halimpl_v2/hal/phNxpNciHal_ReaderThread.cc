@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "phNxpNciHal_WorkerThread.h"
+#include "phNxpNciHal_ReaderThread.h"
 #include <android-base/stringprintf.h>
 #include <log/log.h>
 #include <phDal4Nfc_messageQueueLib.h>
@@ -29,24 +29,26 @@
 
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 
-phNxpNciHal_WorkerThread::phNxpNciHal_WorkerThread() : thread_running(false) {worker_thread = 0;}
+phNxpNciHal_ReaderThread::phNxpNciHal_ReaderThread() : thread_running(false) {
+  reader_thread = 0;
+}
 
-phNxpNciHal_WorkerThread::~phNxpNciHal_WorkerThread() { Stop(); }
+phNxpNciHal_ReaderThread::~phNxpNciHal_ReaderThread() { Stop(); }
 
-phNxpNciHal_WorkerThread& phNxpNciHal_WorkerThread::getInstance() {
-  static phNxpNciHal_WorkerThread instance;
+phNxpNciHal_ReaderThread& phNxpNciHal_ReaderThread::getInstance() {
+  static phNxpNciHal_ReaderThread instance;
   return instance;
 }
 
-bool phNxpNciHal_WorkerThread::Start() {
+bool phNxpNciHal_ReaderThread::Start() {
   /* The thread_running.load() and thread_running.store() methods are
      part of the C++11 std::atomic class. These methods are used to
      perform atomic operations on variables, which ensures that the
      operations are thread-safe without needing explicit locks or mutexes */
   if (!thread_running.load()) {
     thread_running.store(true);
-    int val = pthread_create(&worker_thread, NULL,
-                             phNxpNciHal_WorkerThread::WorkerThread, this);
+    int val = pthread_create(&reader_thread, NULL,
+                             phNxpNciHal_ReaderThread::ReaderThread, this);
     if (val != 0) {
       thread_running.store(false);
       NXPLOG_NCIHAL_E("pthread_create failed");
@@ -56,32 +58,32 @@ bool phNxpNciHal_WorkerThread::Start() {
   return true;
 }
 
-bool phNxpNciHal_WorkerThread::Stop() {
+bool phNxpNciHal_ReaderThread::Stop() {
   thread_running.store(false);
 
   if ((thread_running.load()) &&
-      (pthread_join(worker_thread, (void**)NULL) != 0)) {
+      (pthread_join(reader_thread, (void**)NULL) != 0)) {
     NXPLOG_NCIHAL_E("pthread_join failed");
     return false;
   }
   return true;
 }
 
-void* phNxpNciHal_WorkerThread::WorkerThread(void* arg) {
-  phNxpNciHal_WorkerThread* worker =
-      static_cast<phNxpNciHal_WorkerThread*>(arg);
-  worker->Run();
+void* phNxpNciHal_ReaderThread::ReaderThread(void* arg) {
+  phNxpNciHal_ReaderThread* reader =
+      static_cast<phNxpNciHal_ReaderThread*>(arg);
+  reader->Run();
   return nullptr;
 }
 
-void phNxpNciHal_WorkerThread::Run() {
+void phNxpNciHal_ReaderThread::Run() {
   phLibNfc_Message_t msg;
-  NXPLOG_NCIHAL_D("HAL Worker thread started");
+  NXPLOG_NCIHAL_D("HAL Reader thread started");
 
   while (thread_running.load()) {
     memset(&msg, 0x00, sizeof(phLibNfc_Message_t));
     if (phDal4Nfc_msgrcv(nxpncihal_ctrl.gDrvCfg.nClientId, &msg, 0, 0) == -1) {
-      NXPLOG_NCIHAL_E("NFC worker received bad message");
+      NXPLOG_NCIHAL_E("NFC reader received bad message");
       continue;
     }
 
@@ -90,22 +92,6 @@ void phNxpNciHal_WorkerThread::Run() {
     }
 
     switch (msg.eMsgType) {
-      case NCI_HAL_TML_WRITE_MSG: {
-        REENTRANCE_LOCK();
-        phLibNfc_DeferredCall_t* deferCall =
-            (phLibNfc_DeferredCall_t*)(msg.pMsgData);
-        phTmlNfc_TransactInfo_t* pInfo =
-            (phTmlNfc_TransactInfo_t*)deferCall->pParameter;
-        int bytesWritten = phNxpNciHal_write_unlocked(
-            (uint16_t)pInfo->wLength, (uint8_t*)pInfo->pBuff, ORIG_EXTNS);
-        if (bytesWritten == pInfo->wLength) {
-          phNxpExtn_WriteCompleteStatusUpdate(NFCSTATUS_SUCCESS);
-        } else {
-          phNxpExtn_WriteCompleteStatusUpdate(NFCSTATUS_FAILED);
-        }
-        REENTRANCE_UNLOCK();
-        break;
-      }
       case NCI_HAL_OEM_RSP_NTF_MSG: {
         REENTRANCE_LOCK();
         phLibNfc_DeferredCall_t* deferCall =
@@ -116,13 +102,6 @@ void phNxpNciHal_WorkerThread::Run() {
           (*nxpncihal_ctrl.p_nfc_stack_data_cback)(pInfo->wLength,
                                                    pInfo->pBuff);
         }
-        REENTRANCE_UNLOCK();
-        break;
-      }
-      case HAL_CTRL_GRANTED_MSG: {
-        NXPLOG_NCIHAL_D("Processing HAL_CTRL_GRANTED_MSG");
-        REENTRANCE_LOCK();
-        phNxpExtn_NfcHalControlGranted();
         REENTRANCE_UNLOCK();
         break;
       }

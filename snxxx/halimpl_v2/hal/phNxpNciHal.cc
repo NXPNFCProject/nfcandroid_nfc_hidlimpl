@@ -47,10 +47,11 @@
 #include "phNxpNciHal_IoctlOperations.h"
 #include "phNxpNciHal_LxDebug.h"
 #include "phNxpNciHal_PowerTrackerIface.h"
+#include "phNxpNciHal_ReaderThread.h"
 #include "phNxpNciHal_ULPDet.h"
 #include "phNxpNciHal_VendorProp.h"
 #include "phNxpNciHal_WiredSeIface.h"
-#include "phNxpNciHal_WorkerThread.h"
+#include "phNxpNciHal_WriterThread.h"
 #include "phNxpNciHal_extOperations.h"
 
 using android::base::StringPrintf;
@@ -82,8 +83,10 @@ static bool config_access = false;
 static bool sIsHalOpenErrorRecovery = false;
 
 NfcWriter& nfcData = NfcWriter::getInstance();
-phNxpNciHal_WorkerThread& g_workerThread =
-    phNxpNciHal_WorkerThread::getInstance();
+phNxpNciHal_ReaderThread& g_readerThread =
+    phNxpNciHal_ReaderThread::getInstance();
+phNxpNciHal_WriterThread& g_writerThread =
+    phNxpNciHal_WriterThread::getInstance();
 NfcHalThreadMutex sHalFnLock;
 
 /* NCI HAL Control structure */
@@ -624,8 +627,15 @@ int phNxpNciHal_MinOpen() {
   }
   memset(mGetCfg_info, 0x00, sizeof(phNxpNci_getCfg_info_t));
 
+  /* Create the writer thread */
+  if (g_writerThread.Start() != true) {
+    NXPLOG_NCIHAL_E("pthread_create failed");
+    CONCURRENCY_UNLOCK();
+    return phNxpNciHal_MinOpen_Clean(&nfc_dev_node);
+  }
+
   /* Create the client thread */
-  if (g_workerThread.Start() != true) {
+  if (g_readerThread.Start() != true) {
     NXPLOG_NCIHAL_E("pthread_create failed");
     CONCURRENCY_UNLOCK();
     return phNxpNciHal_MinOpen_Clean(&nfc_dev_node);
@@ -1027,11 +1037,6 @@ int phNxpNciHal_write_internal(uint16_t data_len, const uint8_t* p_data) {
  ******************************************************************************/
 int phNxpNciHal_write_unlocked(uint16_t data_len, const uint8_t* p_data,
                                int origin) {
-  // For EXTNS library command window check is done before
-  // enque packet. Hence should not do window check again.
-  if (origin == ORIG_EXTNS) {
-    return nfcData.write_window_checked_unlocked(data_len, p_data, origin);
-  }
   return nfcData.write_unlocked(data_len, p_data, origin);
 }
 /******************************************************************************
@@ -2175,8 +2180,11 @@ close_and_return:
 
     (void)phTmlNfc_Shutdown();
 
-    if (true != g_workerThread.Stop()) {
-      NXPLOG_TML_E("Fail to kill Worker thread!");
+    if (true != g_readerThread.Stop()) {
+      NXPLOG_TML_E("Fail to kill Reader thread!");
+    }
+    if (true != g_writerThread.Stop()) {
+      NXPLOG_TML_E("Fail to kill Writer thread!");
     }
     PhNxpEventLogger::GetInstance().Finalize();
     phNxpTempMgr::GetInstance().Reset();
@@ -2368,12 +2376,11 @@ int phNxpNciHal_control_granted(void) {
    * will be allowed
    */
   CONCURRENCY_LOCK();
-  if (NULL != gpphTmlNfc_Context) {
-    static phLibNfc_Message_t msg;
-    msg.eMsgType = HAL_CTRL_GRANTED_MSG;
-    msg.pMsgData = NULL;
-    msg.Size = 0;
-    phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &msg);
+  static phLibNfc_Message_t msg;
+  msg.eMsgType = HAL_CTRL_GRANTED_MSG;
+  msg.pMsgData = NULL;
+  msg.Size = 0;
+  if (g_writerThread.Post(msg)) {
     /* At the end concurrency unlock so calls from upper layer will
      * be allowed
      */
