@@ -230,8 +230,6 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             return STATUS_FAILED;
         }
 
-        mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
-
         try {
             byte[] preCmd = {FIELD_DETECT_SET_FLAG_SUB_GID_OID,
                 (byte) (mode ? MODE_ENABLE : MODE_DISABLE)};
@@ -252,6 +250,11 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             if (vendorRsp != null && vendorRsp.length > 1
                     && vendorRsp[0] == FIELD_DETECT_MODE_SET_SUB_GID_OID
                     && vendorRsp[1] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
+                if (mode) {
+                    mNxpNciPacketHandler.registerNtfCallback(Executors.newCachedThreadPool(), this);
+                } else {
+                    mNxpNciPacketHandler.unregisterNtfCallback(this);
+                }
                 return STATUS_SUCCESS;
             } else {
                 NxpNfcLogger.e(TAG, "send vendor nci failed");
@@ -270,7 +273,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             NxpNfcLogger.e(TAG, "NxpNciPacketHandler is null");
             return false;
         }
-        mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
+
         byte[] cmd = {IS_FIELD_DETECT_MODE_STARTED_SUB_GID_OID};
         try {
             byte[] vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(
@@ -296,7 +299,6 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             NxpNfcLogger.e(TAG, " NXP Nci Pkt Handler is null");
             return STATUS_FAILED;
         }
-        mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
         byte[] efdm_status_cmd = {IS_FIELD_DETECT_ENABLED_SUB_GID_OID};
         try {
             byte[] vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(
@@ -547,13 +549,19 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
         byte[] cmdPayload = {0x01, (byte) 0xA1, 0x55, 0x02,
             (mode) ? MODE_ENABLE : MODE_DISABLE, rssiNtfTimeInterval};
         try {
-            mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
+            if (mode) {
+                mNxpNciPacketHandler.registerNtfCallback(Executors.newCachedThreadPool(), this);
+            }
+
             mNxpNciPacketHandler.shouldCheckResponseSubGid(false);
             byte[] vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(CONF_GID,
                     SET_CONF_OID, cmdPayload);
             mNxpNciPacketHandler.shouldCheckResponseSubGid(true);
             if (vendorRsp != null && vendorRsp.length > 0
                     && vendorRsp[0] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
+                if (!mode) {
+                    mNxpNciPacketHandler.unregisterNtfCallback(this);
+                }
                 return STATUS_SUCCESS;
             } else {
                NxpNfcLogger.e(TAG, "Send Vendor Failed");
@@ -680,7 +688,6 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
         }
         try {
             byte[] cmdPayload = {0x01, (byte) 0xA1, 0x55};
-            mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
             mNxpNciPacketHandler.shouldCheckResponseSubGid(false);
             byte[] vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(CONF_GID,
                     GET_CONF_OID, cmdPayload);
@@ -771,13 +778,16 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
         cmdPayload[offset++] = (byte) fieldValue.length;
         System.arraycopy(fieldValue, 0, cmdPayload, offset, fieldValue.length);
         try {
-            mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
+            mNxpNciPacketHandler.registerNtfCallback(Executors.newCachedThreadPool(), this);
             mNxpNciPacketHandler.shouldCheckResponseSubGid(false);
             byte[] vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(CONF_GID,
                     SET_CONF_OID, cmdPayload);
             mNxpNciPacketHandler.shouldCheckResponseSubGid(true);
             if (vendorRsp != null && vendorRsp.length > 0
                     && vendorRsp[0] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
+                if ((fieldValue[0] == 0x00) && (fieldValue[1] == 0x00)) {
+                    mNxpNciPacketHandler.unregisterNtfCallback(this);
+                }
                 status = STATUS_SUCCESS;
             } else {
                 NxpNfcLogger.e(TAG, "Send Vendor Failed");

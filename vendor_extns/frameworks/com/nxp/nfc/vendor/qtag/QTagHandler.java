@@ -142,8 +142,6 @@ public class QTagHandler implements INxpNfcNtfHandler {
 
     synchronized (qtagSync) { sQTagDetected = false; }
 
-    mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(),
-                                          this);
     try {
       NxpNfcLogger.d(TAG, "Sending VendorNciMessage");
       byte[] vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(
@@ -152,10 +150,15 @@ public class QTagHandler implements INxpNfcNtfHandler {
       if (vendorRsp != null && vendorRsp.length > 0 &&
           vendorRsp[1] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
         status = QTagStatus.Success.value;
-        if (qMode == QTagSubOid.Disable.value)
+        if (qMode == QTagSubOid.Disable.value) {
           sIsQPollEnabled = false;
-        else
+          mNxpNciPacketHandler.unregisterNtfCallback(this);
+        }
+        else {
           sIsQPollEnabled = true;
+          mNxpNciPacketHandler.registerNtfCallback(Executors.newCachedThreadPool(),
+                                          this);
+        }
       } else {
         NxpNfcLogger.e(TAG, "enableQtag failed!!");
         status = QTagStatus.Failed.value;

@@ -32,7 +32,7 @@ import java.util.Arrays;
 import java.util.Vector;
 import java.util.concurrent.Executors;
 
-public class TransitConfigHandler implements INxpNfcNtfHandler {
+public class TransitConfigHandler {
   private NfcAdapter mNfcAdapter;
   private final NfcOperations mNfcOperations;
   private final NxpNciPacketHandler mNxpNciPacketHandler;
@@ -54,11 +54,6 @@ public class TransitConfigHandler implements INxpNfcNtfHandler {
     this.mNfcAdapter = nfcAdapter;
     this.mNxpNciPacketHandler = NxpNciPacketHandler.getInstance(nfcAdapter);
     this.mNfcOperations = NfcOperations.getInstance(nfcAdapter);
-  }
-
-  @Override
-  public void onVendorNciNotification(int gid, int oid, byte[] payload) {
-    NxpNfcLogger.d(TAG, "payload: " + payload.length);
   }
 
   private int checkResetRequired(String configs) {
@@ -136,8 +131,6 @@ public class TransitConfigHandler implements INxpNfcNtfHandler {
 
   public boolean sendCmd(byte[] payloadBytes) {
     byte[] vendorRsp = {};
-    mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(),
-                                          this);
     try {
       NxpNfcLogger.d(TAG, "Sending VendorNciMessage");
       vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(
@@ -180,6 +173,10 @@ public class TransitConfigHandler implements INxpNfcNtfHandler {
           cmdStatus = sendCmd(payloadBytes);
       } catch (Exception e) {
         NxpNfcLogger.e(TAG, "Exception in sendCmd");
+        if (resetStatus == TRANSIT_CONFIG_REQUIRE_RF_RESET) {
+          NxpNfcLogger.e(TAG, "Enabling discovery due to exception");
+          mNfcOperations.enableDiscovery();
+        }
         throw new IOException("Error sending VendorNciMessage", e);
       }
     } else if(resetStatus == TRANSIT_CONFIG_REQUIRE_NFC_RESET) {
@@ -226,6 +223,7 @@ public class TransitConfigHandler implements INxpNfcNtfHandler {
         }
       }
     }
+
     if(cmdStatus) {
       if(resetStatus == TRANSIT_CONFIG_REQUIRE_NFC_RESET) {
         try {

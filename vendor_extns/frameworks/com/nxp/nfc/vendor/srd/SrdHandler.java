@@ -130,6 +130,7 @@ public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
                     Intent srdTimeoutIntent = new Intent(ACTION_SRD_EVT_TIMEOUT);
                     mContext.sendBroadcast(srdTimeoutIntent);
                 }
+                mNxpNciPacketHandler.unregisterNtfCallback(this);
                 mNfcOperations.unregisterNxpOemCallback();
                 break;
             case SRD_MODE_NTF_SRD_FEATURE_NOT_SUPPORTED:
@@ -147,6 +148,7 @@ public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
                 break;
             case SRD_MODE_NTF_SRD_TRANSACTION_STOP:
                 handleSrdStopNotification(payload);
+                mNxpNciPacketHandler.unregisterNtfCallback(this);
                 break;
             default:
                 NxpNfcLogger.d(TAG, "Unknown message received");
@@ -253,9 +255,8 @@ public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
     }
 
     public int activateSeInterface() throws IOException {
-        NxpNfcLogger.d(TAG, "registerCallback VendorNciMessage on activateSeInterface");
+        NxpNfcLogger.d(TAG, "registerNtfCallback VendorNciMessage on activateSeInterface");
         mNfcOperations.registerNxpOemCallback(this);
-        mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(), this);
 
         byte[] activeSECmd = new byte[2];
         activeSECmd[0] = (byte) ACTIVE_SE;
@@ -268,6 +269,7 @@ public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
         if (srdSeStatus != INxpNfcAdapter.SRD_STATUS_SUCCESS) {
             return STATUS_FAILED;
         }
+        mNxpNciPacketHandler.registerNtfCallback(Executors.newCachedThreadPool(), this);
         return STATUS_SUCCESS;
 
     }

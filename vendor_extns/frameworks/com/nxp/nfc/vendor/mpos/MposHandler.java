@@ -119,6 +119,7 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
       synchronized (mposStateSync) {
         if (mposState == MposState.MPOS_STOP_INPROGRESS) {
           mposState = MposState.MPOS_STOP_COMPLETED;
+          mNxpNciPacketHandler.unregisterNtfCallback(this);
         }
       }
       break;
@@ -163,6 +164,7 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
       synchronized (mposStateSync) {
         if (mposState == MposState.MPOS_STOP_INPROGRESS) {
           mposState = MposState.MPOS_STOP_COMPLETED;
+          mNxpNciPacketHandler.unregisterNtfCallback(this);
         }
       }
       break;
@@ -228,8 +230,7 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
       }
       isMposEnabled = enable;
     }
-    mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(),
-                                          this);
+
     byte[] mpos = {MPOS_READER_MODE_SET_DEDICATED_MODE_CMD,
                    (byte)(enable ? DEDICATED_MODE_ON : DEDICATED_MODE_OFF)};
     try {
@@ -240,15 +241,16 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
       if (vendorRsp != null && vendorRsp.length > 0 &&
           vendorRsp[1] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
         synchronized (mposStateSync) {
-            if (enable) {
-                mNfcOperations.registerNxpOemCallback(this);
-                mposState = MposState.MPOS_START_INPROGRESS;
-
-            }
-            else {
-                mNfcOperations.unregisterNxpOemCallback();
-                mposState = MposState.MPOS_STOP_INPROGRESS;
-            }
+          if (enable) {
+            mNfcOperations.registerNxpOemCallback(this);
+            mNxpNciPacketHandler.registerNtfCallback(Executors.newCachedThreadPool(),
+                                      this);
+            mposState = MposState.MPOS_START_INPROGRESS;
+          }
+          else {
+            mNfcOperations.unregisterNxpOemCallback();
+            mposState = MposState.MPOS_STOP_INPROGRESS;
+          }
         }
         return MPOS_STATUS_SUCCESS;
       } else {

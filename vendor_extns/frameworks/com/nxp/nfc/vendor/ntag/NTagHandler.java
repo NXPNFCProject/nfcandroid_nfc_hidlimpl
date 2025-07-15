@@ -129,9 +129,6 @@ public class NTagHandler implements INxpNfcNtfHandler {
     if (!sIsQPollEnabled)
       return false;
 
-    mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(),
-                                          this);
-
     try {
       NxpNfcLogger.d(TAG, "Sending VendorNciMessage for isNTagModeEnabled");
       byte[] ntag = {(byte)(QTAG_SUB_GID | NTagSubOid.NTagEnableStatus.value),
@@ -185,8 +182,6 @@ public class NTagHandler implements INxpNfcNtfHandler {
 
     synchronized (ntagSync) { sNTagDetected = false; }
 
-    mNxpNciPacketHandler.registerCallback(Executors.newSingleThreadExecutor(),
-                                          this);
     try {
       NxpNfcLogger.d(TAG, "Sending VendorNciMessage");
       byte[] vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(
@@ -195,10 +190,14 @@ public class NTagHandler implements INxpNfcNtfHandler {
       if (vendorRsp != null && vendorRsp.length > 0 &&
           vendorRsp[1] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
         status = NTagStatusCode.Success.value;
-        if (qMode == NTagSubOid.Disable.value)
+        if (qMode == NTagSubOid.Disable.value) {
           sIsQPollEnabled = false;
-        else
+          mNxpNciPacketHandler.unregisterNtfCallback(this);
+        } else {
           sIsQPollEnabled = true;
+          mNxpNciPacketHandler.registerNtfCallback(Executors.newCachedThreadPool(),
+                                          this);
+        }
       } else {
         NxpNfcLogger.e(TAG, "setNTagMode failed!!");
         status = NTagStatusCode.Failed.value;

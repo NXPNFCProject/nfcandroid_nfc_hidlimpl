@@ -53,12 +53,10 @@ public class NxpNciPacketHandler {
     private byte mCurrentCmdSubGidOid;
     private boolean mIsSubGidCheckReq = true;
     private CountDownLatch mResCountDownLatch;
+    private boolean isCallbackRegistered = false;
 
     private NxpNciPacketHandler(NfcAdapter nfcAdapter) {
       this.mNfcAdapter = nfcAdapter;
-      NxpNfcLogger.d(TAG, "registerNfcVendorNciCallback");
-      mNfcAdapter.registerNfcVendorNciCallback(
-          Executors.newCachedThreadPool(), mNfcVendorNciCallback);
     }
 
     public static NxpNciPacketHandler getInstance(NfcAdapter nfcAdapter) {
@@ -68,12 +66,28 @@ public class NxpNciPacketHandler {
       return sNxpNciPacketHandler;
     }
 
-    public void registerCallback(@NonNull @CallbackExecutor Executor executor,
+    public void registerNtfCallback(@NonNull @CallbackExecutor Executor executor,
                                  @NonNull INxpNfcNtfHandler nxpNfcNtfHandler) {
-      if (!mCallbackMap.containsKey(nxpNfcNtfHandler))
+      if (executor == null ) {
+        NxpNfcLogger.e(TAG, "Executor must not be null!");
+        throw new IllegalArgumentException();
+      }
+
+      synchronized(NxpNciPacketHandler.this) {
+        if (mCallbackMap.containsKey(nxpNfcNtfHandler)) {
+            NxpNfcLogger.e(TAG, "Callback already registered.");
+            return;
+        }
+
+        if (mCallbackMap.isEmpty() || !isCallbackRegistered) {
+          NxpNfcLogger.d(TAG, "registerNfcVendorNciCallback");
+          mNfcAdapter.registerNfcVendorNciCallback(
+            Executors.newCachedThreadPool(), mNfcVendorNciCallback);
+          isCallbackRegistered = true;
+        }
+
         mCallbackMap.put(nxpNfcNtfHandler, executor);
-      else
-        NxpNfcLogger.e(TAG, "Callback already registered.");
+      }
     }
 
     /**
@@ -85,11 +99,19 @@ public class NxpNciPacketHandler {
     }
 
     public void
-    unregisterCallback(@NonNull INxpNfcNtfHandler nxpNfcNtfHandler) {
-      if (mCallbackMap.containsKey(nxpNfcNtfHandler))
-        mCallbackMap.remove(nxpNfcNtfHandler);
-      else
-        NxpNfcLogger.e(TAG, "Callback not registered");
+    unregisterNtfCallback(@NonNull INxpNfcNtfHandler nxpNfcNtfHandler) {
+      synchronized(NxpNciPacketHandler.this) {
+        if (mCallbackMap.containsKey(nxpNfcNtfHandler))
+          mCallbackMap.remove(nxpNfcNtfHandler);
+        else
+          NxpNfcLogger.e(TAG, "Callback not registered");
+
+        if (mCallbackMap.isEmpty() && isCallbackRegistered) {
+            NxpNfcLogger.d(TAG, "unregisterNfcVendorNciCallback");
+            mNfcAdapter.unregisterNfcVendorNciCallback(mNfcVendorNciCallback);
+            isCallbackRegistered = false;
+        }
+      }
     }
 
     /**
@@ -107,6 +129,14 @@ public class NxpNciPacketHandler {
         int status = NfcAdapter.SEND_VENDOR_NCI_STATUS_FAILED;
         try {
             if (mNfcAdapter != null) {
+                synchronized(NxpNciPacketHandler.this) {
+                    if (mCallbackMap.isEmpty() || !isCallbackRegistered) {
+                        NxpNfcLogger.d(TAG, "registerNfcVendorNciCallback");
+                        mNfcAdapter.registerNfcVendorNciCallback(
+                            Executors.newCachedThreadPool(), mNfcVendorNciCallback);
+                        isCallbackRegistered = true;
+                    }
+                }
                 if (mIsSubGidCheckReq) {
                     mCurrentCmdSubGidOid = payload[0];
                 }
@@ -121,6 +151,13 @@ public class NxpNciPacketHandler {
                                             TimeUnit.MILLISECONDS)) {
                         NxpNfcLogger.d(TAG, "sendVendorNciMessage: error in wait " + status);
                         mVendorNciRsp = new byte[] { (byte) NxpNfcConstants.TIMEOUT_ERR_CODE };
+                    }
+                }
+                synchronized(NxpNciPacketHandler.this) {
+                    if (mCallbackMap.isEmpty() && isCallbackRegistered) {
+                        NxpNfcLogger.d(TAG, "unRegisterNfcVendorNciCallback");
+                        mNfcAdapter.unregisterNfcVendorNciCallback(mNfcVendorNciCallback);
+                        isCallbackRegistered = false;
                     }
                 }
             }
