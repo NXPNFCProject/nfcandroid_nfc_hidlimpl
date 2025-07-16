@@ -2893,7 +2893,7 @@ bool phNxpNciHal_UpdateRfMiscSettings() {
                       MISC_CN_TRANSIT_CMA_BYPASSMODE_BITMASK});
 
   vector<phRfMiscSettings>::iterator it;
-  for (it = settings.begin(); it != settings.end(); it++) {
+  for (it = settings.begin(); it != settings.end(); ++it) {
     unsigned long config_value = 0;
     int position = it->configPosition;
     if ((int)phNxpNciRfSet.p_rx_data.size() <= position) {
