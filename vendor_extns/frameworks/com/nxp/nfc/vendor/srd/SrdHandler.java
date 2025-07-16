@@ -31,8 +31,9 @@ import com.nxp.nfc.core.NfcOperations;
 import com.nxp.nfc.core.NxpNciPacketHandler;
 import com.nxp.nfc.INxpOEMCallbacks;
 import java.util.concurrent.Executors;
-import android.os.RemoteException;
+import android.os.UserHandle;
 import android.util.Log;
+import android.net.Uri;
 import java.io.IOException;
 
 /**
@@ -49,13 +50,21 @@ public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
     public static final int SRD_MODE_NTF_START_SRD_DISCOVERY = 0x00;
     public static final int SRD_MODE_NTF_SRD_TIMED_OUT = 0x01;
     public static final int SRD_MODE_NTF_SRD_FEATURE_NOT_SUPPORTED = 0x02;
+    public static final int SRD_MODE_NTF_SRD_TRANSACTION_STOP = 0x03;
     public static final int SRD_INIT_MODE = 0x20;
     public static final int ACTIVE_SE = 0x21;
     public static final int DEACTIVE_SE = 0x22;
 
+    private static final byte AID_TAG = (byte) 0x81;
+    private static final byte DATA_TAG = (byte) 0x82;
+    private static final byte SUB_GID_OID_LEN = 0x02;
+    private static final byte NCI_HEADER_LEN = 0x02;
+    private static final byte HCI_HEADER_LEN = 0x02;
+
     public static final int STATUS_SUCCESS = 0x00;
     public static final int STATUS_FAILED = 0x03;
     private static final String TAG = "SrdHandler";
+    private static final String ESE1_STR = "eSE1";
     private static boolean isSrdEnabled = false;
     private final NxpNciPacketHandler mNxpNciPacketHandler;
     private final NfcOperations mNfcOperations;
@@ -95,11 +104,11 @@ public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
         NxpNfcLogger.d(TAG, "Sub-GidOid: " + subGidOid + ", Notification Type: " + notificationType);
 
         if (subGidOid == SRD_MODE_NTF_SUB_GID_OID) {
-            handleSrdNotification(notificationType);
+            handleSrdNotification(notificationType, payload);
         }
     }
 
-    private void handleSrdNotification(byte notificationType) {
+    private void handleSrdNotification(byte notificationType, byte[] payload) {
         int ntfType = Byte.toUnsignedInt(notificationType);
         NxpNfcLogger.d(TAG, "ntfType:" + ntfType);
         switch (ntfType) {
@@ -108,6 +117,7 @@ public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
                 break;
             case SRD_MODE_NTF_SRD_TIMED_OUT:
                 NxpNfcLogger.d(TAG, "SRD_EVT_TIMEOUT");
+                mNfcOperations.disableDiscovery();
                 isSrdEnabled = false;
                 if (mSrdCallbacks != null) {
                     NxpNfcLogger.d(TAG, "Sending SRD Callabck to Application");
@@ -135,11 +145,70 @@ public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
                     mContext.sendBroadcast(srdFeatureNotSupportedIntent);
                 }
                 break;
+            case SRD_MODE_NTF_SRD_TRANSACTION_STOP:
+                handleSrdStopNotification(payload);
+                break;
             default:
                 NxpNfcLogger.d(TAG, "Unknown message received");
                 break;
         }
     }
+
+    private void handleSrdStopNotification(byte[] ntf) {
+        try {
+            if (mNfcOperations == null || mContext == null || ntf == null) {
+                NxpNfcLogger.e(TAG, " Invalid params");
+            }
+            mNfcOperations.disableDiscovery();
+            byte[] reader = ESE1_STR.getBytes(); // consider eSE1 for SRD
+            byte[] aid = parseTagValue(ntf, AID_TAG);
+            byte[] data = parseTagValue(ntf, DATA_TAG);
+            if (aid == null || data == null) {
+                NxpNfcLogger.e(TAG, "Invalid AID or Data");
+                return;
+            }
+            StringBuilder aidString = new StringBuilder(aid.length);
+            for (byte b : aid) {
+                aidString.append(String.format("%02X", b));
+            }
+            Intent intent = new Intent(NfcAdapter.ACTION_TRANSACTION_DETECTED);
+            intent.putExtra(NfcAdapter.EXTRA_AID, aid);
+            intent.putExtra(NfcAdapter.EXTRA_DATA, data);
+            intent.putExtra(NfcAdapter.EXTRA_SECURE_ELEMENT_NAME, reader);
+            String url =
+                new String("nfc://secure:0/" + reader + "/" + aidString.toString());
+            intent.setData(Uri.parse(url));
+            NxpNfcLogger.d(TAG, "Broadcasting " + NfcAdapter.ACTION_TRANSACTION_DETECTED);
+            mContext.sendBroadcastAsUser(intent, UserHandle.CURRENT);
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, "Error " + e);
+        }
+    }
+
+    private byte[] parseTagValue(byte[] ntf, byte inputTag) {
+        if (ntf == null || ntf.length < 6) {
+            return null;
+        }
+
+        int offset = 0;
+        offset += SUB_GID_OID_LEN + NCI_HEADER_LEN;
+        if (ntf[offset++] > (ntf.length - offset)) {
+            return null;
+        }
+        offset += HCI_HEADER_LEN;
+        while ((offset + 2) <= ntf.length) {
+            byte tag = ntf[offset++];
+            byte tagLen = ntf[offset++];
+            if (tag == inputTag && ((offset + tagLen) <= ntf.length)) {
+                byte[] data = new byte[tagLen];
+                System.arraycopy(ntf, offset, data, 0, tagLen);
+                return data;
+            }
+            offset += tagLen;
+        }
+        return null;
+   }
+
 
     /**
      * This API registers the Application callbacks to be called

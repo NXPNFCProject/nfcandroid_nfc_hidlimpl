@@ -523,12 +523,9 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
      * configuration.
      */
     public int deactivateSeInterface() throws IOException {
-        if (mIsSrdMode) {
+        if (mIsSrdMode)
             mIsSrdMode = false;
-            return mSrdHandler.deactivateSeInterface();
-        } else {
-            return mUtilsHandler.deactivateSeInterface();
-        }
+        return mUtilsHandler.deactivateSeInterface();
     }
 
     /**
