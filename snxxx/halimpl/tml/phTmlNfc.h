@@ -185,7 +185,6 @@ typedef struct phTmlNfc_Context {
   sem_t txSemaphore;      /* Lock/Acquire txRx Semaphore */
   sem_t postMsgSemaphore; /* Semaphore to post message atomically by Reader &
                              writer thread */
-  pthread_cond_t wait_busy_condition; /*Condition to wait reader thread*/
   pthread_mutex_t wait_busy_lock;     /*Condition lock to wait reader thread*/
   volatile uint8_t wait_busy_flag;    /*Condition flag to wait reader thread*/
   volatile uint8_t gWriterCbflag; /* flag to indicate write callback message is
