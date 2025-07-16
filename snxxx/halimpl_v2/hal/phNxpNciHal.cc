@@ -78,7 +78,7 @@ static uint8_t read_failed_disable_nfc = false;
 const char* core_reset_ntf_count_prop_name = "nfc.core_reset_ntf_count";
 /* FW download success flag */
 static uint8_t fw_download_success = 0;
-static uint8_t config_access = false;
+static bool config_access = false;
 static bool sIsHalOpenErrorRecovery = false;
 
 NfcWriter& nfcData = NfcWriter::getInstance();
@@ -120,7 +120,7 @@ extern uint8_t gRecFWDwnld;
 static uint8_t gRecFwRetryCount;  // variable to hold recovery FW retry count
 uint8_t write_unlocked_status = NFCSTATUS_SUCCESS;
 uint8_t wFwUpdateReq = false;
-uint8_t wRfUpdateReq = false;
+bool wRfUpdateReq = false;
 uint32_t timeoutTimerId = 0;
 bool nfc_debug_enabled = true;
 PowerTrackerHandle gPowerTrackerHandle;

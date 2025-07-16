@@ -111,7 +111,7 @@ extern uint8_t gRecFWDwnld;
 static uint8_t gRecFwRetryCount;  // variable to hold recovery FW retry count
 static uint8_t write_unlocked_status = NFCSTATUS_SUCCESS;
 uint8_t wFwUpdateReq = false;
-uint8_t wRfUpdateReq = false;
+bool wRfUpdateReq = false;
 uint32_t timeoutTimerId = 0;
 bool nfc_debug_enabled = true;
 PowerTrackerHandle gPowerTrackerHandle;
@@ -1399,7 +1399,7 @@ static void phNxpNciHal_read_complete(void* pContext,
       }
       /* Unlock semaphore only for responses*/
       if ((nxpncihal_ctrl.p_rx_data[0x00] & NCI_MT_MASK) == NCI_MT_RSP ||
-          (IS_CHIP_TYPE_L(sn100u) && (icode_detected == true) &&
+          (IS_CHIP_TYPE_L(sn100u) && (icode_detected == 1) &&
            (icode_send_eof == 3))) {
         /* Unlock semaphore */
         SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
