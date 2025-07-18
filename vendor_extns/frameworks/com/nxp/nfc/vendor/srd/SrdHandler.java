@@ -158,6 +158,7 @@ public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
         try {
             if (mNfcOperations == null || mContext == null || ntf == null) {
                 NxpNfcLogger.e(TAG, " Invalid params");
+                return;
             }
             mNfcOperations.disableDiscovery();
             byte[] reader = ESE1_STR.getBytes(); // consider eSE1 for SRD
