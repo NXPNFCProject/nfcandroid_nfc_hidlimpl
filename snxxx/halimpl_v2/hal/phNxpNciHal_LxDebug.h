@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 NXP
+ * Copyright 2023, 2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@
 #define LX_DEBUG_CFG_ENABLE_L1_EVENT 0x0010
 #define LX_DEBUG_CFG_ENABLE_MOD_DETECTED_EVENT 0x0020
 #define LX_DEBUG_CFG_ENABLE_CMA_EVENTS 0x2000
-#define LX_DEBUG_CFG_MASK_RFU 0xDFC0
 #define LX_DEBUG_CFG_MASK 0x20FF
 
 #endif /* _PHNXPNCIHAL_LXDEBUG_H_ */
