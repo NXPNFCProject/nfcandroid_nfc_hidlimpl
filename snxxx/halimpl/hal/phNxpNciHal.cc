@@ -3933,11 +3933,6 @@ void phNxpNciHal_configureLxDebugMode() {
                            sizeof(lx_debug_cfg));
 
   if (isfound) {
-    if (lx_debug_cfg & LX_DEBUG_CFG_MASK_RFU) {
-      NXPLOG_NCIHAL_E(
-          "One or more RFU bits are enabled.\nMasking the RFU bits");
-      lx_debug_cfg = lx_debug_cfg & ~LX_DEBUG_CFG_MASK_RFU;
-    }
     if (lx_debug_cfg & LX_DEBUG_CFG_ENABLE_L1_EVENT) {
       NXPLOG_NCIHAL_D("Enable L1 RF NTF debugs");
     }
