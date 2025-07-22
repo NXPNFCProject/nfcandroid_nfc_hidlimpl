@@ -78,7 +78,7 @@ static uint8_t read_failed_disable_nfc = false;
 const char* core_reset_ntf_count_prop_name = "nfc.core_reset_ntf_count";
 /* FW download success flag */
 static uint8_t fw_download_success = 0;
-static uint8_t config_access = false;
+static bool config_access = false;
 static bool sIsHalOpenErrorRecovery = false;
 
 NfcWriter& nfcData = NfcWriter::getInstance();
@@ -120,7 +120,7 @@ extern uint8_t gRecFWDwnld;
 static uint8_t gRecFwRetryCount;  // variable to hold recovery FW retry count
 uint8_t write_unlocked_status = NFCSTATUS_SUCCESS;
 uint8_t wFwUpdateReq = false;
-uint8_t wRfUpdateReq = false;
+bool wRfUpdateReq = false;
 uint32_t timeoutTimerId = 0;
 bool nfc_debug_enabled = true;
 PowerTrackerHandle gPowerTrackerHandle;
@@ -992,7 +992,14 @@ static void phNxpNciHal_complete(NFCSTATUS status,
  *
  ******************************************************************************/
 int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data) {
-  return nfcData.write(data_len, p_data);
+  if (!data_len || !p_data || data_len > NCI_MAX_DATA_LEN) {
+    NXPLOG_NCIHAL_E("%s: Invalid arguements received", __func__);
+    return NFCSTATUS_FAILED;
+  }
+  /* Create local copy of cmd_data */
+  nxpncihal_ctrl.cmd_len = data_len;
+  copy(p_data, p_data + data_len, nxpncihal_ctrl.p_cmd_data);
+  return nfcData.write(nxpncihal_ctrl.cmd_len, nxpncihal_ctrl.p_cmd_data);
 }
 
 /******************************************************************************
@@ -2886,7 +2893,7 @@ bool phNxpNciHal_UpdateRfMiscSettings() {
                       MISC_CN_TRANSIT_CMA_BYPASSMODE_BITMASK});
 
   vector<phRfMiscSettings>::iterator it;
-  for (it = settings.begin(); it != settings.end(); it++) {
+  for (it = settings.begin(); it != settings.end(); ++it) {
     unsigned long config_value = 0;
     int position = it->configPosition;
     if ((int)phNxpNciRfSet.p_rx_data.size() <= position) {
