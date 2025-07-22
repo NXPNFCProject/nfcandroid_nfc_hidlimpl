@@ -103,8 +103,8 @@ tNFC_printType getPrintType(const char* pString);
 void phNxpNciHal_Memcpy(void* pDest, size_t destSize, const void* pSrc,
                         size_t srcSize);
 
-void phNxpNciHal_HexToString(char* hex, size_t len, char* str);
-void phNxpNciHal_StringToHex(char* str, size_t len, char* hex);
+std::string phNxpNciHal_HexToString(const uint8_t* hex, size_t len);
+void phNxpNciHal_StringToHex(const char* str, size_t len, char* hex);
 
 /* Lock unlock helper macros */
 /* Lock unlock helper macros */
