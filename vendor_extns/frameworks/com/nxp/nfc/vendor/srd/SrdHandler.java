@@ -22,19 +22,23 @@ package com.nxp.nfc.vendor.srd;
 import android.content.Context;
 import android.content.Intent;
 import android.nfc.NfcAdapter;
+
 import com.nxp.nfc.INxpNfcAdapter;
 import com.nxp.nfc.INxpNfcAdapter.SRDStatus;
 import com.nxp.nfc.INxpNfcNtfHandler;
+import com.nxp.nfc.INxpOEMCallbacks;
 import com.nxp.nfc.NxpNfcConstants;
 import com.nxp.nfc.NxpNfcLogger;
 import com.nxp.nfc.core.NfcOperations;
 import com.nxp.nfc.core.NxpNciPacketHandler;
-import com.nxp.nfc.INxpOEMCallbacks;
-import java.util.concurrent.Executors;
+
+import android.net.Uri;
 import android.os.UserHandle;
 import android.util.Log;
-import android.net.Uri;
+
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
 * This class is responsible to start/stop the Srd reader and
@@ -70,6 +74,8 @@ public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
     private final NfcOperations mNfcOperations;
     private final Context mContext;
     private ISrdCallbacks mSrdCallbacks = null;
+    private static final ExecutorService SRD_CALLBACK_EXECUTOR =
+                        Executors.newSingleThreadExecutor();
        /*SRD EVT Timeout*/
     private static final String ACTION_SRD_EVT_TIMEOUT =
             "com.nxp.nfc_extras.ACTION_SRD_EVT_TIMEOUT";
@@ -269,7 +275,7 @@ public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
         if (srdSeStatus != INxpNfcAdapter.SRD_STATUS_SUCCESS) {
             return STATUS_FAILED;
         }
-        mNxpNciPacketHandler.registerNtfCallback(Executors.newCachedThreadPool(), this);
+        mNxpNciPacketHandler.registerNtfCallback(SRD_CALLBACK_EXECUTOR, this);
         return STATUS_SUCCESS;
 
     }

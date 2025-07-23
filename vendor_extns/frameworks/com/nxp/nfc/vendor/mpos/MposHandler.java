@@ -23,13 +23,16 @@ package com.nxp.nfc.vendor.mpos;
 import android.content.Context;
 import android.content.Intent;
 import android.nfc.NfcAdapter;
+
 import com.nxp.nfc.INxpNfcNtfHandler;
 import com.nxp.nfc.INxpOEMCallbacks;
 import com.nxp.nfc.NxpNfcConstants;
 import com.nxp.nfc.NxpNfcLogger;
 import com.nxp.nfc.core.NfcOperations;
 import com.nxp.nfc.core.NxpNciPacketHandler;
+
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
@@ -90,6 +93,8 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
   private final Object lock = new Object();
   private final Object mposStateSync = new Object();
   private boolean isCardActivated = false;
+  private static final ExecutorService MPOS_CALLBACK_EXECUTOR =
+                        Executors.newSingleThreadExecutor();
 
   public MposHandler(NfcAdapter nfcAdapter, Context context) {
     this.mContext = context;
@@ -232,7 +237,7 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
 
   public int mPOSSetReaderMode(String pkg, boolean enable) throws IOException {
     NxpNfcLogger.d(TAG, "mPOSSetReaderMode Enter : " + enable);
-
+    mNfcOperations.registerNxpOemCallback(this);
     /* MPOS Reader mode shall not be started if CE or R/W mode is going on */
     if (mNfcOperations.isRfFieldDetected()) {
       NxpNfcLogger.d(TAG, "Payment is in progress");
@@ -285,9 +290,7 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
           vendorRsp[1] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
         synchronized (mposStateSync) {
           if (enable) {
-            mNfcOperations.registerNxpOemCallback(this);
-            mNxpNciPacketHandler.registerNtfCallback(Executors.newCachedThreadPool(),
-                                      this);
+            mNxpNciPacketHandler.registerNtfCallback(MPOS_CALLBACK_EXECUTOR, this);
             mposState = MposState.MPOS_START_INPROGRESS;
           }
           else {

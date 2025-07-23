@@ -24,22 +24,25 @@ import android.app.Activity;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Bundle;
+
+import com.nxp.nfc.core.NfcOperations;
+import com.nxp.nfc.core.NxpNciPacketHandler;
 import com.nxp.nfc.INxpNfcNtfHandler;
-import com.nxp.nfc.NxpNfcAdapter;
 import com.nxp.nfc.NxpNfcAdapter.NxpReaderCallback;
 import com.nxp.nfc.NxpNfcConstants;
 import com.nxp.nfc.NxpNfcLogger;
-import com.nxp.nfc.NxpNfcUtils;
-import java.util.concurrent.Executors;
-import com.nxp.nfc.core.NfcOperations;
-import com.nxp.nfc.core.NxpNciPacketHandler;
+
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class QTagHandler implements INxpNfcNtfHandler {
 
   private final NxpNciPacketHandler mNxpNciPacketHandler;
   private NfcAdapter mNfcAdapter;
   private final NfcOperations mNfcOperations;
+  private static final ExecutorService QTAG_CALLBACK_EXECUTOR =
+                        Executors.newSingleThreadExecutor();
 
   public enum QTagStatus {
     Success(0x00),
@@ -156,8 +159,7 @@ public class QTagHandler implements INxpNfcNtfHandler {
         }
         else {
           sIsQPollEnabled = true;
-          mNxpNciPacketHandler.registerNtfCallback(Executors.newCachedThreadPool(),
-                                          this);
+          mNxpNciPacketHandler.registerNtfCallback(QTAG_CALLBACK_EXECUTOR, this);
         }
       } else {
         NxpNfcLogger.e(TAG, "enableQtag failed!!");

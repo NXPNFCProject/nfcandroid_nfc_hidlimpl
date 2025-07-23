@@ -16,7 +16,6 @@
 
 package com.nxp.nfc.core;
 
-import android.os.AsyncTask;
 import android.annotation.CallbackExecutor;
 import android.annotation.NonNull;
 import android.nfc.NfcAdapter;
@@ -26,13 +25,14 @@ import com.nxp.nfc.INxpNfcNtfHandler;
 import com.nxp.nfc.NxpNfcConstants;
 import com.nxp.nfc.NxpNfcLogger;
 import com.nxp.nfc.NxpNfcUtils;
-import java.util.HashMap;
+
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @class NxpNciPacketHandler
@@ -54,6 +54,12 @@ public class NxpNciPacketHandler {
     private boolean mIsSubGidCheckReq = true;
     private CountDownLatch mResCountDownLatch;
     private boolean isCallbackRegistered = false;
+
+    /**
+     * @brief hold NTF callback executor.
+     */
+    private static final ExecutorService NTF_CALLBACK_EXECUTOR =
+                        Executors.newCachedThreadPool();
 
     private NxpNciPacketHandler(NfcAdapter nfcAdapter) {
       this.mNfcAdapter = nfcAdapter;
@@ -82,7 +88,7 @@ public class NxpNciPacketHandler {
         if (mCallbackMap.isEmpty() || !isCallbackRegistered) {
           NxpNfcLogger.d(TAG, "registerNfcVendorNciCallback");
           mNfcAdapter.registerNfcVendorNciCallback(
-            Executors.newCachedThreadPool(), mNfcVendorNciCallback);
+                    NTF_CALLBACK_EXECUTOR, mNfcVendorNciCallback);
           isCallbackRegistered = true;
         }
 
@@ -133,7 +139,7 @@ public class NxpNciPacketHandler {
                     if (mCallbackMap.isEmpty() || !isCallbackRegistered) {
                         NxpNfcLogger.d(TAG, "registerNfcVendorNciCallback");
                         mNfcAdapter.registerNfcVendorNciCallback(
-                            Executors.newCachedThreadPool(), mNfcVendorNciCallback);
+                                NTF_CALLBACK_EXECUTOR, mNfcVendorNciCallback);
                         isCallbackRegistered = true;
                     }
                 }

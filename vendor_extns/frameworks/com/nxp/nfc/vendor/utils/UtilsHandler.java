@@ -23,20 +23,20 @@ package com.nxp.nfc.vendor.utils;
 import android.content.Context;
 import android.nfc.NfcAdapter;
 
-import com.nxp.nfc.NxpNfcLogger;
 import com.nxp.nfc.core.NfcOperations;
 import com.nxp.nfc.core.NxpNciPacketHandler;
+import com.nxp.nfc.INxpOEMCallbacks;
+import com.nxp.nfc.NxpNfcLogger;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
  * This class is responsible to control utils api calls
  */
-public class UtilsHandler  {
+public class UtilsHandler implements INxpOEMCallbacks {
 
     private static final String TAG = "UtilsHandler";
     private final NfcOperations mNfcOperations;
@@ -107,9 +107,11 @@ public class UtilsHandler  {
     */
     public void stopPoll() throws IOException {
         NxpNfcLogger.d(TAG, "Entry stopPoll");
+        mNfcOperations.registerNxpOemCallback(this);
         if (mNfcOperations.isDiscoveryStarted()) {
             mNfcOperations.disableDiscovery();
         }
+        mNfcOperations.unregisterNxpOemCallback();
     }
 
     /**

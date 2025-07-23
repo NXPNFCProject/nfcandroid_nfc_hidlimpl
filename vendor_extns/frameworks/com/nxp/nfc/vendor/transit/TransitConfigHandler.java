@@ -21,18 +21,19 @@
 package com.nxp.nfc.vendor.transit;
 
 import android.nfc.NfcAdapter;
+
 import com.nxp.nfc.core.NfcOperations;
 import com.nxp.nfc.core.NxpNciPacketHandler;
+import com.nxp.nfc.INxpOEMCallbacks;
 import com.nxp.nfc.NxpNfcConstants;
 import com.nxp.nfc.NxpNfcLogger;
-import com.nxp.nfc.INxpNfcNtfHandler;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Vector;
-import java.util.concurrent.Executors;
 
-public class TransitConfigHandler {
+public class TransitConfigHandler implements INxpOEMCallbacks {
   private NfcAdapter mNfcAdapter;
   private final NfcOperations mNfcOperations;
   private final NxpNciPacketHandler mNxpNciPacketHandler;
@@ -147,9 +148,11 @@ public class TransitConfigHandler {
   }
 
   public boolean setConfig(String configs) throws IOException {
+    mNfcOperations.registerNxpOemCallback(this);
     if ((!mNfcOperations.isEnabled()) || (mNfcOperations.isCardEmulationActivated()) ||
         (mNfcOperations.isTagConnected())) {
       NxpNfcLogger.e(TAG, "NFC is disabled or busy, Rejecting request..");
+      mNfcOperations.unregisterNxpOemCallback();
       return false;
     }
 
@@ -239,6 +242,7 @@ public class TransitConfigHandler {
     if (resetStatus == TRANSIT_CONFIG_REQUIRE_RF_RESET) {
       mNfcOperations.enableDiscovery();
     }
+    mNfcOperations.unregisterNxpOemCallback();
     return cmdStatus;
   }
 }

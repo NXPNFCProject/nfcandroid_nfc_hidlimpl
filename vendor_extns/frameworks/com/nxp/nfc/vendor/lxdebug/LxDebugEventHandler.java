@@ -31,13 +31,13 @@ import com.nxp.nfc.NxpNfcConstants;
 import com.nxp.nfc.NxpNfcLogger;
 import com.nxp.nfc.core.NfcOperations;
 import com.nxp.nfc.core.NxpNciPacketHandler;
-import java.util.concurrent.Executors;
 
 import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.concurrent.Executors;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 /**
@@ -251,7 +251,8 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
                     && vendorRsp[0] == FIELD_DETECT_MODE_SET_SUB_GID_OID
                     && vendorRsp[1] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
                 if (mode) {
-                    mNxpNciPacketHandler.registerNtfCallback(Executors.newCachedThreadPool(), this);
+                    mNxpNciPacketHandler.registerNtfCallback(Executors.newCachedThreadPool(),
+                                            this);
                 } else {
                     mNxpNciPacketHandler.unregisterNtfCallback(this);
                 }
@@ -348,23 +349,27 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             NxpNfcLogger.e(TAG, "NFC Operations is null");
             return EFDSTATUS_ERROR_UNKNOWN;
         }
+        mNfcOperations.registerNxpOemCallback(this);
         if (!mNfcOperations.isEnabled()) {
+            mNfcOperations.unregisterNxpOemCallback();
             return EFDSTATUS_ERROR_NFC_IS_OFF;
         }
         if (mIsEFDMStarted) {
+            mNfcOperations.unregisterNxpOemCallback();
             return EFDSTATUS_ERROR_ALREADY_STARTED;
         }
         int status = checkFieldDetectEnabledFromConfig();
         if (status != STATUS_SUCCESS) {
+            mNfcOperations.unregisterNxpOemCallback();
             return status;
         }
-        mNfcOperations.registerNxpOemCallback(this);
         if (mNfcOperations.isDiscoveryStarted()) {
             mNfcOperations.disableDiscovery();
         }
         /* check if discovery stopped */
         if (mNfcOperations.isDiscoveryStarted()) {
             NxpNfcLogger.e(TAG, "Failed to stop discovery");
+            mNfcOperations.unregisterNxpOemCallback();
             return STATUS_FAILED;
         }
         mDetectionTimeout = detectionTimeout;
@@ -419,6 +424,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             NxpNfcLogger.e(TAG, "Failed to reset Field detect flag");
         }
         mIsEFDMStarted = false;
+        mNfcOperations.unregisterNxpOemCallback();
         return status;
     }
 
@@ -440,6 +446,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
         if (!mNfcOperations.isEnabled()) {
             return EFDSTATUS_ERROR_NFC_IS_OFF;
         }
+        mNfcOperations.registerNxpOemCallback(this);
         stopEFDMTimer();
         if (mNfcOperations.isDiscoveryStarted()) {
             mNfcOperations.disableDiscovery();
@@ -447,6 +454,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
         /* check if discovery stopped */
         if (mNfcOperations.isDiscoveryStarted()) {
             NxpNfcLogger.e(TAG, "Failed to stop discovery");
+            mNfcOperations.unregisterNxpOemCallback();
             return STATUS_FAILED;
         }
         if (isFieldDetectStarted()) {
@@ -487,6 +495,11 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             NxpNfcLogger.e(TAG, "NFC in Off State");
             return FDSTATUS_ERROR_NFC_IS_OFF;
         }
+        if (mode) {
+            mNfcOperations.registerNxpOemCallback(this);
+        } else {
+            mNfcOperations.unregisterNxpOemCallback();
+        }
         if (isFieldDetectStarted() == mode) {
             return STATUS_SUCCESS;
         }
@@ -497,12 +510,6 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
         if (mNfcOperations.isDiscoveryStarted()) {
             NxpNfcLogger.e(TAG, "Not able to stop discovery");
             return status;
-        }
-
-        if (mode) {
-            mNfcOperations.registerNxpOemCallback(this);
-        } else {
-            mNfcOperations.unregisterNxpOemCallback();
         }
 
         if (setFieldDetectFlag(mode) == STATUS_SUCCESS) {
@@ -762,12 +769,14 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
         if (!mNfcOperations.isEnabled()) {
             return FDSTATUS_ERROR_NFC_IS_OFF;
         }
+        mNfcOperations.registerNxpOemCallback(this);
         if (mNfcOperations.isDiscoveryStarted()) {
             mNfcOperations.disableDiscovery();
         }
         /* check if discovery started */
         if (mNfcOperations.isDiscoveryStarted()) {
             NxpNfcLogger.e(TAG, "Not able to stop discovery");
+            mNfcOperations.unregisterNxpOemCallback();
             return status;
         }
         byte[] cmdPayload = new byte[4 + fieldValue.length];
@@ -804,6 +813,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             NxpNfcLogger.e(TAG, "Not able to start discovery");
             status = ERROR_UNKNOWN;
         }
+        mNfcOperations.unregisterNxpOemCallback();
         return status;
     }
 

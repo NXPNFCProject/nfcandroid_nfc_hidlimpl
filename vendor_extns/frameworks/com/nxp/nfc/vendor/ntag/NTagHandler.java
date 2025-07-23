@@ -19,19 +19,18 @@ package com.nxp.nfc.vendor.ntag;
 
 import android.app.Activity;
 import android.nfc.NfcAdapter;
-import android.nfc.Tag;
-import android.os.Bundle;
+
 import com.nxp.nfc.INxpNfcNtfHandler;
 import com.nxp.nfc.NxpNfcConstants;
 import com.nxp.nfc.NxpNfcLogger;
 import com.nxp.nfc.NxpNfcUtils;
-import com.nxp.nfc.core.NfcOperations;
 import com.nxp.nfc.core.NxpNciPacketHandler;
 import com.nxp.nfc.vendor.ntag.INxpNfcNTag.NTagMode;
 import com.nxp.nfc.vendor.ntag.INxpNfcNTag.NTagStatus;
-import com.nxp.nfc.vendor.ntag.NxpNfcNTag;
 import com.nxp.nfc.vendor.ntag.NxpNfcNTag.NxpNTagStatusCallback;
+
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class NTagHandler implements INxpNfcNtfHandler {
@@ -39,7 +38,8 @@ public class NTagHandler implements INxpNfcNtfHandler {
   private final NxpNciPacketHandler mNxpNciPacketHandler;
   private NfcAdapter mNfcAdapter;
   private NxpNTagStatusCallback mNTagStatusCallback;
-  // private final NfcOperations mNfcOperations;
+  private static final ExecutorService NTAG_CALLBACK_EXECUTOR =
+                        Executors.newSingleThreadExecutor();
 
   public enum NTagStatusCode {
     Success(0x00),
@@ -195,8 +195,7 @@ public class NTagHandler implements INxpNfcNtfHandler {
           mNxpNciPacketHandler.unregisterNtfCallback(this);
         } else {
           sIsQPollEnabled = true;
-          mNxpNciPacketHandler.registerNtfCallback(Executors.newCachedThreadPool(),
-                                          this);
+          mNxpNciPacketHandler.registerNtfCallback(NTAG_CALLBACK_EXECUTOR, this);
         }
       } else {
         NxpNfcLogger.e(TAG, "setNTagMode failed!!");
