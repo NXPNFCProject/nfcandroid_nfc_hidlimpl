@@ -124,7 +124,7 @@ class ReaderPollConfigParser {
    * Returns          void
    *
    ****************************************************************************/
-  void notifyPollingLoopInfoEvent(vector<uint8_t>& p_data);
+  void notifyPollingLoopInfoEvent(const vector<uint8_t>& p_data);
 
 #if (NXP_UNIT_TEST == TRUE)
   /*

@@ -334,21 +334,25 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
  *
  ****************************************************************************/
 void ReaderPollConfigParser::notifyPollingLoopInfoEvent(
-    vector<uint8_t>& p_data) {
-  if (this->callback == NULL) return;
+    const std::vector<uint8_t>& p_data) {
+    if (callback == nullptr) return;
 
-  const size_t NCI_HEADER_SIZE = 3;
-  // Pre-allocation will avoid re-allocation on every push_back()
-  vector<uint8_t> readerPollInfoNotifications(
-      NCI_HEADER_SIZE + p_data.size() + 1);
-  readerPollInfoNotifications.push_back(NCI_PROP_NTF_GID);
-  readerPollInfoNotifications.push_back(NCI_PROP_NTF_ANDROID_OID);
-  readerPollInfoNotifications.push_back((int)p_data.size() + 1);
-  readerPollInfoNotifications.push_back(OBSERVE_MODE_OP_CODE);
-  readerPollInfoNotifications.insert(readerPollInfoNotifications.end(),
-                                     p_data.begin(), p_data.end());
-  this->callback((int)readerPollInfoNotifications.size(),
-                 readerPollInfoNotifications.data());
+    constexpr size_t NCI_HEADER_SIZE = 3;
+    const size_t payload_size = p_data.size() + 1; //+1 for OBSERVEMODE_OP_CODE
+    const size_t total_size = NCI_HEADER_SIZE + payload_size;
+
+    std::vector<uint8_t> readerPollInfoNotifications(total_size);
+
+    size_t index = 0;
+    readerPollInfoNotifications[index++] = NCI_PROP_NTF_GID;
+    readerPollInfoNotifications[index++] = NCI_PROP_NTF_ANDROID_OID;
+    readerPollInfoNotifications[index++] = static_cast<uint8_t>(payload_size);
+    readerPollInfoNotifications[index++] = OBSERVE_MODE_OP_CODE;
+    // Copy payload data
+    std::copy(p_data.begin(), p_data.end(),
+              readerPollInfoNotifications.begin() + index);
+
+    callback(static_cast<int>(total_size), readerPollInfoNotifications.data());
 }
 
 /*****************************************************************************
