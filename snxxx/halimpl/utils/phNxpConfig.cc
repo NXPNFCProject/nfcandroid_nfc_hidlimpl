@@ -821,16 +821,21 @@ bool CNfcConfig::isModified(tNXP_CONF_FILE aType) {
   }
 
   fclose(fd);
-  ALOGD("stored_crc32 is %d config_crc32_ is %d", stored_crc32, config_crc32_);
 
   switch (aType) {
     case CONF_FILE_NXP:
+      ALOGD("stored_crc32 is %d config_crc32_ is %d", stored_crc32,
+            config_crc32_);
       isModified = stored_crc32 != config_crc32_;
       break;
     case CONF_FILE_NXP_RF:
+      ALOGD("stored_crc32 is %d config_rf_crc32_ is %d", stored_crc32,
+            config_rf_crc32_);
       isModified = stored_crc32 != config_rf_crc32_;
       break;
     case CONF_FILE_NXP_TRANSIT:
+      ALOGD("stored_crc32 is %d config_tr_crc32_ is %d", stored_crc32,
+            config_tr_crc32_);
       isModified = stored_crc32 != config_tr_crc32_;
       break;
   }
