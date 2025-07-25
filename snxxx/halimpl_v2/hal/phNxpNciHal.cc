@@ -1005,7 +1005,15 @@ static void phNxpNciHal_complete(NFCSTATUS status,
  *
  ******************************************************************************/
 int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data) {
-  return nfcData.write(data_len, p_data);
+  if (!data_len || !p_data || data_len > NCI_MAX_DATA_LEN) {
+    NXPLOG_NCIHAL_E("%s: Invalid arguments received", __func__);
+    return NFCSTATUS_FAILED;
+  }
+  //Pre-allocate buffer with NCI buffer size.
+  uint8_t pre_alloc_pdata[NCI_MAX_DATA_LEN] = {};
+  memcpy(pre_alloc_pdata, p_data, data_len);
+
+  return nfcData.write(data_len, pre_alloc_pdata);
 }
 
 /******************************************************************************
