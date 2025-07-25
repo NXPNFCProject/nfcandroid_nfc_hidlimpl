@@ -995,14 +995,7 @@ static void phNxpNciHal_complete(NFCSTATUS status,
  *
  ******************************************************************************/
 int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data) {
-  if (!data_len || !p_data || data_len > NCI_MAX_DATA_LEN) {
-    NXPLOG_NCIHAL_E("%s: Invalid arguements received", __func__);
-    return NFCSTATUS_FAILED;
-  }
-  /* Create local copy of cmd_data */
-  nxpncihal_ctrl.cmd_len = data_len;
-  copy(p_data, p_data + data_len, nxpncihal_ctrl.p_cmd_data);
-  return nfcData.write(nxpncihal_ctrl.cmd_len, nxpncihal_ctrl.p_cmd_data);
+  return nfcData.write(data_len, p_data);
 }
 
 /******************************************************************************
