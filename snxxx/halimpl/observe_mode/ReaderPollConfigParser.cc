@@ -367,7 +367,8 @@ bool ReaderPollConfigParser::parseAndSendReaderPollInfo(uint8_t* p_ntf,
     idx += entryLength;
   }
 
-  if (readerPollInfoNotifications.size() >= 0xFF) {
+  if (readerPollInfoNotifications.size() == 0 ||
+      readerPollInfoNotifications.size() >= 0xFF) {
     return false;
   }
 
