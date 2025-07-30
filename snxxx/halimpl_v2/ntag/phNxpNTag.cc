@@ -22,6 +22,7 @@
 #include "NxpNfcExtension.h"
 #include "ObserveMode.h"
 
+extern uint32_t wFwVerRsp;
 NxpNTag* NxpNTag::sNxpNTag = nullptr;
 
 NxpNTag::NxpNTag() {
@@ -55,9 +56,24 @@ NxpNTag* NxpNTag::getInstance() {
   return sNxpNTag;
 }
 
+bool NxpNTag::isNtagSupported() {
+  if (IS_CHIP_TYPE_NE(sn300u)) {
+    NXPLOG_NCIHAL_E("NxpNTag::%s Chip will not support", __func__);
+    return false;
+  }
+
+  if (wFwVerRsp < DEFAULT_NTAG_SUPPORT_MIN_FW_VER) {
+    NXPLOG_NCIHAL_E("FW not supported for Ntag detection feature");
+    return false;
+  }
+
+  return true;
+}
+
 void NxpNTag::phNxpNciHal_disableNtagNtfConfig() {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
-  if (IS_CHIP_TYPE_NE(sn300u)) return;
+
+  if (!NxpNTag::isNtagSupported()) return;
 
   uint8_t getNtagNtfConfig[] = {0x20, 0x03, 0x03, 0x01, 0xA1, 0xDA};
   constexpr uint8_t PROP_NTF_STATUS_INDEX = 8;
@@ -498,10 +514,7 @@ NFCSTATUS NxpNTag::handleNTagNciNtf(uint8_t* pData, uint16_t dataLen) {
 NFCSTATUS NxpNTag::handleVendorNciRspNtf(uint16_t dataLen, uint8_t* pData) {
   NXPLOG_NCIHAL_D("NxpNTag::%s Enter", __func__);
 
-  if (IS_CHIP_TYPE_NE(sn300u)) {
-    NXPLOG_NCIHAL_E("NxpNTag::%s Chip will Not support", __func__);
-    return NFCSTATUS_EXTN_FEATURE_FAILURE;
-  }
+  if (!isNtagSupported()) return NFCSTATUS_EXTN_FEATURE_FAILURE;
 
   if (mNtagControl.mNtagEnableRequest != mNtagControl.isNTagNtfEnabled)
     mNtagControl.isNTagNtfCmdReq = true;
@@ -532,10 +545,7 @@ NFCSTATUS NxpNTag::handleVendorNciRspNtf(uint16_t dataLen, uint8_t* pData) {
 NFCSTATUS NxpNTag::handleVendorNciMessage(uint16_t dataLen, uint8_t* pData) {
   NXPLOG_NCIHAL_D("NxpNTag::%s Enter", __func__);
 
-  if (IS_CHIP_TYPE_NE(sn300u)) {
-    NXPLOG_NCIHAL_E("NxpNTag::%s Chip will Not support", __func__);
-    return NFCSTATUS_EXTN_FEATURE_FAILURE;
-  }
+  if (!isNtagSupported()) return NFCSTATUS_EXTN_FEATURE_FAILURE;
 
   // Handle vendor-specific NCI command
   if (dataLen >= 5 && (pData[NCI_GID_INDEX] == (NCI_MT_CMD | NCI_GID_PROP)) &&
