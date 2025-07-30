@@ -385,11 +385,17 @@ void NxpNTag::handleNTagPresenceCheckRsp() {
 
   if (!(mNtagControl.mNtagDetectStatus & NTAG_PRESENCE_CHECK_TIMER_STATUS)) {
     unsigned long timeout = NTAG_PRESENCE_CHECK_DEFAULT_CONF_VAL;
-    GetNxpNumValue(NAME_NXP_NTAG_PRESENCE_CHECK_TIMEOUT, &timeout,
-                   sizeof(timeout));
+    if (!GetNxpNumValue(NAME_NXP_NTAG_PRESENCE_CHECK_TIMEOUT, &timeout,
+                        sizeof(timeout))) {
+      NXPLOG_NCIHAL_W(
+          "%s: Failed to get NTAG timeout config, using default: %lu", __func__,
+          timeout);
+    }
 
     if (!(mNtagControl.mNtagDetectStatus & NTAG_PRESENCE_CHECK_TIMEOUT)) {
-      QPollTimerStart(timeout);
+      if (!QPollTimerStart(timeout)) {
+        NXPLOG_NCIHAL_E("NxpNTag::%s Failed to start timer", __func__);
+      }
       updateState(NTagState::NTAG_STATE_PRESENCE_CHECK);
     }
     mNtagControl.mNtagDetectStatus |= NTAG_PRESENCE_CHECK_TIMER_STATUS;
@@ -615,8 +621,12 @@ NFCSTATUS NxpNTag::processRfDiscCmd(std::vector<uint8_t>& rfDiscCmd) {
 
     // Start Q-Poll timer
     unsigned long timeout = NTAG_DETECT_TIMER_VALUE;
-    GetNxpNumValue(NAME_NXP_NTAG_DETECTION_TIMEOUT_VALUE, &timeout,
-                   sizeof(timeout));
+    if (!GetNxpNumValue(NAME_NXP_NTAG_DETECTION_TIMEOUT_VALUE, &timeout,
+                        sizeof(timeout))) {
+      NXPLOG_NCIHAL_W(
+          "%s: Failed to get NTAG detect timer , using default: %lu", __func__,
+          timeout);
+    }
 
     if (!QPollTimerStart(timeout)) {
       NXPLOG_NCIHAL_E(
@@ -705,14 +715,18 @@ NFCSTATUS NxpNTag::sendRfDiscCmd(uint8_t pollMode) {
   bool sendRfDiscCmdFlag = true;
 
   if (IDLE != phNxpExtn_NfcGetRfState()) {
-    sendRfDeactivate();
+    if (NFCSTATUS_SUCCESS != sendRfDeactivate())
+      NXPLOG_NCIHAL_E("%s Failed to send RF deactivate cmd", __func__);
+
     return NFCSTATUS_FAILED;
   }
 
   unsigned long timeout = NTAG_DETECT_TIMER_VALUE;
-  GetNxpNumValue(NAME_NXP_NTAG_DETECTION_TIMEOUT_VALUE, &timeout,
-                 sizeof(timeout));
-
+  if (!GetNxpNumValue(NAME_NXP_NTAG_DETECTION_TIMEOUT_VALUE, &timeout,
+                      sizeof(timeout))) {
+    NXPLOG_NCIHAL_W("%s: Failed to get NTAG detect timer , using default: %lu",
+                    __func__, timeout);
+  }
   switch (pollMode) {
     case NFC_RF_DISC_RESTART:
     case NFC_RF_DISC_START:

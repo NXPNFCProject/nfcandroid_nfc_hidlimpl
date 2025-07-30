@@ -156,7 +156,7 @@ class NxpNTag {
   NTagState mNTagState;
   NTagSetSubState mNTagSetSubState;
   NfcHalThreadCondVar mNTagDiscRspCv;
-  bool mWaitingforDiscRsp;
+  bool mWaitingforDiscRsp = false;
 
   constexpr static uint8_t NTAG_STATUS_SUCCESS = 0x00;
   constexpr static uint8_t NTAG_STATUS_FAILED = 0x01;
