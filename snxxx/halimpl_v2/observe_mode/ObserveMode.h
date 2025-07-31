@@ -43,6 +43,33 @@ bool isObserveModeEnabled();
 
 /*******************************************************************************
  *
+ * Function         setObserveChangeInProgress()
+ *
+ * Description      It sets the observe mode change in progress
+ *
+ * Parameters       bool - true to observe mode status change in progress
+ *                         false if not
+ *
+ * Returns          void
+ *
+ ******************************************************************************/
+void setObserveChangeInProgress(bool flag);
+
+/*******************************************************************************
+ *
+ * Function         isObserveChangeInProgress()
+ *
+ * Description      returns true if obsrevemode status change in progress
+ *                  otherwise false
+ *
+ * Returns          bool true if observemode status change in progress
+ *                  otherwise false
+ *
+ ******************************************************************************/
+bool isObserveChangeInProgress();
+
+/*******************************************************************************
+ *
  * Function         handleObserveMode()
  *
  * Description      This handles the ObserveMode command and enables the observe
@@ -76,3 +103,36 @@ int handleObserveModeTechCommand(uint16_t data_len, const uint8_t* p_data);
  *
  ******************************************************************************/
 int handleGetObserveModeStatus(uint16_t data_len, const uint8_t* p_data);
+
+/*******************************************************************************
+ *
+ * Function         resetDiscovery()
+ *
+ * Description      Resets RF discovery by sending deactivate command followed
+ *                  by discovery command. This function handles observe mode
+ *                  recovery by checking if observe mode change is in progress.
+ *                  Uses synchronous communication with timeout mechanism.
+ *
+ * Parameters       None
+ *
+ * Returns          None
+ *
+ ******************************************************************************/
+void resetDiscovery();
+
+/*******************************************************************************
+ *
+ * Function         handleObserveModeRfStateRspNtf()
+ *
+ * Description      Handles RF state response and notification messages for
+ *                  observe mode operations. Processes RF deactivate and
+ *                  discovery responses to synchronize command execution.
+ *
+ * Parameters       dataLen - Length of the response data
+ *                  pData   - Pointer to response data buffer
+ *
+ * Returns          NFCSTATUS_EXTN_FEATURE_SUCCESS if response is handled
+ *                  successfully, otherwise appropriate error status
+ *
+ ******************************************************************************/
+NFCSTATUS handleObserveModeRfStateRspNtf(uint16_t dataLen, uint8_t* pData);
