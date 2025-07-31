@@ -157,6 +157,7 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
       synchronized (mposStateSync) {
         if (mposState == MposState.MPOS_STOP_INPROGRESS) {
           mposState = MposState.MPOS_STOP_COMPLETED;
+          mNfcOperations.unregisterNxpOemCallback();
           mNxpNciPacketHandler.unregisterNtfCallback(this);
         }
       }
@@ -207,6 +208,7 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
       synchronized (mposStateSync) {
         if (mposState == MposState.MPOS_STOP_INPROGRESS) {
           mposState = MposState.MPOS_STOP_COMPLETED;
+          mNfcOperations.unregisterNxpOemCallback();
           mNxpNciPacketHandler.unregisterNtfCallback(this);
         }
       }
@@ -294,7 +296,6 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
             mposState = MposState.MPOS_START_INPROGRESS;
           }
           else {
-            mNfcOperations.unregisterNxpOemCallback();
             mposState = MposState.MPOS_STOP_INPROGRESS;
           }
         }

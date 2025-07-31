@@ -226,13 +226,13 @@ public class NfcOperations {
      */
     private void startDiscovery(boolean isStart) {
         NxpNfcLogger.d(TAG, "startDiscovery isStart=" + isStart);
-        if (isStart && isDiscoveryStarted()) {
-            NxpNfcLogger.d(TAG, " discovery already started");
-            return;
-        }
         try {
             synchronized (NfcOperations.this) {
                 conditionallyRegisterOemCallback(true);
+                if (isStart && mIsDiscoveryStarted) {
+                    NxpNfcLogger.d(TAG, " discovery already started");
+                    return;
+                }
                 mDisCountDownLatch = new CountDownLatch(1);
                 if (isStart)
                     mNfcOemExtension.resumePolling();

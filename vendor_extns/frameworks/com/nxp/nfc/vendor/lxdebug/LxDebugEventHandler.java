@@ -355,7 +355,6 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             return EFDSTATUS_ERROR_NFC_IS_OFF;
         }
         if (mIsEFDMStarted) {
-            mNfcOperations.unregisterNxpOemCallback();
             return EFDSTATUS_ERROR_ALREADY_STARTED;
         }
         int status = checkFieldDetectEnabledFromConfig();
@@ -497,8 +496,6 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
         }
         if (mode) {
             mNfcOperations.registerNxpOemCallback(this);
-        } else {
-            mNfcOperations.unregisterNxpOemCallback();
         }
         if (isFieldDetectStarted() == mode) {
             return STATUS_SUCCESS;
@@ -525,6 +522,9 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
         if (!mNfcOperations.isDiscoveryStarted()) {
             NxpNfcLogger.e(TAG, "Not able to start discovery");
             status = ERROR_UNKNOWN;
+        }
+        if (!mode) {
+            mNfcOperations.unregisterNxpOemCallback();
         }
         return status;
     }
