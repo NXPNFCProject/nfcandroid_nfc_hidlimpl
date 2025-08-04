@@ -3167,7 +3167,7 @@ NFCSTATUS phNxpNciHal_getChipInfoInFwDnldMode(bool bIsVenResetReqd) {
 uint8_t phNxpNciHal_getSessionInfoInFwDnldMode() {
   uint8_t rsp[PHNCI_MAX_DATA_LEN];
   uint16_t rsp_len;
-  uint8_t session_status = -1;
+  uint8_t session_status = 0xFF;
   uint8_t get_session_info_cmd[] = {0x00, 0x04, 0xF2, 0x00,
                                     0x00, 0x00, 0xF5, 0x33};
   phTmlNfc_EnableFwDnldMode(true);
