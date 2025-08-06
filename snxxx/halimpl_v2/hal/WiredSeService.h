@@ -24,15 +24,18 @@
 // Opaque WiredSe Service object.
 struct WiredSeService;
 
-typedef enum WiredSeEvtType {
+enum WiredSeEvtTypeEnum: uint8_t {
   NFC_STATE_CHANGE,
   NFC_PKT_RECEIVED,
   SENDING_HCI_PKT,
   DISABLING_NFCEE,
   NFC_EVT_UNKNOWN
-} WiredSeEvtType;
+};
 
-typedef enum { NFC_ON, NFC_OFF, NFC_STATE_UNKNOWN } NfcState;
+enum NfcStateEnum: uint8_t { NFC_ON, NFC_OFF, NFC_STATE_UNKNOWN };
+
+using WiredSeEvtType = WiredSeEvtTypeEnum;
+using NfcState = NfcStateEnum;
 
 typedef struct NfcPkt {
   uint8_t* data;

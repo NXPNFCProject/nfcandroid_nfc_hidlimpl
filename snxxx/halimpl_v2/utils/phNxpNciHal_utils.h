@@ -51,12 +51,14 @@ typedef struct phNxpNciHal_Sem {
 
 } phNxpNciHal_Sem_t;
 
-typedef enum {
+enum NFC_printType: uint8_t {
   PRINT_UNKNOWN = 0x00,
   PRINT_SEND = 0x01,
   PRINT_RECV,
   PRINT_DEBUG
-} tNFC_printType;
+};
+
+using tNFC_printType = NFC_printType;
 
 /* Semaphore helper macros */
 #define SEM_WAIT(cb_data)                                         \

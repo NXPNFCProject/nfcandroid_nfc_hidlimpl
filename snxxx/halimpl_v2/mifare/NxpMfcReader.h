@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2019-2020, 2022-2023 NXP
+ *  Copyright 2019-2020, 2022-2023, 2025 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -52,49 +52,53 @@
         {0xFF, 0XFF, 0xFF, 0XFF, 0xFF, 0XFF}, \
   } /* Key used during NDEF format */
 
-typedef enum MifareCmdList {
+enum MifareCmdList: uint8_t {
   eMifareRaw = 0x00U,         /* This command performs raw transcations */
-  eMifareAuthentA = 0x60U,    /* This command performs an authentication with
-                                       KEY A for a sector. */
-  eMifareAuthentB = 0x61U,    /* This command performs an authentication with
-                                       KEY B for a sector. */
   eMifareRead16 = 0x30U,      /* Read 16 Bytes from a Mifare Standard block */
   eMifareRead = 0x30U,        /* Read Mifare Standard */
+  eMifareReadSector = 0x38U,  /* Read Sector.   */
+  eMifareAuthentA = 0x60U,    /* This command performs an authentication with
+                                       KEY A for a sector. */
+  eMifareAuthentB,    /* This command performs an authentication with
+                                       KEY B for a sector. */
   eMifareWrite16 = 0xA0U,     /* Write 16 Bytes to a Mifare Standard block */
   eMifareWrite4 = 0xA2U,      /* Write 4 bytes. */
-  eMifareInc = 0xC1U,         /* Increment */
-  eMifareDec = 0xC0U,         /* Decrement */
+  eMifareWriteSector = 0xA8U, /* Write Sector. */
   eMifareTransfer = 0xB0U,    /* Transfer */
-  eMifareRestore = 0xC2U,     /* Restore.   */
-  eMifareReadSector = 0x38U,  /* Read Sector.   */
-  eMifareWriteSector = 0xA8U, /* Write Sector.   */
-} MifareCmdList_t;
+  eMifareDec = 0xC0U,         /* Decrement */
+  eMifareInc,         /* Increment */
+  eMifareRestore,     /* Restore.   */
+};
 
 /*
  * Request Id for different commands
  */
-typedef enum MfcCmdReqId {
+enum MfcCmdReqId: uint8_t {
   eMfRawDataXchgHdr = 0x10,   /* MF Raw Data Request from DH */
-  eMfWriteNReq = 0x31,        /* MF N bytes write request from DH */
-  eMfReadNReq = 0x32,         /* MF N bytes read request from DH */
-  eMfSectorSelReq = 0x33,     /* MF Block select request from DH */
   eMfPlusProxCheckReq = 0x28, /* MF + Prox check request for NFCC from DH */
+  eMfWriteNReq = 0x31,        /* MF N bytes write request from DH */
+  eMfReadNReq,                /* MF N bytes read request from DH */
+  eMfSectorSelReq,            /* MF Block select request from DH */
   eMfcAuthReq = 0x40,         /* MFC Authentication request for NFCC from DH */
   eInvalidReq                 /* Invalid ReqId */
-} MfcCmdReqId_t;
+};
 
 /*
  * Response Ids for different command response
  */
-typedef enum MfcRespId {
+enum MfcRespId: uint8_t {
   eMfXchgDataRsp = 0x10,      /* DH gets Raw data from MF on successful req */
-  eMfWriteNRsp = 0x31,        /* DH gets write status */
-  eMfReadNRsp = 0x32,         /* DH gets N Bytes read from MF, if successful */
-  eMfSectorSelRsp = 0x33,     /* DH gets the Sector Select cmd status */
   eMfPlusProxCheckRsp = 0x29, /* DH gets the MF+ Prox Check cmd status */
+  eMfWriteNRsp = 0x31,        /* DH gets write status */
+  eMfReadNRsp,                /* DH gets N Bytes read from MF, if successful */
+  eMfSectorSelRsp,            /* DH gets the Sector Select cmd status */
   eMfcAuthRsp = 0x40,         /* DH gets the authenticate cmd status */
   eInvalidRsp                 /* Invalid RspId */
-} MfcRespId_t;
+};
+
+using MfcCmdReqId_t = MfcCmdReqId;
+using MfcRespId_t= MfcRespId;
+using MifareCmdList_t = MifareCmdList;
 
 typedef struct MfcTagCmdIntfData {
   uint8_t byAddr;      /* Start address to perform operation*/
