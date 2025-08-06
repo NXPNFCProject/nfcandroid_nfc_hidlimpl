@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-
-
 #include "phNfcStatus.h"
 #include "phNxpConfig.h"
 #include "phNxpLog.h"
+#include <string>
+#include <vector>
+
+using std::string;
+using std::vector;
 
 /******************************************************************************
  ** Function         phNxpNciHal_ioctlIf

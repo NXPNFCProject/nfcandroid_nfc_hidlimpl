@@ -18,6 +18,7 @@
 #include <cutils/properties.h>
 #include <string>
 
+using std::string;
 /******************************************************************************
  * Function         phNxpNciHal_getVendorProp_int32
  *
@@ -87,7 +88,7 @@ std::string phNxpNciHal_getFragmentedVendorProp(const std::string& key) {
   // Values exceeding PROPERTY_VALUE_MAX are fragmented into sequential parts.
   // Fragment naming: <baseName><index> where index starts from 1
   // Example: "uiccProp" becomes "uiccProp1", "uiccProp2", "uiccProp3", etc.
-  std::string propName = key + to_string(0);
+  std::string propName = key + std::to_string(0);
   // Check for fragmented property
   for (int i = 1;; i++) {
     propName.back() = '0' + i;

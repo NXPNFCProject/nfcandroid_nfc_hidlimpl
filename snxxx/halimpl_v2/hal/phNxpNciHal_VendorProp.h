@@ -20,7 +20,6 @@
 #include <stdint.h>
 #include <string>
 #include <iostream>
-using namespace ::std;
 
 /******************************************************************************
  * Function         phNxpNciHal_getVendorProp_int32
@@ -73,7 +72,7 @@ int phNxpNciHal_setVendorProp(const char* key, const char* value);
  * Returns          The property value on success, empty string on failure.
  *
  ******************************************************************************/
-string phNxpNciHal_getFragmentedVendorProp(const std::string& key);
+std::string phNxpNciHal_getFragmentedVendorProp(const std::string& key);
 
 /******************************************************************************
  * Function         phNxpNciHal_setFragmentedVendorProp

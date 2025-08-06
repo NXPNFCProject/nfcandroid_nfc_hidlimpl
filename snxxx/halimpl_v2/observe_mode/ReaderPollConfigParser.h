@@ -18,7 +18,8 @@
 
 #include <vector>
 
-using namespace std;
+using std::string;
+using std::vector;
 
 typedef void(reader_poll_info_callback_t)(uint16_t data_len, uint8_t* p_data);
 void setInterplolatedRssi8Am(uint16_t rssiAt8Am, uint8_t measuredFieldStrength);

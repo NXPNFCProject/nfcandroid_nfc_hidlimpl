@@ -22,6 +22,9 @@
 
 #include "phNfcStatus.h"
 
+using std::vector;
+using std::string;
+
 #define AUTONOMOUS_SCREEN_OFF_LOCK_MASK 0x20
 #define SWITCH_OFF_MASK 0x02
 #define NCI_GET_CONFI_MIN_LEN 0x04
