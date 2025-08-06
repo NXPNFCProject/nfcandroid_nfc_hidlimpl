@@ -16,7 +16,7 @@
 
 #include <vector>
 
-using namespace std;
+using std::vector;
 
 #define NciDiscoveryCommandBuilderInstance \
   (NciDiscoveryCommandBuilder::getInstance())

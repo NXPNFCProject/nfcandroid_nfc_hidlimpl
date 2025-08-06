@@ -28,6 +28,8 @@
 #include "eSEClientExtns.h"
 #include "phNxpNciHal_IoctlOperations.h"
 
+using std::vector;
+
 /********************* Definitions and structures *****************************/
 #define MAX_RETRY_COUNT 5
 #define NCI_MAX_DATA_LEN 300

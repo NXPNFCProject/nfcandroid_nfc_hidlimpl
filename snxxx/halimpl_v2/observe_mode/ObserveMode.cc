@@ -17,13 +17,12 @@
 #include <phNfcNciConstants.h>
 
 #include <NxpNfcThreadMutex.h>
-#include <mutex>
 #include <vector>
 #include "NciDiscoveryCommandBuilder.h"
 #include "NfcExtension.h"
 #include "phNxpNciHal_extOperations.h"
 
-using namespace std;
+using std::vector;
 
 bool gWaitingforDiscRsp;
 bool gWaitingforRfDeActivateRsp;

@@ -39,8 +39,8 @@
 #include "phNxpNciHal_utils.h"
 
 using android::base::WriteStringToFile;
-using namespace ::std;
 using namespace ::android::base;
+using std::stringstream;
 
 #define TERMINAL_LEN 5
 /* HAL_NFC_STATUS_REFUSED sent to restart NFC service */

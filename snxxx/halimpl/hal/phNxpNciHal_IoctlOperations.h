@@ -19,6 +19,10 @@
 #include "phNfcStatus.h"
 #include "phNxpConfig.h"
 #include "phNxpLog.h"
+#include <vector>
+
+using std::string;
+using std::vector;
 
 /******************************************************************************
  ** Function         phNxpNciHal_ioctlIf
