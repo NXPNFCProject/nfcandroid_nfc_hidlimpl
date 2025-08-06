@@ -54,7 +54,7 @@ typedef uint16_t NFCSTATUS; /* Return values */
  * Typically this should be port name (Ex:"COM1","COM2") to which NFCC is
  * connected.
  */
-typedef enum {
+enum phLibNfc_eConfigLinkType_enum: std::uint8_t {
   ENUM_LINK_TYPE_COM1,
   ENUM_LINK_TYPE_COM2,
   ENUM_LINK_TYPE_COM3,
@@ -69,7 +69,9 @@ typedef enum {
   ENUM_LINK_TYPE_USB,
   ENUM_LINK_TYPE_TCP,
   ENUM_LINK_TYPE_NB
-} phLibNfc_eConfigLinkType;
+};
+
+using phLibNfc_eConfigLinkType = phLibNfc_eConfigLinkType_enum;
 
 /*
  * Deferred message. This message type will be posted to the client application

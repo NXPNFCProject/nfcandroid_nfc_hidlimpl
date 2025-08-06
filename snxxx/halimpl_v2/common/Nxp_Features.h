@@ -76,12 +76,11 @@
 #define FW_BIN_EXTENSION ".bin"
 #endif
 
-typedef enum {
+enum tNFCC_DnldType_enum: std::uint8_t {
   NFCC_DWNLD_WITH_VEN_RESET,
   NFCC_DWNLD_WITH_NCI_CMD
-} tNFCC_DnldType;
-
-typedef enum {
+};
+enum tNFC_HWVersion_enum: std::uint8_t {
   HW_PN553_A0 = 0x40,
   HW_PN553_B0 = 0x41,
   HW_PN80T_A0 = 0x50,
@@ -98,11 +97,10 @@ typedef enum {
   HW_PN560_V1 = 0xCA,
   HW_PN560_V2 = 0xCB,
   HW_SN300U = 0xD3
-} tNFC_HWVersion;
-
-typedef enum {
+};
+enum tNFC_chipType_enum: std::uint8_t {
   DEFAULT_CHIP_TYPE = 0x00,
-  pn547C2 = 0x01,
+  pn547C2,
   pn65T,
   pn548C2,
   pn66T,
@@ -116,7 +114,11 @@ typedef enum {
   sn220u,
   pn560,
   sn300u
-} tNFC_chipType;
+};
+
+using tNFCC_DnldType = tNFCC_DnldType_enum;
+using tNFC_HWVersion = tNFC_HWVersion_enum;
+using tNFC_chipType = tNFC_chipType_enum;
 
 typedef struct {
   /*Flags common to all chip types*/
@@ -156,18 +158,18 @@ typedef struct {
 } tNfc_featureList;
 
 extern tNfc_featureList nfcFL;
-#define GET_FW_ROM_VERSION_NCI_RESP(msg, msg_len) (msg[msg_len - 3])
-#define GET_FW_MAJOR_VERSION_NCI_RESP(msg, msg_len) (msg[msg_len - 2])
-#define GET_HW_VERSION_NCI_RESP(msg, msg_len) (msg[msg_len - 4])
-#define IS_CHIP_TYPE_GE(cType) (nfcFL.chipType >= cType)
-#define IS_CHIP_TYPE_EQ(cType) (nfcFL.chipType == cType)
-#define IS_CHIP_TYPE_LE(cType) (nfcFL.chipType <= cType)
-#define IS_CHIP_TYPE_L(cType) (nfcFL.chipType < cType)
-#define IS_CHIP_TYPE_NE(cType) (nfcFL.chipType != cType)
+#define GET_FW_ROM_VERSION_NCI_RESP(msg, msg_len) ((msg)[(msg_len) - 3])
+#define GET_FW_MAJOR_VERSION_NCI_RESP(msg, msg_len) ((msg)[(msg_len) - 2])
+#define GET_HW_VERSION_NCI_RESP(msg, msg_len) ((msg)[(msg_len) - 4])
+#define IS_CHIP_TYPE_GE(cType) (nfcFL.chipType >= (cType))
+#define IS_CHIP_TYPE_EQ(cType) (nfcFL.chipType == (cType))
+#define IS_CHIP_TYPE_LE(cType) (nfcFL.chipType <= (cType))
+#define IS_CHIP_TYPE_L(cType) (nfcFL.chipType < (cType))
+#define IS_CHIP_TYPE_NE(cType) (nfcFL.chipType != (cType))
 #define IS_4K_SUPPORT (nfcFL.nfccFL._NFCC_4K_FW_SUPPORT == true)
 
 #define CONFIGURE_4K_SUPPORT(value) \
-  { nfcFL.nfccFL._NFCC_4K_FW_SUPPORT = value; }
+  { nfcFL.nfccFL._NFCC_4K_FW_SUPPORT = (value); }
 
 #define CONFIGURE_FEATURELIST(chipType)               \
   {                                                   \
