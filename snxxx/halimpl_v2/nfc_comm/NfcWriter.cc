@@ -158,7 +158,6 @@ int NfcWriter::direct_write(uint16_t data_len, const uint8_t* p_data) {
   uint8_t cmd_icode_eof[] = {0x00, 0x00, 0x00};
   uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
   uint16_t rsp_len = 0;
-  static phLibNfc_Message_t msg;
   if (nxpncihal_ctrl.halStatus != HAL_STATUS_OPEN) {
     return NFCSTATUS_FAILED;
   }
@@ -169,22 +168,6 @@ int NfcWriter::direct_write(uint16_t data_len, const uint8_t* p_data) {
   }
 
   CONCURRENCY_LOCK();
-  /* Check for NXP ext before sending write */
-  status =
-      phNxpNciHal_write_ext(&data_len, (uint8_t*)p_data,
-                            &nxpncihal_ctrl.rsp_len, nxpncihal_ctrl.p_rsp_data);
-  if (status != NFCSTATUS_SUCCESS) {
-    /* Do not send packet to NFCC, send response directly */
-    msg.eMsgType = NCI_HAL_RX_MSG;
-    msg.pMsgData = NULL;
-    msg.Size = 0;
-
-    phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId,
-                          (phLibNfc_Message_t*)&msg);
-    NXPLOG_NCIHAL_E("NXP ext check failed 0x%x", status);
-    goto clean_and_return;
-  }
-
   wdata_len = this->write_unlocked(data_len, p_data, ORIG_LIBNFC);
 
   if (IS_CHIP_TYPE_L(sn100u) && IS_CHIP_TYPE_NE(pn557) && icode_send_eof == 1) {
@@ -220,12 +203,29 @@ int NfcWriter::write_unlocked(uint16_t data_len, const uint8_t* p_data,
   nxpncihal_ctrl.retry_cnt = 0;
   int sem_val = 0;
   write_unlocked_status = NFCSTATUS_FAILED;
+  static phLibNfc_Message_t msg;
 
   /* check for write synchronyztion */
   if (this->check_ncicmd_write_window(data_len, (uint8_t*)p_data) !=
       NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_D("NfcWriter::write_unlocked  CMD window  check failed");
     data_len = 0;
+    goto clean_and_return;
+  }
+
+  /* Check for NXP ext before sending write */
+  status =
+      phNxpNciHal_write_ext(&data_len, (uint8_t*)p_data,
+                            &nxpncihal_ctrl.rsp_len, nxpncihal_ctrl.p_rsp_data);
+  if (status != NFCSTATUS_SUCCESS) {
+    /* Do not send packet to NFCC, send response directly */
+    msg.eMsgType = NCI_HAL_RX_MSG;
+    msg.pMsgData = NULL;
+    msg.Size = 0;
+
+    phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId,
+                          (phLibNfc_Message_t*)&msg);
+    NXPLOG_NCIHAL_E("NXP ext check failed 0x%x", status);
     goto clean_and_return;
   }
 
