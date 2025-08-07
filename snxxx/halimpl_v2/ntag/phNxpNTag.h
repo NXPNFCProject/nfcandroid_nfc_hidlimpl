@@ -31,6 +31,7 @@
 #define NTAG_DETECT_TIMER_VALUE 3
 #define NTAG_NTF_ENABLE_STATE 0x01
 #define NTAG_PRESENCE_CHECK_DEFAULT_CONF_VAL 13
+#define DEFAULT_NTAG_SUPPORT_MIN_FW_VER 0x02204A
 
 enum class NTagSetSubState {
   /* Initial state, no operation in progress */
@@ -345,6 +346,12 @@ class NxpNTag {
    * @return None
    */
   NFCSTATUS waitForRfDiscRsp(NFCSTATUS status);
+
+  /**
+   * @brief check the chipset is supporting Ntag feature or not.
+   * @return True/False
+   */
+  static bool isNtagSupported();
 
   static void QPollTimerTimeoutCallback(union sigval val);
   bool QPollTimerStart(unsigned long sec);
