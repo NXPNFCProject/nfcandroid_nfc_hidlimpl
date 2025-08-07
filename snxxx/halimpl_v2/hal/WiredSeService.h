@@ -37,53 +37,58 @@ enum NfcStateEnum: uint8_t { NFC_ON, NFC_OFF, NFC_STATE_UNKNOWN };
 using WiredSeEvtType = WiredSeEvtTypeEnum;
 using NfcState = NfcStateEnum;
 
+using WiredSeEvtType = WiredSeEvtTypeEnum;
+using NfcState = NfcStateEnum;
+
 typedef struct NfcPkt {
   uint8_t* data;
   uint16_t len;
-  NfcPkt() {
-    data = NULL;
-    len = 0;
-  }
-  // Constructor
-  NfcPkt(uint8_t* inData, uint16_t inLen) {
-    len = inLen;
-    if (inData == NULL || inLen == 0) {
-      data = NULL;
+
+  NfcPkt() : data(nullptr), len(0) {}
+
+  NfcPkt(uint8_t* inData, uint16_t inLen) : data(nullptr), len(0) {
+    if (inData == nullptr || inLen == 0) {
       return;
     }
-    data = (uint8_t*)calloc(1, len);
-    if (data != NULL) {
-      memcpy(data, inData, len);
+    data = static_cast<uint8_t*>(calloc(1, inLen));
+    if (data != nullptr) {
+      memcpy(data, inData, inLen);
+      len = inLen;
     }
   }
-  // Destructor
+
+  NfcPkt(const NfcPkt& other) = delete;
+  NfcPkt& operator=(const NfcPkt& other) = delete;
+
   ~NfcPkt() {
-    if (data != NULL) {
+    if (data != nullptr) {
       free(data);
     }
-    data = NULL;
+    data = nullptr;
   }
+
 } NfcPkt;
 
 typedef union WiredSeEvtData {
   NfcState nfcState;
-  std::shared_ptr<NfcPkt> nfcPkt = NULL;
-  // Default
-  WiredSeEvtData() {}
-  // For typecasting from NfcState to WiredSeEvtData
-  WiredSeEvtData(NfcState inNfcState) { nfcState = inNfcState; }
-  // For typecasting from NfcPkt to WiredSeEvtData
-  WiredSeEvtData(std::shared_ptr<NfcPkt> inNfcPkt) { nfcPkt = inNfcPkt; }
-  WiredSeEvtData(const WiredSeEvtData& evtData) {
-    nfcState = evtData.nfcState;
-    nfcPkt = evtData.nfcPkt;
-  }
+  std::shared_ptr<NfcPkt> nfcPkt;
+
+  WiredSeEvtData() : nfcPkt(nullptr) {}
+  WiredSeEvtData(NfcState inNfcState) : nfcState(inNfcState) {}
+  WiredSeEvtData(std::shared_ptr<NfcPkt> inNfcPkt) : nfcPkt(std::move(inNfcPkt)) {}
+
+  WiredSeEvtData(const WiredSeEvtData& evtData) = delete;
+
   WiredSeEvtData& operator=(const WiredSeEvtData& evtData) {
+    if (this == &evtData) {
+      return *this;
+    }
     nfcState = evtData.nfcState;
     nfcPkt = evtData.nfcPkt;
     return *this;
   }
-  ~WiredSeEvtData() { nfcPkt = NULL; }
+
+  ~WiredSeEvtData() { nfcPkt = nullptr; }
 } WiredSeEvtData;
 
 typedef struct WiredSeEvt {
