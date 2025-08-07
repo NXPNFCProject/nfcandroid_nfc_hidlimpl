@@ -29,9 +29,8 @@
 
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 
-phNxpNciHal_ReaderThread::phNxpNciHal_ReaderThread() : thread_running(false) {
-  reader_thread = 0;
-}
+phNxpNciHal_ReaderThread::phNxpNciHal_ReaderThread():
+    reader_thread(0), thread_running(false) {}
 
 phNxpNciHal_ReaderThread::~phNxpNciHal_ReaderThread() { Stop(); }
 

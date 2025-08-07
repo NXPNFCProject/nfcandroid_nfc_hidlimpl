@@ -17,7 +17,7 @@
  *
  *  The original Work has been changed by NXP.
  *
- *  Copyright 2022 NXP
+ *  Copyright 2022, 2025 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -45,10 +45,7 @@
 
 using android::base::StringPrintf;
 
-IntervalTimer::IntervalTimer() {
-  mTimerId = 0;
-  mCb = NULL;
-}
+IntervalTimer::IntervalTimer(): mTimerId(0), mCb(nullptr) {}
 
 bool IntervalTimer::set(int ms, void* ptr, TIMER_FUNC cb) {
   if (mTimerId == 0) {
