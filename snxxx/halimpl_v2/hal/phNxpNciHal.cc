@@ -3784,30 +3784,32 @@ void phNxpNciHal_initializeRegRfFwDnld() {
   // Getting pointer to RF & RF Region Code Download module
   RfFwRegionDnld_handle =
       dlopen("/system/vendor/lib64/libonebinary.so", RTLD_NOW);
-  if (RfFwRegionDnld_handle == NULL) {
+  if (RfFwRegionDnld_handle == nullptr) {
     NXPLOG_NCIHAL_D(
         "Error : opening (/system/vendor/lib64/libonebinary.so) !!");
     return;
   }
-  if ((fpVerInfoStoreInEeprom = (fpVerInfoStoreInEeprom_t)dlsym(
-           RfFwRegionDnld_handle, "read_version_info_and_store_in_eeprom")) ==
-      NULL) {
+  fpVerInfoStoreInEeprom = (fpVerInfoStoreInEeprom_t)dlsym(
+      RfFwRegionDnld_handle, "read_version_info_and_store_in_eeprom");
+  if (fpVerInfoStoreInEeprom == nullptr) {
     NXPLOG_NCIHAL_D(
         "Error while linking (read_version_info_and_store_in_eeprom) !!");
     return;
   }
-  if ((fpRegRfFwDndl = (fpRegRfFwDndl_t)dlsym(RfFwRegionDnld_handle,
-                                              "RegRfFwDndl")) == NULL) {
+  fpRegRfFwDndl = (fpRegRfFwDndl_t)dlsym(RfFwRegionDnld_handle, "RegRfFwDndl");
+  if (fpRegRfFwDndl == nullptr) {
     NXPLOG_NCIHAL_D("Error while linking (RegRfFwDndl) !!");
     return;
   }
-  if ((fpPropConfCover = (fpPropConfCover_t)dlsym(RfFwRegionDnld_handle,
-                                                  "prop_conf_cover")) == NULL) {
+  fpPropConfCover =
+      (fpPropConfCover_t)dlsym(RfFwRegionDnld_handle, "prop_conf_cover");
+  if (fpPropConfCover == nullptr) {
     NXPLOG_NCIHAL_D("Error while linking (prop_conf_cover) !!");
     return;
   }
-  if ((fpDoAntennaActivity = (fpDoAntennaActivity_t)dlsym(
-           RfFwRegionDnld_handle, "DoAntennaActivity")) == NULL) {
+  fpDoAntennaActivity =
+      (fpDoAntennaActivity_t)dlsym(RfFwRegionDnld_handle, "DoAntennaActivity");
+  if (fpDoAntennaActivity == nullptr) {
     NXPLOG_NCIHAL_E("Error while linking (DoAntennaActivity) !!");
     return;
   }
