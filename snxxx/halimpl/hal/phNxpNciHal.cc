@@ -2316,9 +2316,9 @@ int phNxpNciHal_pre_discover(void) {
       NXPLOG_NCIHAL_E("phNxpNciHal_ext_send_sram_config_to_flash: Failed");
     }
     CONCURRENCY_UNLOCK();
+    phNxpNciHal_WiredSeDispatchEvent(&gWiredSeHandle, NFC_STATE_CHANGE,
+                                     (WiredSeEvtData)NfcState::NFC_ON);
   }
-  phNxpNciHal_WiredSeDispatchEvent(&gWiredSeHandle, NFC_STATE_CHANGE,
-                                   (WiredSeEvtData)NfcState::NFC_ON);
   /* Nothing to do here for initial version */
   // This is set to return Failed as no vendor specific pre-discovery action is
   // needed in case of HalPrediscover
