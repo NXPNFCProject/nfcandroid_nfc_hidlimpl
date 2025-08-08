@@ -868,7 +868,7 @@ int phNxpNciHal_handleVendorSpecificCommand(uint16_t data_len,
     return handleGetCapability(data_len, p_data);
   } else if (data_len >= 4 && p_data[NCI_MSG_INDEX_FOR_FEATURE] ==
                                  NCI_TRIGGER_ABORT) {
-    // 2F 70 01 90 => trigger abort
+    // 2F 70 01 80 => trigger abort
     NXPLOG_NCIHAL_E("abort()");
     abort();
   } else {
