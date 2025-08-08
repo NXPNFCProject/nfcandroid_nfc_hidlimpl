@@ -83,6 +83,7 @@ const char* core_reset_ntf_count_prop_name = "nfc.core_reset_ntf_count";
 static uint8_t fw_download_success = 0;
 static bool config_access = false;
 static bool sIsHalOpenErrorRecovery = false;
+static bool sSendSramConfigToFlash = false;
 NfcHalThreadMutex sHalFnLock;
 
 /* NCI HAL Control structure */
@@ -946,6 +947,8 @@ int phNxpNciHal_MinOpen() {
       phNxpNciHal_setVendorProp(core_reset_ntf_count_prop_name, "0")) {
     NXPLOG_NCIHAL_E("setting core_reset_ntf_count_prop failed");
   }
+  // Mark next prediscover call should send sram config to flash
+  sSendSramConfigToFlash = true;
   /* Call open complete */
   phNxpNciHal_MinOpen_complete(wConfigStatus);
   NXPLOG_NCIHAL_D("phNxpNciHal_MinOpen(): exit");
@@ -2310,12 +2313,17 @@ static void phNxpNciHal_core_initialized_complete(NFCSTATUS status) {
  ******************************************************************************/
 int phNxpNciHal_pre_discover(void) {
   if (nxpncihal_ctrl.halStatus != HAL_STATUS_CLOSE) {
-    // Flush SRAM content to flash
-    CONCURRENCY_LOCK();
-    if (phNxpNciHal_ext_send_sram_config_to_flash() != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("phNxpNciHal_ext_send_sram_config_to_flash: Failed");
+    if (sSendSramConfigToFlash) {
+      // Flush SRAM content to flash
+      CONCURRENCY_LOCK();
+      if (phNxpNciHal_ext_send_sram_config_to_flash() != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("phNxpNciHal_ext_send_sram_config_to_flash: Failed");
+      }
+      CONCURRENCY_UNLOCK();
+      // Clear the flag so that subsequent prediscover will not send
+      // sram config to flash.
+      sSendSramConfigToFlash = false;
     }
-    CONCURRENCY_UNLOCK();
     // Inform WireSe Service that NFC is ON
     phNxpNciHal_WiredSeDispatchEvent(&gWiredSeHandle, NFC_STATE_CHANGE,
                                      (WiredSeEvtData)NfcState::NFC_ON);
