@@ -206,10 +206,7 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
             break;
 
           default:
-            event_data = getUnknownEvent(
-                vector<uint8_t>(p_event.begin() + INDEX_OF_L2_EVT_TYPE,
-                                p_event.end()),
-                std::move(timestamp), lastKnownGain);
+            break;
         }
         break;
 
@@ -223,10 +220,6 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
         break;
 
       default:
-        event_data = getUnknownEvent(
-            vector<uint8_t>(p_event.begin() + INDEX_OF_L2_EVT_TYPE,
-                            p_event.end()),
-            std::move(timestamp), lastKnownGain);
         break;
     }
 
@@ -256,10 +249,7 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
             }
             break;
           default:
-            event_data = getUnknownEvent(
-                vector<uint8_t>(p_event.begin() + INDEX_OF_CMA_EVT_DATA,
-                                p_event.end()),
-                std::move(timestamp), lastKnownGain);
+            break;
         }
         break;
       case CMA_DATA_TRIGGER_TYPE: {
@@ -268,12 +258,8 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
         unknownEventTimeStamp = timestamp;
         break;
       }
-      default: {
-        vector<uint8_t> payloadData = vector<uint8_t>(
-            p_event.begin() + INDEX_OF_CMA_EVT_TYPE, p_event.end());
-        event_data = getUnknownEvent(std::move(payloadData),
-                                     std::move(timestamp), lastKnownGain);
-      }
+      default:
+        break;
     }
   } else if (cmaEventType == CMA_EVT_EXTRA_DATA_TAG &&
              readExtraBytesForUnknownEvent) {
