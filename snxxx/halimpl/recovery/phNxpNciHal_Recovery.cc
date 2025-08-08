@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2024 NXP
+ * Copyright 2021-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -542,6 +542,13 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
   tOsalConfig.pLogFile = NULL;
   tTmlConfig.dwGetMsgThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
 
+  /* Create the client thread */
+  if (pthread_create(&nxpncihal_ctrl.client_thread, NULL,
+                     phNxpNciHal_client_thread, &nxpncihal_ctrl) != 0) {
+    NXPLOG_NCIHAL_E("pthread_create failed");
+    CONCURRENCY_UNLOCK();
+    return phnxpNciHal_partialOpenCleanUp(nfc_dev_node);
+  }
   /* Initialize TML layer */
   if (phTmlNfc_Init(&tTmlConfig) != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("phTmlNfc_Init Failed");
@@ -552,16 +559,6 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
       free(nfc_dev_node);
       nfc_dev_node = NULL;
     }
-  }
-  /* Create the client thread */
-  if (pthread_create(&nxpncihal_ctrl.client_thread, NULL,
-                     phNxpNciHal_client_thread, &nxpncihal_ctrl) != 0) {
-    NXPLOG_NCIHAL_E("pthread_create failed");
-    if (phTmlNfc_Shutdown_CleanUp() != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("phTmlNfc_Shutdown_CleanUp: Failed");
-    }
-    CONCURRENCY_UNLOCK();
-    return phnxpNciHal_partialOpenCleanUp(nfc_dev_node);
   }
   phNxpNciHal_readNFCCClockCfgValues();
   CONCURRENCY_UNLOCK();
