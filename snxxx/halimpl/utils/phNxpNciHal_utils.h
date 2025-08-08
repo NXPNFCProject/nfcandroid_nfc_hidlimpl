@@ -101,6 +101,9 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
 void phNxpNciHal_emergency_recovery(uint8_t status);
 tNFC_printType getPrintType(const char* pString);
 
+void phNxpNciHal_HexToString(char* hex, size_t len, char* str);
+void phNxpNciHal_StringToHex(char* str, size_t len, char* hex);
+
 /* Lock unlock helper macros */
 /* Lock unlock helper macros */
 #define REENTRANCE_LOCK()        \
