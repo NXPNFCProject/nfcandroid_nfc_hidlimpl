@@ -43,6 +43,7 @@
 #include "phNxpNciHal_PowerTrackerIface.h"
 #include "phNxpNciHal_ULPDet.h"
 #include "phNxpNciHal_VendorProp.h"
+#include "phNxpNciHal_WiredSeIface.h"
 #include "phNxpNciHal_extOperations.h"
 
 using android::base::StringPrintf;
@@ -57,6 +58,12 @@ using android::base::WriteStringToFile;
 #define NS_PER_S 1000000000
 #define MAX_WAIT_MS_FOR_RESET_NTF 1600
 #define INVALID_PARAM 0x09
+#define IS_HCI_PACKET(nciPkt) \
+  (nciPkt[NCI_GID_INDEX] == 0x01) && (nciPkt[NCI_OID_INDEX] == 0x00)
+#define IS_NFCEE_DISABLE(nciPkt)                                     \
+  (nciPkt[NCI_GID_INDEX] == 0x22 && nciPkt[NCI_OID_INDEX] == 0x01 && \
+   nciPkt[NCI_MSG_LEN_INDEX] == 0x02 &&                              \
+   nciPkt[NFCEE_MODE_SET_CMD_MODE_INDEX] == 0x00)
 
 bool bEnableMfcExtns = false;
 bool bEnableMfcReader = false;
@@ -116,6 +123,7 @@ bool wRfUpdateReq = false;
 uint32_t timeoutTimerId = 0;
 bool nfc_debug_enabled = true;
 PowerTrackerHandle gPowerTrackerHandle;
+WiredSeHandle gWiredSeHandle;
 sem_t sem_reset_ntf_received;
 /*  Used to send Callback Transceive data during Mifare Write.
  *  If this flag is enabled, no need to send response to Upper layer */
@@ -1143,6 +1151,15 @@ int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data) {
     NciDiscoveryCommandBuilder builder;
     vector<uint8_t> v_data = builder.reConfigRFDiscCmd(data_len, p_data);
     return phNxpNciHal_write_internal(v_data.size(), v_data.data());
+  } else if (IS_HCI_PACKET(p_data)) {
+    // Inform WiredSe service that HCI Pkt is sending from libnfc layer
+    phNxpNciHal_WiredSeDispatchEvent(&gWiredSeHandle, SENDING_HCI_PKT);
+  } else if (IS_NFCEE_DISABLE(p_data)) {
+    // NFCEE_MODE_SET(DISABLE) is called. Dispatch event to WiredSe so
+    // that it can close if session is ongoing on same NFCEE
+    phNxpNciHal_WiredSeDispatchEvent(
+        &gWiredSeHandle, DISABLING_NFCEE,
+        (WiredSeEvtData)NfcPkt((uint8_t*)p_data, data_len));
   }
   long value = 0;
   /* NXP Removal Detection timeout Config */
@@ -1435,6 +1452,12 @@ static void phNxpNciHal_read_complete(void* pContext,
           nxpncihal_ctrl.p_rx_data, nxpncihal_ctrl.rx_data_len);
       NXPLOG_NCIHAL_D("Mfc Response Status = 0x%x", mfcRspStatus);
       SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
+    } else if (phNxpNciHal_WiredSeDispatchEvent(
+                   &gWiredSeHandle, NFC_PKT_RECEIVED,
+                   (WiredSeEvtData)NfcPkt(nxpncihal_ctrl.p_rx_data,
+                                          nxpncihal_ctrl.rx_data_len)) ==
+               NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_D("%s => %d, Processed WiredSe Packet", __func__, __LINE__);
     }
     /* Read successful send the event to higher layer */
     else if (status == NFCSTATUS_SUCCESS) {
@@ -2294,6 +2317,8 @@ int phNxpNciHal_pre_discover(void) {
     }
     CONCURRENCY_UNLOCK();
   }
+  phNxpNciHal_WiredSeDispatchEvent(&gWiredSeHandle, NFC_STATE_CHANGE,
+                                   (WiredSeEvtData)NfcState::NFC_ON);
   /* Nothing to do here for initial version */
   // This is set to return Failed as no vendor specific pre-discovery action is
   // needed in case of HalPrediscover
@@ -2354,6 +2379,8 @@ int phNxpNciHal_close(bool bShutdown) {
   if (gPowerTrackerHandle.stop != NULL) {
     gPowerTrackerHandle.stop();
   }
+  phNxpNciHal_WiredSeDispatchEvent(&gWiredSeHandle, NFC_STATE_CHANGE,
+                                   (WiredSeEvtData)NfcState::NFC_OFF);
   if (IS_CHIP_TYPE_L(sn100u)) {
     if (!(GetNxpNumValue(NAME_NXP_UICC_LISTEN_TECH_MASK, &uiccListenMask,
                          sizeof(uiccListenMask)))) {

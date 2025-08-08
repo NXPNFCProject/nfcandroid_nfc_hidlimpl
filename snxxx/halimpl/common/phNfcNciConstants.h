@@ -30,6 +30,7 @@
 #define RF_DISC_CMD_CONFIG_START_INDEX 4
 // RF tech mode and Disc Frequency values
 #define RF_DISC_CMD_EACH_CONFIG_LENGTH 2
+#define NFCEE_MODE_SET_CMD_MODE_INDEX 4
 
 /* Android Parameters */
 #define NCI_ANDROID_GET_CAPABILITY 0x00
