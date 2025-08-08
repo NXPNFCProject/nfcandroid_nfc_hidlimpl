@@ -3401,6 +3401,7 @@ bool phNxpNciHal_UpdateRfMiscSettings() {
  ******************************************************************************/
 static void phNxpNciHal_DownloadFw(bool isMinFwVer, bool degradedFwDnld) {
   NFCSTATUS status = NFCSTATUS_FAILED;
+  phNxpNciHal_UpdateFwStatus(HAL_NFC_FW_UPDATE_START);
   phTmlNfc_IoCtl(phTmlNfc_e_EnableDownloadMode);
   if (isMinFwVer) {
     /* since minimal fw required dlreset to boot in Download mode */
@@ -3419,14 +3420,17 @@ static void phNxpNciHal_DownloadFw(bool isMinFwVer, bool degradedFwDnld) {
                                        degradedFwDnld);
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("FW Download Sequence Handler Failed.");
+    phNxpNciHal_UpdateFwStatus(HAL_NFC_FW_UPDATE_FAILED);
   } else {
     property_set("nfc.fw.force_download", "0");
     fw_download_success = 1;
+    phNxpNciHal_UpdateFwStatus(HAL_NFC_FW_UPDATE_SCUCCESS);
   }
 
   status = phNxpNciHal_dlResetInFwDnldMode();
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("DL Reset failed in FW DN mode");
+    phNxpNciHal_UpdateFwStatus(HAL_NFC_FW_UPDATE_FAILED);
   }
 }
 
