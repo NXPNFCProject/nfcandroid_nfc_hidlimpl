@@ -835,7 +835,8 @@ void phNxpNciHal_setDCDCConfig(void) {
 bool phNxpNciHal_isVendorSpecificCommand(uint16_t data_len,
                                          const uint8_t* p_data) {
   if (data_len > 3 && p_data[NCI_GID_INDEX] == (NCI_MT_CMD | NCI_GID_PROP) &&
-      p_data[NCI_OID_INDEX] == NCI_PROP_NTF_ANDROID_OID) {
+      ((p_data[NCI_OID_INDEX] == NCI_PROP_NTF_ANDROID_OID) ||
+       (p_data[NCI_OID_INDEX] == NCI_PROP_NTF_VENDOR_OID))) {
     return true;
   }
   return false;
@@ -865,6 +866,11 @@ int phNxpNciHal_handleVendorSpecificCommand(uint16_t data_len,
                                  NCI_ANDROID_GET_CAPABILITY) {
     // 2F 0C 01 00 => GetCapability Command length is 4 Bytes
     return handleGetCapability(data_len, p_data);
+  } else if (data_len >= 4 && p_data[NCI_MSG_INDEX_FOR_FEATURE] ==
+                                 NCI_TRIGGER_ABORT) {
+    // 2F 70 01 90 => trigger abort
+    NXPLOG_NCIHAL_E("abort()");
+    abort();
   } else {
     return phNxpNciHal_write_internal(data_len, p_data);
   }

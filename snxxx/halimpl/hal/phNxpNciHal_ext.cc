@@ -386,9 +386,7 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
     }
     return status;
   } else if (p_ntf[0] == 0x61 && p_ntf[1] == 0x21 && p_ntf[2] == 0x00) {
-    status = NFCSTATUS_FAILED;
-    NXPLOG_NCIHAL_D("ignore core generic error");
-    return status;
+    NXPLOG_NCIHAL_D("notify  PLL_UNLOCK error to upper layer");
   }
   // 4200 02 00 01
   else if (p_ntf[0] == 0x42 && p_ntf[1] == 0x00 && ee_disc_done == 0x01) {

@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2013-2024 NXP
+ *  Copyright 2013-2025 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -582,13 +582,17 @@ void phNxpNciHal_emergency_recovery(uint8_t status) {
 
   switch (status) {
     case NCI2_0_CORE_RESET_TRIGGER_TYPE_OVER_TEMPERATURE:
-    case CORE_RESET_TRIGGER_TYPE_FW_ASSERT:
     case CORE_RESET_TRIGGER_TYPE_WATCHDOG_RESET:
     case CORE_RESET_TRIGGER_TYPE_INPUT_CLOCK_LOST:
     case CORE_RESET_TRIGGER_TYPE_UNRECOVERABLE_ERROR: {
       phNxpNciHal_decodeGpioStatus();
       NXPLOG_NCIHAL_E("abort()");
       abort();
+    }
+    case CORE_RESET_TRIGGER_TYPE_FW_ASSERT: {
+      phNxpNciHal_decodeGpioStatus();
+      NXPLOG_NCIHAL_E("Notify the RESET_ASSERT_NTF to upper layer");
+      break;
     }
     case CORE_RESET_TRIGGER_TYPE_POWERED_ON: {
       if (nxpncihal_ctrl.hal_open_status != HAL_CLOSED &&
