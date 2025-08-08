@@ -2316,6 +2316,7 @@ int phNxpNciHal_pre_discover(void) {
       NXPLOG_NCIHAL_E("phNxpNciHal_ext_send_sram_config_to_flash: Failed");
     }
     CONCURRENCY_UNLOCK();
+    // Inform WireSe Service that NFC is ON
     phNxpNciHal_WiredSeDispatchEvent(&gWiredSeHandle, NFC_STATE_CHANGE,
                                      (WiredSeEvtData)NfcState::NFC_ON);
   }
