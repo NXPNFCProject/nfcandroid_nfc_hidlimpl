@@ -144,6 +144,36 @@ vector<uint8_t> ReaderPollConfigParser::parseCmaEvent(vector<uint8_t> p_event) {
 
 /*****************************************************************************
  *
+ * Function         getTimestampInMicroSeconds
+ *
+ * Description      Function to convert Timestamp in microseconds and gives it
+ *in Big endian format
+ *
+ * Parameters       rawFrame
+ *
+ * Returns          vector<uint8_t>
+ *
+ ****************************************************************************/
+vector<uint8_t> ReaderPollConfigParser::getTimestampInMicroSeconds(
+    vector<uint8_t> rawFrame) {
+  if (rawFrame.size() < 4) {
+    return vector<uint8_t>{0x00, 0x00, 0x00, 0x00};
+  }
+  uint32_t timeStampInMicroSeconds =
+      ((rawFrame.at(1) << 8) + rawFrame.at(0)) * 1000 +
+      ((rawFrame.at(3) << 8) + rawFrame.at(2));
+
+  vector<uint8_t> timeStamp;
+  timeStamp.push_back((timeStampInMicroSeconds >> 24) & 0xFF);
+  timeStamp.push_back((timeStampInMicroSeconds >> 16) & 0xFF);
+  timeStamp.push_back((timeStampInMicroSeconds >> 8) & 0xFF);
+  timeStamp.push_back((timeStampInMicroSeconds) & 0xFF);
+
+  return timeStamp;
+}
+
+/*****************************************************************************
+ *
  * Function         getEvent
  *
  * Description      It identifies the type of event and gets the reader poll
@@ -169,12 +199,9 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
 
   if (cmaEventType == L2_EVT_TAG) {
     // Timestamp should be in Big Endian format
-    int idx = 3;
-    vector<uint8_t> timestamp;
-    timestamp.push_back(p_event[idx--]);
-    timestamp.push_back(p_event[idx--]);
-    timestamp.push_back(p_event[idx--]);
-    timestamp.push_back(p_event[idx]);
+
+    vector<uint8_t> timestamp = getTimestampInMicroSeconds(p_event);
+
     lastKnownGain = p_event[INDEX_OF_L2_EVT_GAIN];
     switch (p_event[INDEX_OF_L2_EVT_TYPE] & LX_TYPE_MASK) {
       // Trigger Type
@@ -226,11 +253,7 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
   } else if (cmaEventType == CMA_EVT_TAG) {
     // Timestamp should be in Big Endian format
     int idx = 3;
-    vector<uint8_t> timestamp;
-    timestamp.push_back(p_event[idx--]);
-    timestamp.push_back(p_event[idx--]);
-    timestamp.push_back(p_event[idx--]);
-    timestamp.push_back(p_event[idx]);
+    vector<uint8_t> timestamp = getTimestampInMicroSeconds(p_event);
     switch (p_event[INDEX_OF_CMA_EVT_TYPE]) {
       // Trigger Type
       case CMA_EVENT_TRIGGER_TYPE:
