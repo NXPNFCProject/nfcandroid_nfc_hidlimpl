@@ -34,6 +34,7 @@ static vector<uint8_t> uicc2HciParams(0);
 static vector<uint8_t> uiccHciCeParams(0);
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 extern phTmlNfc_Context_t* gpphTmlNfc_Context;
+extern void* RfFwRegionDnld_handle;
 extern NFCSTATUS phNxpNciHal_ext_send_sram_config_to_flash();
 
 /*******************************************************************************
@@ -833,6 +834,9 @@ void phNxpNciHal_vendorSpecificCallback(int oid, int opcode,
   msg.eMsgType = NCI_HAL_VENDOR_MSG;
   msg.pMsgData = NULL;
   msg.Size = 0;
+  phNxpNciHal_print_packet("RECV", nxpncihal_ctrl.vendor_msg,
+                           nxpncihal_ctrl.vendor_msg_len,
+                           RfFwRegionDnld_handle == NULL);
   phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId,
                         (phLibNfc_Message_t*)&msg);
 }
