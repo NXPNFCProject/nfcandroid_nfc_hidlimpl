@@ -208,6 +208,15 @@ void phNxpNciHal_setDCDCConfig(void);
 
 /*******************************************************************************
 **
+** Function         phNxpNciHal_handleAutocard()
+**
+** Description      This handles the set/get autocard selection AID's.
+**
+** Returns          No of bytes written else 0x00
+*******************************************************************************/
+int phNxpNciHal_handleAutocard(uint16_t data_len, const uint8_t* p_data);
+/*******************************************************************************
+**
 ** Function         phNxpNciHal_isVendorSpecificCommand()
 **
 ** Description      this function checks vendor specific command or not

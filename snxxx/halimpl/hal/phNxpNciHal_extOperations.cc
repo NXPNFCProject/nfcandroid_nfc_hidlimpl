@@ -926,7 +926,73 @@ bool phNxpNciHal_isObserveModeSupported() {
   }
   return false;
 }
+/*******************************************************************************
+**
+** Function         phNxpNciHal_handleAutocard()
+**
+** Description      This handles the set/get autocard selection AID's
+**
+** Returns          No of bytes written else 0x00
+*******************************************************************************/
+int phNxpNciHal_handleAutocard(uint16_t data_len, const uint8_t* p_data) {
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  uint8_t autocard_selection_mode = 0x00;
+  int ret = 0x00;
+  int errorCode = 0x00;
+  vector<uint8_t> autocardRsp;
+  NXPLOG_NCIHAL_D("%s Enter", __func__);
+  if (IS_CHIP_TYPE_GE(sn220u)) {
+    if (!GetNxpNumValue(NAME_AUTOCARD_SELECTION_PHONE_OFF,
+                        &autocard_selection_mode,
+                        sizeof(autocard_selection_mode))) {
+      errorCode = AUTOCARD_NOT_CONFIGURED;
+      NXPLOG_NCIHAL_E("Autocard selection is not configured.");
+    } else {
+      if (autocard_selection_mode == 0x01) {
+        status = phNxpNciHal_send_ext_cmd(data_len, (uint8_t*)p_data);
+        if (status == NFCSTATUS_SUCCESS) {
+          autocardRsp.resize(nxpncihal_ctrl.rx_data_len);
 
+          if (nxpncihal_ctrl.rx_data_len <= AUTOCARD_STATUS_INDEX) {
+            errorCode = nxpncihal_ctrl.p_rx_data[3];
+          } else if ((nxpncihal_ctrl.rx_data_len > AUTOCARD_STATUS_INDEX) &&
+                     (nxpncihal_ctrl.p_rx_data[AUTOCARD_STATUS_INDEX] !=
+                      0x00)) {
+            errorCode = nxpncihal_ctrl.p_rx_data[AUTOCARD_STATUS_INDEX];
+          } else {
+            errorCode = nxpncihal_ctrl.p_rx_data[AUTOCARD_STATUS_INDEX];
+            std::copy(&nxpncihal_ctrl.p_rx_data[0],
+                      (&nxpncihal_ctrl.p_rx_data[0] +
+                       nxpncihal_ctrl.rx_data_len + NCI_MSG_LEN_INDEX),
+                      autocardRsp.begin());
+            ret = p_data[NCI_MSG_LEN_INDEX];
+          }
+        } else {
+          errorCode = AUTOCARD_CMD_FAIL;
+        }
+      } else {
+        errorCode = AUTOCARD_DISABLED;
+        NXPLOG_NCIHAL_E("Autocard selection is Disabled.");
+      }
+    }
+  } else {
+    errorCode = AUTOCARD_FEATURE_NOT_SUPPORTED;
+    NXPLOG_NCIHAL_E("Autocard selection is not supported.");
+  }
+  if (errorCode != 0x00) {
+    NXPLOG_NCIHAL_E("%s Set autocard failed. Error Code: %d", __func__,
+                    errorCode);
+    autocardRsp.resize(0x03);
+    autocardRsp[0] = AUTOCARD_SET_CMD_RSP_LEN;  // Msg length
+    autocardRsp[1] =
+        (p_data[NCI_MSG_INDEX_FOR_FEATURE]);  // Autocard Set/Get command
+    autocardRsp[2] = errorCode;
+  }
+  phNxpNciHal_vendorSpecificCallback(
+      p_data[NCI_OID_INDEX], NCI_PROP_AUTOCARD_AID_OID, std::move(autocardRsp));
+
+  return ret;
+}
 /*******************************************************************************
  *
  * Function         handleGetCapability()

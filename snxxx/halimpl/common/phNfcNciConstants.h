@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@
 #define NCI_PROP_LX_NTF_OID 0x36
 #define NCI_PROP_NTF_ANDROID_OID 0x0C
 
+#define NCI_PROP_AUTOCARD_AID_OID 0x43
 #define NCI_RF_DISC_COMMD_GID 0x21
 #define NCI_RF_DISC_COMMAND_OID 0x03
 #define NFC_A_PASSIVE_LISTEN_MODE 0x80
@@ -108,3 +109,11 @@
 #define TYPE_ALL_EVENTS 0x00
 #define TYPE_ONLY_MOD_EVENTS 0x01
 #define TYPE_ONLY_CMA_EVENTS 0x02
+
+// Autocard constants
+#define AUTOCARD_SET_CMD_RSP_LEN 0x02
+#define AUTOCARD_CMD_FAIL 0x01
+#define AUTOCARD_DISABLED 0x0B
+#define AUTOCARD_NOT_CONFIGURED 0x0C
+#define AUTOCARD_FEATURE_NOT_SUPPORTED 0x0D
+#define AUTOCARD_STATUS_INDEX 4

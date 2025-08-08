@@ -1154,6 +1154,10 @@ int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data) {
     NciDiscoveryCommandBuilder builder;
     vector<uint8_t> v_data = builder.reConfigRFDiscCmd(data_len, p_data);
     return phNxpNciHal_write_internal(v_data.size(), v_data.data());
+  } else if (data_len >= 4 &&
+             p_data[NCI_GID_INDEX] == (NCI_MT_CMD | NCI_GID_PROP) &&
+             p_data[NCI_OID_INDEX] == NCI_PROP_AUTOCARD_AID_OID) {
+    return phNxpNciHal_handleAutocard(data_len, p_data);
   } else if (IS_HCI_PACKET(p_data)) {
     // Inform WiredSe service that HCI Pkt is sending from libnfc layer
     phNxpNciHal_WiredSeDispatchEvent(&gWiredSeHandle, SENDING_HCI_PKT);
