@@ -1627,7 +1627,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   }
 
   NFCSTATUS getCommandStatus = phNxpNciHal_getInterplolatedRssi8Am();
-  if (status != NFCSTATUS_SUCCESS) {
+  if (getCommandStatus != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_D("Get Interplolated Rssi 8 A/m command failed");
   }
 
@@ -1699,7 +1699,6 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
         }
       }
     } while (rf_block_num[loopcnt] != NULL);
-    loopcnt = 0;
     if (phNxpNciHal_nfccClockCfgApply() != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("phNxpNciHal_nfccClockCfgApply failed");
       retry_core_init_cnt++;
@@ -1876,7 +1875,6 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
       }
     }
   }
-  retry_core_init_cnt = 0;
 
   if (buffer) {
     free(buffer);
@@ -2535,14 +2533,12 @@ static void phNxpNciHal_nfccClockCfgRead(void) {
   }
 
   num = 0;
-  isfound = 0;
   isfound = GetNxpNumValue(NAME_NXP_SYS_CLK_FREQ_SEL, &num, sizeof(num));
   if (isfound > 0) {
     nxpprofile_ctrl.bClkFreqVal = num;
   }
 
   num = 0;
-  isfound = 0;
   isfound = GetNxpNumValue(NAME_NXP_SYS_CLOCK_TO_CFG, &num, sizeof(num));
   if (isfound > 0) {
     nxpprofile_ctrl.bTimeout = num;

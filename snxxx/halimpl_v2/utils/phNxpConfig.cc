@@ -1012,23 +1012,19 @@ bool CNfcConfig::isModified(tNXP_CONF_FILE aType) {
 
   const char* timestamp_path = nullptr;
   uint32_t current_crc32 = 0;
-  const char* file_type_name = nullptr;
   // Determine file paths and CRC values based on type
   switch (aType) {
     case CONF_FILE_NXP:
       timestamp_path = config_timestamp_path;
       current_crc32 = config_crc32_;
-      file_type_name = "NXP config";
       break;
     case CONF_FILE_NXP_RF:
       timestamp_path = rf_config_timestamp_path;
       current_crc32 = config_rf_crc32_;
-      file_type_name = "NXP RF config";
       break;
     case CONF_FILE_NXP_TRANSIT:
       timestamp_path = tr_config_timestamp_path;
       current_crc32 = config_tr_crc32_;
-      file_type_name = "NXP Transit config";
       break;
     default:
       ALOGE("%s Invalid conf file type: %d", __func__, aType);
