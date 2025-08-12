@@ -63,18 +63,21 @@ void phNxpExtn_LibSetup() {
     return;
   }
 
-  if ((fp_extn_init = (fp_extn_init_t)dlsym(p_oem_extn_handle,
-                                            vendor_nfc_init_name.c_str())) == NULL) {
+  fp_extn_init =
+      (fp_extn_init_t)dlsym(p_oem_extn_handle, vendor_nfc_init_name.c_str());
+  if (fp_extn_init == nullptr) {
     NXPLOG_NCIHAL_E("%s Failed to find %s !!", __func__, vendor_nfc_init_name.c_str());
   }
 
-  if ((fp_extn_deinit = (fp_extn_deinit_t)dlsym(
-           p_oem_extn_handle, vendor_nfc_de_init_name.c_str())) == NULL) {
+  fp_extn_deinit = (fp_extn_deinit_t)dlsym(p_oem_extn_handle,
+                                           vendor_nfc_de_init_name.c_str());
+  if (fp_extn_deinit == nullptr) {
     NXPLOG_NCIHAL_E("%s Failed to find %s !!", __func__, vendor_nfc_de_init_name.c_str());
   }
 
-  if ((fp_extn_handle_nfc_event = (fp_extn_handle_nfc_event_t)dlsym(
-           p_oem_extn_handle, vendor_nfc_handle_event_name.c_str())) == NULL) {
+  fp_extn_handle_nfc_event = (fp_extn_handle_nfc_event_t)dlsym(
+      p_oem_extn_handle, vendor_nfc_handle_event_name.c_str());
+  if (fp_extn_handle_nfc_event == nullptr) {
     NXPLOG_NCIHAL_E("%s Failed to find %s !!", __func__, vendor_nfc_handle_event_name.c_str());
   }
   // Allocate Transaction buffers
