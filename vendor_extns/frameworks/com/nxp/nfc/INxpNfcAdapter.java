@@ -16,14 +16,13 @@
 
 package com.nxp.nfc;
 
+import android.annotation.IntDef;
 import android.app.Activity;
-
+import com.nxp.nfc.NxpNfcAdapter.AutoCardStatusCallback;
 import com.nxp.nfc.NxpNfcAdapter.NxpReaderCallback;
 import com.nxp.nfc.vendor.lxdebug.ILxDebugCallbacks;
 import com.nxp.nfc.vendor.srd.ISrdCallbacks;
-
 import java.io.IOException;
-import android.annotation.IntDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -115,8 +114,11 @@ public interface INxpNfcAdapter {
    *                      0x0C : Config not defined
    *                      0x0D : Feature not supported by platform
    *                      0x0E : EACSTATUS_ERROR_MESSAGE_CORRUPTED
-   * byte[0] indicates error, byte[1] cma ready count  and byte[2]
-   * onwards AID in TLV format.
+   * byte[0] indicates status, byte[1] onwards AID in TLV format.
+   * Number of Aid's     : 1 Byte
+   * Protocol type.      : 1 Byte
+   * Length of AID       : 1 Byte
+   * Aid Entry           : AID (x Bytes supported 5 <= x <= 16)
    * <p>Requires {@link   android.Manifest.permission#NFC} permission.
    */
   public byte[] getAutoCardAID() throws IOException;
@@ -124,10 +126,10 @@ public interface INxpNfcAdapter {
   /**
    * This API sends Autocard AID's  to NFCC using the vendor NCI message
    * <ul>
-   * <li>This api shall be called only Nfcservice is enabled.
+   * <li>This api shall be called only when Nfcservice is enabled and also
+   * <li>autocard feature should be enabled in NFCC.
    * </ul>
    * @param aids  No of AID's to configure.
-   * @param cmaReadyCount  CMA ready count.
    * @return status     :-0x00 :SUCCESS
    *                      0x01 - 0x06: NCI Status Codes
    *                           : Refer NCI spec v2.3 Table 140
@@ -138,8 +140,79 @@ public interface INxpNfcAdapter {
    *                      0x0E : EACSTATUS_ERROR_MESSAGE_CORRUPTED
    * <p>Requires {@link   android.Manifest.permission#NFC} permission.
    */
-  public @AutoCardStatus int setAutoCardAID(byte[] aids, int cmaReadyCount)
+  public @AutoCardStatus int setAutoCardAID(byte[] aids) throws IOException;
+
+  /**
+   * This API to enable Autocard feature in NFCC using the vendor NCI message
+   * <ul>
+   * <li>This api shall be called only Nfcservice is enabled.
+   * @return status     :-0x00 :SUCCESS
+   *                      0x01 - 0x06: NCI Status Codes
+   *                           : Refer NCI spec v2.3 Table 140
+   *                      0x07 : NFC off
+   *                      0x0B : Disabled
+   *                      0x0C : Config not defined
+   *                      0x0D : Feature not supported by platform
+   *                      0x0E : EACSTATUS_ERROR_MESSAGE_CORRUPTED
+   * <p>Requires {@link   android.Manifest.permission#NFC} permission.
+   */
+  public @AutoCardStatus
+  int enableAutoCard(AutoCardStatusCallback mAutoCardStatusCallback)
       throws IOException;
+
+  /**
+   * This API to disable Autocard feature in NFCC using the vendor NCI message.
+   * <ul>
+   * <li>This api shall be called only Nfcservice is enabled.
+   * @return status     :-0x00 :SUCCESS
+   *                      0x01 - 0x06: NCI Status Codes
+   *                           : Refer NCI spec v2.3 Table 140
+   *                      0x07 : NFC off
+   *                      0x0B : Disabled
+   *                      0x0C : Config not defined
+   *                      0x0D : Feature not supported by platform
+   *                      0x0E : EACSTATUS_ERROR_MESSAGE_CORRUPTED
+   * <p>Requires {@link   android.Manifest.permission#NFC} permission.
+   */
+  public @AutoCardStatus int disableAutoCard() throws IOException;
+
+  /**
+   * This API sets Autocard AID's status to NFCC using the vendor NCI message
+   * <ul>
+   * <li>This api shall be called only when Nfcservice is enabled and also
+   * <li>autocard feature should be enabled in NFCC.
+   * </ul>
+   * @param appletStatus  Updayte status of configured AID's.
+   * @return status     :-0x00 :SUCCESS
+   *                      0x01 - 0x06: NCI Status Codes
+   *                           : Refer NCI spec v2.3 Table 140
+   *                      0x07 : NFC off
+   *                      0x0B : Disabled
+   *                      0x0C : Config not defined
+   *                      0x0D : Feature not supported by platform
+   *                      0x0E : EACSTATUS_ERROR_MESSAGE_CORRUPTED
+   * <p>Requires {@link   android.Manifest.permission#NFC} permission.
+   */
+  public @AutoCardStatus int setAutoCardAppletStatus(byte[] appletStatus)
+      throws IOException;
+
+  /**
+   * This API sends suspend/resume cmd to NFCC using the vendor NCI message
+   * <ul>
+   * <li>This api shall be called only when Nfcservice is enabled and also
+   * <li>autocard feature should be enabled in NFCC.
+   * </ul>
+   * @param flag  true/false.
+   * @return status     :-0x00 :SUCCESS
+   *                      0x01 - 0x06: NCI Status Codes
+   *                           : Refer NCI spec v2.3 Table 140
+   *                      0x07 : NFC off
+   *                      0x0B : Disabled
+   *                      0x0C : Config not defined
+   *                      0x0D : Feature not supported by platform
+   * <p>Requires {@link   android.Manifest.permission#NFC} permission.
+   */
+  public @AutoCardStatus int suspendAutoCard(boolean flag) throws IOException;
 
   /**
    * This is the API to be called to enable or disable QTag RF mode.

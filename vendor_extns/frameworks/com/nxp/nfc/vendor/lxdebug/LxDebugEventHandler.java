@@ -133,6 +133,8 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             startEFDMTimer();
             mIsFirstRFFieldOn = false;
         }
+        if (mLxDebugCallbacks != null)
+          mLxDebugCallbacks.onRfFieldDetected(isActive);
     }
 
     @Override
@@ -182,6 +184,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
     public void unregisterLxDebugCallbacks() {
         NxpNfcLogger.d(TAG, "Entry unregisterLxDebugCallbacks");
         mLxDebugCallbacks = null;
+        mNfcOperations.unregisterNxpOemCallback();
     }
 
     private void startEFDMTimer() {
@@ -468,7 +471,9 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             NxpNfcLogger.e(TAG, "Failed to start discovery");
             status = STATUS_FAILED;
         }
-        mNfcOperations.unregisterNxpOemCallback();
+        if (mLxDebugCallbacks == null) {
+          mNfcOperations.unregisterNxpOemCallback();
+        }
         return status;
     }
 

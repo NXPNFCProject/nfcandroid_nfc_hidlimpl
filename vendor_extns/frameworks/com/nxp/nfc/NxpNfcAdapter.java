@@ -217,6 +217,10 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
         return ((INxpNfcAdapter) sNxpNfcAdapter);
     }
 
+    public interface AutoCardStatusCallback {
+      void AutocardAppletStatusNtf(byte[] appletStatus);
+    }
+
     /**
      * @brief To be called to get the configured AID,s.
      * @return {@link INxpNfcAdapter.getAutoCardAID} instance
@@ -227,13 +231,52 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     }
 
     /**
+     * @brief To be called to set autocard counters
+     * @return {@link INxpNfcAdapter.setAutoCardCounters} instance
+     */
+    @Override
+    public @AutoCardStatus
+    int enableAutoCard(AutoCardStatusCallback mAutoCardStatusCallback)
+        throws IOException {
+      return mAutoCardHandler.enableAutoCard(mAutoCardStatusCallback);
+    }
+
+    /**
+     * @brief To be called to get the configured AID,s.
+     * @return {@link INxpNfcAdapter.disableAutoCard} instance
+     */
+    @Override
+    public @AutoCardStatus int disableAutoCard() throws IOException {
+      return mAutoCardHandler.disableAutoCard();
+    }
+
+    /**
      * @brief To be called to set autocard AID's
      * @return {@link INxpNfcAdapter.setAutoCardAID} instance
      */
     @Override
-    public @AutoCardStatus int setAutoCardAID(byte[] aids, int cmaReadyCount)
+    public @AutoCardStatus int setAutoCardAID(byte[] aids) throws IOException {
+      return mAutoCardHandler.setAutoCardAID(aids);
+    }
+
+    /**
+     * @brief To be called to set autocard AID's
+     * @return {@link INxpNfcAdapter.setAutoCardAppletStatus} instance
+     */
+    @Override
+    public @AutoCardStatus int setAutoCardAppletStatus(byte[] appletStatus)
         throws IOException {
-      return mAutoCardHandler.setAutoCardAID(aids, cmaReadyCount);
+      return mAutoCardHandler.setAutoCardAppletStatus(appletStatus);
+    }
+
+    /**
+     * @brief To be called to set autocard AID's
+     * @return {@link INxpNfcAdapter.suspendAutoCard} instance
+     */
+    @Override
+    public @AutoCardStatus int suspendAutoCard(boolean flag)
+        throws IOException {
+      return mAutoCardHandler.suspendAutoCard(flag);
     }
 
     /**

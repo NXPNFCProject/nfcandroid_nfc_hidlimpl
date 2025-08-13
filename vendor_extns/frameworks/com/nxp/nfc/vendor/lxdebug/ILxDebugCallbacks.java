@@ -36,4 +36,11 @@ public interface ILxDebugCallbacks {
      * @param lxDebugData : LX Dbug data received from NFCC
      */
     void onLxDebugDataReceived(byte[] lxDebugData);
+
+    /**
+     * This callback triggers on receiving the RF filed On/Off Event.
+     * @param isActive : true when rf activated
+     *                             false when deactivated
+     */
+    void onRfFieldDetected(boolean isActive);
 }
