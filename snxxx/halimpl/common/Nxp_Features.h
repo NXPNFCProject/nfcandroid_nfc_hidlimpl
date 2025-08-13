@@ -75,7 +75,7 @@
 #ifndef FW_BIN_EXTENSION
 #define FW_BIN_EXTENSION ".bin"
 #endif
-using namespace std;
+
 typedef enum {
   NFCC_DWNLD_WITH_VEN_RESET,
   NFCC_DWNLD_WITH_NCI_CMD

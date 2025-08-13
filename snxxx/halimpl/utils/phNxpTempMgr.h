@@ -22,8 +22,6 @@
 #define TEMPERATURE_MODULE_ID_ESE 0x10
 #define TEMPERATURE_LOW 0x02
 
-using namespace std;
-
 class phNxpTempMgr {
  public:
   // mark copy constructor deleted

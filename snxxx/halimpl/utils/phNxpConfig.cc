@@ -53,8 +53,9 @@
 #include <atomic>
 #include <set>
 
-
 #include "sparse_crc32.h"
+
+using std::list;
 
 #if GENERIC_TARGET
 const char alternative_config_path[] = "/data/vendor/nfc/";
@@ -147,7 +148,8 @@ size_t readConfigFile(const char* fileName, uint8_t** p_data) {
   return 0;
 }
 
-using namespace ::std;
+using std::vector;
+using std::string;
 
 class CNfcParam : public string {
  public:

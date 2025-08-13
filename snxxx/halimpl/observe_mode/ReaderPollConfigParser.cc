@@ -18,7 +18,7 @@
 
 #include <phNfcNciConstants.h>
 
-using namespace std;
+using std::vector;
 
 /*****************************************************************************
  *
