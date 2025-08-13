@@ -21,6 +21,7 @@
 #include <cutils/properties.h>
 #include <string>
 
+using std::string;
 /******************************************************************************
  * Function         phNxpNciHal_getVendorProp_int32
  *

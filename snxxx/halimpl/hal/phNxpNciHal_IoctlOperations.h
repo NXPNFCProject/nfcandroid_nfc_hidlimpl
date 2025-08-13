@@ -19,6 +19,7 @@
 #include "phNfcStatus.h"
 #include "phNxpConfig.h"
 #include "phNxpLog.h"
+#include <string>
 #include <vector>
 
 using std::string;
