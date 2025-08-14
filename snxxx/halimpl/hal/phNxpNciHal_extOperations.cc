@@ -337,11 +337,11 @@ NFCSTATUS phNxpNciHal_save_uicc_params() {
     NXPLOG_NCIHAL_E("%s: Save UICC1 CLPP failed .", __func__);
   } else {
     // Convert from hexadecimal to character
-    char uicc1HciParamsStr[uicc1HciParams.size() * 2 + 1];
-    phNxpNciHal_HexToString((char*)uicc1HciParams.data(), uicc1HciParams.size(),
-                            uicc1HciParamsStr);
-    std::string propName = "persist.vendor.nfc.nxp.uicc1HciParams";
-    phNxpNciHal_setFragmentedVendorProp(propName.c_str(), uicc1HciParamsStr);
+    string uicc1HciParamsStr =
+        phNxpNciHal_HexToString(uicc1HciParams.data(), uicc1HciParams.size());
+    string propName = "persist.vendor.nfc.nxp.uicc1HciParams";
+    phNxpNciHal_setFragmentedVendorProp(
+        propName.c_str(), uicc1HciParamsStr.c_str());
   }
 
   /* Getting UICC2 CL params */
@@ -352,11 +352,11 @@ NFCSTATUS phNxpNciHal_save_uicc_params() {
     NXPLOG_NCIHAL_E("%s: Save UICC2 CLPP failed .", __func__);
   } else {
     // Convert to character
-    char uicc2HciParamsStr[uicc2HciParams.size() * 2 + 1];
-    phNxpNciHal_HexToString((char*)uicc2HciParams.data(), uicc2HciParams.size(),
-                            uicc2HciParamsStr);
-    std::string propName = "persist.vendor.nfc.nxp.uicc2HciParams";
-    phNxpNciHal_setFragmentedVendorProp(propName.c_str(), uicc2HciParamsStr);
+    string uicc2HciParamsStr =
+        phNxpNciHal_HexToString(uicc2HciParams.data(), uicc2HciParams.size());
+    string propName = "persist.vendor.nfc.nxp.uicc2HciParams";
+    phNxpNciHal_setFragmentedVendorProp(
+        propName.c_str(), uicc2HciParamsStr.c_str());
   }
 
   /* Get UICC CE HCI State */
@@ -367,11 +367,10 @@ NFCSTATUS phNxpNciHal_save_uicc_params() {
     NXPLOG_NCIHAL_E("%s: Save UICC_HCI_CE_STATE failed .", __func__);
   } else {
     // Convert to character
-    char uiccHciCeParamsStr[uiccHciCeParams.size() * 2 + 1];
-    phNxpNciHal_HexToString((char*)uiccHciCeParams.data(),
-                            uiccHciCeParams.size(), uiccHciCeParamsStr);
-    std::string propName = "persist.vendor.nfc.nxp.uiccHciCeParams";
-    phNxpNciHal_setVendorProp(propName.c_str(), uiccHciCeParamsStr);
+    string uiccHciCeParamsStr =
+        phNxpNciHal_HexToString(uiccHciCeParams.data(),uiccHciCeParams.size());
+    string propName = "persist.vendor.nfc.nxp.uiccHciCeParams";
+    phNxpNciHal_setVendorProp(propName.c_str(), uiccHciCeParamsStr.c_str());
   }
   return status;
 }
@@ -395,64 +394,65 @@ NFCSTATUS phNxpNciHal_restore_uicc_params() {
 
   // UICC1 HCI PARAMS
   const char* uicc1HciParamsPropName = "persist.vendor.nfc.nxp.uicc1HciParams";
-  char uiccHciParamsStr[1024];
-  memset(uiccHciParamsStr, 0, sizeof(uiccHciParamsStr));
-  // Read fragmented property
-  phNxpNciHal_getFragmentedVendorProp(uicc1HciParamsPropName, uiccHciParamsStr);
-  uicc1HciParams.clear();
-  uicc1HciParams.resize(strlen(uiccHciParamsStr) / 2);
-  // Convert from string to hexadecimal format
-  phNxpNciHal_StringToHex(uiccHciParamsStr, strlen(uiccHciParamsStr),
+  // Read 1st fragmented property
+  std::string uiccHciParamsStr = phNxpNciHal_getFragmentedVendorProp(uicc1HciParamsPropName);
+  if (!uiccHciParamsStr.empty()) {
+    uicc1HciParams.resize(uiccHciParamsStr.length()/ 2);
+    // Convert from string to hexadecimal format
+    phNxpNciHal_StringToHex(uiccHciParamsStr.c_str(), uiccHciParamsStr.length(),
                           (char*)uicc1HciParams.data());
-
+    if (uicc1HciParams.size() > 0) {
+      status = phNxpNciHal_set_uicc_hci_params(
+          uicc1HciParams, uicc1HciParams.size(), EEPROM_UICC1_SESSION_ID);
+      if (status != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("%s: Restore UICC1 CLPP failed .", __func__);
+      } else {
+        uicc1HciParams.resize(0);
+        phNxpNciHal_setFragmentedVendorProp(uicc1HciParamsPropName, "");
+      }
+    }
+  } else {
+    NXPLOG_NCIHAL_E("%s: uicc1HciParamsStr is empty.", __func__);
+  }
   // UICC2 HCI PARAMS
   const char* uicc2HciParamsPropName = "persist.vendor.nfc.nxp.uicc2HciParams";
-  memset(uiccHciParamsStr, 0, sizeof(uiccHciParamsStr));
-  // Read fragmented property
-  phNxpNciHal_getFragmentedVendorProp(uicc2HciParamsPropName, uiccHciParamsStr);
-  uicc2HciParams.clear();
-  uicc2HciParams.resize(strlen(uiccHciParamsStr) / 2);
-  // Convert from string to hexadecimal format
-  phNxpNciHal_StringToHex(uiccHciParamsStr, strlen(uiccHciParamsStr),
+  // Read 2nd fragmented property
+  uiccHciParamsStr = phNxpNciHal_getFragmentedVendorProp(uicc2HciParamsPropName);
+  if (!uiccHciParamsStr.empty()) {
+    uicc2HciParams.resize(uiccHciParamsStr.length()/ 2);
+    // Convert from string to hexadecimal format
+    phNxpNciHal_StringToHex(uiccHciParamsStr.c_str(), uiccHciParamsStr.length(),
                           (char*)uicc2HciParams.data());
+     if (uicc2HciParams.size() > 0) {
+      status = phNxpNciHal_set_uicc_hci_params(
+          uicc2HciParams, uicc2HciParams.size(), EEPROM_UICC2_SESSION_ID);
+      if (status != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("%s: Restore UICC2 CLPP failed .", __func__);
+      } else {
+        uicc2HciParams.resize(0);
+        phNxpNciHal_setFragmentedVendorProp(uicc2HciParamsPropName, "");
+      }
+    }
+  } else {
+    NXPLOG_NCIHAL_E("%s: uicc2HciParamsStr is empty.", __func__);
+  }
 
   // HCI CE PARAMS
   const char* uiccHciCeParamsPropName =
-      "persist.vendor.nfc.nxp.uiccHciCeParams";
-  memset(uiccHciParamsStr, 0, sizeof(uiccHciParamsStr));
-  // Read fragmented property
-  phNxpNciHal_getVendorProp(uiccHciCeParamsPropName, uiccHciParamsStr);
+        "persist.vendor.nfc.nxp.uiccHciCeParams";
+  char hciParamsStr[PROPERTY_VALUE_MAX];
+  phNxpNciHal_getVendorProp(uiccHciCeParamsPropName, hciParamsStr);
   uiccHciCeParams.clear();
-  uiccHciCeParams.resize(strlen(uiccHciParamsStr) / 2);
+  uiccHciCeParams.resize(strlen(hciParamsStr)/2);
   // Convert from string to hexadecimal format
-  phNxpNciHal_StringToHex(uiccHciParamsStr, strlen(uiccHciParamsStr),
+  phNxpNciHal_StringToHex(hciParamsStr, strlen(hciParamsStr),
                           (char*)uiccHciCeParams.data());
 
-  if (uicc1HciParams.size() > 0) {
-    status = phNxpNciHal_set_uicc_hci_params(
-        uicc1HciParams, uicc1HciParams.size(), EEPROM_UICC1_SESSION_ID);
-    if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("%s: Restore UICC1 CLPP failed .", __func__);
-    } else {
-      uicc1HciParams.resize(0);
-      phNxpNciHal_setFragmentedVendorProp(uicc1HciParamsPropName, "");
-    }
-  }
-  if (uicc2HciParams.size() > 0) {
-    status = phNxpNciHal_set_uicc_hci_params(
-        uicc2HciParams, uicc2HciParams.size(), EEPROM_UICC2_SESSION_ID);
-    if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("%s: Restore UICC2 CLPP failed .", __func__);
-    } else {
-      uicc2HciParams.resize(0);
-      phNxpNciHal_setFragmentedVendorProp(uicc2HciParamsPropName, "");
-    }
-  }
   if (uiccHciCeParams.size() > 0) {
     status = phNxpNciHal_set_uicc_hci_params(
         uiccHciCeParams, uiccHciCeParams.size(), EEPROM_UICC_HCI_CE_STATE);
     if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("%s: Restore UICC_HCI_CE_STATE failed .", __func__);
+      NXPLOG_NCIHAL_E("%s: Restore UICC_HCI_CE_STATE failed.", __func__);
     } else {
       uiccHciCeParams.resize(0);
       phNxpNciHal_setVendorProp(uiccHciCeParamsPropName, "");

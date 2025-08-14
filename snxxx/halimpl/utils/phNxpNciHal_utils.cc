@@ -488,7 +488,7 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
  * Returns          None.
  *
  ******************************************************************************/
-void phNxpNciHal_StringToHex(char* str, size_t len, char* hex) {
+void phNxpNciHal_StringToHex(const char* str, size_t len, char* hex) {
   if (str == NULL || hex == NULL || (len % 2) != 0) {
     return;
   }
@@ -524,19 +524,18 @@ void phNxpNciHal_StringToHex(char* str, size_t len, char* hex) {
  *                  string representation.
  * Parameters       hex - hex bytes to be converted to string.
  *                  len - Length of passed hex buffer.
- *                  str - Output converted string.
  *
- * Returns          None.
+ * Returns          string output.
  *
  ******************************************************************************/
-void phNxpNciHal_HexToString(char* hex, size_t len, char* str) {
+std::string phNxpNciHal_HexToString(const uint8_t* hex, size_t len) {
   std::stringstream ss;
   // Convert to character
   for (size_t i = 0; i < len; i++) {
     ss << std::setfill('0') << std::hex << std::uppercase << std::setw(2)
        << (0xFF & hex[i]);
   }
-  strcpy(str, ss.str().c_str());
+  return ss.str();
 }
 
 /*******************************************************************************
