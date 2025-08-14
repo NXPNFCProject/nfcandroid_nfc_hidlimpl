@@ -56,4 +56,5 @@ NFCSTATUS phNxpNfcExtn_HandleNciRspNtf(uint16_t* dataLen,
 
 void phNxpNfcExtn_core_initialized() {
   NxpNTag::getInstance()->phNxpNciHal_disableNtagNtfConfig();
+  AutoCard::getInstance()->phNxpNciHal_getAutoCardConfig();
 }
