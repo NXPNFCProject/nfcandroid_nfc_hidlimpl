@@ -1151,12 +1151,15 @@ int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data) {
              p_data[NCI_GID_INDEX] == NCI_RF_DISC_COMMD_GID &&
              p_data[NCI_OID_INDEX] == NCI_RF_DISC_COMMAND_OID) {
     NciDiscoveryCommandBuilder builder;
-    //Pre-allocate vector with NCI buffer size.
-    vector<uint8_t> v_data(NCI_MAX_DATA_LEN, 0x00);
     auto rfDiscCmd = builder.reConfigRFDiscCmd(data_len, p_data);
-    uint16_t actualLen = static_cast<uint16_t>(rfDiscCmd.size());
-    copy(rfDiscCmd.begin(), rfDiscCmd.end(),v_data.begin());
-    return phNxpNciHal_write_internal(actualLen, v_data.data());
+    data_len = static_cast<uint16_t>(rfDiscCmd.size());
+    if (data_len > NCI_MAX_DATA_LEN) {
+      NXPLOG_NCIHAL_E("%s: rfDiscCmd exceeds max size", __func__);
+      return NFCSTATUS_FAILED;
+    }
+    uint8_t* p_data_mutable = const_cast<uint8_t*>(p_data);
+    copy(rfDiscCmd.begin(), rfDiscCmd.end(), p_data_mutable);
+    return phNxpNciHal_write_internal(data_len, p_data);
   } else if (data_len >= 4 &&
              p_data[NCI_GID_INDEX] == (NCI_MT_CMD | NCI_GID_PROP) &&
              p_data[NCI_OID_INDEX] == NCI_PROP_AUTOCARD_AID_OID) {
@@ -1181,7 +1184,14 @@ int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data) {
       *wait_time = value;
     }
   }
-  return phNxpNciHal_write_internal(data_len, p_data);
+  if (!data_len || !p_data || data_len > NCI_MAX_DATA_LEN) {
+    NXPLOG_NCIHAL_E("%s: Invalid arguments received", __func__);
+    return NFCSTATUS_FAILED;
+  }
+  //Pre-allocate buffer with NCI buffer size.
+  uint8_t pre_alloc_pdata[NCI_MAX_DATA_LEN] = {};
+  memcpy(pre_alloc_pdata, p_data, data_len);
+  return phNxpNciHal_write_internal(data_len, pre_alloc_pdata);
 }
 
 /******************************************************************************
