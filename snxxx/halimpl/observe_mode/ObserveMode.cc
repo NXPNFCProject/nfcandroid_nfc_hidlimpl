@@ -20,7 +20,7 @@
 
 #include "phNxpNciHal_extOperations.h"
 
-using namespace std;
+using std::vector;
 
 bool bIsObserveModeEnabled;
 

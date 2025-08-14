@@ -16,7 +16,7 @@
 
 #include <vector>
 
-using namespace std;
+using std::vector;
 
 /**
  * @brief DiscoveryConfiguration is the data class

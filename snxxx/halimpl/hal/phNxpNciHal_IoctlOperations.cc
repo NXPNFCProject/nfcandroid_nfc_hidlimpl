@@ -37,8 +37,8 @@
 #include "phNxpNciHal_utils.h"
 
 using android::base::WriteStringToFile;
-using namespace ::std;
 using namespace ::android::base;
+using std::stringstream;
 
 #define TERMINAL_LEN 5
 /* HAL_NFC_STATUS_REFUSED sent to restart NFC service */
@@ -563,7 +563,7 @@ static string phNxpNciHal_UpdatePwrStateConfigs(string& config) {
       string value(Trim(line.substr(search + 1, string::npos)));
       if (ParseUint(value.c_str(), &tmp)) {
         tmp = phNxpNciHal_updateAutonomousPwrState(tmp);
-        value = to_string(tmp);
+        value = std::to_string(tmp);
         line = key + "=" + value + "\n";
         result += line;
       }
