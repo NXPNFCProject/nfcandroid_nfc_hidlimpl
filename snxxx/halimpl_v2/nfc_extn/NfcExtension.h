@@ -39,7 +39,7 @@ static NciDeferredData_t nciRspNtfDeferredData;
  * @brief Defines the Nfc Rf State
  *
  */
-typedef enum {
+enum NfcRfState_t: uint8_t {
   IDLE,
   DISCOVER,
   W4_ALL_DISCOVERIES,
@@ -47,7 +47,7 @@ typedef enum {
   POLL_ACTIVE,
   LISTEN_ACTIVE,
   LISTEN_SLEEP,
-} NfcRfState_t;
+};
 
 /**
  * @brief Holds NCI packet data length and data buffer
@@ -77,7 +77,7 @@ typedef union {
  * @brief Holds functional event codes to support
  *        extension features.
  */
-typedef enum {
+enum NfcExtEvent_t: uint8_t {
   HANDLE_VENDOR_NCI_MSG = 0x0B, /* TO avoid clash with existing HAL Status Event*/
   HANDLE_VENDOR_NCI_RSP_NTF,
   HANDLE_WRITE_COMPLETE_STATUS,
@@ -94,14 +94,14 @@ typedef enum {
   HANDLE_NFC_GET_MAX_NFCEE,
   HANDLE_NFC_HAL_CLOSE,
   HANDLE_NFC_DEVICE_SHUTDOWN,
-} NfcExtEvent_t;
+};
 
-typedef enum {
+enum NfcExtHal_NFCC_ERROR_CODE_t: uint8_t {
   NFCC_HAL_INPUT_CLOCK_ERROR_CODE = 0xF0,
   NFCC_HAL_FATAL_EXCEPTION_ERROR_CODE = 0xF2,
   NFCC_HAL_ASSERT_ERROR_CODE = 0xF6,
   NFCC_HAL_TRANS_ERROR_CODE = 0xF7
-} NfcExtHal_NFCC_ERROR_CODE_t;
+};
 
 typedef bool (*fp_extn_init_t)(VendorExtnCb*);
 typedef bool (*fp_extn_deinit_t)();

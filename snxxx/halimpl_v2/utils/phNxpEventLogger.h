@@ -11,7 +11,7 @@
  ** See the License for the specific language governing permissions and
  ** limitations under the License.
  **
- ** Copyright 2022-2023 NXP
+ ** Copyright 2022-2023, 2025 NXP
  **
  */
 #pragma once
@@ -22,7 +22,7 @@
 #define EUICC_CONNECTIVITY_PACKET 0xAB
 #define ESE_DPD_EVENT 0x70
 
-enum class LogEventType { kLogSMBEvent = 0, kLogDPDEvent };
+enum class LogEventType: uint8_t { kLogSMBEvent = 0, kLogDPDEvent };
 
 // Store NTF/Event to filesystem under /data
 // Currently being used to store SMB debug ntf and eSE DPD
