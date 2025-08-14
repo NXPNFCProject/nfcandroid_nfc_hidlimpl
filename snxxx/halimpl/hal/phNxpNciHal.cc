@@ -1151,8 +1151,12 @@ int phNxpNciHal_write(uint16_t data_len, const uint8_t* p_data) {
              p_data[NCI_GID_INDEX] == NCI_RF_DISC_COMMD_GID &&
              p_data[NCI_OID_INDEX] == NCI_RF_DISC_COMMAND_OID) {
     NciDiscoveryCommandBuilder builder;
-    vector<uint8_t> v_data = builder.reConfigRFDiscCmd(data_len, p_data);
-    return phNxpNciHal_write_internal(v_data.size(), v_data.data());
+    //Pre-allocate vector with NCI buffer size.
+    vector<uint8_t> v_data(NCI_MAX_DATA_LEN, 0x00);
+    auto rfDiscCmd = builder.reConfigRFDiscCmd(data_len, p_data);
+    uint16_t actualLen = static_cast<uint16_t>(rfDiscCmd.size());
+    copy(rfDiscCmd.begin(), rfDiscCmd.end(),v_data.begin());
+    return phNxpNciHal_write_internal(actualLen, v_data.data());
   } else if (data_len >= 4 &&
              p_data[NCI_GID_INDEX] == (NCI_MT_CMD | NCI_GID_PROP) &&
              p_data[NCI_OID_INDEX] == NCI_PROP_AUTOCARD_AID_OID) {
