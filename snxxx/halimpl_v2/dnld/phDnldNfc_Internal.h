@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2023 NXP
+ * Copyright 2010-2023, 2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@
 /*
  * Enum definition contains Download Event Types
  */
-typedef enum phDnldNfc_Event {
+enum phDnldNfc_Event: uint8_t {
   phDnldNfc_EventInvalid = 0x00, /*Invalid Event Value*/
   phDnldNfc_EventReset,          /* Reset event */
   phDnldNfc_EventGetVer,         /* Get Version event*/
@@ -62,12 +62,13 @@ typedef enum phDnldNfc_Event {
   phDnldNfc_EventRaw, /* Raw Req/Rsp event,used currently for sending NCI RESET
                          cmd */
   phDnldNfc_EVENT_INT_MAX /* Max Event Count*/
-} phDnldNfc_Event_t;
+};
+using phDnldNfc_Event_t = phDnldNfc_Event;
 
 /*
  * Enum definition contains Download Handler states for each event requested
  */
-typedef enum phDnldNfc_State {
+enum phDnldNfc_State: uint8_t {
   phDnldNfc_StateInit = 0x00, /* Handler init state */
   phDnldNfc_StateSend,        /* Send frame to NFCC state */
   phDnldNfc_StateRecv,        /* Recv Send complete State */
@@ -76,22 +77,23 @@ typedef enum phDnldNfc_State {
   phDnldNfc_StateResponse,  /* Process response from NFCC state */
   phDnldNfc_StatePipelined, /* Write requests to be pipelined state */
   phDnldNfc_StateInvalid    /* Invalid Handler state */
-} phDnldNfc_State_t;
+};
+using phDnldNfc_State_t = phDnldNfc_State;
 
 /*
  * Enum definition contains Download Handler Transition
  */
-typedef enum phDnldNfc_Transition {
+enum phDnldNfc_Transition: uint8_t {
   phDnldNfc_TransitionIdle =
       0x00, /* Handler in Idle state - No Download in progress */
   phDnldNfc_TransitionBusy,   /* Handler is busy processing download request */
   phDnldNfc_TransitionInvalid /* Invalid Handler Transition */
-} phDnldNfc_Transition_t;
-
+};
+using phDnldNfc_Transition_t = phDnldNfc_Transition;
 /*
  * Enum definition contains the Frame input type for CmdId in process
  */
-typedef enum {
+enum phDnldNfc_FrameInputType_t: uint8_t {
   phDnldNfc_FTNone = 0, /* input type None */
   phDnldNfc_ChkIntg, /* user eeprom offset & len to be added for Check Integrity
                         Request */
@@ -100,18 +102,18 @@ typedef enum {
   phDnldNfc_FTForce, /* Frame input for Force cmd request */
   phDnldNfc_FTRead,  /* Addr input required for read request */
   phDnldNfc_FTRaw    /* Raw Req/Rsp type */
-} phDnldNfc_FrameInputType_t;
+};
 
 /*
  * Enum definition contains Firmware file format
  */
-typedef enum phDnldNfc_FwFormat {
+enum phDnldNfc_FwFormat: uint8_t {
   FW_FORMAT_UNKNOWN = 0x00,
   FW_FORMAT_SO = 0x01,
   FW_FORMAT_BIN = 0x02,
   FW_FORMAT_ARRAY = 0x03,
-} phDnldNfc_FwFormat_t;
-
+};
+using phDnldNfc_FwFormat_t = phDnldNfc_FwFormat;
 /*
  * Contains Host Frame Buffer information.
  */

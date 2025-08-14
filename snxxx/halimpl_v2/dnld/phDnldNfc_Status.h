@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014 NXP Semiconductors
+ * Copyright (C) 2010-2014, 2025 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@
 /*
  * Enum definition contains Firmware Download Status codes
  */
-typedef enum phDnldNfc_Status {
+enum phDnldNfc_Status: uint8_t {
   PH_DL_STATUS_PLL_ERROR = 0x0D,
   PH_DL_STATUS_LC_WRONG = 0x13,
   PH_DL_STATUS_LC_TERMINATION_NOT_SUPPORTED = 0x14,
@@ -63,6 +63,7 @@ typedef enum phDnldNfc_Status {
   PH_DL_STATUS_USERDATA_WRITE_PROTECTED = PH_DL_STATUS_WRITE_PROTECTED,
   PH_DL_STATUS_USERDATA_READ_PROTECTED = PH_DL_STATUS_READ_PROTECTED,
   PH_DL_STATUS_OK = NFCSTATUS_SUCCESS
-} phDnldNfc_Status_t;
+};
+using phDnldNfc_Status_t = phDnldNfc_Status;
 
 #endif /* PHDNLDNFC_STATUS_H */
