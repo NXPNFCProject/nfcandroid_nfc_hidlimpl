@@ -20,6 +20,8 @@
 
 #include <phNfcStatus.h>
 #include <phNfcTypes.h>
+#include <cstdint>
+#include <vector>
 
 /**
  * @brief Manager class to handle the AutoCard operations.
@@ -50,7 +52,7 @@ class AutoCard {
    */
   NFCSTATUS handleVendorNciRspNtf(uint16_t dataLen, uint8_t* pData);
 
-  void notifyAutocardRsp(uint8_t status, uint8_t cmdType);
+  void phNxpNciHal_getAutoCardConfig();
 
   /**
    * @brief Releases all the resources
@@ -68,10 +70,29 @@ class AutoCard {
   static AutoCard* sAutoCard;
   /* Auto card command type GET/SET*/
   uint8_t autoCardCmdType;
+  /**
+   * @brief maintains autocard enabled status.
+   * Bit-0 1b for enable and 0b for Disable.
+   */
+  uint8_t mAutoCardEnableStatus;
+  /* Autocard counters */
+  std::vector<uint8_t> mAutoCardCounters;
+  constexpr static uint8_t AUTOCARD_STATUS_SUCCESS = 0x00;
+  constexpr static uint8_t CNT_CONFIG_BUFF_MAX_SIZE = 0x06;
+  constexpr static uint8_t AUTOCARD_SUB_OID_IDEX = 0x04;
   constexpr static uint8_t AUTOCARD_FEATURE_SUB_GID = 0x50;
   constexpr static uint8_t AUTOCARD_FW_API_OID = 0x43;
-  constexpr static uint8_t AUTOCARD_SET_AID = 0x01;
-  constexpr static uint8_t AUTOCARD_GET_AID = 0x02;
+  constexpr static uint8_t AUTOCARD_FEATURE_ENABLED = 0x01;
+  constexpr static uint8_t AUTOCARD_SET_COUNTERS_SUB_OID = 0x01;
+  constexpr static uint8_t AUTOCARD_GET_COUNTERS_SUB_OID = 0x02;
+  constexpr static uint8_t AUTOCARD_SET_AID_SUB_OID = 0x03;
+  constexpr static uint8_t AUTOCARD_GET_AID_SUB_OID = 0x04;
+  constexpr static uint8_t AUTOCARD_SET_APPLET_STATUS_SUB_OID = 0x05;
+  constexpr static uint8_t AUTOCARD_SUSPEND_SUB_OID = 0x06;
+  constexpr static uint8_t AUTOCARD_SET_TIMER_SUB_OID = 0x07;
+  constexpr static uint8_t AUTOCARD_GET_TIMER_SUB_OID = 0x08;
+  constexpr static uint8_t AUTOCARD_FEATURE_ENABLE_SUB_OID = 0x07;
+  constexpr static uint8_t AUTOCARD_FEATURE_DISABLE_SUB_OID = 0x08;
   constexpr static uint8_t AUTOCARD_STATUS_INDEX = 0x04;
   constexpr static uint8_t AUTOCARD_PAYLOAD_LEN = 0x04;
   constexpr static uint8_t AUTOCARD_HEADER_LEN = 0x02;
