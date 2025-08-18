@@ -587,11 +587,11 @@ void phNxpNciHal_emergency_recovery(uint8_t status) {
     case CORE_RESET_TRIGGER_TYPE_UNRECOVERABLE_ERROR: {
       phNxpNciHal_decodeGpioStatus();
       NXPLOG_NCIHAL_E("abort()");
-      phNxpExtn_HandleHalEvent(NFCC_HAL_FATAL_EXCEPTION_ERROR_CODE);
+      phNxpExtn_HandleHalEvent(NFCC_HAL_FATAL_ERR_CODE);
       abort();
     }
     case CORE_RESET_TRIGGER_TYPE_FW_ASSERT: {
-      phNxpExtn_HandleHalEvent(NFCC_HAL_ASSERT_ERROR_CODE);
+      phNxpExtn_HandleHalEvent(NFCC_HAL_ASSERT_ERR_CODE);
       phNxpNciHal_decodeGpioStatus();
       NXPLOG_NCIHAL_E("abort()");
       abort();
@@ -601,7 +601,7 @@ void phNxpNciHal_emergency_recovery(uint8_t status) {
           nxpncihal_ctrl.power_reset_triggered == false) {
         phNxpNciHal_decodeGpioStatus();
         NXPLOG_NCIHAL_E("abort()");
-        phNxpExtn_HandleHalEvent(NFCC_HAL_FATAL_EXCEPTION_ERROR_CODE);
+        phNxpExtn_HandleHalEvent(NFCC_HAL_FATAL_ERR_CODE);
         abort();
       }
     } break;

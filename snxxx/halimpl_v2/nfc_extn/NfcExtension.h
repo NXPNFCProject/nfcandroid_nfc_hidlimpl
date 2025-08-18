@@ -97,10 +97,10 @@ enum NfcExtEvent_t: uint8_t {
 };
 
 enum NfcExtHal_NFCC_ERROR_CODE_t: uint8_t {
-  NFCC_HAL_INPUT_CLOCK_ERROR_CODE = 0xF0,
-  NFCC_HAL_FATAL_EXCEPTION_ERROR_CODE = 0xF2,
-  NFCC_HAL_ASSERT_ERROR_CODE = 0xF6,
-  NFCC_HAL_TRANS_ERROR_CODE = 0xF7
+  NFCC_HAL_INPUT_CLK_ERR_CODE = 4u,
+  NFCC_HAL_ASSERT_ERR_CODE = 5u,
+  NFCC_HAL_TRANS_ERR_CODE = 6u,
+  NFCC_HAL_FATAL_ERR_CODE = 8u,
 };
 
 typedef bool (*fp_extn_init_t)(VendorExtnCb*);

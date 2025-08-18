@@ -482,7 +482,7 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
     status = NFCSTATUS_FAILED;
     NXPLOG_NCIHAL_D("notify  PLL_UNLOCK error to upper layer");
     /* Post to extentsion lib */
-    phNxpExtn_HandleHalEvent(NFCC_HAL_INPUT_CLOCK_ERROR_CODE);
+    phNxpExtn_HandleHalEvent(NFCC_HAL_INPUT_CLK_ERR_CODE);
     return status;
   }
   // 4200 02 00 01
