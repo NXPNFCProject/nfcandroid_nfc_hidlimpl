@@ -183,7 +183,7 @@ void phNxpNciHal_ReaderThread::Run() {
 
       case NCI_HAL_ERROR_MSG: {
         REENTRANCE_LOCK();
-        phNxpExtn_HandleHalEvent(NFCC_HAL_TRANS_ERROR_CODE);
+        phNxpExtn_HandleHalEvent(NFCC_HAL_TRANS_ERR_CODE);
         if (nxpncihal_ctrl.p_nfc_stack_cback != NULL) {
           /* Send the event */
           (*nxpncihal_ctrl.p_nfc_stack_cback)(HAL_NFC_ERROR_EVT,
