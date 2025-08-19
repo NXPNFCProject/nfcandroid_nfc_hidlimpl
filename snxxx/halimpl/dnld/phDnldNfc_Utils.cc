@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014 NXP Semiconductors
+ * Copyright (C) 2010-2014, 2025 NXP Semiconductors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ uint16_t phDnldNfc_CalcCrc16(uint8_t* pBuff, uint16_t wLen) {
     for (i = 0; i < wLen; i++) {
       wValue = 0x00ffU & (uint16_t)pBuff[i];
       wTmp = (wCrc >> 8U) ^ wValue;
-      wCrc = (wCrc << 8U) ^ aCrcTab[wTmp];
+      wCrc = static_cast<uint16_t>((wCrc << 8U) ^ aCrcTab[wTmp]);
     }
   }
 

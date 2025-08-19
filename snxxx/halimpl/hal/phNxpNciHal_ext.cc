@@ -1538,7 +1538,7 @@ void RemoveNfcDepIntfFromInitResp(uint8_t* coreInitResp,
   uint8_t noOfSupportedInterface =
       *(coreInitResp + indexOfSupportedRfIntf + NCI_HEADER_SIZE);
   uint8_t rfInterfacesLength =
-      *coreInitRespLen - (indexOfSupportedRfIntf + 1 + NCI_HEADER_SIZE);
+      static_cast<uint8_t>(*coreInitRespLen - (indexOfSupportedRfIntf + 1 + NCI_HEADER_SIZE));
   uint8_t* supportedRfInterfaces = NULL;
   bool removeNfcDepRequired = false;
   if (noOfSupportedInterface) {
