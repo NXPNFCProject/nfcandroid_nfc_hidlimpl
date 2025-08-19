@@ -187,11 +187,11 @@ typedef struct phOsalNfc_DeferedCallInfo {
 /*
  * States in which a OSAL timer exist.
  */
-typedef enum {
+enum phOsalNfc_TimerStates_t: uint8_t {
   eTimerIdle = 0,          /* Indicates Initial state of timer */
   eTimerRunning = 1,       /* Indicate timer state when started */
   eTimerStopped = 2        /* Indicates timer state when stopped */
-} phOsalNfc_TimerStates_t; /* Variable representing State of timer */
+}; /* Variable representing State of timer */
 
 /*
  **Timer Handle structure containing details of a timer.

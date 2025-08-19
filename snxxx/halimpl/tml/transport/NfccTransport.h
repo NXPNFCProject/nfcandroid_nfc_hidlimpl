@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020-2022 NXP
+ *  Copyright 2020-2022, 2025 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 #include <phNfcTypes.h>
 #include <phTmlNfc.h>
 
-enum NfccResetType : uint32_t {
+enum NfccResetType : uint8_t {
   MODE_POWER_OFF = 0x00,
   MODE_POWER_ON,
   MODE_FW_DWNLD_WITH_VEN,
@@ -30,17 +30,17 @@ enum NfccResetType : uint32_t {
   MODE_FW_GPIO_LOW
 };
 
-enum EseResetCallSrc : uint32_t {
+enum EseResetCallSrc : uint8_t {
   SRC_SPI = 0x0,
   SRC_NFC = 0x10,
 };
 
-enum NfcReadPending : uint32_t {
+enum NfcReadPending : uint8_t {
   MODE_NFC_RESET_READ_PENDING = 0x0,
   MODE_NFC_SET_READ_PENDING
 };
 
-enum EseResetType : uint32_t {
+enum EseResetType : uint8_t {
   MODE_ESE_POWER_ON = 0,
   MODE_ESE_POWER_OFF,
   MODE_ESE_POWER_STATE,

@@ -22,7 +22,7 @@
 
 #define transportFactory (NfccTransportFactory::getInstance())
 typedef std::shared_ptr<NfccTransport> spTransport;
-enum transportIntf { I2C, UNKNOWN };
+enum transportIntf:uint8_t { I2C, UNKNOWN };
 
 extern spTransport gpTransportObj;
 class NfccTransportFactory {
