@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020 NXP
+ *  Copyright 2020, 2025 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
 
 #define transportFactory (NfccTransportFactory::getInstance())
 typedef std::shared_ptr<NfccTransport> spTransport;
-enum transportIntf { I2C, UNKNOWN };
+enum transportIntf:uint8_t { I2C, UNKNOWN };
 
 extern spTransport gpTransportObj;
 class NfccTransportFactory {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014 NXP Semiconductors
+ * Copyright 2010-2014, 2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@
 /*
  * Enum definition contains Firmware Download Command Ids
  */
-typedef enum phDnldNfc_CmdId {
+enum phDnldNfc_CmdId: uint8_t {
   PH_DL_CMD_NONE = 0x00,           /* Invalid Cmd */
   PH_DL_CMD_RESET = 0xF0,          /* Reset */
   PH_DL_CMD_GETVERSION = 0xF1,     /* Get Version */
@@ -36,6 +36,6 @@ typedef enum phDnldNfc_CmdId {
   PH_DL_CMD_LOG = 0xA7,            /* Log */
   PH_DL_CMD_FORCE = 0xD0,          /* Force */
   PH_DL_CMD_GETSESSIONSTATE = 0xF2 /* Get Session State */
-} phDnldNfc_CmdId_t;
-
+};
+using phDnldNfc_CmdId_t = phDnldNfc_CmdId;
 #endif /* PHDNLDNFC_CMD_H */

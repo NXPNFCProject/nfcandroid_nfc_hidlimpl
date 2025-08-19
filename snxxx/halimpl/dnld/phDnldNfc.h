@@ -1,5 +1,5 @@
 /*
- *  Copyright 2010-2024 NXP
+ *  Copyright 2010-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,26 +66,27 @@ typedef void (*pphDnldNfc_RspCb_t)(void* pContext, NFCSTATUS wStatus,
 /*
  * Enum definition contains Download Life Cycle States
  */
-typedef enum phDnldNfc_LC {
+enum phDnldNfc_LC: uint8_t {
   phDnldNfc_LCCreat = 11, /* Life Cycle Creation*/
   phDnldNfc_LCInit = 13,  /* Life Cycle Initializing */
   phDnldNfc_LCOper = 17,  /* Life Cycle Operational */
   phDnldNfc_LCTerm = 19   /* Life Cycle Termination */
-} phDnldNfc_LC_t;
+};
+using phDnldNfc_LC_t = phDnldNfc_LC;
 
 /*
  * Enum definition contains Clk Source Options for Force command request
  */
-typedef enum phDnldNfc_ClkSrc {
+enum phDnldNfc_ClkSrc: uint8_t {
   phDnldNfc_ClkSrcXtal = 1U, /* Crystal */
   phDnldNfc_ClkSrcPLL = 2U,  /* PLL output */
   phDnldNfc_ClkSrcPad = 3U   /* Directly use clk on CLK_IN Pad */
-} phDnldNfc_ClkSrc_t;
-
+};
+using phDnldNfc_ClkSrc_t = phDnldNfc_ClkSrc;
 /*
  * Enum definition contains Clk Frequency value for Force command request
  */
-typedef enum phDnldNfc_ClkFreq {
+enum phDnldNfc_ClkFreq: uint8_t {
   phDnldNfc_ClkFreq_13Mhz = 0U,     /* 13Mhz Clk Frequency */
   phDnldNfc_ClkFreq_19_2Mhz = 1U,   /* 19.2Mhz Clk Frequency */
   phDnldNfc_ClkFreq_24Mhz = 2U,     /* 24Mhz Clk Frequency */
@@ -95,8 +96,8 @@ typedef enum phDnldNfc_ClkFreq {
   phDnldNfc_ClkFreq_32Mhz = 6U,     /* 32Mhz Clk Frequency */
   phDnldNfc_ClkFreq_48Mhz = 0x0AU,  /* 48Mhz Clk Frequency */
   phDnldNfc_ClkFreq_76_8Mhz = 0x0BU /* 76.8Mhz Clk Frequency */
-} phDnldNfc_ClkFreq_t;
-
+};
+using phDnldNfc_ClkFreq_t = phDnldNfc_ClkFreq;
 /*
  * Struct contains buffer where user payload shall be stored
  */

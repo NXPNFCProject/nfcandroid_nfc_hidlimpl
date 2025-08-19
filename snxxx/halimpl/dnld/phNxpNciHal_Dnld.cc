@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 NXP
+ * Copyright 2012-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1504,7 +1504,6 @@ static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
                                               void* pInfo, bool bMinimalFw) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   NFCSTATUS fStatus = status;
-  UNUSED_PROP(pInfo);
   UNUSED_PROP(pContext);
 
   if (NFCSTATUS_WRITE_FAILED == status) {
@@ -1548,8 +1547,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
           "command bLastStatus = 0x%x",
           gphNxpNciHal_fw_IoctlCtx.bLastStatus);
     }
-    status =
-        phNxpNciHal_fw_dnld_complete(pContext, wStatus, &pInfo, bMinimalFw);
+    status = phNxpNciHal_fw_dnld_complete(pContext, wStatus, pInfo, bMinimalFw);
     if (NFCSTATUS_SUCCESS == status) {
       NXPLOG_FWDNLD_D(" phNxpNciHal_fw_dnld_complete : SUCCESS");
     } else {
@@ -1562,7 +1560,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
       /* Perform the download Recovery sequence */
       wStatus = phNxpNciHal_fw_seq_handler(phNxpNciHal_dwnld_rec_seqhandler);
 
-      status = phNxpNciHal_fw_dnld_complete(pContext, wStatus, &pInfo);
+      status = phNxpNciHal_fw_dnld_complete(pContext, wStatus, pInfo);
       if (NFCSTATUS_SUCCESS == status) {
         NXPLOG_FWDNLD_D(" phNxpNciHal_fw_dnld_complete : SUCCESS");
       } else {
@@ -1581,8 +1579,7 @@ static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
     /* Perform the download sequence ... after successful recover attempt */
     wStatus = phNxpNciHal_fw_seq_handler(phNxpNciHal_dwnld_seqhandler);
 
-    status =
-        phNxpNciHal_fw_dnld_complete(pContext, wStatus, &pInfo, bMinimalFw);
+    status = phNxpNciHal_fw_dnld_complete(pContext, wStatus, pInfo, bMinimalFw);
     if (NFCSTATUS_SUCCESS == status) {
       NXPLOG_FWDNLD_D(" phNxpNciHal_fw_dnld_complete : SUCCESS");
     } else {

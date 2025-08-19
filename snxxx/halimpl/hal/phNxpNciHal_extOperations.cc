@@ -740,6 +740,7 @@ NFCSTATUS phNxpNciHal_configGPIOControl(uint8_t gpioCtrl[], uint8_t len) {
 *******************************************************************************/
 void phNxpNciHal_decodeGpioStatus(void) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
+  gpios_data_t gpios_data;
   status = phNxpNciHal_GetNfcGpiosStatus(&gpios_data.gpios_status_data);
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("Get Gpio Status: Failed");

@@ -76,11 +76,11 @@ const int transport_config_path_size =
 #define extra_config_ext ".conf"
 #define IsStringValue 0x80000000
 
-typedef enum {
+enum tNXP_CONF_FILE: uint8_t {
   CONF_FILE_NXP = 0x00,
   CONF_FILE_NXP_RF,
   CONF_FILE_NXP_TRANSIT
-} tNXP_CONF_FILE;
+};
 
 const char rf_config_timestamp_path[] =
     "/data/vendor/nfc/libnfc-nxpRFConfigState.bin";
@@ -323,7 +323,7 @@ bool CNfcConfig::readConfig(const char* name, bool bResetContent) {
     return false;
   }
 
-  enum {
+  enum : uint8_t {
     BEGIN_LINE = 1,
     TOKEN,
     STR_VALUE,

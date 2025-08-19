@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 NXP
+ * Copyright 2022, 2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@
 
 #include <phNxpNciHal.h>
 
-typedef enum {
+enum RefreshNfccPowerState: uint8_t {
   SCREEN_OFF = 0,
   SCREEN_ON,
   ULPDET_OFF,
   ULPDET_ON
-} RefreshNfccPowerState;
+};
 
 /*******************************************************************************
 **
