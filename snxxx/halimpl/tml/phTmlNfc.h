@@ -117,8 +117,14 @@ typedef void (*pphTmlNfc_DeferFuncPointer_t)(uint32_t dwMsgPostedThread,
  *
  * phTmlNfc_IoCtl
  */
-typedef enum {
+enum phTmlNfc_ControlCode_t: uint16_t {
   phTmlNfc_e_Invalid = 0,
+  phTmlNfc_e_PowerReset = 5,
+  phTmlNfc_e_setFragmentSize,
+  phTmlNfc_e_SetNfcState,
+  phTmlNfc_e_ResetNfcState,
+  phTmlNfc_e_PullVenLow,
+  phTmlNfc_e_PullVenHigh,
   phTmlNfc_e_ResetDevice = PH_TMLNFC_RESETDEVICE, /* Reset the device */
   phTmlNfc_e_EnableDownloadMode, /* Do the hardware setting to enter into
                                     download mode */
@@ -126,13 +132,7 @@ typedef enum {
                                 */
   phTmlNfc_e_EnableDownloadModeWithVenRst,
   phTmlNfc_e_EnableVen, /* Enable Ven for PN557 chip*/
-  phTmlNfc_e_PowerReset = 5,
-  phTmlNfc_e_setFragmentSize,
-  phTmlNfc_e_SetNfcState,
-  phTmlNfc_e_ResetNfcState,
-  phTmlNfc_e_PullVenLow,
-  phTmlNfc_e_PullVenHigh,
-} phTmlNfc_ControlCode_t; /* Control code for IOCTL call */
+}; /* Control code for IOCTL call */
 
 /*
  * Enable / Disable Re-Transmission of Packets
@@ -229,10 +229,11 @@ typedef struct {
   void* pParams;
 } phTmlNfc_DeferMsg_t; /* DeferMsg structure passed to User Thread */
 
-typedef enum {
+enum phTmlNfc_i2cfragmentation_t: uint8_t {
   I2C_FRAGMENATATION_DISABLED, /*i2c fragmentation_disabled           */
   I2C_FRAGMENTATION_ENABLED    /*i2c_fragmentation_enabled          */
-} phTmlNfc_i2cfragmentation_t;
+};
+
 /* Function declarations */
 NFCSTATUS phTmlNfc_Init(pphTmlNfc_Config_t pConfig);
 NFCSTATUS phTmlNfc_Shutdown(void);
