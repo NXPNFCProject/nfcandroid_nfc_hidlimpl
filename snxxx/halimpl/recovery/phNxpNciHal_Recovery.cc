@@ -251,7 +251,6 @@ static void phNxpNciHal_readNFCCClockCfgValues(void) {
   isfound = GetNxpNumValue(NAME_NXP_SYS_CLK_SRC_SEL, &num, sizeof(num));
   if (isfound > 0) nxpprofile_ctrl.bClkSrcVal = num;
   num = 0;
-  isfound = 0;
   isfound = GetNxpNumValue(NAME_NXP_SYS_CLK_FREQ_SEL, &num, sizeof(num));
   if (isfound > 0) nxpprofile_ctrl.bClkFreqVal = num;
 }

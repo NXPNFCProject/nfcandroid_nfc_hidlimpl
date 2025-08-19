@@ -287,7 +287,7 @@ static NFCSTATUS phTmlNfc_StartThread(void) {
 **
 *******************************************************************************/
 static void* phTmlNfc_TmlThread(void* pParam) {
-  NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
+  /* Variable to fetch the actual number of bytes read */
   int32_t dwNoBytesWrRd = PH_TMLNFC_RESET_VALUE;
   uint8_t temp[PH_TMLNFC_MAX_READ_NCI_BUFF_LEN];
   uint8_t readRetryDelay = 0;
@@ -304,8 +304,6 @@ static void* phTmlNfc_TmlThread(void* pParam) {
   /* Reader thread loop shall be running till shutdown is invoked */
   while (gpphTmlNfc_Context->bThreadDone) {
     /* If Tml read is requested */
-    /* Set the variable to success initially */
-    wStatus = NFCSTATUS_SUCCESS;
     if (-1 == sem_wait(&gpphTmlNfc_Context->rxSemaphore)) {
       NXPLOG_TML_E("sem_wait didn't return success \n");
     }
@@ -315,12 +313,6 @@ static void* phTmlNfc_TmlThread(void* pParam) {
     if (1 == gpphTmlNfc_Context->tReadInfo.bEnable) {
       pthread_mutex_unlock(&gpphTmlNfc_Context->tReadInfo.lock);
       NXPLOG_TML_D("NFCC - Read requested.....\n");
-      /* Set the variable to success initially */
-      wStatus = NFCSTATUS_SUCCESS;
-
-      /* Variable to fetch the actual number of bytes read */
-      dwNoBytesWrRd = PH_TMLNFC_RESET_VALUE;
-
       /* Read the data from the file onto the buffer */
       if (NULL != gpphTmlNfc_Context->pDevHandle) {
         NXPLOG_TML_D("NFCC - Invoking Read.....\n");
@@ -378,7 +370,7 @@ static void* phTmlNfc_TmlThread(void* pParam) {
 
           /* Fill the Transaction info structure to be passed to Callback
            * Function */
-          tTransactionInfo.wStatus = wStatus;
+          tTransactionInfo.wStatus = NFCSTATUS_SUCCESS;
           tTransactionInfo.pBuff = gpphTmlNfc_Context->tReadInfo.pBuffer;
           /* Actual number of bytes read is filled in the structure */
           tTransactionInfo.wLength = gpphTmlNfc_Context->tReadInfo.wLength;
@@ -420,6 +412,7 @@ static void* phTmlNfc_TmlThread(void* pParam) {
 *******************************************************************************/
 static void* phTmlNfc_TmlWriterThread(void* pParam) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
+  /* Variable to fetch the actual number of bytes written */
   int32_t dwNoBytesWrRd = PH_TMLNFC_RESET_VALUE;
   /* Transaction info buffer to be passed to Callback Thread */
   static phTmlNfc_TransactInfo_t tTransactionInfo;
@@ -447,8 +440,6 @@ static void* phTmlNfc_TmlWriterThread(void* pParam) {
       if (NULL != gpphTmlNfc_Context->pDevHandle) {
       retry:
         gpphTmlNfc_Context->tWriteInfo.bEnable = 0;
-        /* Variable to fetch the actual number of bytes written */
-        dwNoBytesWrRd = PH_TMLNFC_RESET_VALUE;
         /* Write the data in the buffer onto the file */
         NXPLOG_TML_D("NFCC - Invoking Write.....\n");
         /* TML reader writer callback synchronization mutex lock --- START */
@@ -481,7 +472,6 @@ static void* phTmlNfc_TmlWriterThread(void* pParam) {
         retry_cnt = 0;
         if (NFCSTATUS_SUCCESS == wStatus) {
           NXPLOG_TML_D("NFCC - Write successful.....\n");
-          dwNoBytesWrRd = PH_TMLNFC_VALUE_ONE;
         }
         /* Fill the Transaction info structure to be passed to Callback Function
          */
