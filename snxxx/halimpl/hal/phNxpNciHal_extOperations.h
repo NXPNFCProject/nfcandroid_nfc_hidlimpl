@@ -51,10 +51,10 @@ typedef struct {
  * platform_gpios_status --> decoded gpio status flag bits
  * gpios_status_data    -->  encoded gpio status flag bytes
  */
-union {
+typedef union {
   uint32_t gpios_status_data;
   platform_gpios_t platform_gpios_status;
-} gpios_data;
+} gpios_data_t;
 
 /*******************************************************************************
 **
