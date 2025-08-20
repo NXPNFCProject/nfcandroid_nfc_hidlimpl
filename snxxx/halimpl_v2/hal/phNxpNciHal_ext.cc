@@ -1148,7 +1148,7 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
   uint8_t *set_cfg_eeprom, *base_addr;
   uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
   uint16_t rsp_len = 0;
-  mEEPROM_info->update_mode = BITWISE;
+  mEEPROM_info->update_mode = static_cast<uint8_t>(BITWISE);
 
   switch (mEEPROM_info->request_type) {
     case EEPROM_RF_CFG:
@@ -1157,7 +1157,7 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
       len = fieldLen + 4;  // 4 - numParam+2add+val
       addr[0] = 0xA0;
       addr[1] = 0x14;
-      mEEPROM_info->update_mode = BYTEWISE;
+      mEEPROM_info->update_mode = static_cast<uint8_t>(BYTEWISE);
       break;
 
     case EEPROM_FW_DWNLD:
@@ -1166,11 +1166,11 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
       len = fieldLen + 4;
       addr[0] = 0xA0;
       addr[1] = 0x0F;
-      mEEPROM_info->update_mode = BYTEWISE;
+      mEEPROM_info->update_mode = static_cast<uint8_t>(BYTEWISE);
       break;
 
     case EEPROM_WIREDMODE_RESUME_TIMEOUT:
-      mEEPROM_info->update_mode = BYTEWISE;
+      mEEPROM_info->update_mode = static_cast<uint8_t>(BYTEWISE);
       memIndex = 0x00;
       fieldLen = 0x04;
       len = fieldLen + 4;
@@ -1185,7 +1185,7 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
       addr[1] = 0xF2;
       break;
     case EEPROM_ESE_POWER_EXT_PMU:
-      mEEPROM_info->update_mode = BYTEWISE;
+      mEEPROM_info->update_mode = static_cast<uint8_t>(BYTEWISE);
       memIndex = 0x00;
       addr[0] = 0xA0;
       addr[1] = 0xD7;
@@ -1233,7 +1233,7 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
       addr[1] = 0x0F;
       break;
     case EEPROM_AUTH_CMD_TIMEOUT:
-      mEEPROM_info->update_mode = BYTEWISE;
+      mEEPROM_info->update_mode = static_cast<uint8_t>(BYTEWISE);
       memIndex = 0x00;
       fieldLen = mEEPROM_info->bufflen;
       len = fieldLen + 4;
@@ -1241,47 +1241,47 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
       addr[1] = 0xF7;
       break;
     case EEPROM_GUARD_TIMER:
-      mEEPROM_info->update_mode = BYTEWISE;
+      mEEPROM_info->update_mode = static_cast<uint8_t>(BYTEWISE);
       memIndex = 0x00;
       addr[0] = 0xA1;
       addr[1] = 0x0B;
       break;
     case EEPROM_AUTONOMOUS_MODE:
-      mEEPROM_info->update_mode = BYTEWISE;
+      mEEPROM_info->update_mode = static_cast<uint8_t>(BYTEWISE);
       memIndex = 0x00;
       addr[0] = 0xA0;
       addr[1] = 0x15;
       break;
     case EEPROM_T4T_NFCEE_ENABLE:
-      mEEPROM_info->update_mode = BYTEWISE;
+      mEEPROM_info->update_mode = static_cast<uint8_t>(BYTEWISE);
       b_position = 0;
       memIndex = 0x00;
       addr[0] = 0xA0;
       addr[1] = 0x95;
       break;
     case EEPROM_CE_PHONE_OFF_CFG:
-      mEEPROM_info->update_mode = BYTEWISE;
+      mEEPROM_info->update_mode = static_cast<uint8_t>(BYTEWISE);
       b_position = 0;
       memIndex = 0x00;
       addr[0] = 0xA0;
       addr[1] = 0x8E;
       break;
     case EEPROM_ENABLE_VEN_CFG:
-      mEEPROM_info->update_mode = BYTEWISE;
+      mEEPROM_info->update_mode = static_cast<uint8_t>(BYTEWISE);
       b_position = 0;
       memIndex = 0x00;
       addr[0] = 0xA0;
       addr[1] = 0x07;
       break;
     case EEPROM_ISODEP_MERGE_SAK:
-      mEEPROM_info->update_mode = BYTEWISE;
+      mEEPROM_info->update_mode = static_cast<uint8_t>(BYTEWISE);
       b_position = 0;
       memIndex = 0x00;
       addr[0] = 0xA1;
       addr[1] = 0x1B;
       break;
     case EEPROM_SRD_TIMEOUT:
-      mEEPROM_info->update_mode = BYTEWISE;
+      mEEPROM_info->update_mode = static_cast<uint8_t>(BYTEWISE);
       memIndex = 0x00;
       fieldLen = 0x02;
       len = fieldLen + 4;
@@ -1294,7 +1294,7 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
       memIndex = 0x00;
       addr[0] = 0xA0;
       addr[1] = 0xE4;
-      mEEPROM_info->update_mode = BYTEWISE;
+      mEEPROM_info->update_mode = static_cast<uint8_t>(BYTEWISE);
       break;
     case EEPROM_UICC2_SESSION_ID:
       fieldLen = mEEPROM_info->bufflen;
@@ -1302,10 +1302,10 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
       memIndex = 0x00;
       addr[0] = 0xA0;
       addr[1] = 0xE5;
-      mEEPROM_info->update_mode = BYTEWISE;
+      mEEPROM_info->update_mode = static_cast<uint8_t>(BYTEWISE);
       break;
     case EEPROM_CE_ACT_NTF:
-      mEEPROM_info->update_mode = BYTEWISE;
+      mEEPROM_info->update_mode = static_cast<uint8_t>(BYTEWISE);
       b_position = 0;
       memIndex = 0x00;
       addr[0] = 0xA0;
@@ -1317,24 +1317,24 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
       memIndex = 0x00;
       addr[0] = 0xA0;
       addr[1] = 0xE6;
-      mEEPROM_info->update_mode = BYTEWISE;
+      mEEPROM_info->update_mode = static_cast<uint8_t>(BYTEWISE);
       break;
     case EEPROM_EXT_FIELD_DETECT_MODE:
-      mEEPROM_info->update_mode = BYTEWISE;
+      mEEPROM_info->update_mode = static_cast<uint8_t>(BYTEWISE);
       b_position = 0;
       memIndex = 0x00;
       addr[0] = 0xA1;
       addr[1] = 0x36;
       break;
     case EEPROM_INTERPOLATED_RSSI_8AM:
-      mEEPROM_info->update_mode = BYTEWISE;
+      mEEPROM_info->update_mode = static_cast<uint8_t>(BYTEWISE);
       b_position = 0;
       memIndex = 0x00;
       addr[0] = 0xA0;
       addr[1] = 0x98;
       break;
     case EEPROM_CONF_GPIO_CTRL:
-      mEEPROM_info->update_mode = BYTEWISE;
+      mEEPROM_info->update_mode = static_cast<uint8_t>(BYTEWISE);
       memIndex = 0x00;
       fieldLen = mEEPROM_info->bufflen;
       len = fieldLen + 4;
@@ -1342,7 +1342,7 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
       addr[1] = 0x0F;
       break;
     case EEPROM_SET_GPIO_VALUE:
-      mEEPROM_info->update_mode = BYTEWISE;
+      mEEPROM_info->update_mode = static_cast<uint8_t>(BYTEWISE);
       memIndex = 0x00;
       fieldLen = mEEPROM_info->bufflen;
       len = fieldLen + 4;
@@ -1350,7 +1350,7 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
       addr[1] = 0x65;
       break;
     case EEPROM_POWER_TRACKER_ENABLE:
-      mEEPROM_info->update_mode = BYTEWISE;
+      mEEPROM_info->update_mode = static_cast<uint8_t>(BYTEWISE);
       memIndex = 0x00;
       fieldLen = mEEPROM_info->bufflen;
       len = fieldLen + 4;
@@ -1358,7 +1358,7 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
       addr[1] = 0x6D;
       break;
     case EEPROM_VDDPA:
-      mEEPROM_info->update_mode = BYTEWISE;
+      mEEPROM_info->update_mode = static_cast<uint8_t>(BYTEWISE);
       memIndex = 0x14;
       fieldLen = 0x30;
       len = fieldLen + 4;
@@ -1433,7 +1433,7 @@ retryget:
             set_cfg_eeprom[setCfgStartIndex + memIndex] &= (~(1 << b_position));
           }
         }
-      } else if (mEEPROM_info->update_mode == BYTEWISE) {
+      } else if (mEEPROM_info->update_mode == static_cast<uint8_t>(BYTEWISE)) {
         if (memcmp(set_cfg_eeprom + setCfgStartIndex + memIndex,
                    mEEPROM_info->buffer, mEEPROM_info->bufflen) != 0) {
           update_req = true;
