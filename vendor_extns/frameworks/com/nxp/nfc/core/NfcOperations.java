@@ -59,6 +59,8 @@ public class NfcOperations {
 
     private boolean mIsPollingPaused = false;
 
+    private boolean mIsRoutingSkipped = false;
+
     private NfcAdapter mNfcAdapter;
     private NfcOemExtension mNfcOemExtension;
     private INxpOEMCallbacks mNxpOemCallbacks = null;
@@ -200,7 +202,11 @@ public class NfcOperations {
      */
     public void setDiscoveryTech(int pollTechnology, int listenTechnology) {
         NxpNfcLogger.d(TAG, "setDiscoveryTech");
-        setDiscoveryTechnology(pollTechnology, listenTechnology);
+        synchronized (NfcOperations.this) {
+            mIsRoutingSkipped = true;
+            setDiscoveryTechnology(pollTechnology, listenTechnology);
+            mIsRoutingSkipped = false;
+        }
         startDiscovery(true);
     }
 
@@ -231,6 +237,7 @@ public class NfcOperations {
                 conditionallyRegisterOemCallback(true);
                 if (isStart && mIsDiscoveryStarted) {
                     NxpNfcLogger.d(TAG, " discovery already started");
+                    conditionallyRegisterOemCallback(false);
                     return;
                 }
                 mDisCountDownLatch = new CountDownLatch(1);
@@ -316,9 +323,7 @@ public class NfcOperations {
         @Override
         public void onApplyRouting(Consumer<Boolean> isSkipped) {
             NxpNfcLogger.d(TAG, "onApplyRouting :");
-            // allow apply routing by default.
-            // if required apply routing can be skipped based on usecases
-            isSkipped.accept(false);
+            isSkipped.accept(mIsRoutingSkipped);
         }
 
         @Override
