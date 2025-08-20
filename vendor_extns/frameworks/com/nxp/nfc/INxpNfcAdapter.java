@@ -318,6 +318,17 @@ public interface INxpNfcAdapter {
   int startCardEmulation();
 
   /**
+   * This API starts card emulation mode. Starts RF Discovery with Default
+   * POLL configurations and sets the Listen tech paramaters.
+   * @param listenTech Flags indicating listen technologies.
+   * @return status     :-0x00 :EFDSTATUS_SUCCESS
+   *                      0x01 :EFDSTATUS_FAILED
+   *                      0x05 :EFDSTATUS_ERROR_NFC_IS_OFF
+   *                      0x06 :EFDSTATUS_ERROR_UNKNOWN
+   */
+  int startCardEmulation(int listenTech);
+
+  /**
    * This api is called by applications enable or disable field
    * detect feauture.
    * This api shall be called only Nfcservice is enabled.

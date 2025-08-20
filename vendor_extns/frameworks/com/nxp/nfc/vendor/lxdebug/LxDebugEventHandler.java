@@ -433,48 +433,54 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
     /**
      * This API starts card emulation mode. Starts RF Discovery with Default
      * POLL & Listen configurations
+     * @param listenTech Flags indicating listen technologies.
      * @return status     :-0x00 :EFDSTATUS_SUCCESS
      *                      0x01 :EFDSTATUS_FAILED
      *                      0x05 :EFDSTATUS_ERROR_NFC_IS_OFF
      *                      0x06 :EFDSTATUS_ERROR_UNKNOWN
      */
-    public @EfdmErrorCode int startCardEmulation() {
-        NxpNfcLogger.d(TAG, "Entry startCardEmulation");
-        int status = STATUS_SUCCESS;
-        if (mNfcOperations == null) {
-            NxpNfcLogger.e(TAG, "NFC Operations is null");
-            return EFDSTATUS_ERROR_UNKNOWN;
+    public @EfdmErrorCode int startCardEmulation(int listenTech) {
+      NxpNfcLogger.d(TAG, "Entry startCardEmulation");
+      int status = STATUS_SUCCESS;
+      if (mNfcOperations == null) {
+        NxpNfcLogger.e(TAG, "NFC Operations is null");
+        return EFDSTATUS_ERROR_UNKNOWN;
+      }
+      if (!mNfcOperations.isEnabled()) {
+        return EFDSTATUS_ERROR_NFC_IS_OFF;
+      }
+      mNfcOperations.registerNxpOemCallback(this);
+      stopEFDMTimer();
+      if (mNfcOperations.isDiscoveryStarted()) {
+        mNfcOperations.disableDiscovery();
+      }
+      /* check if discovery stopped */
+      if (mNfcOperations.isDiscoveryStarted()) {
+        NxpNfcLogger.e(TAG, "Failed to stop discovery");
+        mNfcOperations.unregisterNxpOemCallback();
+        return STATUS_FAILED;
+      }
+      if (isFieldDetectStarted()) {
+        if (setFieldDetectFlag(false) != STATUS_SUCCESS) {
+          status = STATUS_FAILED;
         }
-        if (!mNfcOperations.isEnabled()) {
-            return EFDSTATUS_ERROR_NFC_IS_OFF;
-        }
-        mNfcOperations.registerNxpOemCallback(this);
-        stopEFDMTimer();
-        if (mNfcOperations.isDiscoveryStarted()) {
-            mNfcOperations.disableDiscovery();
-        }
-        /* check if discovery stopped */
-        if (mNfcOperations.isDiscoveryStarted()) {
-            NxpNfcLogger.e(TAG, "Failed to stop discovery");
-            mNfcOperations.unregisterNxpOemCallback();
-            return STATUS_FAILED;
-        }
-        if (isFieldDetectStarted()) {
-            if (setFieldDetectFlag(false) != STATUS_SUCCESS) {
-                status = STATUS_FAILED;
-            }
-        }
-        mIsEFDMStarted = false;
+      }
+      mIsEFDMStarted = false;
+      if (listenTech == 0) {
         mNfcOperations.enableDiscovery();
-        /* check if discovery started */
-        if (!mNfcOperations.isDiscoveryStarted()) {
-            NxpNfcLogger.e(TAG, "Failed to start discovery");
-            status = STATUS_FAILED;
-        }
-        if (mLxDebugCallbacks == null) {
-          mNfcOperations.unregisterNxpOemCallback();
-        }
-        return status;
+      } else {
+        mNfcOperations.setDiscoveryTech(NfcAdapter.FLAG_READER_KEEP,
+                                        listenTech);
+      }
+      /* check if discovery started */
+      if (!mNfcOperations.isDiscoveryStarted()) {
+        NxpNfcLogger.e(TAG, "Failed to start discovery");
+        status = STATUS_FAILED;
+      }
+      if (mLxDebugCallbacks == null) {
+        mNfcOperations.unregisterNxpOemCallback();
+      }
+      return status;
     }
 
     /**

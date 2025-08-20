@@ -384,7 +384,21 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
      */
     @Override
     public int startCardEmulation() {
-        return mLxDebugEventHandler.startCardEmulation();
+      return mLxDebugEventHandler.startCardEmulation(0x00);
+    }
+
+    /**
+     * This API starts card emulation mode. Starts RF Discovery with Default
+     * POLL configurations and sets the Listen tech paramaters.
+     * @param listenTech Flags indicating listen technologies.
+     * @return status     :-0x00 :EFDSTATUS_SUCCESS
+     *                      0x01 :EFDSTATUS_FAILED
+     *                      0x05 :EFDSTATUS_ERROR_NFC_IS_OFF
+     *                      0x06 :EFDSTATUS_ERROR_UNKNOWN
+     */
+    @Override
+    public int startCardEmulation(int listenTech) {
+      return mLxDebugEventHandler.startCardEmulation(listenTech);
     }
 
     /**
