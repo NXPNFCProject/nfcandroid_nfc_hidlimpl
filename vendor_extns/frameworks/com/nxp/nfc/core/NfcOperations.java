@@ -170,9 +170,8 @@ public class NfcOperations {
      */
     public void enableDiscovery() {
         NxpNfcLogger.d(TAG, "enableDiscovery With Keep READER|LISTEN");
-        setDiscoveryTechnology(NfcAdapter.FLAG_READER_KEEP | FLAG_USE_ALL_TECH,
+        setDiscoveryTech(NfcAdapter.FLAG_READER_KEEP | FLAG_USE_ALL_TECH,
                 NfcAdapter.FLAG_LISTEN_KEEP | FLAG_USE_ALL_TECH);
-        startDiscovery(true);
     }
 
     /**
