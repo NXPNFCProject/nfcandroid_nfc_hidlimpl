@@ -223,12 +223,10 @@ int handleObserveModeTechCommand(uint16_t data_len, const uint8_t* p_data) {
   uint16_t rsp_len = 0;
 
   if (phNxpNciHal_isObserveModeSupported() &&
-      (techValue == OBSERVE_MODE_TECH_COMMAND_SUPPORT_FLAG ||
-       techValue == OBSERVE_MODE_TECH_COMMAND_SUPPORT_FLAG_FOR_ALL_TECH ||
+      (techValue & OBSERVE_MODE_TECH_COMMAND_SUPPORT_FLAG_FOR_ALL_TECH ||
        techValue == NCI_ANDROID_PASSIVE_OBSERVE_PARAM_DISABLE)) {
     bool flag =
-        (techValue == OBSERVE_MODE_TECH_COMMAND_SUPPORT_FLAG ||
-         techValue == OBSERVE_MODE_TECH_COMMAND_SUPPORT_FLAG_FOR_ALL_TECH)
+        (techValue & OBSERVE_MODE_TECH_COMMAND_SUPPORT_FLAG_FOR_ALL_TECH)
             ? true
             : false;
     // send RF Deactivate command
