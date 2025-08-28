@@ -637,8 +637,8 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
       wFwVerRsp = (((uint32_t)p_ntf[len - 2]) << 16U) |
                   (((uint32_t)p_ntf[len - 1]) << 8U) | p_ntf[len];
       if (wFwVerRsp == 0) {
-        NXPLOG_NCIHAL_E("%s invalid FW Version: %x.%x.%x", p_ntf[len - 2],
-                        p_ntf[len - 1], p_ntf[len]);
+        NXPLOG_NCIHAL_E("%s invalid FW Version: %x.%x.%x", __func__,
+                        p_ntf[len - 2], p_ntf[len - 1], p_ntf[len]);
         status = NFCSTATUS_FAILED;
       }
       iCoreInitRspLen = *p_len;
