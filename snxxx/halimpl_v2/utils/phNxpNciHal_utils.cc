@@ -367,7 +367,9 @@ NFCSTATUS phNxpNciHal_init_cb_data(phNxpNciHal_Sem_t* pCallbackData,
   pCallbackData->pContext = pContext;
 
   /* Add to active semaphore list */
-  if (listAdd(&phNxpNciHal_get_monitor()->sem_list, pCallbackData) != 1) {
+  phNxpNciHal_Monitor_t* hal_monitor = phNxpNciHal_get_monitor();
+  if (hal_monitor == NULL ||
+      listAdd(&hal_monitor->sem_list, pCallbackData) != 1) {
     NXPLOG_NCIHAL_E("Failed to add the semaphore to the list");
   }
 
@@ -393,7 +395,9 @@ void phNxpNciHal_cleanup_cb_data(phNxpNciHal_Sem_t* pCallbackData) {
   }
 
   /* Remove from active semaphore list */
-  if (listRemove(&phNxpNciHal_get_monitor()->sem_list, pCallbackData) != 1) {
+  phNxpNciHal_Monitor_t* hal_monitor = phNxpNciHal_get_monitor();
+  if (hal_monitor == NULL ||
+      listRemove(&hal_monitor->sem_list, pCallbackData) != 1) {
     NXPLOG_NCIHAL_E(
         "phNxpNciHal_cleanup_cb_data: Failed to remove semaphore from the "
         "list");
@@ -413,9 +417,11 @@ void phNxpNciHal_cleanup_cb_data(phNxpNciHal_Sem_t* pCallbackData) {
 *******************************************************************************/
 void phNxpNciHal_releaseall_cb_data(void) {
   phNxpNciHal_Sem_t* pCallbackData;
+  phNxpNciHal_Monitor_t* hal_monitor = phNxpNciHal_get_monitor();
 
-  while (listGetAndRemoveNext(&phNxpNciHal_get_monitor()->sem_list,
-                              (void**)&pCallbackData)) {
+  if (hal_monitor == NULL) return;
+
+  while (listGetAndRemoveNext(&hal_monitor->sem_list, (void**)&pCallbackData)) {
     pCallbackData->status = NFCSTATUS_FAILED;
     sem_post(&pCallbackData->sem);
   }
