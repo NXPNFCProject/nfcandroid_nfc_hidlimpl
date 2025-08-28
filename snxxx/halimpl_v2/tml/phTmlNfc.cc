@@ -444,20 +444,19 @@ NFCSTATUS phTmlNfc_Write(uint8_t* pBuffer, uint16_t wLength) {
 
         /* Try NFCC Write Five Times, if it fails: */
         if (-1 == dwNoBytesWrRd) {
-          if ((gpTransportObj->IsFwDnldModeEnabled()) &&
-              (retry_cnt++ < MAX_WRITE_RETRY_COUNT)) {
-            NXPLOG_TML_D("NFCC - Error in Write  - Retry 0x%x", retry_cnt);
+          if (retry_cnt++ < MAX_WRITE_RETRY_COUNT) {
+            NXPLOG_TML_E("NFCC - Error in Write  - Retry 0x%x", retry_cnt);
             // Add a 10 ms delay to ensure NFCC is not still in stand by mode.
             usleep(10 * 1000);
           } else {
-            NXPLOG_TML_D("NFCC - Error in Write.....\n");
+            NXPLOG_TML_E("NFCC - Error in Write.....\n");
             wStatus = PHNFCSTVAL(CID_NFC_TML, NFCSTATUS_FAILED);
             break;
           }
         } else {
           phNxpNciHal_print_packet("SEND", pBuffer, wLength);
           retry_cnt = 0;
-          NXPLOG_TML_D("NFCC - Write successful.....\n");
+          NXPLOG_TML_I("NFCC - Write successful.....\n");
           break;
         }
       } while (true);
