@@ -18,6 +18,8 @@
 
 #include <phNfcNciConstants.h>
 
+#include <algorithm>
+
 using std::vector;
 
 double gpMeasuredFieldStrength_of_gpRssiAt8Am = -1;
