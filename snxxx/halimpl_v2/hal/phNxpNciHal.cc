@@ -1671,7 +1671,8 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
     }
   }
   config_access = false;
-  if (fw_dwnld_flag || setConfigAlways || isNxpRFConfigModified()) {
+  if (fw_dwnld_flag || setConfigAlways || isNxpRFConfigModified() ||
+      isLibNfcUpdateConfigModified()) {
     unsigned long loopcnt = 0;
 
     do {
@@ -1682,6 +1683,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
       isfound =
           GetNxpByteArrayValue(rf_conf_block, (char*)buffer, bufflen, &retlen);
       if (isfound > 0 && retlen > 0) {
+        if (!isRfConfBlkUpdateRequired(rf_conf_block)) continue;
         NXPLOG_NCIHAL_D(" Performing RF Settings BLK %ld", loopcnt);
         status = phNxpNciHal_send_ext_cmd(retlen, buffer, &rsp_len, rsp);
         if (status == NFCSTATUS_SUCCESS) {
@@ -1835,7 +1837,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   config_access = false;
   {
     if (isNxpRFConfigModified() || isNxpConfigModified() || fw_dwnld_flag ||
-        setConfigAlways) {
+        setConfigAlways || isLibNfcUpdateConfigModified()) {
       if (IS_CHIP_TYPE_GE(sn100u)) {
         status = phNxpNciHal_ext_send_sram_config_to_flash();
         if (status != NFCSTATUS_SUCCESS) {
@@ -1893,6 +1895,9 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   }
   if (isNxpRFConfigModified()) {
     updateNxpRfConfigTimestamp();
+  }
+  if (isLibNfcUpdateConfigModified()) {
+    updateLibNfcUpdateConfigTimestamp();
   }
   return NFCSTATUS_SUCCESS;
 }

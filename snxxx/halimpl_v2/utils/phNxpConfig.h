@@ -54,6 +54,9 @@ int updateNxpConfigTimestamp();
 int updateNxpRfConfigTimestamp();
 void setNxpRfConfigPath(const char* name);
 void setNxpFwConfigPath();
+bool isLibNfcUpdateConfigModified();
+void updateLibNfcUpdateConfigTimestamp();
+bool isRfConfBlkUpdateRequired(char* rf_conf_block);
 
 #ifdef __cplusplus
 };

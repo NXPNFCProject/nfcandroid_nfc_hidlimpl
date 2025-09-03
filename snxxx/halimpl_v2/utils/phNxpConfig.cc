@@ -183,6 +183,7 @@ class CNfcConfig : public vector<const CNfcParam*> {
   void readNciUpdateConfig(const char* fileName) const;
   void readNxpRFConfig(const char* fileName) const;
   void clean();
+  std::set<string> getTransitSet();
 
  private:
   CNfcConfig();
@@ -198,6 +199,7 @@ class CNfcConfig : public vector<const CNfcParam*> {
   bool isAllowed(const char* name);
 
   list<const CNfcParam*> m_list;
+  std::set<string> m_transit_set;
   mutable std::recursive_mutex m_config_mutex;
   std::atomic<bool> m_initialized{false};
 
@@ -847,6 +849,7 @@ void CNfcConfig::clean() {
        it != unique_objects.end(); ++it) {
     delete *it;
   }
+  m_transit_set.clear();
   unique_objects.clear();
 }
 
@@ -892,6 +895,9 @@ void CNfcConfig::add(const CNfcParam* pParam) {
     if (!existing_name) continue;
 
     int cmp = strcmp(existing_name, param_name);
+    if (mCurrentFile.find("libnfc-nci-update.conf") != std::string::npos) {
+      m_transit_set.insert(param_name);
+    }
     if (cmp < 0) {
       continue;
     } else if (cmp == 0) {
@@ -1125,6 +1131,7 @@ void CNfcConfig::resetModified(tNXP_CONF_FILE aType) {
   }
 }
 
+std::set<string> CNfcConfig::getTransitSet() { return m_transit_set; }
 /*******************************************************************************
 **
 ** Function:    CNfcParam::CNfcParam()
@@ -1391,15 +1398,28 @@ extern "C" int isNxpRFConfigModified() {
   CNfcConfig& rConfig = CNfcConfig::GetInstance();
 
   int retRF = rConfig.isModified(CONF_FILE_NXP_RF) ? 1 : 0;
-  int retTransit = rConfig.isModified(CONF_FILE_NXP_TRANSIT) ? 1 : 0;
-  int ret = retRF | retTransit;
-  ALOGD("%s RF config modification: RF=%s, Transit=%s, Combined=%s", 
-        __func__, 
-        retRF ? "MODIFIED" : "NOT MODIFIED",
-        retTransit ? "MODIFIED" : "NOT MODIFIED", 
-        ret ? "MODIFIED" : "NOT MODIFIED");
+  ALOGD("%s RF config modification: RF=%s", __func__,
+        retRF ? "MODIFIED" : "NOT MODIFIED");
 
-  return ret;
+  return retRF;
+}
+/*******************************************************************************
+**
+** Function:    isLibNfcUpdateConfigModified()
+**
+** Description: check if config file has modified
+**
+** Returns:     0 if not modified, 1 otherwise.
+**
+*******************************************************************************/
+extern "C" bool isLibNfcUpdateConfigModified() {
+  CNfcConfig& rConfig = CNfcConfig::GetInstance();
+
+  bool retTransit = rConfig.isModified(CONF_FILE_NXP_TRANSIT) ? true : false;
+  ALOGD("%s Transit config modification: Transit=%s", __func__,
+        retTransit ? "MODIFIED" : "NOT MODIFIED");
+
+  return retTransit;
 }
 /*******************************************************************************
 **
@@ -1427,6 +1447,40 @@ extern "C" int updateNxpConfigTimestamp() {
 extern "C" int updateNxpRfConfigTimestamp() {
   CNfcConfig& rConfig = CNfcConfig::GetInstance();
   rConfig.resetModified(CONF_FILE_NXP_RF);
-  rConfig.resetModified(CONF_FILE_NXP_TRANSIT);
   return 0;
+}
+
+/*******************************************************************************
+**
+** Function:    updateLibNfcUpdateConfigTimestamp()
+**
+** Description: update if config file has modified
+**
+** Returns:     0 if not modified, 1 otherwise.
+**
+*******************************************************************************/
+extern "C" void updateLibNfcUpdateConfigTimestamp() {
+  CNfcConfig& rConfig = CNfcConfig::GetInstance();
+  rConfig.resetModified(CONF_FILE_NXP_TRANSIT);
+}
+
+/*******************************************************************************
+**
+** Function:    isRfConfBlkUpdateRequired()
+**
+** Description: Return True if libnfc-nci-update.conf modified,
+**              libnfc-nxp_RF.conf is not modified and rf_conf_block in only
+**              present in libnfc-nci-update.conf
+**
+** Returns:     false if not required, true otherwise.
+**
+*******************************************************************************/
+extern "C" bool isRfConfBlkUpdateRequired(char* rf_conf_block) {
+  std::set<string> transit_rfConfBlk = CNfcConfig::GetInstance().getTransitSet();
+  if (!isNxpRFConfigModified() && isLibNfcUpdateConfigModified() &&
+      !transit_rfConfBlk.empty() &&
+      (transit_rfConfBlk.find(rf_conf_block) == transit_rfConfBlk.end())) {
+    return false;
+  }
+  return true;
 }
