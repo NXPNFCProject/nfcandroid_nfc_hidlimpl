@@ -19,8 +19,7 @@
 #include <phNxpNciHal_ext.h>
 #include "NfcExtension.h"
 
-phNxpNciHal_WriterThread::phNxpNciHal_WriterThread() : thread_running(false) {
-  writer_thread = 0;
+phNxpNciHal_WriterThread::phNxpNciHal_WriterThread() : writer_thread(0), thread_running(false) {
   writer_queue = 0;
 }
 

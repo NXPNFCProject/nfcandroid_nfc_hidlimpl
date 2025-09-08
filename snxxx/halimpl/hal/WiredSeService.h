@@ -57,7 +57,7 @@ typedef union WiredSeEvtData {
   // For typecasting from NfcState to WiredSeEvtData
   WiredSeEvtData(NfcState inNfcState) { nfcState = inNfcState; }
   // For typecasting from NfcPkt to WiredSeEvtData
-  WiredSeEvtData(NfcPkt inNfcPkt) { nfcPkt = inNfcPkt; }
+  WiredSeEvtData(NfcPkt inNfcPkt) : nfcPkt(inNfcPkt) { }
 
 } WiredSeEvtData;
 
