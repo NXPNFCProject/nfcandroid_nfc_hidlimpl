@@ -115,8 +115,10 @@ void phNxpNciHal_WriterThread::Run() {
     switch (msg.eMsgType) {
       case NCI_HAL_TML_WRITE_MSG: {
         NXPLOG_NCIHAL_D("%s: Received NCI_HAL_TML_WRITE_MSG", __func__);
+        CONCURRENCY_LOCK();
         uint32_t bytesWritten = phNxpNciHal_write_unlocked(
             (uint16_t)msg.Size, (uint8_t*)msg.data, ORIG_EXTNS);
+        CONCURRENCY_UNLOCK();
         if (bytesWritten == msg.Size) {
           phNxpExtn_WriteCompleteStatusUpdate(NFCSTATUS_SUCCESS);
         } else {
