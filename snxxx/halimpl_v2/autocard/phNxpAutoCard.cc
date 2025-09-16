@@ -136,7 +136,7 @@ NFCSTATUS AutoCard::handleVendorNciRspNtf(uint16_t dataLen, uint8_t* pData) {
        (pData[NCI_GID_INDEX] != (NCI_MT_NTF | NCI_GID_PROP))) ||
       (pData[NCI_OID_INDEX] != AUTOCARD_FW_API_OID) ||
       ((dataLen > AUTOCARD_STATUS_INDEX) &&
-       (pData[3] > AUTOCARD_SUSPEND_SUB_OID))) {
+       (pData[3] > AUTOCARD_GET_RF_PARAM))) {
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
   }
 
@@ -182,7 +182,7 @@ NFCSTATUS AutoCard::handleVendorNciMessage(uint16_t dataLen, uint8_t* pData) {
   if ((pData[NCI_GID_INDEX] != (NCI_MT_CMD | NCI_GID_PROP)) ||
       (pData[NCI_OID_INDEX] != NCI_ROW_PROP_OID_VAL) ||
       (pData[NCI_MSG_INDEX_FOR_FEATURE] != AUTOCARD_FEATURE_SUB_GID) ||
-      (pData[AUTOCARD_SUB_OID_IDEX] > AUTOCARD_FEATURE_DISABLE_SUB_OID)) {
+      (pData[AUTOCARD_SUB_OID_IDEX] > AUTOCARD_GET_RF_PARAM)) {
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
   }
 
