@@ -143,6 +143,43 @@ public interface INxpNfcAdapter {
   public @AutoCardStatus int setAutoCardAID(byte[] aids) throws IOException;
 
   /**
+   * This API get Autocard AID RF parameters from NFCC using the vendor NCI cmd
+   * <li>This api shall be called only Nfcservice is enabled.
+   * @return status     :-0x00 :SUCCESS
+   *                      0x01 - 0x06: NCI Status Codes
+   *                           : Refer NCI spec v2.3 Table 140
+   *                      0x07 : NFC off
+   *                      0x0B : Disabled
+   *                      0x0C : Config not defined
+   *                      0x0D : Feature not supported by platform
+   *                      0x0E : EACSTATUS_ERROR_MESSAGE_CORRUPTED
+   * byte[0] array  : RF params <aid-0 index> <19 bytes data> ...
+   *                : <aid-n index> <19 bytes data>
+   * <p>Requires {@link   android.Manifest.permission#NFC} permission.
+   */
+  public byte[] getAutoCardRfParams() throws IOException;
+
+  /**
+   * This API sends Autocard AID RF parameters to NFCC using the vendor NCI cmd
+   * <ul>
+   * <li>This api shall be called only when Nfcservice is enabled and also
+   * <li>autocard feature should be enabled in NFCC.
+   * </ul>
+   * @param aids  No of AID's to configure.
+   * @return status     :-0x00 :SUCCESS
+   *                      0x01 - 0x06: NCI Status Codes
+   *                           : Refer NCI spec v2.3 Table 140
+   *                      0x07 : NFC off
+   *                      0x0B : Disabled
+   *                      0x0C : Config not defined
+   *                      0x0D : Feature not supported by platform
+   *                      0x0E : EACSTATUS_ERROR_MESSAGE_CORRUPTED
+   * <p>Requires {@link   android.Manifest.permission#NFC} permission.
+   */
+  public @AutoCardStatus int setAutoCardRfParams(byte[] aids)
+      throws IOException;
+
+  /**
    * This API to enable Autocard feature in NFCC using the vendor NCI message
    * <ul>
    * <li>This api shall be called only Nfcservice is enabled.

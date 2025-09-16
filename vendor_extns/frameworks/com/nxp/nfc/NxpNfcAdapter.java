@@ -260,6 +260,25 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     }
 
     /**
+     * @brief To be called to get the configured AID RF parameters.
+     * @return {@link INxpNfcAdapter.getAutoCardAID} instance
+     */
+    @Override
+    public byte[] getAutoCardRfParams() throws IOException {
+      return mAutoCardHandler.getAutoCardRfParams();
+    }
+
+    /**
+     * @brief To be called to set autocard AID RF parameters.
+     * @return {@link INxpNfcAdapter.setAutoCardRfParams} instance
+     */
+    @Override
+    public @AutoCardStatus int setAutoCardRfParams(byte[] aids)
+        throws IOException {
+      return mAutoCardHandler.setAutoCardRfParams(aids);
+    }
+
+    /**
      * @brief To be called to set autocard AID's
      * @return {@link INxpNfcAdapter.setAutoCardAppletStatus} instance
      */
