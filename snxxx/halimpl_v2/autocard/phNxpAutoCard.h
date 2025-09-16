@@ -91,6 +91,8 @@ class AutoCard {
   constexpr static uint8_t AUTOCARD_SUSPEND_SUB_OID = 0x06;
   constexpr static uint8_t AUTOCARD_SET_TIMER_SUB_OID = 0x07;
   constexpr static uint8_t AUTOCARD_GET_TIMER_SUB_OID = 0x08;
+  constexpr static uint8_t AUTOCARD_SET_RF_PARAM = 0x0A;
+  constexpr static uint8_t AUTOCARD_GET_RF_PARAM = 0x0B;
   constexpr static uint8_t AUTOCARD_FEATURE_ENABLE_SUB_OID = 0x07;
   constexpr static uint8_t AUTOCARD_FEATURE_DISABLE_SUB_OID = 0x08;
   constexpr static uint8_t AUTOCARD_STATUS_INDEX = 0x04;
