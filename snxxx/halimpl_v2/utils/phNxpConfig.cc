@@ -1324,6 +1324,7 @@ extern "C" void setNxpRfConfigPath(const char* name) {
   }
   memset(nxp_rf_config_path, 0, sizeof(nxp_rf_config_path));
   strlcpy(nxp_rf_config_path, name, sizeof(nxp_rf_config_path));
+  ALOGD("nxp_rf_config_path=%s", nxp_rf_config_path);
 }
 
 /*******************************************************************************
