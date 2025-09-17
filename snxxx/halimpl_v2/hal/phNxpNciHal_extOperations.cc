@@ -29,6 +29,7 @@
 #include "ReaderPollConfigParser.h"
 #include "phNfcCommon.h"
 #include "phNxpNciHal_IoctlOperations.h"
+#include "phNxpNciHal_ReaderAnnotation.h"
 #include "phNxpNciHal_ULPDet.h"
 #include "phNxpNciHal_VendorProp.h"
 
@@ -900,6 +901,77 @@ bool phNxpNciHal_isVndSpecificAndroidCmd(uint16_t data_len,
 }
 
 /*******************************************************************************
+ *
+ * Function         handleReaderModeAnnoationCommand()
+ *
+ * Description      Handles reader mode annotation command processing
+ *
+ * Returns          It returns number of bytes received.
+ *
+ ******************************************************************************/
+int handleReaderModeAnnoationCommand(uint16_t data_len, const uint8_t* p_data) {
+  // Validate input parameters
+  if (p_data == nullptr) {
+    // Cannot send callback response if p_data is null since we need OID and
+    // feature indices
+    NXPLOG_NCIHAL_E("handleReaderModeAnnoationCommand: p_data is null");
+    return 0;
+  }
+
+  if (data_len < 4) {
+    vector<uint8_t> errorResponse = {0x01};  // Error status
+    phNxpNciHal_vendorSpecificCallback(p_data[NCI_OID_INDEX],
+                                       p_data[NCI_MSG_INDEX_FOR_FEATURE],
+                                       std::move(errorResponse));
+    return 0;
+  }
+
+  vector<uint8_t> convertedCommand =
+      covertAnnotatonToBrodcastPollCommand(data_len, p_data);
+
+  vector<uint8_t> response;
+
+  if (!convertedCommand.empty()) {
+    // Send the converted command to NFCC
+    uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+    uint16_t rsp_len = 0;
+
+    NFCSTATUS broadcastPollCmdStatus = phNxpNciHal_send_ext_cmd(
+        convertedCommand.size(), convertedCommand.data(), &rsp_len, rsp);
+
+    if (broadcastPollCmdStatus == NFCSTATUS_SUCCESS) {
+      // Parse the response to get status
+      uint8_t responseStatus = parseBroadcastPollCommandResponse(rsp_len, rsp);
+      response.push_back(responseStatus);  // Use parsed status byte
+
+      if (responseStatus == 0x00) {
+        NXPLOG_NCIHAL_D("NXP_BRODCAST_POLL_CMD Command success");
+      } else {
+        NXPLOG_NCIHAL_E(
+            "NXP_BRODCAST_POLL_CMD Command failed with status: 0x%02X",
+            responseStatus);
+      }
+    } else {
+      // Command sending failed
+      response.push_back(0x01);  // Error status
+      NXPLOG_NCIHAL_E("NXP_BRODCAST_POLL_CMD Command failed");
+    }
+  } else {
+    // Conversion failed
+    response.push_back(0x02);  // Conversion error status
+    NXPLOG_NCIHAL_E(
+        "NXP_BRODCAST_POLL_CMD conversion failed - invalid input data");
+  }
+
+  // Send response back via vendor specific callback
+  phNxpNciHal_vendorSpecificCallback(p_data[NCI_OID_INDEX],
+                                     p_data[NCI_MSG_INDEX_FOR_FEATURE],
+                                     std::move(response));
+
+  return data_len;
+}
+
+/*******************************************************************************
 **
 ** Function         phNxpNciHal_hndlVndSpecificAndroidCmd()
 **
@@ -926,6 +998,10 @@ int phNxpNciHal_hndlVndSpecificAndroidCmd(uint16_t data_len,
              p_data[NCI_MSG_INDEX_FOR_FEATURE] == NCI_ANDROID_GET_CAPABILITY) {
     // 2F 0C 01 00 => GetCapability Command length is 4 Bytes
     return handleGetCapability(data_len, p_data);
+  } else if (data_len >= 4 && p_data[NCI_MSG_INDEX_FOR_FEATURE] ==
+                                  NCI_ANDROID_READER_ANNOTATION) {
+    // 2F 0C 0xXX 09 0xXX ... => Reader mode annoation command
+    return handleReaderModeAnnoationCommand(data_len, p_data);
   } else {
     return phNxpNciHal_write_internal(data_len, p_data);
   }

@@ -207,6 +207,7 @@ cc_library_shared {
         "halimpl_v2/nfc_extn/NxpNfcExtension.cc",
         "halimpl_v2/hal/phNxpNciHal_WiredSeIface.cc",
         "halimpl_v2/ntag/phNxpNTag.cc",
+        "halimpl_v2/hal/phNxpNciHal_ReaderAnnotation.cc",
     ],
 
     local_include_dirs: [
@@ -365,6 +366,7 @@ filegroup {
     srcs: [
         "halimpl_v2/observe_mode/NciDiscoveryCommandBuilder.cc",
         "halimpl_v2/observe_mode/ReaderPollConfigParser.cc",
+        "halimpl_v2/hal/phNxpNciHal_ReaderAnnotation.cc",
     ],
     visibility: [
         "//hardware/nxp/nfc/snxxx/tests/gtest",
@@ -377,6 +379,7 @@ cc_library_headers {
     export_include_dirs: [
         "halimpl_v2/common",
         "halimpl_v2/observe_mode",
+        "halimpl_v2/hal",
     ],
     visibility: [
         "//hardware/nxp/nfc/snxxx/tests/gtest",
