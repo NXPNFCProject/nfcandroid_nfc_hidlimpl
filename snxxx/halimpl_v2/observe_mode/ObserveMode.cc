@@ -20,6 +20,7 @@
 #include <vector>
 #include "NciDiscoveryCommandBuilder.h"
 #include "NfcExtension.h"
+#include "ReaderPollConfigParser.h"
 #include "phNxpNciHal_extOperations.h"
 
 using std::vector;
@@ -104,6 +105,7 @@ NFCSTATUS deactivateRfDiscovery() {
     uint8_t rf_deactivate_cmd[] = {0x21, 0x06, 0x01, 0x00};
     uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
     uint16_t rsp_len = 0;
+    ReaderPollConfigParser::resetLastKnownValues();
     return phNxpNciHal_send_ext_cmd(sizeof(rf_deactivate_cmd),
                                     rf_deactivate_cmd, &rsp_len, rsp);
   } else {
