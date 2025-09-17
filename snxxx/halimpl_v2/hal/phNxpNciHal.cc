@@ -45,6 +45,7 @@
 #include "NxpNfcThreadMutex.h"
 #include "ObserveMode.h"
 #include "ReaderPollConfigParser.h"
+#include "phMappingCommandConverter.h"
 #include "phNxpNciHal_IoctlOperations.h"
 #include "phNxpNciHal_LxDebug.h"
 #include "phNxpNciHal_PowerTrackerIface.h"
@@ -1875,6 +1876,35 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
       } else {
         NXPLOG_NCIHAL_E("Send get Configs FAILED");
       }
+    }
+  }
+
+  // NXP Broadcast polling mode command
+  isfound = GetNxpByteArrayValue(NAME_NXP_BRODCAST_POLL_CMD, (char*)buffer,
+                                 bufflen, &retlen);
+  if (isfound && retlen > 0) {
+    // Convert annotation data to broadcast poll command format
+    vector<uint8_t> convertedCommand =
+        covertAnnotatonToBrodcastPollCommand(retlen, buffer);
+
+    NFCSTATUS broadcastPollCmdStatus = phNxpNciHal_send_ext_cmd(
+        convertedCommand.size(), convertedCommand.data(), &rsp_len, rsp);
+
+    if (broadcastPollCmdStatus != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("NXP_BRODCAST_POLL_CMD Command failed");
+    }
+  }
+
+  // Nxp silent mode command enable/disable
+  isfound = GetNxpNumValue(NAME_NXP_SILENT_MODE_FLAG, &num, sizeof(num));
+
+  if (isfound) {
+    uint8_t silentModeCommand[] = {0x2F, 0x48, 0x02, 0x02,
+                                   static_cast<uint8_t>(num)};
+    NFCSTATUS silentModeCmdStatus = phNxpNciHal_send_ext_cmd(
+        sizeof(silentModeCommand), silentModeCommand, &rsp_len, rsp);
+    if (silentModeCmdStatus != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("NXP_SILENT_MODE_FLAG Command failed");
     }
   }
 
