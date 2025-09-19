@@ -46,7 +46,7 @@
 #include "NxpNfcThreadMutex.h"
 #include "ObserveMode.h"
 #include "ReaderPollConfigParser.h"
-#include "phMappingCommandConverter.h"
+#include "phNxpNciHal_ReaderAnnotation.h"
 #include "phNxpNciHal_IoctlOperations.h"
 #include "phNxpNciHal_LxDebug.h"
 #include "phNxpNciHal_PowerTrackerIface.h"
