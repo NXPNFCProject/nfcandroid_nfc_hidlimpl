@@ -15,7 +15,9 @@
  */
 
 #include "phNxpNciHal_VendorProp.h"
+
 #include <cutils/properties.h>
+
 #include <string>
 
 using std::string;
@@ -78,9 +80,8 @@ int phNxpNciHal_getVendorProp(const char* key, char* value) {
  *
  ******************************************************************************/
 std::string phNxpNciHal_getFragmentedVendorProp(const std::string& key) {
-
   if (key.empty()) {
-    return std::string(); // return empty string
+    return std::string();  // return empty string
   }
 
   std::string strPropValue;

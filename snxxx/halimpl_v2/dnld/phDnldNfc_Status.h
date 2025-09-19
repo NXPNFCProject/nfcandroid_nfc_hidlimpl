@@ -29,7 +29,7 @@
 /*
  * Enum definition contains Firmware Download Status codes
  */
-enum phDnldNfc_Status: uint8_t {
+enum phDnldNfc_Status : uint8_t {
   PH_DL_STATUS_PLL_ERROR = 0x0D,
   PH_DL_STATUS_LC_WRONG = 0x13,
   PH_DL_STATUS_LC_TERMINATION_NOT_SUPPORTED = 0x14,
@@ -49,7 +49,7 @@ enum phDnldNfc_Status: uint8_t {
   /* the Firmware version passed to CommitSession is not greater than
       the EEPROM resident stored Firmware version number */
   PH_DL_STATUS_FIRMWARE_VERSION_ERROR = 0x24,
-  PH_DL_STATUS_LOOPBACK_DATA_MISSMATCH_ERROR = 0x25,
+  PH_DL_STATUS_LOOPBACK_DATA_MISMATCH_ERROR = 0x25,
   /*****************************/
   PH_DL_STATUS_HOST_PAYLOAD_UFL_ERROR = 0x26,
   PH_DL_STATUS_HOST_PAYLOAD_OFL_ERROR = 0x27,

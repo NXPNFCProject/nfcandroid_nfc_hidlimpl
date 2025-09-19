@@ -769,7 +769,7 @@ clean_and_return:
 **
 ** Function         phNxpNciHal_fw_dnld_log_read_cb
 **
-** Description      Download Logread callback
+** Description      Download Log read callback
 **
 ** Returns          None
 **
@@ -1692,7 +1692,7 @@ NFCSTATUS phNxpNciHal_fw_download_seq(uint8_t bClkSrcVal, uint8_t bClkFreqVal,
     NXPLOG_FWDNLD_E("phDnldNfc_InitImgInfo: FAILED");
   }
 
-  /* Chage to normal mode */
+  /* Change to normal mode */
   status =
       phNxpNciHal_fw_dnld_complete((void*)pContext, status, &pInfo, bMinimalFw);
   /*if (NFCSTATUS_SUCCESS == status)

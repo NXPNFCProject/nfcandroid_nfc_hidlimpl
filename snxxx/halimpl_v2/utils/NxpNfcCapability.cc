@@ -17,6 +17,7 @@
  ******************************************************************************/
 #define LOG_TAG "NxpHal"
 #include "NxpNfcCapability.h"
+
 #include <phNxpLog.h>
 
 capability* capability::instance = NULL;

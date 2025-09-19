@@ -49,7 +49,7 @@
 /*
  * Enum definition contains Download Event Types
  */
-enum phDnldNfc_Event: uint8_t {
+enum phDnldNfc_Event : uint8_t {
   phDnldNfc_EventInvalid = 0x00, /*Invalid Event Value*/
   phDnldNfc_EventReset,          /* Reset event */
   phDnldNfc_EventGetVer,         /* Get Version event*/
@@ -68,7 +68,7 @@ using phDnldNfc_Event_t = phDnldNfc_Event;
 /*
  * Enum definition contains Download Handler states for each event requested
  */
-enum phDnldNfc_State: uint8_t {
+enum phDnldNfc_State : uint8_t {
   phDnldNfc_StateInit = 0x00, /* Handler init state */
   phDnldNfc_StateSend,        /* Send frame to NFCC state */
   phDnldNfc_StateRecv,        /* Recv Send complete State */
@@ -83,7 +83,7 @@ using phDnldNfc_State_t = phDnldNfc_State;
 /*
  * Enum definition contains Download Handler Transition
  */
-enum phDnldNfc_Transition: uint8_t {
+enum phDnldNfc_Transition : uint8_t {
   phDnldNfc_TransitionIdle =
       0x00, /* Handler in Idle state - No Download in progress */
   phDnldNfc_TransitionBusy,   /* Handler is busy processing download request */
@@ -93,7 +93,7 @@ using phDnldNfc_Transition_t = phDnldNfc_Transition;
 /*
  * Enum definition contains the Frame input type for CmdId in process
  */
-enum phDnldNfc_FrameInputType_t: uint8_t {
+enum phDnldNfc_FrameInputType_t : uint8_t {
   phDnldNfc_FTNone = 0, /* input type None */
   phDnldNfc_ChkIntg, /* user eeprom offset & len to be added for Check Integrity
                         Request */
@@ -107,7 +107,7 @@ enum phDnldNfc_FrameInputType_t: uint8_t {
 /*
  * Enum definition contains Firmware file format
  */
-enum phDnldNfc_FwFormat: uint8_t {
+enum phDnldNfc_FwFormat : uint8_t {
   FW_FORMAT_UNKNOWN = 0x00,
   FW_FORMAT_SO = 0x01,
   FW_FORMAT_BIN = 0x02,
@@ -197,7 +197,7 @@ typedef struct phDnldNfc_DlContext {
   phDnldNfc_Buff_t tTKey;     /* Default Transport Key provided by caller */
   phDnldNfc_RWInfo_t tRWInfo; /* Read/Write segmented frame info */
   phDnldNfc_Status_t tLastStatus; /* saved status to distinguish signature or
-                                     pltform recovery */
+                                     platform recovery */
   phDnldNfc_FwFormat_t FwFormat;  /*FW file format either lib or bin*/
 } phDnldNfc_DlContext_t,
     *pphDnldNfc_DlContext_t; /* pointer to #phDnldNfc_DlContext_t structure */

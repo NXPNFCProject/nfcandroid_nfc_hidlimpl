@@ -17,14 +17,15 @@
  ******************************************************************************/
 #include <errno.h>
 #include <log/log.h>
-#include <pthread.h>
-
 #include <phNfcNciConstants.h>
 #include <phNxpLog.h>
 #include <phNxpNciHal.h>
 #include <phNxpNciHal_utils.h>
+#include <pthread.h>
+
 #include <iomanip>
 #include <sstream>
+
 #include "NfcExtension.h"
 #include "ObserveMode.h"
 #include "phNxpNciHal_extOperations.h"

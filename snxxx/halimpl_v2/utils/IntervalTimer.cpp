@@ -38,14 +38,13 @@
  */
 #define LOG_TAG "IntervalTimer"
 
+#include <IntervalTimer.h>
 #include <android-base/logging.h>
 #include <android-base/stringprintf.h>
 
-#include <IntervalTimer.h>
-
 using android::base::StringPrintf;
 
-IntervalTimer::IntervalTimer(): mTimerId(0), mCb(nullptr) {}
+IntervalTimer::IntervalTimer() : mTimerId(0), mCb(nullptr) {}
 
 bool IntervalTimer::set(int ms, void* ptr, TIMER_FUNC cb) {
   if (mTimerId == 0) {

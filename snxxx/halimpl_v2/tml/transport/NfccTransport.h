@@ -248,5 +248,5 @@ class NfccTransport {
    **
    ** Returns          None
    ****************************************************************************/
-  virtual ~NfccTransport(){};
+  virtual ~NfccTransport() {};
 };

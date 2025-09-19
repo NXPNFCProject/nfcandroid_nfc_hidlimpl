@@ -51,7 +51,7 @@ typedef struct phNxpNciHal_Sem {
 
 } phNxpNciHal_Sem_t;
 
-enum NFC_printType: uint8_t {
+enum NFC_printType : uint8_t {
   PRINT_UNKNOWN = 0x00,
   PRINT_SEND = 0x01,
   PRINT_RECV,

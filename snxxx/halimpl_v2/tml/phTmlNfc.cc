@@ -25,6 +25,7 @@
 #include <phNxpNciHal_utils.h>
 #include <phOsalNfc_Timer.h>
 #include <phTmlNfc.h>
+
 #include "NfccTransportFactory.h"
 
 /*
@@ -261,7 +262,7 @@ static void* phTmlNfc_TmlThread(void* pParam) {
         if (-1 == dwNoBytesWrRd) {
           NXPLOG_TML_E("NFCC - Error in Read.....\n");
           if (readRetryDelay < MAX_READ_RETRY_DELAY_IN_MILLISEC) {
-            /*sleep for 30/60/90/120/150 msec between each read trial incase of
+            /*sleep for 30/60/90/120/150 msec between each read trial in case of
              * read error*/
             readRetryDelay += 30;
           }
@@ -274,7 +275,7 @@ static void* phTmlNfc_TmlThread(void* pParam) {
               dwNoBytesWrRd);
           abort();
         } else if (dwNoBytesWrRd > PH_TMLNFC_MAX_READ_NCI_BUFF_LEN) {
-          NXPLOG_TML_E("Numer of bytes read exceeds the limit 260.....\n");
+          NXPLOG_TML_E("Number of bytes read exceeds the limit 260.....\n");
           readRetryDelay = 0;
           sem_post(&gpphTmlNfc_Context->rxSemaphore);
         } else {

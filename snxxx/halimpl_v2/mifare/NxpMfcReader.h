@@ -45,35 +45,35 @@
 #define MFC_EMBEDDED_KEY (0x10)
 #define MFC_NUM_OF_KEYS (0x03U)
 #define MFC_KEY_SIZE (0x06U)
-#define MFC_KEYS                              \
-  {                                           \
-    {0xA0, 0XA1, 0xA2, 0XA3, 0xA4, 0XA5},     \
-        {0xD3, 0XF7, 0xD3, 0XF7, 0xD3, 0XF7}, \
-        {0xFF, 0XFF, 0xFF, 0XFF, 0xFF, 0XFF}, \
+#define MFC_KEYS                            \
+  {                                         \
+      {0xA0, 0XA1, 0xA2, 0XA3, 0xA4, 0XA5}, \
+      {0xD3, 0XF7, 0xD3, 0XF7, 0xD3, 0XF7}, \
+      {0xFF, 0XFF, 0xFF, 0XFF, 0xFF, 0XFF}, \
   } /* Key used during NDEF format */
 
-enum MifareCmdList: uint8_t {
-  eMifareRaw = 0x00U,         /* This command performs raw transcations */
+enum MifareCmdList : uint8_t {
+  eMifareRaw = 0x00U,         /* This command performs raw transactions */
   eMifareRead16 = 0x30U,      /* Read 16 Bytes from a Mifare Standard block */
   eMifareRead = 0x30U,        /* Read Mifare Standard */
   eMifareReadSector = 0x38U,  /* Read Sector.   */
   eMifareAuthentA = 0x60U,    /* This command performs an authentication with
                                        KEY A for a sector. */
-  eMifareAuthentB,    /* This command performs an authentication with
-                                       KEY B for a sector. */
+  eMifareAuthentB,            /* This command performs an authentication with
+                                               KEY B for a sector. */
   eMifareWrite16 = 0xA0U,     /* Write 16 Bytes to a Mifare Standard block */
   eMifareWrite4 = 0xA2U,      /* Write 4 bytes. */
   eMifareWriteSector = 0xA8U, /* Write Sector. */
   eMifareTransfer = 0xB0U,    /* Transfer */
   eMifareDec = 0xC0U,         /* Decrement */
-  eMifareInc,         /* Increment */
-  eMifareRestore,     /* Restore.   */
+  eMifareInc,                 /* Increment */
+  eMifareRestore,             /* Restore.   */
 };
 
 /*
  * Request Id for different commands
  */
-enum MfcCmdReqId: uint8_t {
+enum MfcCmdReqId : uint8_t {
   eMfRawDataXchgHdr = 0x10,   /* MF Raw Data Request from DH */
   eMfPlusProxCheckReq = 0x28, /* MF + Prox check request for NFCC from DH */
   eMfWriteNReq = 0x31,        /* MF N bytes write request from DH */
@@ -86,7 +86,7 @@ enum MfcCmdReqId: uint8_t {
 /*
  * Response Ids for different command response
  */
-enum MfcRespId: uint8_t {
+enum MfcRespId : uint8_t {
   eMfXchgDataRsp = 0x10,      /* DH gets Raw data from MF on successful req */
   eMfPlusProxCheckRsp = 0x29, /* DH gets the MF+ Prox Check cmd status */
   eMfWriteNRsp = 0x31,        /* DH gets write status */
@@ -97,7 +97,7 @@ enum MfcRespId: uint8_t {
 };
 
 using MfcCmdReqId_t = MfcCmdReqId;
-using MfcRespId_t= MfcRespId;
+using MfcRespId_t = MfcRespId;
 using MifareCmdList_t = MifareCmdList;
 
 typedef struct MfcTagCmdIntfData {

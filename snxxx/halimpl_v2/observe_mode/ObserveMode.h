@@ -59,10 +59,10 @@ void setObserveChangeInProgress(bool flag);
  *
  * Function         isObserveChangeInProgress()
  *
- * Description      returns true if obsrevemode status change in progress
+ * Description      returns true if observe mode status change in progress
  *                  otherwise false
  *
- * Returns          bool true if observemode status change in progress
+ * Returns          bool true if observe mode status change in progress
  *                  otherwise false
  *
  ******************************************************************************/

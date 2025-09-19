@@ -15,9 +15,9 @@
  */
 
 #include "phNxpNciHal_WiredSeIface.h"
-#include <phNxpNciHal.h>
 
 #include <dlfcn.h>
+#include <phNxpNciHal.h>
 
 #define TERMINAL_TYPE_ESE 0x01
 #define TERMINAL_TYPE_EUICC 0x05

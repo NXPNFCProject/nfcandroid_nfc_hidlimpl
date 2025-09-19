@@ -26,7 +26,7 @@
 #define SWITCH_OFF_MASK 0x02
 #define NCI_GET_CONFI_MIN_LEN 0x04
 #define NXP_MAX_RETRY_COUNT 0x03
-enum NFC_requestedBy: uint8_t {
+enum NFC_requestedBy : uint8_t {
   CONFIG,
   API,
 };
@@ -176,9 +176,9 @@ phNxpNciHal_get_uicc_hci_params(vector<uint8_t>& ptr, uint8_t bufflen,
 NFCSTATUS phNxpNciHal_setExtendedFieldMode();
 
 /******************************************************************************
- * Function         phNxpNciHal_getInterplolatedRssi8Am
+ * Function         phNxpNciHal_getInterpolatedRssi8Am
  *
- * Description      This function will get InterplolatedRssi8Am which will be
+ * Description      This function will get InterpolatedRssi8Am which will be
  *                  used for RSSI calculation
  *
  * Params           none
@@ -187,7 +187,7 @@ NFCSTATUS phNxpNciHal_setExtendedFieldMode();
  *                  NFCSTATUS_FEATURE_NOT_SUPPORTED
  *
  ******************************************************************************/
-NFCSTATUS phNxpNciHal_getInterplolatedRssi8Am();
+NFCSTATUS phNxpNciHal_getInterpolatedRssi8Am();
 
 /*******************************************************************************
 **
@@ -243,7 +243,7 @@ bool phNxpNciHal_isVndSpecificAndroidCmd(uint16_t data_len,
 ** Returns          It returns number of bytes received.
 *******************************************************************************/
 int phNxpNciHal_hndlVndSpecificAndroidCmd(uint16_t data_len,
-                                            const uint8_t* p_data);
+                                          const uint8_t* p_data);
 
 /*******************************************************************************
 **

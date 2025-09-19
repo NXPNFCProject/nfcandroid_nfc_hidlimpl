@@ -90,11 +90,10 @@ typedef struct phNxpExtRxData_Control {
 } phNxpExtRxData_Control_t;
 
 static phNxpExtRxData_Control_t gExtRxDataCtrl = {
-  .p_rx_data = NULL,
-  .p_rx_data_len = NULL,
-  .rx_mutex = PTHREAD_MUTEX_INITIALIZER,
-  .rx_cond = PTHREAD_COND_INITIALIZER
-};
+    .p_rx_data = NULL,
+    .p_rx_data_len = NULL,
+    .rx_mutex = PTHREAD_MUTEX_INITIALIZER,
+    .rx_cond = PTHREAD_COND_INITIALIZER};
 
 /************** HAL extension functions ***************************************/
 static void hal_extns_write_rsp_timeout_cb(uint32_t TimerId, void* pContext);
@@ -182,7 +181,8 @@ NFCSTATUS phNxpNciHal_ext_send_sram_config_to_flash() {
 *******************************************************************************/
 NFCSTATUS phNxpNciHal_set_ext_buffer(uint16_t* rsp_len, uint8_t* p_rsp) {
   pthread_mutex_lock(&gExtRxDataCtrl.rx_mutex);
-  if (gExtRxDataCtrl.p_rx_data != NULL || gExtRxDataCtrl.p_rx_data_len != NULL) {
+  if (gExtRxDataCtrl.p_rx_data != NULL ||
+      gExtRxDataCtrl.p_rx_data_len != NULL) {
     pthread_mutex_unlock(&gExtRxDataCtrl.rx_mutex);
     NXPLOG_NCIHAL_D("%s: Response buffer is already set!!!", __func__);
     return NFCSTATUS_FAILED;
@@ -211,11 +211,15 @@ NFCSTATUS phNxpNciHal_update_ext_buffer(uint16_t rsp_len, uint8_t* p_rsp) {
   timeout_spec.tv_sec += 1;
   pthread_mutex_lock(&gExtRxDataCtrl.rx_mutex);
   int status = 0;
-  while ((gExtRxDataCtrl.p_rx_data == NULL || gExtRxDataCtrl.p_rx_data_len == NULL) && status == 0) {
+  while ((gExtRxDataCtrl.p_rx_data == NULL ||
+          gExtRxDataCtrl.p_rx_data_len == NULL) &&
+         status == 0) {
     NXPLOG_NCIHAL_D("%s: Waiting for response buffer to set", __func__);
-    status = pthread_cond_timedwait(&gExtRxDataCtrl.rx_cond, &gExtRxDataCtrl.rx_mutex, &timeout_spec);
+    status = pthread_cond_timedwait(&gExtRxDataCtrl.rx_cond,
+                                    &gExtRxDataCtrl.rx_mutex, &timeout_spec);
   }
-  if ((gExtRxDataCtrl.p_rx_data == NULL || gExtRxDataCtrl.p_rx_data_len == NULL)) {
+  if ((gExtRxDataCtrl.p_rx_data == NULL ||
+       gExtRxDataCtrl.p_rx_data_len == NULL)) {
     pthread_mutex_unlock(&gExtRxDataCtrl.rx_mutex);
     NXPLOG_NCIHAL_D("%s: Response buffer is not set !!!", __func__);
     return NFCSTATUS_FAILED;
@@ -481,7 +485,7 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
   } else if (p_ntf[0] == 0x61 && p_ntf[1] == 0x21 && p_ntf[2] == 0x00) {
     status = NFCSTATUS_FAILED;
     NXPLOG_NCIHAL_D("notify  PLL_UNLOCK error to upper layer");
-    /* Post to extentsion lib */
+    /* Post to extension lib */
     phNxpExtn_HandleHalEvent(NFCC_HAL_INPUT_CLK_ERR_CODE);
     return status;
   }
@@ -506,7 +510,7 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
     PhNxpEventLogger::GetInstance().Log(p_ntf, *p_len,
                                         LogEventType::kLogDPDEvent);
   } else if (p_ntf[0] == 0x6F &&
-             p_ntf[1] == NCI_OID_SYSTEM_TERMPERATURE_INFO_NTF &&
+             p_ntf[1] == NCI_OID_SYSTEM_TEMPERATURE_INFO_NTF &&
              p_ntf[2] == 0x06) {
     NXPLOG_NCIHAL_D(">  Temperature status ntf received");
     phNxpTempMgr::GetInstance().UpdateICTempStatus(p_ntf, *p_len);
@@ -1431,7 +1435,7 @@ retryget:
       ALOGE("failed to get requested memory address");
     } else if (mEEPROM_info->request_mode == GET_EEPROM_DATA) {
       if (mEEPROM_info->bufflen == 0xFF) {
-        /* Max bufferlenth for single Get Config Command is 0xFF.
+        /* Max buffer length for single Get Config Command is 0xFF.
          * If buffer length set to max value, reassign buffer value
          * depends on response from Get Config command */
         mEEPROM_info->bufflen = *(rsp + getCfgStartIndex + memIndex - 1);
@@ -1686,8 +1690,8 @@ void RemoveNfcDepIntfFromInitResp(uint8_t* coreInitResp,
    * & 3 bytes for NCI_MSG_HEADER */
   uint8_t noOfSupportedInterface =
       *(coreInitResp + indexOfSupportedRfIntf + NCI_HEADER_SIZE);
-  uint8_t rfInterfacesLength =
-      static_cast<uint8_t>(*coreInitRespLen - (indexOfSupportedRfIntf + 1 + NCI_HEADER_SIZE));
+  uint8_t rfInterfacesLength = static_cast<uint8_t>(
+      *coreInitRespLen - (indexOfSupportedRfIntf + 1 + NCI_HEADER_SIZE));
   uint8_t* supportedRfInterfaces = NULL;
   bool removeNfcDepRequired = false;
   if (noOfSupportedInterface) {
@@ -1717,7 +1721,7 @@ void RemoveNfcDepIntfFromInitResp(uint8_t* coreInitResp,
   /* If NFC-DEP is found in response then remove NFC-DEP from init response and
    * frame new CORE_INIT_RESP and send to upper layer*/
   if (!removeNfcDepRequired) {
-    NXPLOG_NCIHAL_E("%s: NFC-DEP Removal is not requored !!", __func__);
+    NXPLOG_NCIHAL_E("%s: NFC-DEP Removal is not required !!", __func__);
     return;
   } else {
     coreInitResp[16] = noOfSupportedInterface - 1;
@@ -1743,9 +1747,9 @@ void RemoveNfcDepIntfFromInitResp(uint8_t* coreInitResp,
 /******************************************************************************
  * Function         phNxpNciHal_process_screen_state_cmd
  *
- * Description      Forms a dummy response for cmds sent during screen
+ * Description      Forms a dummy response for commands sent during screen
  *                  state change,when IC temp is not normal.
- *                  These Cmds are not forwarded to NFCC.
+ *                  These commands are not forwarded to NFCC.
  *
  * Returns          Returns NFCSTATUS_FAILED for screen state change cmd
  *                  or returns NFCSTATUS_SUCCESS.

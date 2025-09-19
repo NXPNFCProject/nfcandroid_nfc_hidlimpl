@@ -19,12 +19,13 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+
 #include <memory>
 
 // Opaque WiredSe Service object.
 struct WiredSeService;
 
-enum WiredSeEvtTypeEnum: uint8_t {
+enum WiredSeEvtTypeEnum : uint8_t {
   NFC_STATE_CHANGE,
   NFC_PKT_RECEIVED,
   SENDING_HCI_PKT,
@@ -32,7 +33,7 @@ enum WiredSeEvtTypeEnum: uint8_t {
   NFC_EVT_UNKNOWN
 };
 
-enum NfcStateEnum: uint8_t { NFC_ON, NFC_OFF, NFC_STATE_UNKNOWN };
+enum NfcStateEnum : uint8_t { NFC_ON, NFC_OFF, NFC_STATE_UNKNOWN };
 
 using WiredSeEvtType = WiredSeEvtTypeEnum;
 using NfcState = NfcStateEnum;

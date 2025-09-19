@@ -92,7 +92,7 @@ class NfcWriter {
   /******************************************************************************
    * Function         check_ncicmd_write_window
    *
-   * Description      This function is called to check the write synchroniztion
+   * Description      This function is called to check the write synchronization
    *                  status if write already acquired then wait for
    corresponding read to complete.
    *

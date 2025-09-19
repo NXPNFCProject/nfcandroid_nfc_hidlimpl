@@ -36,7 +36,7 @@ NfcHalThreadMutex::NfcHalThreadMutex() {
   pthread_mutexattr_t mutexAttr;
 
   pthread_mutexattr_init(&mutexAttr);
-  if(!pthread_mutex_init(&mMutex, &mutexAttr))
+  if (!pthread_mutex_init(&mMutex, &mutexAttr))
     LOG(DEBUG) << StringPrintf("init mutex success");
   else
     LOG(ERROR) << StringPrintf("fail to init mutex");
@@ -58,7 +58,7 @@ NfcHalThreadMutex::~NfcHalThreadMutex() { pthread_mutex_destroy(&mMutex); }
 **
 ** Function:    NfcHalThreadMutex::lock()
 **
-** Description: lock kthe mutex
+** Description: lock the mutex
 **
 ** Returns:     none
 **

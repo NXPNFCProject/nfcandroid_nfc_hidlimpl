@@ -15,12 +15,13 @@
  **
  */
 #include "phNxpTempMgr.h"
-#include <unistd.h>
-#include <mutex>
 
 #include <phNxpConfig.h>
 #include <phNxpLog.h>
 #include <phOsalNfc_Timer.h>
+#include <unistd.h>
+
+#include <mutex>
 
 #define PH_NFC_TIMER_ID_INVALID (0xFFFF)
 #define PH_NXP_TEMPMGR_TOTAL_DELAY (11)
@@ -87,9 +88,9 @@ void phNxpTempMgr::UpdateICTempStatus(uint8_t* p_ntf, uint16_t p_len) {
 void phNxpTempMgr::Wait() {
   if (!IsICTempOk()) {
     NXPLOG_NCIHAL_D("Wait for %d seconds", total_delay_ms_ / 1000);
-    uint16_t delay_per_try = 500;  // millisec
+    uint16_t delay_per_try = 500;  // milli seconds
     while (!IsICTempOk()) {
-      usleep(delay_per_try * 1000);  // 500 millisec
+      usleep(delay_per_try * 1000);  // 500 milli seconds
     }
   }
 }

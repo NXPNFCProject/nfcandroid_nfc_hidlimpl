@@ -66,7 +66,7 @@ typedef void (*pphDnldNfc_RspCb_t)(void* pContext, NFCSTATUS wStatus,
 /*
  * Enum definition contains Download Life Cycle States
  */
-enum phDnldNfc_LC: uint8_t {
+enum phDnldNfc_LC : uint8_t {
   phDnldNfc_LCCreat = 11, /* Life Cycle Creation*/
   phDnldNfc_LCInit = 13,  /* Life Cycle Initializing */
   phDnldNfc_LCOper = 17,  /* Life Cycle Operational */
@@ -77,7 +77,7 @@ using phDnldNfc_LC_t = phDnldNfc_LC;
 /*
  * Enum definition contains Clk Source Options for Force command request
  */
-enum phDnldNfc_ClkSrc: uint8_t {
+enum phDnldNfc_ClkSrc : uint8_t {
   phDnldNfc_ClkSrcXtal = 1U, /* Crystal */
   phDnldNfc_ClkSrcPLL = 2U,  /* PLL output */
   phDnldNfc_ClkSrcPad = 3U   /* Directly use clk on CLK_IN Pad */
@@ -86,7 +86,7 @@ using phDnldNfc_ClkSrc_t = phDnldNfc_ClkSrc;
 /*
  * Enum definition contains Clk Frequency value for Force command request
  */
-enum phDnldNfc_ClkFreq: uint8_t {
+enum phDnldNfc_ClkFreq : uint8_t {
   phDnldNfc_ClkFreq_13Mhz = 0U,     /* 13Mhz Clk Frequency */
   phDnldNfc_ClkFreq_19_2Mhz = 1U,   /* 19.2Mhz Clk Frequency */
   phDnldNfc_ClkFreq_24Mhz = 2U,     /* 24Mhz Clk Frequency */

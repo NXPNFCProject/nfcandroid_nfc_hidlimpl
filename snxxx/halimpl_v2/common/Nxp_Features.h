@@ -17,9 +17,10 @@
  ******************************************************************************/
 
 #include <stdint.h>
-#include "phNxpConfig.h"
 
 #include <string>
+
+#include "phNxpConfig.h"
 #ifndef NXP_FEATURES_H
 #define NXP_FEATURES_H
 
@@ -76,11 +77,11 @@
 #define FW_BIN_EXTENSION ".bin"
 #endif
 
-enum tNFCC_DnldType_enum: std::uint8_t {
+enum tNFCC_DnldType_enum : std::uint8_t {
   NFCC_DWNLD_WITH_VEN_RESET,
   NFCC_DWNLD_WITH_NCI_CMD
 };
-enum tNFC_HWVersion_enum: std::uint8_t {
+enum tNFC_HWVersion_enum : std::uint8_t {
   HW_PN553_A0 = 0x40,
   HW_PN553_B0 = 0x41,
   HW_PN80T_A0 = 0x50,
@@ -98,7 +99,7 @@ enum tNFC_HWVersion_enum: std::uint8_t {
   HW_PN560_V2 = 0xCB,
   HW_SN300U = 0xD3
 };
-enum tNFC_chipType_enum: std::uint8_t {
+enum tNFC_chipType_enum : std::uint8_t {
   DEFAULT_CHIP_TYPE = 0x00,
   pn547C2,
   pn65T,
@@ -138,12 +139,12 @@ typedef struct {
 } tNfc_capability;
 
 typedef struct {
-  tNfc_capability OBSEVE_MODE;
+  tNfc_capability OBSERVE_MODE;
   tNfc_capability POLLING_FRAME_NOTIFICATION;
   tNfc_capability POWER_SAVING;
   tNfc_capability AUTOTRANSACT_PLF;
   tNfc_capability NO_OF_EXIT_FRAMES_PLF;
-} tNfc_nfccCapabililty;
+} tNfc_nfccCapability;
 
 typedef struct {
   uint8_t nfcNxpEse : 1;
@@ -154,7 +155,7 @@ typedef struct {
   uint16_t _PHDNLDNFC_USERDATA_EEPROM_LEN;
   uint8_t _FW_MOBILE_MAJOR_NUMBER;
   tNfc_nfccFeatureList nfccFL;
-  tNfc_nfccCapabililty nfccCap;
+  tNfc_nfccCapability nfccCap;
 } tNfc_featureList;
 
 extern tNfc_featureList nfcFL;
@@ -168,8 +169,10 @@ extern tNfc_featureList nfcFL;
 #define IS_CHIP_TYPE_NE(cType) (nfcFL.chipType != (cType))
 #define IS_4K_SUPPORT (nfcFL.nfccFL._NFCC_4K_FW_SUPPORT == true)
 
-#define CONFIGURE_4K_SUPPORT(value) \
-  { nfcFL.nfccFL._NFCC_4K_FW_SUPPORT = (value); }
+#define CONFIGURE_4K_SUPPORT(value)             \
+  {                                             \
+    nfcFL.nfccFL._NFCC_4K_FW_SUPPORT = (value); \
+  }
 
 #define CONFIGURE_FEATURELIST(chipType)               \
   {                                                   \
@@ -325,9 +328,9 @@ extern tNfc_featureList nfcFL;
 
 #define UPDATE_NFCC_CAPABILITY()                                               \
   {                                                                            \
-    nfcFL.nfccCap.OBSEVE_MODE.id = CAP_OBSERVE_MODE_ID;                        \
-    nfcFL.nfccCap.OBSEVE_MODE.len = 0x01;                                      \
-    nfcFL.nfccCap.OBSEVE_MODE.val = 0x00;                                      \
+    nfcFL.nfccCap.OBSERVE_MODE.id = CAP_OBSERVE_MODE_ID;                       \
+    nfcFL.nfccCap.OBSERVE_MODE.len = 0x01;                                     \
+    nfcFL.nfccCap.OBSERVE_MODE.val = 0x00;                                     \
     nfcFL.nfccCap.POLLING_FRAME_NOTIFICATION.id = CAP_POLL_FRAME_NTF_ID;       \
     nfcFL.nfccCap.POLLING_FRAME_NOTIFICATION.len = 0x01;                       \
     nfcFL.nfccCap.POLLING_FRAME_NOTIFICATION.val = 0x00;                       \
@@ -345,7 +348,7 @@ extern tNfc_featureList nfcFL;
         GetNxpNumValue(NAME_NXP_EXTENDED_FIELD_DETECT_MODE,                    \
                        &extended_field_mode, sizeof(extended_field_mode))) {   \
       if (extended_field_mode == 0x03) {                                       \
-        nfcFL.nfccCap.OBSEVE_MODE.val = OBSERVE_MODE_WITHOUT_RF_DEACTIVATE;    \
+        nfcFL.nfccCap.OBSERVE_MODE.val = OBSERVE_MODE_WITHOUT_RF_DEACTIVATE;   \
       }                                                                        \
     }                                                                          \
     uint8_t max_exit_frames = 0x00;                                            \

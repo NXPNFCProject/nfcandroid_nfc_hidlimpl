@@ -18,8 +18,10 @@
 #define NXPNCIHALWRITER_H
 
 #include <pthread.h>
+
 #include <atomic>
 #include <cstdbool>
+
 #include "phNfcTypes.h"
 
 class phNxpNciHal_WriterThread {
@@ -67,7 +69,7 @@ class phNxpNciHal_WriterThread {
    *
    * Description:    This method stops the writer thread and clear the resources
    *
-   * Returns:        bool: True if the writer thread was successfully stoped
+   * Returns:        bool: True if the writer thread was successfully stopped
    *                 otherwise false.
    ******************************************************************************/
   bool Stop();

@@ -18,11 +18,12 @@
 
 #pragma once
 #include <NfccTransport.h>
+
 #include <memory>
 
 #define transportFactory (NfccTransportFactory::getInstance())
 typedef std::shared_ptr<NfccTransport> spTransport;
-enum transportIntf:uint8_t { I2C, I3C, UNKNOWN };
+enum transportIntf : uint8_t { I2C, I3C, UNKNOWN };
 
 extern spTransport gpTransportObj;
 class NfccTransportFactory {

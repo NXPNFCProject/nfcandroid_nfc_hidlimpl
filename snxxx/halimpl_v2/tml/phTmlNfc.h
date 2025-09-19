@@ -87,7 +87,7 @@ typedef struct phTmlNfc_TransactInfo {
 } phTmlNfc_TransactInfo_t; /* Instance of Transaction structure */
 
 /*
- * TML transreceive completion callback to Upper Layer
+ * TML transceive completion callback to Upper Layer
  *
  * pContext - Context provided by upper layer
  * pInfo    - Transaction info. See phTmlNfc_TransactInfo
@@ -111,7 +111,7 @@ typedef void (*pphTmlNfc_DeferFuncPointer_t)(uint32_t dwMsgPostedThread,
  *
  * phTmlNfc_IoCtl
  */
-enum phTmlNfc_ControlCode_t: uint16_t {
+enum phTmlNfc_ControlCode_t : uint16_t {
   phTmlNfc_e_Invalid = 0,
   phTmlNfc_e_PowerReset = 5,
   phTmlNfc_e_setFragmentSize,
@@ -153,15 +153,15 @@ typedef struct phTmlNfc_Context {
   pthread_t readerThread; /*Handle to the thread which handles write and read
                              operations */
   volatile uint8_t
-      bThreadDone; /*Flag to decide whether to run or abort the thread */
-  uint32_t dwTimerId;      /* Timer used to retransmit nci packet */
-  phTmlNfc_ReadWriteInfo_t tReadInfo;  /*Pointer to Reader Thread Structure */
-  void* pDevHandle;                    /* Pointer to Device Handle */
+      bThreadDone;    /*Flag to decide whether to run or abort the thread */
+  uint32_t dwTimerId; /* Timer used to retransmit nci packet */
+  phTmlNfc_ReadWriteInfo_t tReadInfo; /*Pointer to Reader Thread Structure */
+  void* pDevHandle;                   /* Pointer to Device Handle */
   uintptr_t dwCallbackThreadId; /* Thread ID to which message to be posted */
   uint8_t bEnableCrc;           /*Flag to validate/not CRC for input buffer */
   sem_t rxSemaphore;
   sem_t postMsgSemaphore; /* Semaphore to post message atomically by Reader */
-  pthread_mutex_t wait_busy_lock;     /*Condition lock to wait reader thread*/
+  pthread_mutex_t wait_busy_lock; /*Condition lock to wait reader thread*/
   volatile uint8_t gWriterCbflag; /* flag to indicate write callback message is
                                      pushed to queue*/
   long nfc_service_pid; /*NFC Service PID to be used by driver to signal*/
@@ -204,9 +204,9 @@ typedef struct {
   void* pParams;
 } phTmlNfc_DeferMsg_t; /* DeferMsg structure passed to User Thread */
 
-enum phTmlNfc_i2cfragmentation_t: uint8_t {
-  I2C_FRAGMENATATION_DISABLED, /*i2c fragmentation_disabled           */
-  I2C_FRAGMENTATION_ENABLED    /*i2c_fragmentation_enabled          */
+enum phTmlNfc_i2cfragmentation_t : uint8_t {
+  I2C_FRAGMENTATION_DISABLED, /*i2c fragmentation_disabled           */
+  I2C_FRAGMENTATION_ENABLED   /*i2c_fragmentation_enabled          */
 };
 
 /* Function declarations */

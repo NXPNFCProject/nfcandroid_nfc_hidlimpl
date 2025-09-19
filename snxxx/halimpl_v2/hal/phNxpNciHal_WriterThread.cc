@@ -15,8 +15,10 @@
  */
 
 #include "phNxpNciHal_WriterThread.h"
+
 #include <phDal4Nfc_messageQueueLib.h>
 #include <phNxpNciHal_ext.h>
+
 #include "NfcExtension.h"
 
 phNxpNciHal_WriterThread::phNxpNciHal_WriterThread() : writer_thread(0), thread_running(false) {
