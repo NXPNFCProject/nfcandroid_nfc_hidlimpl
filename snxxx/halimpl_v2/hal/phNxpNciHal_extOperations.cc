@@ -34,6 +34,7 @@
 
 #define NCI_HEADER_SIZE 3
 #define NCI_SE_CMD_LEN 4
+#define EEPROM_TLV_SIZE 4 //numParam+2add+val
 nxp_nfc_config_ext_t config_ext;
 static vector<uint8_t> uicc1HciParams(0);
 static vector<uint8_t> uicc2HciParams(0);
@@ -45,7 +46,6 @@ extern void* RfFwRegionDnld_handle;
 extern NFCSTATUS phNxpNciHal_ext_send_sram_config_to_flash();
 extern void setInterplolatedRssi8Am(uint16_t rssiAt8Am,
                                     uint8_t measuredFieldStrength);
-
 /*******************************************************************************
 **
 ** Function         phNxpNciHal_getExtVendorConfig()
@@ -339,9 +339,10 @@ NFCSTATUS phNxpNciHal_save_uicc_params() {
   }
 
   NFCSTATUS status = NFCSTATUS_FAILED;
+  uint8_t maxbufflen = (0xFF - CMD_HEADER_SIZE);
 
   /* Getting UICC2 CL params */
-  uicc1HciParams.resize(0xFF);
+  uicc1HciParams.resize(maxbufflen);
   status = phNxpNciHal_get_uicc_hci_params(
       uicc1HciParams, uicc1HciParams.size(), EEPROM_UICC1_SESSION_ID);
   if (status != NFCSTATUS_SUCCESS) {
@@ -356,7 +357,7 @@ NFCSTATUS phNxpNciHal_save_uicc_params() {
   }
 
   /* Getting UICC2 CL params */
-  uicc2HciParams.resize(0xFF);
+  uicc2HciParams.resize(maxbufflen);
   status = phNxpNciHal_get_uicc_hci_params(
       uicc2HciParams, uicc2HciParams.size(), EEPROM_UICC2_SESSION_ID);
   if (status != NFCSTATUS_SUCCESS) {
@@ -371,7 +372,7 @@ NFCSTATUS phNxpNciHal_save_uicc_params() {
   }
 
   /* Get UICC CE HCI State */
-  uiccHciCeParams.resize(0xFF);
+  uiccHciCeParams.resize(maxbufflen);
   status = phNxpNciHal_get_uicc_hci_params(
       uiccHciCeParams, uiccHciCeParams.size(), EEPROM_UICC_HCI_CE_STATE);
   if (status != NFCSTATUS_SUCCESS) {
