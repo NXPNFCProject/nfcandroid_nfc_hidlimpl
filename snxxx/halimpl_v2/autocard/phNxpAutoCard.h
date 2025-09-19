@@ -20,6 +20,7 @@
 
 #include <phNfcStatus.h>
 #include <phNfcTypes.h>
+
 #include <cstdint>
 #include <vector>
 

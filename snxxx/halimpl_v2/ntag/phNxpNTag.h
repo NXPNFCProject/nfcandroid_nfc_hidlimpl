@@ -23,6 +23,7 @@
 #include <phNfcStatus.h>
 #include <phNfcTypes.h>
 #include <phNxpNciHal_ext.h>
+
 #include "IntervalTimer.h"
 #include "NciDef.h"
 #include "NfcExtension.h"
@@ -33,7 +34,7 @@
 #define NTAG_PRESENCE_CHECK_DEFAULT_CONF_VAL 13
 #define DEFAULT_NTAG_SUPPORT_MIN_FW_VER 0x02204A
 
-enum class NTagSetSubState: uint8_t {
+enum class NTagSetSubState : uint8_t {
   /* Initial state, no operation in progress */
   NTAG_SET_SUB_STATE_IDLE,
   NTAG_SET_SUB_STATE_WAIT_FOR_RF_IDLE_RSP,
@@ -41,7 +42,7 @@ enum class NTagSetSubState: uint8_t {
   NTAG_SET_SUB_STATE_WAIT_FOR_RF_DISC_RSP,
 };
 
-enum class NTagState: uint8_t {
+enum class NTagState : uint8_t {
   /* Initial state, no operation in progress */
   NTAG_STATE_IDLE,
   /* NTag state enabled */
@@ -60,7 +61,7 @@ enum class NTagState: uint8_t {
   NTAG_STATE_MAX,
 };
 
-enum class NTagEvent: uint8_t {
+enum class NTagEvent : uint8_t {
   ACTION_NTAG_ENABLE_REQUEST,
   ACTION_NTAG_DISABLE_REQUEST,
   ACTION_NTAG_PROP_NTF_SET_STATUS,
@@ -93,7 +94,7 @@ struct NtagControl {
    * Bit-7 Presence check timer timeout status.
    */
   uint8_t mNtagDetectStatus;
-  /* Ntag fature enabled status */
+  /* Ntag feature enabled status */
   bool mNtagEnableRequest;
   /* Ntag ntf enable/disable command need to be send */
   bool isNTagNtfCmdReq;
@@ -144,7 +145,7 @@ class NxpNTag {
   NFCSTATUS handleVendorNciMessage(uint16_t dataLen, uint8_t* pData);
 
   /**
-   * @brief Check and update the NTag prop ntf configurtins.
+   * @brief Check and update the NTag prop ntf configurations.
    * @param None
    * @return None
    */

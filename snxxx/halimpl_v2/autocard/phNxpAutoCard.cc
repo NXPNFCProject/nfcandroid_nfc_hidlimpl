@@ -17,9 +17,11 @@
  ******************************************************************************/
 
 #include "phNxpAutoCard.h"
+
 #include <phNfcNciConstants.h>
 #include <phNxpLog.h>
 #include <phNxpNciHal_ext.h>
+
 #include "NfcExtension.h"
 
 AutoCard* AutoCard::sAutoCard = nullptr;

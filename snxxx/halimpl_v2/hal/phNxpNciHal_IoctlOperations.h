@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
+#include <string>
+#include <vector>
+
 #include "phNfcStatus.h"
 #include "phNxpConfig.h"
 #include "phNxpLog.h"
-#include <string>
-#include <vector>
 
 using std::string;
 using std::vector;
@@ -49,7 +50,7 @@ string phNxpNciHal_getSystemProperty(string key);
  **
  ** Function         phNxpNciHal_setSystemProperty
  **
- ** Description      It shall be used to save/chage value to system property
+ ** Description      It shall be used to save/change value to system property
  **                  based on provided key.
  **
  ** Parameters       string key, string value

@@ -24,7 +24,9 @@
 #include <phNxpConfig.h>
 #include <phNxpLog.h>
 #include <phTmlNfc.h>
+
 #include <string>
+
 #include "NxpNfcCapability.h"
 
 #if (NXP_NFC_RECOVERY == TRUE)
@@ -35,8 +37,8 @@ static void* pFwHandle; /* Global firmware handle*/
 uint16_t wMwVer = 0;    /* Middleware version no */
 uint16_t wFwVer = 0;    /* Firmware version no */
 uint8_t gRecFWDwnld;    /* flag set to true to indicate recovery FW download */
-phTmlNfc_i2cfragmentation_t fragmentation_enabled = I2C_FRAGMENATATION_DISABLED;
-static pphDnldNfc_DlContext_t gpphDnldContext = NULL; /* Download contex */
+phTmlNfc_i2cfragmentation_t fragmentation_enabled = I2C_FRAGMENTATION_DISABLED;
+static pphDnldNfc_DlContext_t gpphDnldContext = NULL; /* Download context */
 
 /*******************************************************************************
 **

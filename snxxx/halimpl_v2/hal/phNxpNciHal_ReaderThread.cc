@@ -15,6 +15,7 @@
  */
 
 #include "phNxpNciHal_ReaderThread.h"
+
 #include <android-base/stringprintf.h>
 #include <log/log.h>
 #include <phDal4Nfc_messageQueueLib.h>
@@ -25,12 +26,13 @@
 #include <phNxpNciHal.h>
 #include <phNxpNciHal_ext.h>
 #include <phTmlNfc.h>
+
 #include "NfcExtension.h"
 
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 
-phNxpNciHal_ReaderThread::phNxpNciHal_ReaderThread():
-    reader_thread(0), thread_running(false) {}
+phNxpNciHal_ReaderThread::phNxpNciHal_ReaderThread()
+    : reader_thread(0), thread_running(false) {}
 
 phNxpNciHal_ReaderThread::~phNxpNciHal_ReaderThread() { Stop(); }
 

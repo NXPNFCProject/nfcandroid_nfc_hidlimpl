@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 #include "NfcWriter.h"
+
 #include <phNfcNciConstants.h>
 #include <phNxpConfig.h>
 #include <phNxpNciHal.h>
 #include <phNxpNciHal_ext.h>
 #include <phNxpTempMgr.h>
+
 #include <type_traits>
+
 #include "NciDiscoveryCommandBuilder.h"
 #include "NfcExtension.h"
 #include "ObserveMode.h"
@@ -205,7 +208,7 @@ int NfcWriter::write_unlocked(uint16_t data_len, const uint8_t* p_data,
   write_unlocked_status = NFCSTATUS_FAILED;
   static phLibNfc_Message_t msg;
 
-  /* check for write synchronyztion */
+  /* check for write synchronization */
   if (this->check_ncicmd_write_window(data_len, (uint8_t*)p_data) !=
       NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_D("NfcWriter::write_unlocked  CMD window  check failed");
@@ -276,7 +279,7 @@ clean_and_return:
 /******************************************************************************
  * Function         check_ncicmd_write_window
  *
- * Description      This function is called to check the write synchroniztion
+ * Description      This function is called to check the write synchronization
  *                  status if write already acquired then wait for corresponding
                     read to complete.
  *

@@ -454,8 +454,8 @@ NFCSTATUS NxpMfcReader::CheckMfcResponse(uint8_t* pTransceiveData,
                                          uint16_t transceiveDataLen) {
   if (transceiveDataLen == 3 && pTransceiveData[0] == 0x10 &&
       pTransceiveData[1] != 0x0A) {
-      NXPLOG_NCIHAL_E("Mifare Error in payload response");
-      return NFCSTATUS_FAILED;
+    NXPLOG_NCIHAL_E("Mifare Error in payload response");
+    return NFCSTATUS_FAILED;
   }
   if (pTransceiveData[0] == 0x40 && pTransceiveData[1] == 0x03) {
     return NFCSTATUS_FAILED;

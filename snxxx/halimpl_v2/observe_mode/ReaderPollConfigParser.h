@@ -22,11 +22,11 @@ using std::string;
 using std::vector;
 
 typedef void(reader_poll_info_callback_t)(uint16_t data_len, uint8_t* p_data);
-void setInterplolatedRssi8Am(uint16_t rssiAt8Am, uint8_t measuredFieldStrength);
+void setInterpolatedRssi8Am(uint16_t rssiAt8Am, uint8_t measuredFieldStrength);
 
 /**
  * @brief This class handles the parsing of Lx notifications and
- * send reader poll info notification's. It identifis A, B and F
+ * send reader poll info notification's. It identifies A, B and F
  * Modulation event's and RF ON & OFF event's, all the other
  * notifications it considers it as Unknown event's
  *

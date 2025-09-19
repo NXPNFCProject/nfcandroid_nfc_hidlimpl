@@ -203,7 +203,7 @@
 #define ESESTATUS_NOT_ALLOWED (0x003A)
 
 /*
- *  Other indicaated error sent by JCOP.
+ *  Other indicated error sent by JCOP.
  */
 #define ESESTATUS_OTHER_ERROR (0x003C)
 /*
@@ -266,9 +266,9 @@
 #define ESESTATUS_SEND_NEXT_FRAME (0x0027)
 
 /*
- * Protocol revovery started
+ * Protocol recovery started
  */
-#define ESESTATUS_REVOCERY_STARTED (0x0028)
+#define ESESTATUS_RECOVERY_STARTED (0x0028)
 
 /*
  * Single Target Detected
@@ -385,7 +385,7 @@
 #define ESESTATUS_COMMAND_NOT_SUPPORTED (0x0097)
 
 /*
- * Tag is not NDEF compilant
+ * Tag is not NDEF compliant
  */
 #define ESESTATUS_NON_NDEF_COMPLIANT (0x0098)
 

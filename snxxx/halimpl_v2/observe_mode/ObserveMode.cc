@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <NxpNfcThreadMutex.h>
 #include <ObserveMode.h>
 #include <phNfcNciConstants.h>
 
-#include <NxpNfcThreadMutex.h>
 #include <vector>
+
 #include "NciDiscoveryCommandBuilder.h"
 #include "NfcExtension.h"
 #include "ReaderPollConfigParser.h"
@@ -25,8 +26,8 @@
 
 using std::vector;
 
-bool gWaitingforDiscRsp;
-bool gWaitingforRfDeActivateRsp;
+bool gWaitingForDiscRsp;
+bool gWaitingForRfDeActivateRsp;
 bool bIsObserveModeEnabled;
 bool bIsObserveChangeInProgress;
 
@@ -79,7 +80,8 @@ int handleObserveMode(uint16_t data_len, const uint8_t* p_data) {
   uint8_t status = NCI_RSP_FAIL;
   if (phNxpNciHal_isObserveModeSupported()) {
     setObserveModeFlag(p_data[NCI_MSG_INDEX_FEATURE_VALUE]);
-    // ObseveMode per tech will be set to 0x01/0x00 for observe mode old command
+    // ObserveMode per tech will be set to 0x01/0x00 for observe mode old
+    // command
     NciDiscoveryCommandBuilderInstance.setObserveModePerTech(
         p_data[NCI_MSG_INDEX_FEATURE_VALUE]);
     status = NCI_RSP_OK;
@@ -109,7 +111,7 @@ NFCSTATUS deactivateRfDiscovery() {
     return phNxpNciHal_send_ext_cmd(sizeof(rf_deactivate_cmd),
                                     rf_deactivate_cmd, &rsp_len, rsp);
   } else {
-    setObserveChangeInProgress(true);  // ObserveMode Recocery needed
+    setObserveChangeInProgress(true);  // ObserveMode Recovery needed
     return NFCSTATUS_SUCCESS;
   }
 }
@@ -161,7 +163,7 @@ void resetDiscovery() {
   if (isObserveChangeInProgress()) {
     NXPLOG_NCIHAL_D("%s reset discovery ", __func__);
 
-    gWaitingforRfDeActivateRsp = true;
+    gWaitingForRfDeActivateRsp = true;
     uint8_t rf_deactivate_cmd[] = {0x21, 0x06, 0x01, 0x00};
     setObserveChangeInProgress(false);
     phNxpHal_EnqueueWrite(&rf_deactivate_cmd[0], sizeof(rf_deactivate_cmd));
@@ -184,11 +186,11 @@ void resetDiscovery() {
  *
  ******************************************************************************/
 NFCSTATUS handleObserveModeRfStateRspNtf(uint16_t dataLen, uint8_t* pData) {
-  if (gWaitingforRfDeActivateRsp && dataLen >= NCI_RSP_SIZE &&
+  if (gWaitingForRfDeActivateRsp && dataLen >= NCI_RSP_SIZE &&
       pData[NCI_GID_INDEX] == NCI_RF_DISC_RSP_GID &&
       pData[NCI_OID_INDEX] == NCI_RF_DEACTIVATE_OID) {
-    gWaitingforRfDeActivateRsp = false;
-    gWaitingforDiscRsp = true;
+    gWaitingForRfDeActivateRsp = false;
+    gWaitingForDiscRsp = true;
     vector<uint8_t> discoveryCommand =
         isObserveModeEnabled()
             ? NciDiscoveryCommandBuilderInstance.reConfigRFDiscCmd()
@@ -197,10 +199,10 @@ NFCSTATUS handleObserveModeRfStateRspNtf(uint16_t dataLen, uint8_t* pData) {
 
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
   }
-  if (gWaitingforDiscRsp && dataLen >= 2 &&
+  if (gWaitingForDiscRsp && dataLen >= 2 &&
       pData[NCI_GID_INDEX] == NCI_RF_DISC_RSP_GID &&
       pData[NCI_OID_INDEX] == NCI_RF_DISC_COMMAND_OID) {
-    gWaitingforDiscRsp = false;
+    gWaitingForDiscRsp = false;
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
   }
 
@@ -256,7 +258,7 @@ int handleObserveModeTechCommand(uint16_t data_len, const uint8_t* p_data) {
         status = NCI_RSP_OK;
       } else if (rfDiscoveryStatus != NFCSTATUS_SUCCESS) {
         NXPLOG_NCIHAL_E(
-            "%s Rf Disovery command failed, reset back to default discovery",
+            "%s Rf Discovery command failed, reset back to default discovery",
             __func__);
         // Recovery to fallback to default discovery when there is a failure
         nciStatus = deactivateRfDiscovery();
@@ -266,7 +268,7 @@ int handleObserveModeTechCommand(uint16_t data_len, const uint8_t* p_data) {
         }
         rfDiscoveryStatus = sendRfDiscoveryCommand(false);
         if (rfDiscoveryStatus != NFCSTATUS_SUCCESS) {
-          NXPLOG_NCIHAL_E("%s Rf Disovery command failed on recovery",
+          NXPLOG_NCIHAL_E("%s Rf Discovery command failed on recovery",
                           __func__);
         }
       }

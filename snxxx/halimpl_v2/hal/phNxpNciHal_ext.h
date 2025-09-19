@@ -56,6 +56,8 @@ extern bool wRfUpdateReq;
 extern fpRegRfFwDndl_t fpRegRfFwDndl;
 extern fpPropConfCover_t fpPropConfCover;
 #define UINT8_TO_STREAM(p, u8) \
-  { *(p)++ = (uint8_t)(u8); }
+  {                            \
+    *(p)++ = (uint8_t)(u8);    \
+  }
 
 #endif /* _PHNXPNICHAL_EXT_H_ */

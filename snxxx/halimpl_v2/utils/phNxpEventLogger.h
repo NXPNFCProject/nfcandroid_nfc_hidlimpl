@@ -22,7 +22,7 @@
 #define EUICC_CONNECTIVITY_PACKET 0xAB
 #define ESE_DPD_EVENT 0x70
 
-enum class LogEventType: uint8_t { kLogSMBEvent = 0, kLogDPDEvent };
+enum class LogEventType : uint8_t { kLogSMBEvent = 0, kLogDPDEvent };
 
 // Store NTF/Event to filesystem under /data
 // Currently being used to store SMB debug ntf and eSE DPD

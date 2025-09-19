@@ -46,7 +46,7 @@ class NciDiscoveryCommandBuilder {
   uint8_t currentObserveModeTech = 0x00;
   vector<uint8_t> currentDiscoveryCommand;
   vector<DiscoveryConfiguration> mRfDiscoverConfiguration;
-  bool mIsRfDiscoveriryReceived;
+  bool mIsRfDiscoveryReceived;
 
   /*****************************************************************************
    *

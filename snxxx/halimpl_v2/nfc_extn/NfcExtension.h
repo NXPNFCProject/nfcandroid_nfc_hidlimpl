@@ -17,13 +17,14 @@
 #ifndef NFC_EXTENSION_H
 #define NFC_EXTENSION_H
 #include <phTmlNfc.h>
+
 #include <cstdint>
+
 #include "phNfcStatus.h"
 
-struct VendorExtnCb
-{
-  /* dummy struct to maitain
-     same API signatures accross */
+struct VendorExtnCb {
+  /* dummy struct to maintain
+     same API signatures across */
 };
 
 typedef struct {
@@ -39,7 +40,7 @@ static NciDeferredData_t nciRspNtfDeferredData;
  * @brief Defines the Nfc Rf State
  *
  */
-enum NfcRfState_t: uint8_t {
+enum NfcRfState_t : uint8_t {
   IDLE,
   DISCOVER,
   W4_ALL_DISCOVERIES,
@@ -59,7 +60,7 @@ typedef struct {
 } NciData_t;
 
 /**
- * @brief Holds functional event datas to support
+ * @brief Holds functional event data's to support
  *        extension features
  */
 
@@ -77,8 +78,9 @@ typedef union {
  * @brief Holds functional event codes to support
  *        extension features.
  */
-enum NfcExtEvent_t: uint8_t {
-  HANDLE_VENDOR_NCI_MSG = 0x0B, /* TO avoid clash with existing HAL Status Event*/
+enum NfcExtEvent_t : uint8_t {
+  HANDLE_VENDOR_NCI_MSG =
+      0x0B, /* TO avoid clash with existing HAL Status Event*/
   HANDLE_VENDOR_NCI_RSP_NTF,
   HANDLE_WRITE_COMPLETE_STATUS,
   HANDLE_HAL_CONTROL_GRANTED,
@@ -96,7 +98,7 @@ enum NfcExtEvent_t: uint8_t {
   HANDLE_NFC_DEVICE_SHUTDOWN,
 };
 
-enum NfcExtHal_NFCC_ERROR_CODE_t: uint8_t {
+enum NfcExtHal_NFCC_ERROR_CODE_t : uint8_t {
   NFCC_HAL_INPUT_CLK_ERR_CODE = 4u,
   NFCC_HAL_ASSERT_ERR_CODE = 5u,
   NFCC_HAL_TRANS_ERR_CODE = 6u,
@@ -155,7 +157,7 @@ void phNxpExtn_FwDnldStatusUpdate(uint8_t status);
 NFCSTATUS phNxpHal_EnqueueWrite(uint8_t* pBuffer, uint16_t wLength);
 
 /**
- * @brief Adds the resopnse message to queue and
+ * @brief Adds the response message to queue and
  *        worker thread sends it to controller
  * @param  pBuffer pointer to write buffer
  * @param  wLength length of the write buffer
@@ -177,7 +179,7 @@ void phNxpExtn_NfcHalControlGranted();
 /**
  * @brief updates the NCI packet write completion status
  * @param status indicates NFCSTATUS_SUCCESS, if NCI packet
- *        written to controller sucessfully otherwise
+ *        written to controller successfully otherwise
  *        returns NFCSTATUS_FAILED
  * @return void
  *
@@ -193,7 +195,7 @@ void phNxpExtn_WriteCompleteStatusUpdate(NFCSTATUS status);
  * NFCSTATUS_EXTN_FEATURE_FAILURE.
  *
  */
-NFCSTATUS phNxpExtn_HandleNciMsg(uint16_t *dataLen, const uint8_t* pData);
+NFCSTATUS phNxpExtn_HandleNciMsg(uint16_t* dataLen, const uint8_t* pData);
 
 /**
 
@@ -217,7 +219,7 @@ NFCSTATUS phNxpExtn_HandleHalEvent(uint8_t event);
  * stop the response timer.
  *
  */
-NFCSTATUS phNxpExtn_HandleNciRspNtf(uint16_t *dataLen, const uint8_t* pData);
+NFCSTATUS phNxpExtn_HandleNciRspNtf(uint16_t* dataLen, const uint8_t* pData);
 
 /**
  * @brief  requests control of NFCC to libnfc-nci.

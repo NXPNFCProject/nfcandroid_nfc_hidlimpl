@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2014, 2020,2023 NXP
+ * Copyright 2010-2014, 2020,2023, 2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -382,11 +382,11 @@ static void phOsalNfc_Timer_Expired(union sigval sv) {
   /* Timer is stopped when callback function is invoked */
   pTimerHandle->eState = eTimerStopped;
 
-  pTimerHandle->tDeferedCallInfo.pDeferedCall = &phOsalNfc_DeferredCall;
-  pTimerHandle->tDeferedCallInfo.pParam = (void*)((intptr_t)(sv.sival_int));
+  pTimerHandle->tDeferredCallInfo.pDeferredCall = &phOsalNfc_DeferredCall;
+  pTimerHandle->tDeferredCallInfo.pParam = (void*)((intptr_t)(sv.sival_int));
 
   pTimerHandle->tOsalMessage.eMsgType = PH_LIBNFC_DEFERREDCALL_MSG;
-  pTimerHandle->tOsalMessage.pMsgData = (void*)&pTimerHandle->tDeferedCallInfo;
+  pTimerHandle->tOsalMessage.pMsgData = (void*)&pTimerHandle->tDeferredCallInfo;
 
   /* Post a message on the queue to invoke the function */
   phOsalNfc_PostTimerMsg((phLibNfc_Message_t*)&pTimerHandle->tOsalMessage);

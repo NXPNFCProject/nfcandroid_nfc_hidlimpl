@@ -26,8 +26,7 @@ double gpMeasuredFieldStrength_of_gpRssiAt8Am = -1;
 uint8_t ReaderPollConfigParser::lastKnownGain = 0x00;
 uint8_t ReaderPollConfigParser::lastKnownModEvent = 0x00;
 
-void setInterplolatedRssi8Am(uint16_t rssiAt8Am,
-                             uint8_t measuredFieldStrength) {
+void setInterpolatedRssi8Am(uint16_t rssiAt8Am, uint8_t measuredFieldStrength) {
   if (rssiAt8Am == 0x00) {
     gpMeasuredFieldStrength_of_gpRssiAt8Am = -1;
     return;
@@ -343,24 +342,24 @@ vector<uint8_t> ReaderPollConfigParser::getEvent(vector<uint8_t> p_event,
  ****************************************************************************/
 void ReaderPollConfigParser::notifyPollingLoopInfoEvent(
     const std::vector<uint8_t>& p_data) {
-    if (callback == nullptr) return;
+  if (callback == nullptr) return;
 
-    constexpr size_t NCI_HEADER_SIZE = 3;
-    const size_t payload_size = p_data.size() + 1; //+1 for OBSERVEMODE_OP_CODE
-    const size_t total_size = NCI_HEADER_SIZE + payload_size;
+  constexpr size_t NCI_HEADER_SIZE = 3;
+  const size_t payload_size = p_data.size() + 1;  //+1 for OBSERVEMODE_OP_CODE
+  const size_t total_size = NCI_HEADER_SIZE + payload_size;
 
-    std::vector<uint8_t> readerPollInfoNotifications(total_size);
+  std::vector<uint8_t> readerPollInfoNotifications(total_size);
 
-    size_t index = 0;
-    readerPollInfoNotifications[index++] = NCI_PROP_NTF_GID;
-    readerPollInfoNotifications[index++] = NCI_PROP_NTF_ANDROID_OID;
-    readerPollInfoNotifications[index++] = static_cast<uint8_t>(payload_size);
-    readerPollInfoNotifications[index++] = OBSERVE_MODE_OP_CODE;
-    // Copy payload data
-    std::copy(p_data.begin(), p_data.end(),
-              readerPollInfoNotifications.begin() + index);
+  size_t index = 0;
+  readerPollInfoNotifications[index++] = NCI_PROP_NTF_GID;
+  readerPollInfoNotifications[index++] = NCI_PROP_NTF_ANDROID_OID;
+  readerPollInfoNotifications[index++] = static_cast<uint8_t>(payload_size);
+  readerPollInfoNotifications[index++] = OBSERVE_MODE_OP_CODE;
+  // Copy payload data
+  std::copy(p_data.begin(), p_data.end(),
+            readerPollInfoNotifications.begin() + index);
 
-    callback(static_cast<int>(total_size), readerPollInfoNotifications.data());
+  callback(static_cast<int>(total_size), readerPollInfoNotifications.data());
 }
 
 /*****************************************************************************

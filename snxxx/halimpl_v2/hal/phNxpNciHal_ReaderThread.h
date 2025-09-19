@@ -18,6 +18,7 @@
 #define NXPNCIHALREADER_H
 
 #include <pthread.h>
+
 #include <atomic>
 #include <cstdbool>
 
@@ -44,7 +45,7 @@ class phNxpNciHal_ReaderThread {
    *
    * Description:    This method stops the reader thread and clear the resources
    *
-   * Returns:        bool: True if the reader thread was successfully stoped
+   * Returns:        bool: True if the reader thread was successfully stopped
    *                 otherwise false.
    ******************************************************************************/
   bool Stop();

@@ -17,7 +17,7 @@
 
 #include <phNxpNciHal.h>
 
-enum RefreshNfccPowerState: uint8_t {
+enum RefreshNfccPowerState : uint8_t {
   SCREEN_OFF = 0,
   SCREEN_ON,
   ULPDET_OFF,

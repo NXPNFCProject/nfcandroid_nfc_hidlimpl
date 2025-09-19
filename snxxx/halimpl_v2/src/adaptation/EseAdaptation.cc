@@ -18,6 +18,7 @@
  ******************************************************************************/
 #define LOG_TAG "EseAdaptation"
 #include "EseAdaptation.h"
+
 #include <hwbinder/ProcessState.h>
 #include <log/log.h>
 
@@ -133,7 +134,9 @@ void EseAdaptation::signal() { mCondVar.signal(); }
 uint32_t EseAdaptation::Thread() {
   const char* func = "EseAdaptation::Thread";
   ALOGD_IF(nfc_debug_enabled, "%s: enter", func);
-  { NfcHalThreadCondVar CondVar; }
+  {
+    NfcHalThreadCondVar CondVar;
+  }
 
   EseAdaptation::GetInstance().signal();
 

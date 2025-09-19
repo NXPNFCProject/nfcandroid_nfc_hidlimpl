@@ -15,15 +15,16 @@
  **
  */
 #include "phNxpEventLogger.h"
+
 #include <errno.h>
+#include <phNxpConfig.h>
+#include <phNxpLog.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <unistd.h>
+
 #include <fstream>
 #include <iomanip>
-
-#include <phNxpConfig.h>
-#include <phNxpLog.h>
 
 #define TIMESTAMP_BUFFER_SIZE 64
 
@@ -44,7 +45,7 @@ static void GetCurrentTimestamp(char* timestamp) {
   char buffer[TIMESTAMP_BUFFER_SIZE];
 
   timeinfo = localtime(&rawtime);
-  // Need to calculate millisec separately as timeinfo doesn't
+  // Need to calculate milliseconds separately as timeinfo doesn't
   // have milliseconds field
   int milliseconds = tv.tv_nsec / 1000000;
 

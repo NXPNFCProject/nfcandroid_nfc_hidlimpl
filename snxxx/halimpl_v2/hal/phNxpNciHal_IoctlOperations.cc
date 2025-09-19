@@ -15,13 +15,13 @@
  */
 
 #undef PROPERTY_VALUE_MAX
-#include <cutils/properties.h>
-#include <hardware/nfc.h>
 #include "phNxpNciHal_IoctlOperations.h"
 
 #include <android-base/file.h>
 #include <android-base/parseint.h>
 #include <android-base/strings.h>
+#include <cutils/properties.h>
+#include <hardware/nfc.h>
 
 #include <map>
 #include <set>

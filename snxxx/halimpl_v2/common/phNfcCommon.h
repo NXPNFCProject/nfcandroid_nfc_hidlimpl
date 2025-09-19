@@ -181,18 +181,18 @@ typedef void (*pphOsalNfc_DeferFuncPointer_t)(void*);
 /*
  * Deferred message specific info declaration.
  */
-typedef struct phOsalNfc_DeferedCallInfo {
-  pphOsalNfc_DeferFuncPointer_t pDeferedCall; /* pointer to Deferred callback */
+typedef struct phOsalNfc_DeferredCallInfo {
+  pphOsalNfc_DeferFuncPointer_t pDeferredCall; /* pointer to Deferred callback */
   void* pParam; /* contains timer message specific details*/
-} phOsalNfc_DeferedCallInfo_t;
+} phOsalNfc_DeferredCallInfo_t;
 
 /*
  * States in which a OSAL timer exist.
  */
-enum phOsalNfc_TimerStates_t: uint8_t {
-  eTimerIdle = 0,          /* Indicates Initial state of timer */
-  eTimerRunning = 1,       /* Indicate timer state when started */
-  eTimerStopped = 2        /* Indicates timer state when stopped */
+enum phOsalNfc_TimerStates_t : uint8_t {
+  eTimerIdle = 0,    /* Indicates Initial state of timer */
+  eTimerRunning = 1, /* Indicate timer state when started */
+  eTimerStopped = 2  /* Indicates timer state when stopped */
 }; /* Variable representing State of timer */
 
 /*
@@ -208,7 +208,7 @@ typedef struct phOsalNfc_TimerHandle {
   /* Osal Timer message posted on User Thread */
   phLibNfc_Message_t tOsalMessage;
   /* Deferred Call structure to Invoke Callback function */
-  phOsalNfc_DeferedCallInfo_t tDeferedCallInfo;
+  phOsalNfc_DeferredCallInfo_t tDeferredCallInfo;
   /* Variables for Structure Instance and Structure Ptr */
 } phOsalNfc_TimerHandle_t, *pphOsalNfc_TimerHandle_t;
 

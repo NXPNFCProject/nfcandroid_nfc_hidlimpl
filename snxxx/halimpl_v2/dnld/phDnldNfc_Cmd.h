@@ -26,7 +26,7 @@
 /*
  * Enum definition contains Firmware Download Command Ids
  */
-enum phDnldNfc_CmdId: uint8_t {
+enum phDnldNfc_CmdId : uint8_t {
   PH_DL_CMD_NONE = 0x00,           /* Invalid Cmd */
   PH_DL_CMD_RESET = 0xF0,          /* Reset */
   PH_DL_CMD_GETVERSION = 0xF1,     /* Get Version */

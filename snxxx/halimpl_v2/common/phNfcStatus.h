@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2018, 2020-2021,2024 NXP
+ * Copyright 2010-2018, 2020-2021,2024-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -193,7 +193,7 @@
 /*
  * FW version error while performing FW download,
  * FW major version mismatch (cannot downgrade FW major version) or FW version
- * already upto date
+ * already up to date
  * User may be trying to flash Mobile FW on top of Infra FW, which is not
  * allowed
  * Download appropriate version of FW
@@ -236,7 +236,7 @@
 /* The Ndef Format procedure has failed. */
 #define NFCSTATUS_FORMAT_ERROR (0x0023)
 
-/* The NCI Cedit error */
+/* The NCI Credit error */
 #define NFCSTATUS_CREDIT_TIMEOUT (0x0024)
 
 /*
@@ -356,7 +356,7 @@
 #define NFCSTATUS_COMMAND_NOT_SUPPORTED (0x0097)
 
 /*
- * Tag is not NDEF compilant
+ * Tag is not NDEF compliant
  */
 #define NFCSTATUS_NON_NDEF_COMPLIANT (0x0098)
 
@@ -391,12 +391,12 @@
 #define NFCSTATUS_FORCE_FWDWNLD (0x0049)
 
 /*
- * Indicates, it is handled as part of extenstion feature
+ * Indicates, it is handled as part of extension feature
  */
 #define NFCSTATUS_EXTN_FEATURE_SUCCESS (0x0050)
 
 /*
- * Indicates, it is not handled as part of extenstion feature
+ * Indicates, it is not handled as part of extension feature
  */
 #define NFCSTATUS_EXTN_FEATURE_FAILURE (0x0051)
 

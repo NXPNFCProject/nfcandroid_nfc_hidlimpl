@@ -16,8 +16,11 @@
  *
  ******************************************************************************/
 #include "phNxpNTag.h"
+
 #include <phNxpLog.h>
+
 #include <cstdint>
+
 #include "NciDiscoveryCommandBuilder.h"
 #include "NxpNfcExtension.h"
 #include "ObserveMode.h"

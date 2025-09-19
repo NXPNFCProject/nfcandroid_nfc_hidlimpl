@@ -75,7 +75,7 @@
 
 #define PH_LIBNFC_VEN_RESET_ON_DOWNLOAD_TIMEOUT (1)
 
-#define PH_DNLDNFC_UINT16_GET_MSB(n) ((n & 0xFF00 ) >> 8)
+#define PH_DNLDNFC_UINT16_GET_MSB(n) ((n & 0xFF00) >> 8)
 
 #define PH_DNLDNFC_UINT16_GET_LSB(n) (n & 0x00FF)
 
@@ -151,7 +151,7 @@ NFCSTATUS phDnldNfc_CmdHandler(void* pContext, phDnldNfc_Event_t TrigEvent) {
 
           status = pDlCtxt->wCmdSendStatus;
         } else {
-          NXPLOG_FWDNLD_E("Prev Norml Sequence not completed/restored!!");
+          NXPLOG_FWDNLD_E("Prev Normal Sequence not completed/restored!!");
           status = PHNFCSTVAL(CID_NFC_DNLD, NFCSTATUS_FAILED);
         }
         break;
@@ -606,7 +606,7 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
               PH_DNLDNFC_UINT16_GET_MSB(wFrameLen);
           pDlContext->tCmdRspFrameInfo
               .aFrameBuff[PHDNLDNFC_FRAME_HDR_OFFSET + 1] =
-                  PH_DNLDNFC_UINT16_GET_LSB(wFrameLen);
+              PH_DNLDNFC_UINT16_GET_LSB(wFrameLen);
 
           NXPLOG_FWDNLD_D("Inserting FrameId ..");
           pDlContext->tCmdRspFrameInfo.aFrameBuff[PHDNLDNFC_FRAMEID_OFFSET] =
@@ -626,10 +626,10 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
 
             pDlContext->tCmdRspFrameInfo
                 .aFrameBuff[PHDNLDNFC_FRAME_HDR_OFFSET] =
-                    PH_DNLDNFC_UINT16_GET_MSB(wFrameLen);
+                PH_DNLDNFC_UINT16_GET_MSB(wFrameLen);
             pDlContext->tCmdRspFrameInfo
                 .aFrameBuff[PHDNLDNFC_FRAME_HDR_OFFSET + 1] =
-                    PH_DNLDNFC_UINT16_GET_LSB(wFrameLen);
+                PH_DNLDNFC_UINT16_GET_LSB(wFrameLen);
 
             /* To ensure we have no frag bit set for crc calculation */
             if (IS_CHIP_TYPE_GE(sn220u) || IS_CHIP_TYPE_EQ(pn560)) {
@@ -651,7 +651,7 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
                                       wFrameLen);
         /* Insert the computed Crc value */
         pDlContext->tCmdRspFrameInfo.aFrameBuff[wFrameLen] =
-            PH_DNLDNFC_UINT16_GET_MSB(wCrcVal);;
+            PH_DNLDNFC_UINT16_GET_MSB(wCrcVal);
         pDlContext->tCmdRspFrameInfo.aFrameBuff[wFrameLen + 1] =
             PH_DNLDNFC_UINT16_GET_LSB(wCrcVal);
 

@@ -21,19 +21,19 @@
  * Project: Trusted NFC Linux
  *
  */
+#include <NfccI2cTransport.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <hardware/nfc.h>
+#include <phNfcStatus.h>
+#include <phNxpLog.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/ioctl.h>
 #include <sys/select.h>
 #include <termios.h>
 #include <unistd.h>
 
-#include <NfccI2cTransport.h>
-#include <phNfcStatus.h>
-#include <phNxpLog.h>
-#include <string.h>
 #include "phNxpNciHal_utils.h"
 
 /*******************************************************************************
@@ -188,7 +188,7 @@ int NfccI2cTransport::Read(void* pDevHandle, uint8_t* pBuffer,
   int numRead = 0;
   struct timeval tv;
   fd_set rfds;
-  uint16_t totalBtyesToRead = 0;
+  uint16_t totalBytesToRead = 0;
 
   UNUSED_PROP(nNbBytesToRead);
   if (NULL == pDevHandle) {
@@ -196,9 +196,9 @@ int NfccI2cTransport::Read(void* pDevHandle, uint8_t* pBuffer,
   }
 
   if (bFwDnldFlag == false) {
-    totalBtyesToRead = NORMAL_MODE_HEADER_LEN;
+    totalBytesToRead = NORMAL_MODE_HEADER_LEN;
   } else {
-    totalBtyesToRead = FW_DNLD_HEADER_LEN;
+    totalBytesToRead = FW_DNLD_HEADER_LEN;
   }
 
   /* Read with 2 second timeout, so that the read thread can be aborted
@@ -219,7 +219,7 @@ int NfccI2cTransport::Read(void* pDevHandle, uint8_t* pBuffer,
     return -1;
   } else {
     ret_Read =
-        read((int)(intptr_t)pDevHandle, pBuffer, totalBtyesToRead - numRead);
+        read((int)(intptr_t)pDevHandle, pBuffer, totalBytesToRead - numRead);
     if (ret_Read > 0 && !(pBuffer[0] == 0xFF && pBuffer[1] == 0xFF)) {
       numRead += ret_Read;
     } else if (ret_Read == 0) {
@@ -242,16 +242,16 @@ int NfccI2cTransport::Read(void* pDevHandle, uint8_t* pBuffer,
     }
 
     if (bFwDnldFlag == false) {
-      totalBtyesToRead = NORMAL_MODE_HEADER_LEN;
+      totalBytesToRead = NORMAL_MODE_HEADER_LEN;
     } else {
-      totalBtyesToRead = FW_DNLD_HEADER_LEN;
+      totalBytesToRead = FW_DNLD_HEADER_LEN;
     }
 
-    if (numRead < totalBtyesToRead) {
+    if (numRead < totalBytesToRead) {
       ret_Read = read((int)(intptr_t)pDevHandle, (pBuffer + numRead),
-                      totalBtyesToRead - numRead);
+                      totalBytesToRead - numRead);
 
-      if (ret_Read != totalBtyesToRead - numRead) {
+      if (ret_Read != totalBytesToRead - numRead) {
         NXPLOG_TML_E("%s [hdr] errno : %x", __func__, errno);
         return -1;
       } else {
@@ -259,15 +259,15 @@ int NfccI2cTransport::Read(void* pDevHandle, uint8_t* pBuffer,
       }
     }
     if (bFwDnldFlag == true) {
-      totalBtyesToRead =
+      totalBytesToRead =
           pBuffer[FW_DNLD_LEN_OFFSET] + FW_DNLD_HEADER_LEN + CRC_LEN;
     } else {
-      totalBtyesToRead =
+      totalBytesToRead =
           pBuffer[NORMAL_MODE_LEN_OFFSET] + NORMAL_MODE_HEADER_LEN;
     }
-    if ((totalBtyesToRead - numRead) != 0) {
+    if ((totalBytesToRead - numRead) != 0) {
       ret_Read = read((int)(intptr_t)pDevHandle, (pBuffer + numRead),
-                      totalBtyesToRead - numRead);
+                      totalBytesToRead - numRead);
       if (ret_Read > 0) {
         numRead += ret_Read;
       } else if (ret_Read == 0) {
@@ -311,7 +311,7 @@ int NfccI2cTransport::Write(void* pDevHandle, uint8_t* pBuffer,
   if (NULL == pDevHandle) {
     return -1;
   }
-  if (fragmentation_enabled == I2C_FRAGMENATATION_DISABLED &&
+  if (fragmentation_enabled == I2C_FRAGMENTATION_DISABLED &&
       nNbBytesToWrite > gpphTmlNfc_Context->fragment_len) {
     NXPLOG_TML_D(
         "%s data larger than maximum I2C  size,enable I2C fragmentation",

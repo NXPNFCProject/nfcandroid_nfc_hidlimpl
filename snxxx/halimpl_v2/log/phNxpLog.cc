@@ -25,6 +25,7 @@
 #include "phNxpLog.h"
 #endif
 #include <log/log.h>
+
 #include "phNxpNciHal_IoctlOperations.h"
 #include "phNxpNciHal_LxDebug.h"
 
@@ -120,7 +121,6 @@ static void phNxpLog_SetAvcLogLevel(uint8_t level) {
         (level > (unsigned char)num) ? level : (unsigned char)num;
   }
 }
-
 
 /*******************************************************************************
  *

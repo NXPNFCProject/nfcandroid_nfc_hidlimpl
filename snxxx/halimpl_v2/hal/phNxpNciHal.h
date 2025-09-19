@@ -18,7 +18,9 @@
 
 #include <hardware/nfc.h>
 #include <phNxpNciHal_utils.h>
+
 #include <vector>
+
 #include "NxpMfcReader.h"
 #include "NxpNfcCapability.h"
 #ifdef NXP_BOOTTIME_UPDATE
@@ -43,7 +45,7 @@ using std::vector;
 #define PN557_NXP_AUTH_TIMEOUT_BUF_LEN 0x0C
 
 /*Mem alloc with 8 byte alignment*/
-#define size_align(sz) ((((sz)-1) | 7) + 1)
+#define size_align(sz) ((((sz) - 1) | 7) + 1)
 #define nxp_malloc(size) malloc(size_align((size)))
 
 typedef void(phNxpNciHal_control_granted_callback_t)();
@@ -60,7 +62,7 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 // #define NCI_MT_CMD 0x20
 // #define NCI_MT_RSP 0x40
 // #define NCI_MT_NTF 0x60
-#define NCI_OID_SYSTEM_TERMPERATURE_INFO_NTF 0x42
+#define NCI_OID_SYSTEM_TEMPERATURE_INFO_NTF 0x42
 #define CORE_RESET_TRIGGER_TYPE_CORE_RESET_CMD_RECEIVED 0x02
 #define CORE_RESET_TRIGGER_TYPE_POWERED_ON 0x01
 #define NCI2_0_CORE_RESET_TRIGGER_TYPE_OVER_TEMPERATURE ((uint8_t)0xA1)
@@ -90,21 +92,21 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 
 #define CORE_RESET_NTF_RECOVERY_REQ_COUNT 0x03
 
-enum phNxpNci_HalStatus_enum: uint8_t {
+enum phNxpNci_HalStatus_enum : uint8_t {
   HAL_STATUS_CLOSE = 0,
   HAL_STATUS_OPEN,
   HAL_STATUS_MIN_OPEN,
   HAL_OPEN_CORE_INITIALIZING
 };
 
-enum HalNfcFwUpdateStatusEnum: uint8_t {
+enum HalNfcFwUpdateStatusEnum : uint8_t {
   HAL_NFC_FW_UPDATE_INVALID = 0x00,
   HAL_NFC_FW_UPDATE_START,
-  HAL_NFC_FW_UPDATE_SCUCCESS,
+  HAL_NFC_FW_UPDATE_SUCCESS,
   HAL_NFC_FW_UPDATE_FAILED,
 };
 
-enum phNxpNciHal_GpioInfoState_enum: uint8_t {
+enum phNxpNciHal_GpioInfoState_enum : uint8_t {
   GPIO_UNKNOWN = 0x00,
   GPIO_STORE = 0x01,
   GPIO_STORE_DONE = 0x02,
@@ -124,7 +126,7 @@ using phNxpNciHal_GpioInfoState = phNxpNciHal_GpioInfoState_enum;
  *              the status of. Each value represents a specific operation
  *              performed by the NCI HAL.
  ******************************************************************************/
-enum phNxpNciHal_OpType: uint8_t {
+enum phNxpNciHal_OpType : uint8_t {
 
   /******************************************************************************
    * PHNXP_NCIHAL_OP_OPEN
@@ -257,9 +259,15 @@ struct phRfMiscSettings {
   uint8_t configBitMask;
 };
 
-enum: uint8_t { SE_TYPE_ESE, SE_TYPE_EUICC, SE_TYPE_UICC, SE_TYPE_UICC2, NUM_SE_TYPES };
+enum : uint8_t {
+  SE_TYPE_ESE,
+  SE_TYPE_EUICC,
+  SE_TYPE_UICC,
+  SE_TYPE_UICC2,
+  NUM_SE_TYPES
+};
 
-enum phNxpNci_Antenaa_Actions_type: uint8_t{
+enum phNxpNci_Antenaa_Actions_type : uint8_t {
   ANTENNA_CHECK_STATUS,
   ANTENNA_SET_VDDPA
 };
@@ -295,7 +303,7 @@ static const uint8_t get_cfg_arr[] = {TOTAL_DURATION, ATR_REQ_GEN_BYTES_POLL,
 // #define NXP_NFC_SET_CONFIG_PARAM_EXT 0xA0
 // #define NXP_NFC_PARAM_ID_SWP2        0xD4
 // #define NXP_NFC_PARAM_ID_SWPUICC3    0xDC
-enum phNxpNci_EEPROM_request_type: uint8_t {
+enum phNxpNci_EEPROM_request_type : uint8_t {
   EEPROM_RF_CFG,
   EEPROM_FW_DWNLD,
   EEPROM_WIREDMODE_RESUME_TIMEOUT,
@@ -348,7 +356,7 @@ typedef struct phNxpNci_getCfg_info {
   uint8_t auth_cmd_timeout[PN557_NXP_AUTH_TIMEOUT_BUF_LEN];
   uint8_t auth_cmd_timeoutlen;
 } phNxpNci_getCfg_info_t;
-enum phNxpNciProfile: uint8_t {
+enum phNxpNciProfile : uint8_t {
   NFC_FORUM_PROFILE,
   EMV_CO_PROFILE,
   SRD_PROFILE,

@@ -84,13 +84,13 @@ extern bool nfc_debug_enabled;
 /* ################################################################################################################
  */
 
-extern const char* NXPLOG_ITEM_NCIHAL; /* Android logging tag for NxpNciHal */
-extern const char* NXPLOG_ITEM_NCIX;   /* Android logging tag for NxpNciX   */
-extern const char* NXPLOG_ITEM_NCIR;   /* Android logging tag for NxpNciR   */
+extern const char* NXPLOG_ITEM_NCIHAL;  /* Android logging tag for NxpNciHal */
+extern const char* NXPLOG_ITEM_NCIX;    /* Android logging tag for NxpNciX   */
+extern const char* NXPLOG_ITEM_NCIR;    /* Android logging tag for NxpNciR   */
 extern const char* NXPAVCLOG_ITEM_NCIX; /* Android logging tag for NxpAvcNciX */
 extern const char* NXPAVCLOG_ITEM_NCIR; /* Android logging tag for NxpAvcNciR */
-extern const char* NXPLOG_ITEM_FWDNLD; /* Android logging tag for NxpFwDnld */
-extern const char* NXPLOG_ITEM_TML;    /* Android logging tag for NxpTml    */
+extern const char* NXPLOG_ITEM_FWDNLD;  /* Android logging tag for NxpFwDnld */
+extern const char* NXPLOG_ITEM_TML;     /* Android logging tag for NxpTml    */
 
 #ifdef NXP_HCI_REQ
 extern const char* NXPLOG_ITEM_HCPX; /* Android logging tag for NxpHcpX   */

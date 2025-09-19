@@ -17,6 +17,7 @@
 #if (NXP_NFC_RECOVERY == TRUE)
 
 #include "phNxpNciHal_Recovery.h"
+
 #include <cutils/properties.h>
 #include <phDnldNfc.h>
 #include <phNfcStatus.h>
@@ -27,6 +28,7 @@
 #include <phNxpNciHal_ext.h>
 #include <phOsalNfc_Timer.h>
 #include <phTmlNfc.h>
+
 #include "NfccTransportFactory.h"
 #include "phNxpNciHal_ReaderThread.h"
 #define MAX_CORE_RESET 3
@@ -212,7 +214,7 @@ static NFCSTATUS phNxpNciHal_ReadResponse(uint16_t* len, uint8_t* rsp_buffer,
  * Function         phNxpNciHal_readNFCCClockCfgValues
  *
  * Description      Helper function to read clock configuration from
- *                  nfcc configuration file and stores value in global strcture
+ *                  nfcc configuration file and stores value in global structure
  *
  * Returns          void
  *
@@ -232,7 +234,7 @@ static void phNxpNciHal_readNFCCClockCfgValues(void) {
  * Function         phNxpNciHal_determineChipType
  *
  * Description      Helper function to determine the chip info in nci mode
- *                  from NCI command and stores value in global strcture
+ *                  from NCI command and stores value in global structure
  *
  * Returns          bool
  *
@@ -314,7 +316,8 @@ bool phNxpNciHal_isSessionClosed(void) {
  * Function         phNxpNciHal_determineChipTypeDlMode
  *
  * Description      Helper function to determine the chip info in download mode
- *                  from get version command and stores value in global strcture
+ *                  from get version command and stores value in global
+ *                  structure
  *
  * Returns          bool
  *

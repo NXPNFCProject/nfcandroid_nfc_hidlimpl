@@ -18,8 +18,9 @@
 #define PHNXPNCIHAL_VENDORPROP_H
 
 #include <stdint.h>
-#include <string>
+
 #include <iostream>
+#include <string>
 
 /******************************************************************************
  * Function         phNxpNciHal_getVendorProp_int32
