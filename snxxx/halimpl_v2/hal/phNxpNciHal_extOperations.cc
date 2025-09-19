@@ -340,7 +340,7 @@ NFCSTATUS phNxpNciHal_save_uicc_params() {
   }
 
   NFCSTATUS status = NFCSTATUS_FAILED;
-  uint8_t maxbufflen = (0xFF - CMD_HEADER_SIZE);
+  uint8_t maxbufflen = (0xFF - EEPROM_TLV_SIZE);
 
   /* Getting UICC2 CL params */
   uicc1HciParams.resize(maxbufflen);
