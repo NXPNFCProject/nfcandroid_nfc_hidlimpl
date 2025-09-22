@@ -401,10 +401,10 @@ bool ReaderPollConfigParser::parseAndSendReaderPollInfo(uint8_t* p_ntf,
           (entryTag == L2_EVT_TAG || entryTag == CMA_EVT_TAG)) {
         resetExtraBytesInfo();
       }
-      vector<uint8_t> readerPollInfo =
-          getEvent(vector<uint8_t>(lxNotification.begin() + idx,
-                                   lxNotification.begin() + idx + entryLength),
-                   entryTag);
+      vector<uint8_t> partialLxNtf;
+      partialLxNtf.assign(lxNotification.begin() + idx,
+                          lxNotification.begin() + idx + entryLength);
+      vector<uint8_t> readerPollInfo = getEvent(partialLxNtf, entryTag);
 
       if ((int)(readerPollInfoNotifications.size() + readerPollInfo.size()) >=
           0xFF) {

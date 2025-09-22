@@ -515,7 +515,7 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
   int isfound = GetNxpNumValue(NAME_NXP_TRANSPORT, &value, sizeof(value));
   if (isfound > 0 && value == I3C) {
     nxpncihal_ctrl.gDrvCfg.nLinkType = ENUM_LINK_TYPE_I3C; /* For NFCC */
-    strlcat(nfc_dev_node, "-i3c", sizeof(nfc_dev_node));
+    strlcat(nfc_dev_node, "-i3c", (NXP_MAX_CONFIG_STRING_LEN * sizeof(char)));
   } else {
     nxpncihal_ctrl.gDrvCfg.nLinkType = ENUM_LINK_TYPE_I2C; /* For NFCC */
   }
