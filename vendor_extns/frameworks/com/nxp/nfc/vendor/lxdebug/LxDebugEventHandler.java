@@ -148,12 +148,16 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
     public void onEnableFinished(int status){
         NxpNfcLogger.d(TAG, "onEnableFinished: ");
         stopFieldDetectIfStarted();
+        if (mLxDebugCallbacks != null)
+          mLxDebugCallbacks.onNfcEnableFinished(status);
     }
 
     @Override
     public void onBootFinished(int status) {
         NxpNfcLogger.d(TAG, "onBootFinished: ");
         stopFieldDetectIfStarted();
+        if (mLxDebugCallbacks != null)
+          mLxDebugCallbacks.onNfcBootFinished(status);
     }
 
     private void stopFieldDetectIfStarted() {
@@ -164,7 +168,8 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             }
             mIsEFDMStarted = false;
         }
-        mNfcOperations.unregisterNxpOemCallback();
+        if(mLxDebugCallbacks == null)
+            mNfcOperations.unregisterNxpOemCallback();
     }
 
     /**

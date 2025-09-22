@@ -43,4 +43,16 @@ public interface ILxDebugCallbacks {
      *                             false when deactivated
      */
     void onRfFieldDetected(boolean isActive);
+
+    /**
+     * Callback to indicate if NFC boots successfully or not.
+     * @param status the status code indicating if boot finished successfully
+     */
+    void onNfcBootFinished(int status);
+
+    /**
+     * Callback to indicate if NFC is successfully enabled.
+     * @param status the status code indicating if enable finished successfully
+     */
+    void onNfcEnableFinished(int status);
 }
