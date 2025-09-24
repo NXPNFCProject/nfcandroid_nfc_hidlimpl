@@ -73,21 +73,38 @@ intptr_t phDal4Nfc_msgget(key_t key, int msgflg) {
 
 /*******************************************************************************
 **
-** Function         phDal4Nfc_msgrelease
+** Function         phDal4Nfc_msgsempost
 **
-** Description      Releases message queue
+** Description      Unblocks thread waiting on this msg Q.
 **
 ** Parameters       msqid - message queue handle
 **
 ** Returns          None
 **
 *******************************************************************************/
-void phDal4Nfc_msgrelease(intptr_t msqid) {
+void phDal4Nfc_msgsempost(intptr_t msqid) {
+  phDal4Nfc_message_queue_t* pQueue = (phDal4Nfc_message_queue_t*)msqid;
+  if (pQueue != NULL) {
+    sem_post(&pQueue->nProcessSemaphore);
+  }
+  return;
+}
+
+/*******************************************************************************
+**
+** Function         phDal4Nfc_msgdestroy
+**
+** Description      Destroy message queue
+**
+** Parameters       msqid - message queue handle
+**
+** Returns          None
+**
+*******************************************************************************/
+void phDal4Nfc_msgdestroy(intptr_t msqid) {
   phDal4Nfc_message_queue_t* pQueue = (phDal4Nfc_message_queue_t*)msqid;
 
   if (pQueue != NULL) {
-    sem_post(&pQueue->nProcessSemaphore);
-    usleep(3000);
     if (sem_destroy(&pQueue->nProcessSemaphore)) {
       NXPLOG_TML_E("Failed to destroy semaphore (errno=0x%08x)", errno);
     }

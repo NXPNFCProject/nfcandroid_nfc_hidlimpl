@@ -609,7 +609,6 @@ int phNxpNciHal_MinOpen() {
     strlcpy(nfc_dev_node, "/dev/nxp-nci", (max_len * sizeof(char)));
   }
   /* Configure hardware link */
-  nxpncihal_ctrl.gDrvCfg.nClientId = phDal4Nfc_msgget(0, 0600);
   int isfound = GetNxpNumValue(NAME_NXP_TRANSPORT, &value, sizeof(value));
   if (isfound > 0 && value == I3C) {
     nxpncihal_ctrl.gDrvCfg.nLinkType = ENUM_LINK_TYPE_I3C; /* For NFCC */
@@ -618,9 +617,7 @@ int phNxpNciHal_MinOpen() {
     nxpncihal_ctrl.gDrvCfg.nLinkType = ENUM_LINK_TYPE_I2C; /* For NFCC */
   }
   tTmlConfig.pDevName = (int8_t*)nfc_dev_node;
-  tOsalConfig.dwCallbackThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
   tOsalConfig.pLogFile = NULL;
-  tTmlConfig.dwGetMsgThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
   mGetCfg_info = NULL;
   mGetCfg_info =
       (phNxpNci_getCfg_info_t*)nxp_malloc(sizeof(phNxpNci_getCfg_info_t));
@@ -643,6 +640,9 @@ int phNxpNciHal_MinOpen() {
     CONCURRENCY_UNLOCK();
     return phNxpNciHal_MinOpen_Clean(&nfc_dev_node);
   }
+  nxpncihal_ctrl.gDrvCfg.nClientId = g_readerThread.GetMsgQueue();
+  tOsalConfig.dwCallbackThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
+  tTmlConfig.dwGetMsgThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
 
   /* Initialize TML layer */
   wConfigStatus = phTmlNfc_Init(&tTmlConfig);
@@ -975,10 +975,10 @@ static void phNxpNciHal_complete(NFCSTATUS status,
       return;
 
     case PHNXP_NCIHAL_OP_CLOSE:
-      msg.eMsgType = (status == NFCSTATUS_SUCCESS) ? NCI_HAL_CLOSE_CPLT_MSG
-                                                   : NCI_HAL_ERROR_MSG;
       nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
-      break;
+      // CLOSE_CPLT_MSG will be propagated as part of reader thread
+      // stop so returning directly
+      return;
 
     case PHNXP_NCIHAL_OP_POWER_CYCLE:
       msg.eMsgType = (status == NFCSTATUS_SUCCESS) ? NCI_HAL_OPEN_CPLT_MSG
@@ -2259,8 +2259,6 @@ close_and_return:
     phNxpTempMgr::GetInstance().Reset();
     phTmlNfc_CleanUp();
 
-    phDal4Nfc_msgrelease(nxpncihal_ctrl.gDrvCfg.nClientId);
-
     memset(&nxpncihal_ctrl, 0x00, sizeof(nxpncihal_ctrl));
 
     NXPLOG_NCIHAL_D("phNxpNciHal_close - phOsalNfc_DeInit completed");
@@ -2315,11 +2313,15 @@ void phNxpNciHal_clean_resources() {
       NXPLOG_TML_E("phTmlNfc_Shutdown Failed");
     }
 
+    if (true != g_readerThread.Stop()) {
+      NXPLOG_TML_E("Fail to kill Reader thread!");
+    }
+    if (true != g_writerThread.Stop()) {
+      NXPLOG_TML_E("Fail to kill Writer thread!");
+    }
     PhNxpEventLogger::GetInstance().Finalize();
     phNxpTempMgr::GetInstance().Reset();
     phTmlNfc_CleanUp();
-
-    phDal4Nfc_msgrelease(nxpncihal_ctrl.gDrvCfg.nClientId);
 
     memset(&nxpncihal_ctrl, 0x00, sizeof(nxpncihal_ctrl));
   }
