@@ -375,7 +375,6 @@ typedef struct phNxpNciProfile_Control {
 
 /* Internal messages to handle callbacks */
 #define NCI_HAL_OPEN_CPLT_MSG 0x411
-#define NCI_HAL_CLOSE_CPLT_MSG 0x412
 #define NCI_HAL_POST_INIT_CPLT_MSG 0x413
 #define NCI_HAL_PRE_DISCOVER_CPLT_MSG 0x414
 #define NCI_HAL_ERROR_MSG 0x415

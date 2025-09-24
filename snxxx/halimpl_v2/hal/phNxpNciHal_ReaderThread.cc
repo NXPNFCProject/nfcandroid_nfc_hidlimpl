@@ -32,7 +32,7 @@
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 
 phNxpNciHal_ReaderThread::phNxpNciHal_ReaderThread()
-    : reader_thread(0), thread_running(false) {}
+    : reader_thread(0), reader_queue(0), thread_running(false) {}
 
 phNxpNciHal_ReaderThread::~phNxpNciHal_ReaderThread() { Stop(); }
 
@@ -48,10 +48,18 @@ bool phNxpNciHal_ReaderThread::Start() {
      operations are thread-safe without needing explicit locks or mutexes */
   if (!thread_running.load()) {
     thread_running.store(true);
+    reader_queue = phDal4Nfc_msgget(0, 0600);
+    if (reader_queue == 0) {
+      NXPLOG_NCIHAL_E("%s:Failed to create reader queue", __func__);
+      return false;
+    }
+
     int val = pthread_create(&reader_thread, NULL,
                              phNxpNciHal_ReaderThread::ReaderThread, this);
     if (val != 0) {
       thread_running.store(false);
+      phDal4Nfc_msgdestroy(reader_queue);
+      reader_queue = 0;
       NXPLOG_NCIHAL_E("pthread_create failed");
       return false;
     }
@@ -60,12 +68,19 @@ bool phNxpNciHal_ReaderThread::Start() {
 }
 
 bool phNxpNciHal_ReaderThread::Stop() {
-  thread_running.store(false);
-
-  if ((thread_running.load()) &&
-      (pthread_join(reader_thread, (void**)NULL) != 0)) {
-    NXPLOG_NCIHAL_E("pthread_join failed");
-    return false;
+  if (thread_running.load()) {
+    thread_running.store(false);
+    phDal4Nfc_msgsempost(reader_queue);
+    if (pthread_join(reader_thread, (void**)NULL) != 0) {
+      NXPLOG_NCIHAL_E("pthread_join failed");
+      phDal4Nfc_msgdestroy(reader_queue);
+      reader_queue = 0;
+      return false;
+    }
+    reader_thread = 0;
+    phDal4Nfc_msgdestroy(reader_queue);
+    reader_queue = 0;
+    NXPLOG_NCIHAL_D("ReaderThread stopped");
   }
   return true;
 }
@@ -79,11 +94,11 @@ void* phNxpNciHal_ReaderThread::ReaderThread(void* arg) {
 
 void phNxpNciHal_ReaderThread::Run() {
   phLibNfc_Message_t msg;
-  NXPLOG_NCIHAL_D("HAL Reader thread started");
+  NXPLOG_NCIHAL_D("HAL ReaderThread started");
 
   while (thread_running.load()) {
     memset(&msg, 0x00, sizeof(phLibNfc_Message_t));
-    if (phDal4Nfc_msgrcv(nxpncihal_ctrl.gDrvCfg.nClientId, &msg, 0, 0) == -1) {
+    if (phDal4Nfc_msgrcv(reader_queue, &msg, 0, 0) == -1) {
       NXPLOG_NCIHAL_E("NFC reader received bad message");
       continue;
     }
@@ -134,18 +149,6 @@ void phNxpNciHal_ReaderThread::Run() {
           (*nxpncihal_ctrl.p_nfc_stack_cback)(HAL_NFC_OPEN_CPLT_EVT,
                                               HAL_NFC_STATUS_OK);
         }
-        REENTRANCE_UNLOCK();
-        break;
-      }
-
-      case NCI_HAL_CLOSE_CPLT_MSG: {
-        REENTRANCE_LOCK();
-        if (nxpncihal_ctrl.p_nfc_stack_cback != NULL) {
-          /* Send the event */
-          (*nxpncihal_ctrl.p_nfc_stack_cback)(HAL_NFC_CLOSE_CPLT_EVT,
-                                              HAL_NFC_STATUS_OK);
-        }
-        Stop();
         REENTRANCE_UNLOCK();
         break;
       }
@@ -225,5 +228,13 @@ void phNxpNciHal_ReaderThread::Run() {
       }
     }
   }
+  REENTRANCE_LOCK();
+  if (nxpncihal_ctrl.p_nfc_stack_cback != NULL) {
+    NXPLOG_NCIHAL_D("HAL ReaderThread: Sending HAL_NFC_CLOSE_CPLT_EVT");
+    /* Send the event */
+    (*nxpncihal_ctrl.p_nfc_stack_cback)(HAL_NFC_CLOSE_CPLT_EVT,
+                                        HAL_NFC_STATUS_OK);
+  }
+  REENTRANCE_UNLOCK();
   return;
 }

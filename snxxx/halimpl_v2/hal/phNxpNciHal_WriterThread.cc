@@ -48,6 +48,8 @@ bool phNxpNciHal_WriterThread::Start() {
                              phNxpNciHal_WriterThread::WriterThread, this);
     if (val != 0) {
       thread_running.store(false);
+      phDal4Nfc_msgdestroy(writer_queue);
+      writer_queue = 0;
       NXPLOG_NCIHAL_E("%s:pthread_create failed", __func__);
       return false;
     }
@@ -82,14 +84,17 @@ bool phNxpNciHal_WriterThread::Post(phLibNfc_Message_t& msg) {
 bool phNxpNciHal_WriterThread::Stop() {
   if (thread_running.load()) {
     thread_running.store(false);
-    phDal4Nfc_msgrelease(writer_queue);
-    writer_queue = 0;
-    if ((thread_running.load()) &&
-        (pthread_join(writer_thread, (void**)NULL) != 0)) {
+    phDal4Nfc_msgsempost(writer_queue);
+    if (pthread_join(writer_thread, (void**)NULL) != 0) {
       NXPLOG_NCIHAL_E("%s:pthread_join failed", __func__);
+      phDal4Nfc_msgdestroy(writer_queue);
+      writer_queue = 0;
       return false;
     }
     writer_thread = 0;
+    phDal4Nfc_msgdestroy(writer_queue);
+    writer_queue = 0;
+    NXPLOG_NCIHAL_D("WriterThread stopped");
   }
   return true;
 }
@@ -135,6 +140,5 @@ void phNxpNciHal_WriterThread::Run() {
       }
     }
   }
-  NXPLOG_NCIHAL_D("WriterThread stopped");
   return;
 }

@@ -511,7 +511,6 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
             (NXP_MAX_CONFIG_STRING_LEN * sizeof(char)));
   }
   /* Configure hardware link */
-  nxpncihal_ctrl.gDrvCfg.nClientId = phDal4Nfc_msgget(0, 0600);
   int isfound = GetNxpNumValue(NAME_NXP_TRANSPORT, &value, sizeof(value));
   if (isfound > 0 && value == I3C) {
     nxpncihal_ctrl.gDrvCfg.nLinkType = ENUM_LINK_TYPE_I3C; /* For NFCC */
@@ -520,9 +519,7 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
     nxpncihal_ctrl.gDrvCfg.nLinkType = ENUM_LINK_TYPE_I2C; /* For NFCC */
   }
   tTmlConfig.pDevName = (int8_t*)nfc_dev_node;
-  tOsalConfig.dwCallbackThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
   tOsalConfig.pLogFile = NULL;
-  tTmlConfig.dwGetMsgThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
 
   /* Create the client thread */
   if (g_readThread.Start() == false) {
@@ -530,6 +527,9 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
     CONCURRENCY_UNLOCK();
     return phnxpNciHal_partialOpenCleanUp(nfc_dev_node);
   }
+  nxpncihal_ctrl.gDrvCfg.nClientId = g_readThread.GetMsgQueue();
+  tOsalConfig.dwCallbackThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
+  tTmlConfig.dwGetMsgThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
   /* Initialize TML layer */
   if (phTmlNfc_Init(&tTmlConfig) != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("phTmlNfc_Init Failed");
@@ -557,16 +557,9 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
  * Returns          void
  *******************************************************************************/
 static void phnxpNciHal_partialClose(void) {
-  phLibNfc_Message_t msg;
   nxpncihal_ctrl.halStatus = HAL_STATUS_CLOSE;
 
   if (NULL != gpphTmlNfc_Context->pDevHandle) {
-    msg.eMsgType = NCI_HAL_CLOSE_CPLT_MSG;
-    msg.pMsgData = NULL;
-    msg.Size = 0;
-    msg.w_status = 0;
-    memset(msg.data, 0x00, sizeof(msg.data));
-    phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &msg);
     /* Abort any pending read and write */
     phTmlNfc_ReadAbort();
     phTmlNfc_Shutdown();
@@ -574,7 +567,6 @@ static void phnxpNciHal_partialClose(void) {
       NXPLOG_TML_E("Fail to kill Reader thread!");
     }
     phTmlNfc_CleanUp();
-    phDal4Nfc_msgrelease(nxpncihal_ctrl.gDrvCfg.nClientId);
     phNxpNciHal_cleanup_cb_data(&nxpncihal_ctrl.ext_cb_data);
     memset(&nxpncihal_ctrl, 0x00, sizeof(nxpncihal_ctrl));
     NXPLOG_NCIHAL_D("phnxpNciHal_partialClose - phOsalNfc_DeInit completed");
