@@ -42,6 +42,7 @@ void NxpNTag::clearNTagFlags() {
   mNtagControl.mNtagEnableRequest = false;
   mNtagControl.isNTagNtfCmdReq = false;
   mNtagControl.isNTagNtfEnabled = false;
+  mNtagControl.mNTagTimer.kill();
   mWaitingforDiscRsp = false;
   mNTagState = NTagState::NTAG_STATE_IDLE;
   mNTagSetSubState = NTagSetSubState::NTAG_SET_SUB_STATE_IDLE;
