@@ -64,7 +64,7 @@ typedef struct {
  *        extension features
  */
 
-typedef union {
+typedef struct {
   NciData_t nci_msg;
   NciData_t nci_rsp_ntf;
   uint8_t write_status;
