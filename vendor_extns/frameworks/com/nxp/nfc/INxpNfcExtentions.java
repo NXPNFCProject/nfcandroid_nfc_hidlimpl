@@ -18,6 +18,7 @@ package com.nxp.nfc;
 
 import android.nfc.NfcAdapter;
 import com.nxp.nfc.NxpNfcExtentions;
+import com.nxp.nfc.vendor.dualAntenna.INxpNfcDualAntenna;
 import com.nxp.nfc.vendor.ntag.INxpNfcNTag;
 
 /**
@@ -33,4 +34,11 @@ public interface INxpNfcExtentions {
    * @return None
    */
   public INxpNfcNTag getNxpNfcNTagInterface();
+
+  /**
+   * @brief Creates the Instance of {@link NxpNfcExtentions}
+   * @param nfcAdapter
+   * @return None
+   */
+  public INxpNfcDualAntenna getNxpNfcDualAntennaInterface();
 }

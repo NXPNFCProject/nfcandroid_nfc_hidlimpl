@@ -21,6 +21,7 @@ import android.os.RemoteException;
 import android.util.Log;
 import com.nxp.nfc.INxpNfcExtentions;
 import com.nxp.nfc.NxpNfcLogger;
+import com.nxp.nfc.vendor.dualAntenna.INxpNfcDualAntenna;
 import com.nxp.nfc.vendor.ntag.INxpNfcNTag;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -35,6 +36,8 @@ public class NxpNfcExtentions implements INxpNfcExtentions {
    */
   private Class mNxpNfcNTagClass;
   private Object mNxpNfcNTagObj;
+  private Class mNxpNfcDualAntennaClass;
+  private Object mNxpNfcDualAntennaObj;
 
   private NfcAdapter mNfcAdapter;
 
@@ -62,6 +65,33 @@ public class NxpNfcExtentions implements INxpNfcExtentions {
       mNxpNfcNTagObj = nxpNfcNTagCon.newInstance(mNfcAdapter);
 
       return ((INxpNfcNTag) mNxpNfcNTagObj);
+    } catch (ClassNotFoundException | InstantiationException |
+             IllegalAccessException | IllegalArgumentException |
+             InvocationTargetException | NoSuchMethodException e) {
+      NxpNfcLogger.e(TAG, "Error in Instantiating NxpNfcExtentions! Msg: " +
+                              e.getLocalizedMessage());
+    }
+    return null;
+  }
+  /**
+   * @brief Creates the Instance of {@link NxpNfcExtentions}
+   * @param None
+   * @return None
+   */
+  public INxpNfcDualAntenna getNxpNfcDualAntennaInterface() {
+    try {
+      mNxpNfcDualAntennaClass =
+          Class.forName("com.nxp.nfc.vendor.dualAntenna.NxpNfcDualAntenna");
+      Method[] methods = mNxpNfcDualAntennaClass.getDeclaredMethods();
+      NxpNfcLogger.d(TAG, "Total methods:" + methods.length);
+      for (Method method : methods) {
+        NxpNfcLogger.d(TAG, "Method: " + method.getName());
+      }
+      Constructor<?> nxpNfcDualAntennaCon =
+          mNxpNfcDualAntennaClass.getDeclaredConstructor(NfcAdapter.class);
+      mNxpNfcDualAntennaObj = nxpNfcDualAntennaCon.newInstance(mNfcAdapter);
+
+      return ((INxpNfcDualAntenna)mNxpNfcDualAntennaObj);
     } catch (ClassNotFoundException | InstantiationException |
              IllegalAccessException | IllegalArgumentException |
              InvocationTargetException | NoSuchMethodException e) {
