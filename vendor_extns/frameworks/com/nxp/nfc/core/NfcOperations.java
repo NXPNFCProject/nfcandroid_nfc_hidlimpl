@@ -102,6 +102,11 @@ public class NfcOperations {
     private boolean mIsCardEmulationActivated = false;
     /**
      * @brief holds the value of
+     * {@link NfcOemExtension.Callback#onEeListenActivated()}
+     */
+    private boolean mIsEeListenActivated = false;
+    /**
+     * @brief holds the value of
      * {@link NfcOemExtension.Callback#onTagConnected()}
      */
     private boolean mIsTagConnected = false;
@@ -419,6 +424,8 @@ public class NfcOperations {
 
         @Override
         public void onEeListenActivated(boolean isActivated) {
+            NfcOperations.this.mIsEeListenActivated = isActivated;
+            NxpNfcLogger.d(TAG, "mIsEeListenActivated: " + isActivated);
         }
 
         @Override
@@ -476,6 +483,10 @@ public class NfcOperations {
      * @brief Getter of {@link #mIsTagConnected}
      */
     public boolean isTagConnected() {
+        if (mNxpOemCallbacks == null) {
+            NxpNfcLogger.e(TAG, "Exception: OEM callback is not registered");
+            throw new IllegalStateException("OEM callback is not registered");
+        }
         return this.mIsTagConnected;
     }
 
@@ -499,6 +510,17 @@ public class NfcOperations {
             throw new IllegalStateException("OEM callback is not registered");
         }
         return this.mIsCardEmulationActivated;
+    }
+
+    /**
+     * @brief Getter of {@link #mIsEeListenActivated}
+     */
+    public boolean isEeListenActivated() throws IllegalStateException {
+        if (mNxpOemCallbacks == null) {
+            NxpNfcLogger.e(TAG, "Exception: OEM callback is not registered");
+            throw new IllegalStateException("OEM callback is not registered");
+        }
+        return this.mIsEeListenActivated;
     }
 
     /**

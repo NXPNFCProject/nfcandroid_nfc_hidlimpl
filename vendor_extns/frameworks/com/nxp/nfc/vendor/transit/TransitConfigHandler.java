@@ -248,7 +248,7 @@ public class TransitConfigHandler implements INxpOEMCallbacks {
     public boolean setConfig(String configs) throws IOException {
         mNfcOperations.registerNxpOemCallback(this);
         if ((!mNfcOperations.isEnabled()) || (mNfcOperations.isCardEmulationActivated())
-                || (mNfcOperations.isTagConnected())) {
+                || (mNfcOperations.isTagConnected()) || mNfcOperations.isEeListenActivated()) {
             NxpNfcLogger.e(TAG, "NFC is disabled or busy, Rejecting request..");
             mNfcOperations.unregisterNxpOemCallback();
             return false;
