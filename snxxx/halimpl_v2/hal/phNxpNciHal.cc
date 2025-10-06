@@ -2381,7 +2381,8 @@ int phNxpNciHal_configDiscShutdown(void) {
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("Discovery Map command: Failed");
     }
-    if (IS_CHIP_TYPE_EQ(sn100u)) {
+    if (IS_CHIP_TYPE_EQ(sn100u) || (!phNxpNciHal_isULPDetSupported()) ||
+        phNxpNciHal_getULPDetFlag()) {
       status = phNxpNciHal_ext_send_sram_config_to_flash();
       if (status != NFCSTATUS_SUCCESS) {
         NXPLOG_NCIHAL_E("Updation of the SRAM contents failed");
