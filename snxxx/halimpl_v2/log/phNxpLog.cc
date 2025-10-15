@@ -244,10 +244,31 @@ static void phNxpLog_SetNciTxLogLevel(uint8_t level) {
 static void phNxpLog_setLxLoggingEnabled() {
   gLog_level.is_lx_logging_enabled = false;
   unsigned long lx_debug_cfg = 0;
-  bool isfound = GetNxpNumValue(NAME_NXP_CORE_PROP_SYSTEM_DEBUG, &lx_debug_cfg,
-                                sizeof(lx_debug_cfg));
-  if (!isfound) {
-    return;
+  unsigned long prop_val = 0;
+  unsigned long config_val = 0;
+  bool prop_found = false;
+  bool config_found = false;
+
+  char valueStr[PROPERTY_VALUE_MAX] = {0};
+  int len = property_get("persist.vendor.nfc.nxp.lx_debug_mask", valueStr, "");
+  if (len > 0) {
+    if (sscanf(valueStr, "%lx", &prop_val) == 1) {
+      prop_found = true;
+    }
+  }
+
+  config_found = GetNxpNumValue(NAME_NXP_CORE_PROP_SYSTEM_DEBUG, &config_val,
+      sizeof(config_val));
+
+  if (prop_found) {
+    lx_debug_cfg |= prop_val;
+  }
+  if (config_found) {
+    lx_debug_cfg |= config_val;
+  }
+
+  if (!prop_found && !config_found) {
+    return; // No debug config found
   }
 
   if ((property_get_bool("ro.debuggable", 0) != 0) &&
