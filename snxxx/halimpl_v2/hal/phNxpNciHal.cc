@@ -597,7 +597,7 @@ int phNxpNciHal_MinOpen() {
   /*nci version NCI_VERSION_2_0 version by default for SN100 chip type*/
   nxpncihal_ctrl.nci_info.nci_version = NCI_VERSION_2_0;
   /* Read the nfc device node name */
-  nfc_dev_node = (char*)malloc(max_len * sizeof(char));
+  nfc_dev_node = static_cast<char*>(malloc(max_len * sizeof(char)));
   if (nfc_dev_node == NULL) {
     NXPLOG_NCIHAL_D("malloc of nfc_dev_node failed ");
     CONCURRENCY_UNLOCK();
@@ -616,11 +616,11 @@ int phNxpNciHal_MinOpen() {
   } else {
     nxpncihal_ctrl.gDrvCfg.nLinkType = ENUM_LINK_TYPE_I2C; /* For NFCC */
   }
-  tTmlConfig.pDevName = (int8_t*)nfc_dev_node;
+  tTmlConfig.pDevName = reinterpret_cast<int8_t*>(nfc_dev_node);
   tOsalConfig.pLogFile = NULL;
   mGetCfg_info = NULL;
-  mGetCfg_info =
-      (phNxpNci_getCfg_info_t*)nxp_malloc(sizeof(phNxpNci_getCfg_info_t));
+  mGetCfg_info = static_cast<phNxpNci_getCfg_info_t*>(
+      nxp_malloc(sizeof(phNxpNci_getCfg_info_t)));
   if (mGetCfg_info == NULL) {
     CONCURRENCY_UNLOCK();
     return phNxpNciHal_MinOpen_Clean(&nfc_dev_node);
@@ -641,8 +641,8 @@ int phNxpNciHal_MinOpen() {
     return phNxpNciHal_MinOpen_Clean(&nfc_dev_node);
   }
   nxpncihal_ctrl.gDrvCfg.nClientId = g_readerThread.GetMsgQueue();
-  tOsalConfig.dwCallbackThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
-  tTmlConfig.dwGetMsgThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
+  tOsalConfig.dwCallbackThreadId = nxpncihal_ctrl.gDrvCfg.nClientId;
+  tTmlConfig.dwGetMsgThreadId = nxpncihal_ctrl.gDrvCfg.nClientId;
 
   /* Initialize TML layer */
   wConfigStatus = phTmlNfc_Init(&tTmlConfig);
@@ -664,7 +664,8 @@ int phNxpNciHal_MinOpen() {
   }
   /* call read pending */
   status = phTmlNfc_Read(
-      NULL, 0x00, (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete,
+      NULL, 0x00,
+      static_cast<pphTmlNfc_TransactCompletionCb_t>(&phNxpNciHal_read_complete),
       NULL);
   if (status != NFCSTATUS_PENDING) {
     NXPLOG_NCIHAL_E("TML Read status error status = %x", status);
@@ -1259,7 +1260,8 @@ void phNxpNciHal_client_data_callback(uint16_t rx_data_len,
 NFCSTATUS phNxpNciHal_enableTmlRead() {
   /* Read again because read must be pending always.*/
   NFCSTATUS status = phTmlNfc_Read(
-      NULL, 0x00, (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_complete,
+      NULL, 0x00,
+      static_cast<pphTmlNfc_TransactCompletionCb_t>(&phNxpNciHal_read_complete),
       NULL);
   if (status != NFCSTATUS_PENDING) {
     NXPLOG_NCIHAL_E("read status error status = %x", status);
@@ -1371,15 +1373,16 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   }
   // recovery --end
 
-  buffer = (uint8_t*)malloc(bufflen * sizeof(uint8_t));
+  buffer = static_cast<uint8_t*>(malloc(bufflen * sizeof(uint8_t)));
   if (NULL == buffer) {
     nxpncihal_ctrl.halStatus = HAL_STATUS_OPEN;
     return NFCSTATUS_FAILED;
   }
   config_access = true;
   retlen = 0;
-  isfound = GetNxpByteArrayValue(NAME_NXP_ACT_PROP_EXTN, (char*)buffer, bufflen,
-                                 &retlen);
+  isfound =
+      GetNxpByteArrayValue(NAME_NXP_ACT_PROP_EXTN,
+                           reinterpret_cast<char*>(buffer), bufflen, &retlen);
   if (isfound > 0 && retlen > 0) {
     /* NXP ACT Proprietary Ext */
     status = phNxpNciHal_send_ext_cmd(retlen, buffer, &rsp_len, rsp);
@@ -1502,8 +1505,9 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
     mEEPROM_info.request_mode = GET_EEPROM_DATA;
     retlen = 0;
     memset(buffer, 0x00, bufflen);
-    isfound = GetNxpByteArrayValue(NAME_NXP_AUTH_TIMEOUT_CFG, (char*)buffer,
-                                   bufflen, &retlen);
+    isfound =
+        GetNxpByteArrayValue(NAME_NXP_AUTH_TIMEOUT_CFG,
+                             reinterpret_cast<char*>(buffer), bufflen, &retlen);
 
     if ((isfound > 0) && (retlen > 0)) {
       uint64_t auth_timeout_buffer_length;
@@ -1529,8 +1533,9 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
     isfound = GetNxpNumValue(NAME_NXP_EXT_TVDD_CFG, &num, sizeof(num));
     if (isfound > 0) {
       if (num == 1) {
-        isfound = GetNxpByteArrayValue(NAME_NXP_EXT_TVDD_CFG_1, (char*)buffer,
-                                       bufflen, &retlen);
+        isfound = GetNxpByteArrayValue(NAME_NXP_EXT_TVDD_CFG_1,
+                                       reinterpret_cast<char*>(buffer), bufflen,
+                                       &retlen);
         if (isfound && retlen > 0) {
           status = phNxpNciHal_send_ext_cmd(retlen, buffer, &rsp_len, rsp);
           if (status != NFCSTATUS_SUCCESS) {
@@ -1540,8 +1545,9 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
           }
         }
       } else if (num == 2) {
-        isfound = GetNxpByteArrayValue(NAME_NXP_EXT_TVDD_CFG_2, (char*)buffer,
-                                       bufflen, &retlen);
+        isfound = GetNxpByteArrayValue(NAME_NXP_EXT_TVDD_CFG_2,
+                                       reinterpret_cast<char*>(buffer), bufflen,
+                                       &retlen);
         if (isfound && retlen > 0) {
           status = phNxpNciHal_send_ext_cmd(retlen, buffer, &rsp_len, rsp);
           if (status != NFCSTATUS_SUCCESS) {
@@ -1551,8 +1557,9 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
           }
         }
       } else if (num == 3) {
-        isfound = GetNxpByteArrayValue(NAME_NXP_EXT_TVDD_CFG_3, (char*)buffer,
-                                       bufflen, &retlen);
+        isfound = GetNxpByteArrayValue(NAME_NXP_EXT_TVDD_CFG_3,
+                                       reinterpret_cast<char*>(buffer), bufflen,
+                                       &retlen);
         if (isfound && retlen > 0) {
           status = phNxpNciHal_send_ext_cmd(retlen, buffer, &rsp_len, rsp);
           if (status != NFCSTATUS_SUCCESS) {
@@ -1575,9 +1582,10 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
 
     retlen = 0;
     /*Select UICC2/UICC3 SWP line from config param*/
-    if (GetNxpNumValue(NAME_NXP_DEFAULT_UICC2_SELECT, (void*)&retlen,
-                       sizeof(retlen))) {
-      if (retlen > 0) phNxpNciHal_enableDefaultUICC2SWPline((uint8_t)retlen);
+    if (GetNxpNumValue(NAME_NXP_DEFAULT_UICC2_SELECT,
+                       static_cast<void*>(&retlen), sizeof(retlen))) {
+      if (retlen > 0)
+        phNxpNciHal_enableDefaultUICC2SWPline(static_cast<uint8_t>(retlen));
     }
     status = phNxpNciHal_setExtendedFieldMode();
     if (status != NFCSTATUS_SUCCESS &&
@@ -1607,13 +1615,13 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
     NXPLOG_NCIHAL_D("Performing ndef nfcee config settings");
     uint8_t cmd_t4t_nfcee_cfg;
 
-    if (!GetNxpNumValue(NAME_T4T_NFCEE_ENABLE, (void*)&retlen,
+    if (!GetNxpNumValue(NAME_T4T_NFCEE_ENABLE, static_cast<void*>(&retlen),
                         sizeof(retlen))) {
       retlen = 0x00;
       NXPLOG_NCIHAL_D(
           "T4T_NFCEE_ENABLE not found. Taking default value : 0x%02lx", retlen);
     }
-    cmd_t4t_nfcee_cfg = (uint8_t)retlen;
+    cmd_t4t_nfcee_cfg = static_cast<uint8_t>(retlen);
     mEEPROM_info.buffer = &cmd_t4t_nfcee_cfg;
     mEEPROM_info.bufflen = sizeof(cmd_t4t_nfcee_cfg);
     mEEPROM_info.request_type = EEPROM_T4T_NFCEE_ENABLE;
@@ -1635,8 +1643,9 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
       (wRfUpdateReq == true)) {
     retlen = 0;
     NXPLOG_NCIHAL_D("Performing NAME_NXP_CORE_CONF_EXTN Settings");
-    isfound = GetNxpByteArrayValue(NAME_NXP_CORE_CONF_EXTN, (char*)buffer,
-                                   bufflen, &retlen);
+    isfound =
+        GetNxpByteArrayValue(NAME_NXP_CORE_CONF_EXTN,
+                             reinterpret_cast<char*>(buffer), bufflen, &retlen);
     if (isfound > 0 && retlen > 0) {
       /* NXP ACT Proprietary Ext */
       status = phNxpNciHal_send_ext_cmd(retlen, buffer, &rsp_len, rsp);
@@ -1652,8 +1661,8 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
 
     NXPLOG_NCIHAL_D("Performing NAME_NXP_CORE_CONF Settings");
     retlen = 0;
-    isfound = GetNxpByteArrayValue(NAME_NXP_CORE_CONF, (char*)buffer, bufflen,
-                                   &retlen);
+    isfound = GetNxpByteArrayValue(
+        NAME_NXP_CORE_CONF, reinterpret_cast<char*>(buffer), bufflen, &retlen);
     if (isfound > 0 && retlen > 0) {
       /* NXP ACT Proprietary Ext */
       status = phNxpNciHal_send_ext_cmd(retlen, buffer, &rsp_len, rsp);
@@ -1680,8 +1689,8 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
       strlcpy(rf_conf_block, rf_block_name, sizeof(rf_conf_block));
       retlen = 0;
       strlcat(rf_conf_block, rf_block_num[loopcnt++], sizeof(rf_conf_block));
-      isfound =
-          GetNxpByteArrayValue(rf_conf_block, (char*)buffer, bufflen, &retlen);
+      isfound = GetNxpByteArrayValue(
+          rf_conf_block, reinterpret_cast<char*>(buffer), bufflen, &retlen);
       if (isfound > 0 && retlen > 0) {
         if (!isRfConfBlkUpdateRequired(rf_conf_block)) continue;
         NXPLOG_NCIHAL_D(" Performing RF Settings BLK %ld", loopcnt);
@@ -1716,8 +1725,9 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   if (IS_CHIP_TYPE_NE(pn547C2)) {
     config_access = false;
   }
-  isfound = GetNxpByteArrayValue(NAME_NXP_CORE_RF_FIELD, (char*)buffer, bufflen,
-                                 &retlen);
+  isfound =
+      GetNxpByteArrayValue(NAME_NXP_CORE_RF_FIELD,
+                           reinterpret_cast<char*>(buffer), bufflen, &retlen);
   if (isfound > 0 && retlen > 0) {
     /* NXP ACT Proprietary Ext */
     status = phNxpNciHal_send_ext_cmd(retlen, buffer, &rsp_len, rsp);
@@ -1739,17 +1749,17 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
 
   retlen = 0;
   /* NXP SWP switch timeout Setting*/
-  if (GetNxpNumValue(NAME_NXP_SWP_SWITCH_TIMEOUT, (void*)&retlen,
+  if (GetNxpNumValue(NAME_NXP_SWP_SWITCH_TIMEOUT, static_cast<void*>(&retlen),
                      sizeof(retlen))) {
     // Check the permissible range [0 - 60]
     if (0 <= retlen && retlen <= 60) {
       if (0 < retlen) {
-        unsigned int timeout = (uint32_t)retlen * 1000;
+        unsigned int timeout = static_cast<uint32_t>(retlen) * 1000;
         unsigned int timeoutHx = 0x0000;
 
         char tmpbuffer[10] = {0};
-        snprintf((char*)tmpbuffer, 10, "%04x", timeout);
-        int ret = sscanf((char*)tmpbuffer, "%x", &timeoutHx);
+        snprintf(static_cast<char*>(tmpbuffer), 10, "%04x", timeout);
+        int ret = sscanf(static_cast<char*>(tmpbuffer), "%x", &timeoutHx);
         if (!ret) timeoutHx = 0x0000;
 
         swp_switch_timeout_cmd[7] = (timeoutHx & 0xFF);
@@ -1788,7 +1798,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   retlen = 0;
 
   /* SWP FULL PWR MODE SETTING ON */
-  if (GetNxpNumValue(NAME_NXP_SWP_FULL_PWR_ON, (void*)&retlen,
+  if (GetNxpNumValue(NAME_NXP_SWP_FULL_PWR_ON, static_cast<void*>(&retlen),
                      sizeof(retlen))) {
     if (1 == retlen) {
       status =
@@ -1814,7 +1824,8 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
 
   uint8_t gpioCtrl[3] = {0x00, 0x00, 0x00};
   long gpioCtrlLen = 0;
-  isfound = GetNxpByteArrayValue(NAME_CONF_GPIO_CONTROL, (char*)gpioCtrl,
+  isfound = GetNxpByteArrayValue(NAME_CONF_GPIO_CONTROL,
+                                 reinterpret_cast<char*>(gpioCtrl),
                                  sizeof(gpioCtrl), &gpioCtrlLen);
   if (isfound > 0 && gpioCtrlLen != 0) {
     phNxpNciHal_configGPIOControl(gpioCtrl, gpioCtrlLen);
@@ -1822,9 +1833,9 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   phNxpNciHal_configureLxDebugMode();
 
   if (IS_CHIP_TYPE_EQ(pn557)) {
-    if (GetNxpNumValue(NAME_NXP_PROP_CE_ACTION_NTF, (void*)&retlen,
+    if (GetNxpNumValue(NAME_NXP_PROP_CE_ACTION_NTF, static_cast<void*>(&retlen),
                        sizeof(retlen))) {
-      uint8_t value = (uint8_t)retlen;
+      uint8_t value = static_cast<uint8_t>(retlen);
       NXPLOG_NCIHAL_D("Prop CE ACT NTF %x", value);
       mEEPROM_info.buffer = &value;
       mEEPROM_info.bufflen = sizeof(value);
@@ -1879,8 +1890,9 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   }
 
   // NXP Broadcast polling mode command
-  isfound = GetNxpByteArrayValue(NAME_NXP_BRODCAST_POLL_CMD, (char*)buffer,
-                                 bufflen, &retlen);
+  isfound =
+      GetNxpByteArrayValue(NAME_NXP_BRODCAST_POLL_CMD,
+                           reinterpret_cast<char*>(buffer), bufflen, &retlen);
   if (isfound && retlen > 0) {
     // Convert annotation data to broadcast poll command format
     vector<uint8_t> convertedCommand =
@@ -2910,8 +2922,10 @@ retry_send_ext:
     goto retry_send_ext;
   }
   phNxpNciRfSet.isGetRfSetting = false;
-  if ((int)phNxpNciRfSet.p_rx_data.size() <= GET_CONFIG_STATUS_INDEX ||
-      ((int)phNxpNciRfSet.p_rx_data.size() > GET_CONFIG_STATUS_INDEX &&
+  if (static_cast<int>(phNxpNciRfSet.p_rx_data.size()) <=
+          GET_CONFIG_STATUS_INDEX ||
+      (static_cast<int>(phNxpNciRfSet.p_rx_data.size()) >
+           GET_CONFIG_STATUS_INDEX &&
        phNxpNciRfSet.p_rx_data[GET_CONFIG_STATUS_INDEX] != 0x00)) {
     NXPLOG_NCIHAL_E("GET_CONFIG_RSP is FAILED for CHINA TIANJIN");
     return status;
@@ -2921,7 +2935,7 @@ retry_send_ext:
 
   if (isUpdateRequired) {
     vector<uint8_t> set_rf_cmd = {0x20, 0x02, 0x08, 0x01};
-    if ((int)phNxpNciRfSet.p_rx_data.size() >=
+    if (static_cast<int>(phNxpNciRfSet.p_rx_data.size()) >=
         (GET_CONFIG_RF_MISC_TAG_START_INDEX +
          GET_CONFIG_RF_MISC_TAG_NUM_OF_BYTES)) {
       set_rf_cmd.insert(
@@ -2994,15 +3008,16 @@ bool phNxpNciHal_UpdateRfMiscSettings() {
   for (it = settings.begin(); it != settings.end(); ++it) {
     unsigned long config_value = 0;
     int position = it->configPosition;
-    if ((int)phNxpNciRfSet.p_rx_data.size() <= position) {
+    if (static_cast<int>(phNxpNciRfSet.p_rx_data.size()) <= position) {
       NXPLOG_NCIHAL_E(
           "Can't update the value due to the length issue, hence ignoring %s",
           it->configName);
       continue;
     }
     int rf_val = phNxpNciRfSet.p_rx_data[position];
-    int isfound = (GetNxpNumValue(it->configName, (void*)&config_value,
-                                  sizeof(config_value)));
+    int isfound =
+        (GetNxpNumValue(it->configName, static_cast<void*>(&config_value),
+                        sizeof(config_value)));
     if (isfound > 0) {
       uint8_t configBitMask = it->configBitMask;
       int enable_bit = rf_val & configBitMask;
@@ -3426,7 +3441,8 @@ void phNxpNciHal_enable_i2c_fragmentation() {
   static uint8_t cmd_init_nci2_0[] = {0x20, 0x01, 0x02, 0x00, 0x00};
   static uint8_t get_i2c_fragmentation_cmd[] = {0x20, 0x03, 0x03,
                                                 0x01, 0xA0, 0x05};
-  if (GetNxpNumValue(NAME_NXP_I2C_FRAGMENTATION_ENABLED, (void*)&i2c_status,
+  if (GetNxpNumValue(NAME_NXP_I2C_FRAGMENTATION_ENABLED,
+                     static_cast<void*>(&i2c_status),
                      sizeof(i2c_status)) == true) {
     NXPLOG_FWDNLD_D("I2C status : %ld", i2c_status);
   } else {
@@ -3791,8 +3807,9 @@ void phNxpNciHal_configureLxDebugMode() {
       NXPLOG_NCIHAL_D("Enable CMA events");
     }
 
-    cmd_lxdebug[7] = (uint8_t)(lx_debug_cfg & LX_DEBUG_CFG_MASK);
-    cmd_lxdebug[8] = (uint8_t)((lx_debug_cfg & LX_DEBUG_CFG_MASK) >> 8);
+    cmd_lxdebug[7] = static_cast<uint8_t>(lx_debug_cfg & LX_DEBUG_CFG_MASK);
+    cmd_lxdebug[8] =
+        static_cast<uint8_t>((lx_debug_cfg & LX_DEBUG_CFG_MASK) >> 8);
   }
   if (lx_debug_cfg == LX_DEBUG_CFG_DISABLE) {
     NXPLOG_NCIHAL_D("Disable LxDebug");
@@ -3824,26 +3841,27 @@ void phNxpNciHal_initializeRegRfFwDnld() {
         "Error : opening (/system/vendor/lib64/libonebinary.so) !!");
     return;
   }
-  fpVerInfoStoreInEeprom = (fpVerInfoStoreInEeprom_t)dlsym(
-      RfFwRegionDnld_handle, "read_version_info_and_store_in_eeprom");
+  fpVerInfoStoreInEeprom = reinterpret_cast<fpVerInfoStoreInEeprom_t>(
+      dlsym(RfFwRegionDnld_handle, "read_version_info_and_store_in_eeprom"));
   if (fpVerInfoStoreInEeprom == nullptr) {
     NXPLOG_NCIHAL_D(
         "Error while linking (read_version_info_and_store_in_eeprom) !!");
     return;
   }
-  fpRegRfFwDndl = (fpRegRfFwDndl_t)dlsym(RfFwRegionDnld_handle, "RegRfFwDndl");
+  fpRegRfFwDndl = reinterpret_cast<fpRegRfFwDndl_t>(
+      dlsym(RfFwRegionDnld_handle, "RegRfFwDndl"));
   if (fpRegRfFwDndl == nullptr) {
     NXPLOG_NCIHAL_D("Error while linking (RegRfFwDndl) !!");
     return;
   }
-  fpPropConfCover =
-      (fpPropConfCover_t)dlsym(RfFwRegionDnld_handle, "prop_conf_cover");
+  fpPropConfCover = reinterpret_cast<fpPropConfCover_t>(
+      dlsym(RfFwRegionDnld_handle, "prop_conf_cover"));
   if (fpPropConfCover == nullptr) {
     NXPLOG_NCIHAL_D("Error while linking (prop_conf_cover) !!");
     return;
   }
-  fpDoAntennaActivity =
-      (fpDoAntennaActivity_t)dlsym(RfFwRegionDnld_handle, "DoAntennaActivity");
+  fpDoAntennaActivity = reinterpret_cast<fpDoAntennaActivity_t>(
+      dlsym(RfFwRegionDnld_handle, "DoAntennaActivity"));
   if (fpDoAntennaActivity == nullptr) {
     NXPLOG_NCIHAL_E("Error while linking (DoAntennaActivity) !!");
     return;

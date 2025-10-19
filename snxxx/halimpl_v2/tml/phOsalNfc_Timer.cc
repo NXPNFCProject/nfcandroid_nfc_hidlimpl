@@ -83,10 +83,10 @@ uint32_t phOsalNfc_Timer_Create(void) {
   /* Check whether timers are available, if yes create a timer handle structure
    */
   if ((PH_NFC_TIMER_ID_ZERO != dwTimerId) && (dwTimerId <= PH_NFC_MAX_TIMER)) {
-    pTimerHandle = (phOsalNfc_TimerHandle_t*)&apTimerInfo[dwTimerId - 1];
+    pTimerHandle = &apTimerInfo[dwTimerId - 1];
     /* Build the Timer Id to be returned to Caller Function */
     dwTimerId += PH_NFC_TIMER_BASE_ADDRESS;
-    se.sigev_value.sival_int = (int)dwTimerId;
+    se.sigev_value.sival_int = static_cast<int>(dwTimerId);
     /* Create POSIX timer */
     if (timer_create(CLOCK_REALTIME, &se, &(pTimerHandle->hTimerHandle)) ==
         -1) {
@@ -147,7 +147,7 @@ NFCSTATUS phOsalNfc_Timer_Start(uint32_t dwTimerId, uint32_t dwRegTimeCnt,
   if (dwIndex >= PH_NFC_MAX_TIMER) {
     return PHNFCSTVAL(CID_NFC_OSAL, NFCSTATUS_INVALID_PARAMETER);
   }
-  pTimerHandle = (phOsalNfc_TimerHandle_t*)&apTimerInfo[dwIndex];
+  pTimerHandle = &apTimerInfo[dwIndex];
   /* OSAL Module needs to be initialized for timer usage */
   /* Check whether the handle provided by user is valid */
   if ((0x00 != pTimerHandle->TimerId) && (NULL != pApplication_callback)) {
@@ -202,7 +202,7 @@ NFCSTATUS phOsalNfc_Timer_Stop(uint32_t dwTimerId) {
   if (dwIndex >= PH_NFC_MAX_TIMER) {
     return PHNFCSTVAL(CID_NFC_OSAL, NFCSTATUS_INVALID_PARAMETER);
   }
-  pTimerHandle = (phOsalNfc_TimerHandle_t*)&apTimerInfo[dwIndex];
+  pTimerHandle = &apTimerInfo[dwIndex];
   /* OSAL Module and Timer needs to be initialized for timer usage */
   /* Check whether the TimerId provided by user is valid */
   if ((0x00 != pTimerHandle->TimerId) && (pTimerHandle->eState != eTimerIdle)) {
@@ -250,7 +250,7 @@ NFCSTATUS phOsalNfc_Timer_Delete(uint32_t dwTimerId) {
   if (dwIndex >= PH_NFC_MAX_TIMER) {
     return PHNFCSTVAL(CID_NFC_OSAL, NFCSTATUS_INVALID_PARAMETER);
   }
-  pTimerHandle = (phOsalNfc_TimerHandle_t*)&apTimerInfo[dwIndex];
+  pTimerHandle = &apTimerInfo[dwIndex];
   /* OSAL Module and Timer needs to be initialized for timer usage */
 
   /* Check whether the TimerId passed by user is valid and Deregistering of
@@ -262,7 +262,8 @@ NFCSTATUS phOsalNfc_Timer_Delete(uint32_t dwTimerId) {
       wDeleteStatus = PHNFCSTVAL(CID_NFC_OSAL, PH_OSALNFC_TIMER_DELETE_ERROR);
     }
     /* Clear Timer structure used to store timer related data */
-    memset(pTimerHandle, (uint8_t)0x00, sizeof(phOsalNfc_TimerHandle_t));
+    memset(pTimerHandle, static_cast<uint8_t>(0x00),
+           sizeof(phOsalNfc_TimerHandle_t));
   } else {
     wDeleteStatus = PHNFCSTVAL(CID_NFC_OSAL, NFCSTATUS_INVALID_PARAMETER);
   }
@@ -287,7 +288,7 @@ void phOsalNfc_Timer_Cleanup(void) {
   uint32_t dwIndex;
   phOsalNfc_TimerHandle_t* pTimerHandle;
   for (dwIndex = 0; dwIndex < PH_NFC_MAX_TIMER; dwIndex++) {
-    pTimerHandle = (phOsalNfc_TimerHandle_t*)&apTimerInfo[dwIndex];
+    pTimerHandle = &apTimerInfo[dwIndex];
     /* OSAL Module and Timer needs to be initialized for timer usage */
 
     /* Check whether the TimerId passed by user is valid and Deregistering of
@@ -299,7 +300,8 @@ void phOsalNfc_Timer_Cleanup(void) {
         NXPLOG_TML_E("timer %d delete error!", dwIndex);
       }
       /* Clear Timer structure used to store timer related data */
-      memset(pTimerHandle, (uint8_t)0x00, sizeof(phOsalNfc_TimerHandle_t));
+      memset(pTimerHandle, static_cast<uint8_t>(0x00),
+             sizeof(phOsalNfc_TimerHandle_t));
     }
   }
 
@@ -325,11 +327,12 @@ static void phOsalNfc_DeferredCall(void* pParams) {
   phOsalNfc_TimerHandle_t* pTimerHandle;
   if (NULL != pParams) {
     /* Retrieve the index at which the timer handle structure is stored */
-    dwIndex = (uintptr_t)pParams - PH_NFC_TIMER_BASE_ADDRESS - 0x01;
-    pTimerHandle = (phOsalNfc_TimerHandle_t*)&apTimerInfo[dwIndex];
+    dwIndex =
+        reinterpret_cast<uintptr_t>(pParams) - PH_NFC_TIMER_BASE_ADDRESS - 0x01;
+    pTimerHandle = &apTimerInfo[dwIndex];
     if (pTimerHandle->Application_callback != NULL) {
       /* Invoke the callback function with osal Timer ID */
-      pTimerHandle->Application_callback((uintptr_t)pParams,
+      pTimerHandle->Application_callback(reinterpret_cast<uintptr_t>(pParams),
                                          pTimerHandle->pContext);
     }
   }
@@ -377,19 +380,22 @@ static void phOsalNfc_Timer_Expired(union sigval sv) {
   uint32_t dwIndex;
   phOsalNfc_TimerHandle_t* pTimerHandle;
 
-  dwIndex = ((uint32_t)(sv.sival_int)) - PH_NFC_TIMER_BASE_ADDRESS - 0x01;
-  pTimerHandle = (phOsalNfc_TimerHandle_t*)&apTimerInfo[dwIndex];
+  dwIndex =
+      (static_cast<uint32_t>(sv.sival_int)) - PH_NFC_TIMER_BASE_ADDRESS - 0x01;
+  pTimerHandle = &apTimerInfo[dwIndex];
   /* Timer is stopped when callback function is invoked */
   pTimerHandle->eState = eTimerStopped;
 
   pTimerHandle->tDeferredCallInfo.pDeferredCall = &phOsalNfc_DeferredCall;
-  pTimerHandle->tDeferredCallInfo.pParam = (void*)((intptr_t)(sv.sival_int));
+  pTimerHandle->tDeferredCallInfo.pParam =
+      reinterpret_cast<void*>(static_cast<intptr_t>(sv.sival_int));
 
   pTimerHandle->tOsalMessage.eMsgType = PH_LIBNFC_DEFERREDCALL_MSG;
-  pTimerHandle->tOsalMessage.pMsgData = (void*)&pTimerHandle->tDeferredCallInfo;
+  pTimerHandle->tOsalMessage.pMsgData =
+      static_cast<void*>(&pTimerHandle->tDeferredCallInfo);
 
   /* Post a message on the queue to invoke the function */
-  phOsalNfc_PostTimerMsg((phLibNfc_Message_t*)&pTimerHandle->tOsalMessage);
+  phOsalNfc_PostTimerMsg(&pTimerHandle->tOsalMessage);
 
   return;
 }
@@ -442,7 +448,8 @@ NFCSTATUS phOsalNfc_CheckTimerPresence(void* pObjectHandle) {
        ((dwIndex < PH_NFC_MAX_TIMER) && (wRegisterStatus != NFCSTATUS_SUCCESS));
        dwIndex++) {
     /* For Timer, check whether the requested handle is present or not */
-    if (((&apTimerInfo[dwIndex]) == (phOsalNfc_TimerHandle_t*)pObjectHandle) &&
+    if (((&apTimerInfo[dwIndex]) ==
+         static_cast<phOsalNfc_TimerHandle_t*>(pObjectHandle)) &&
         (apTimerInfo[dwIndex].TimerId)) {
       wRegisterStatus = NFCSTATUS_SUCCESS;
     }

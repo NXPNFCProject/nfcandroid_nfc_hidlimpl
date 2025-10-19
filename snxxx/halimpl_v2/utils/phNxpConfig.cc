@@ -359,11 +359,14 @@ bool CNfcConfig::readConfig(const char* name, bool bResetContent) {
 
   ALOGD("readConfig; filename is %s", name);
   if (strcmp(name, nxp_rf_config_path) == 0) {
-    config_rf_crc32_ = sparse_crc32(0, (const void*)p_config, (int)config_size);
+    config_rf_crc32_ = sparse_crc32(0, static_cast<const void*>(p_config),
+                                    static_cast<int>(config_size));
   } else if (strcmp(name, nci_update_config_path) == 0) {
-    config_tr_crc32_ = sparse_crc32(0, (const void*)p_config, (int)config_size);
+    config_tr_crc32_ = sparse_crc32(0, static_cast<const void*>(p_config),
+                                    static_cast<int>(config_size));
   } else {
-    config_crc32_ = sparse_crc32(0, (const void*)p_config, (int)config_size);
+    config_crc32_ = sparse_crc32(0, static_cast<const void*>(p_config),
+                                 static_cast<int>(config_size));
   }
 
   mValidFile = true;
@@ -662,7 +665,7 @@ bool CNfcConfig::getValue(const char* name, char* pValue, long len,
   }
 
   if (pParam->str_len() > 0) {
-    if (pParam->str_len() <= (unsigned long)len) {
+    if (pParam->str_len() <= static_cast<unsigned long>(len)) {
       memset(pValue, 0, len);
       memcpy(pValue, pParam->str_value(), pParam->str_len());
       *readlen = pParam->str_len();

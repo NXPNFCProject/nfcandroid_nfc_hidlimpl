@@ -41,7 +41,7 @@ bool NciDiscoveryCommandBuilder::parse(vector<uint8_t> data) {
   if (!isDiscoveryCommand(data)) return false;
 
   mRfDiscoverConfiguration.clear();
-  int dataSize = (int)data.size();
+  int dataSize = static_cast<int>(data.size());
 
   if (dataSize <= NCI_HEADER_MIN_LEN &&
       (dataSize < ((data[RF_DISC_CMD_NO_OF_CONFIG_INDEX] *
@@ -50,7 +50,8 @@ bool NciDiscoveryCommandBuilder::parse(vector<uint8_t> data) {
     return false;
   }
 
-  for (int i = RF_DISC_CMD_CONFIG_START_INDEX; i < ((int)data.size() - 1);
+  for (int i = RF_DISC_CMD_CONFIG_START_INDEX;
+       i < (static_cast<int>(data.size()) - 1);
        i = i + RF_DISC_CMD_EACH_CONFIG_LENGTH) {
     mRfDiscoverConfiguration.push_back(
         DiscoveryConfiguration(data[i], data[i + 1]));
@@ -71,7 +72,8 @@ bool NciDiscoveryCommandBuilder::parse(vector<uint8_t> data) {
  *
  ****************************************************************************/
 bool NciDiscoveryCommandBuilder::isDiscoveryCommand(vector<uint8_t> data) {
-  if ((int)data.size() >= 2 && data[NCI_GID_INDEX] == NCI_RF_DISC_COMMD_GID &&
+  if (static_cast<int>(data.size()) >= 2 &&
+      data[NCI_GID_INDEX] == NCI_RF_DISC_COMMD_GID &&
       data[NCI_OID_INDEX] == NCI_RF_DISC_COMMAND_OID) {
     return true;
   }

@@ -52,7 +52,7 @@ typedef struct NfcPkt {
       data = NULL;
       return;
     }
-    data = (uint8_t*)calloc(1, len);
+    data = static_cast<uint8_t*>(calloc(1, len));
     if (data != NULL) {
       memcpy(data, inData, len);
     }

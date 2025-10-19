@@ -59,10 +59,10 @@ void phNxpNciHal_getExtVendorConfig() {
   memset(&config_ext, 0x00, sizeof(nxp_nfc_config_ext_t));
 
   if ((GetNxpNumValue(NAME_NXP_AUTONOMOUS_ENABLE, &num, sizeof(num)))) {
-    config_ext.autonomous_mode = (uint8_t)num;
+    config_ext.autonomous_mode = static_cast<uint8_t>(num);
   }
   if ((GetNxpNumValue(NAME_NXP_GUARD_TIMER_VALUE, &num, sizeof(num)))) {
-    config_ext.guard_timer_value = (uint8_t)num;
+    config_ext.guard_timer_value = static_cast<uint8_t>(num);
   }
 }
 
@@ -102,7 +102,7 @@ NFCSTATUS phNxpNciHal_setAutonomousMode() {
   if (config_ext.autonomous_mode) autonomous_mode_value = 0x02;
 
   mEEPROM_info.request_mode = SET_EEPROM_DATA;
-  mEEPROM_info.buffer = (uint8_t*)&autonomous_mode_value;
+  mEEPROM_info.buffer = &autonomous_mode_value;
   mEEPROM_info.bufflen = sizeof(autonomous_mode_value);
   mEEPROM_info.request_type = EEPROM_AUTONOMOUS_MODE;
 
@@ -414,7 +414,7 @@ NFCSTATUS phNxpNciHal_restore_uicc_params() {
     uicc1HciParams.resize(uiccHciParamsStr.length() / 2);
     // Convert from string to hexadecimal format
     phNxpNciHal_StringToHex(uiccHciParamsStr.c_str(), uiccHciParamsStr.length(),
-                            (char*)uicc1HciParams.data());
+                            reinterpret_cast<char*>(uicc1HciParams.data()));
     if (uicc1HciParams.size() > 0) {
       status = phNxpNciHal_set_uicc_hci_params(
           uicc1HciParams, uicc1HciParams.size(), EEPROM_UICC1_SESSION_ID);
@@ -437,7 +437,7 @@ NFCSTATUS phNxpNciHal_restore_uicc_params() {
     uicc2HciParams.resize(uiccHciParamsStr.length() / 2);
     // Convert from string to hexadecimal format
     phNxpNciHal_StringToHex(uiccHciParamsStr.c_str(), uiccHciParamsStr.length(),
-                            (char*)uicc2HciParams.data());
+                            reinterpret_cast<char*>(uicc2HciParams.data()));
     if (uicc2HciParams.size() > 0) {
       status = phNxpNciHal_set_uicc_hci_params(
           uicc2HciParams, uicc2HciParams.size(), EEPROM_UICC2_SESSION_ID);
@@ -461,7 +461,7 @@ NFCSTATUS phNxpNciHal_restore_uicc_params() {
   uiccHciCeParams.resize(strlen(hciParamsStr) / 2);
   // Convert from string to hexadecimal format
   phNxpNciHal_StringToHex(hciParamsStr, strlen(hciParamsStr),
-                          (char*)uiccHciCeParams.data());
+                          reinterpret_cast<char*>(uiccHciCeParams.data()));
 
   if (uiccHciCeParams.size() > 0) {
     status = phNxpNciHal_set_uicc_hci_params(
@@ -556,8 +556,8 @@ NFCSTATUS phNxpNciHal_send_get_cfg(const uint8_t* cmd_get_cfg, long cmd_len) {
   }
 
   do {
-    status =
-        phNxpNciHal_send_ext_cmd(cmd_len, (uint8_t*)cmd_get_cfg, &rsp_len, rsp);
+    status = phNxpNciHal_send_ext_cmd(
+        cmd_len, const_cast<uint8_t*>(cmd_get_cfg), &rsp_len, rsp);
   } while ((status != NFCSTATUS_SUCCESS) &&
            (retry_cnt++ < NXP_MAX_RETRY_COUNT));
 
@@ -587,14 +587,14 @@ NFCSTATUS phNxpNciHal_configure_merge_sak() {
   NXPLOG_NCIHAL_D("Performing ISODEP sak merge settings");
   uint8_t val = 0;
 
-  if (!GetNxpNumValue(NAME_NXP_ISO_DEP_MERGE_SAK, (void*)&retlen,
+  if (!GetNxpNumValue(NAME_NXP_ISO_DEP_MERGE_SAK, static_cast<void*>(&retlen),
                       sizeof(retlen))) {
     retlen = 0x01;
     NXPLOG_NCIHAL_D(
         "ISO_DEP_MERGE_SAK not found. default shall be enabled : 0x%02lx",
         retlen);
   }
-  val = (uint8_t)retlen;
+  val = static_cast<uint8_t>(retlen);
   mEEPROM_info.buffer = &val;
   mEEPROM_info.bufflen = sizeof(val);
   mEEPROM_info.request_type = EEPROM_ISODEP_MERGE_SAK;
@@ -625,13 +625,13 @@ NFCSTATUS phNxpNciHal_setSrdtimeout() {
 
   NXPLOG_NCIHAL_D("Performing SRD Timeout settings");
 
-  buffer = (uint8_t*)malloc(bufflen * sizeof(uint8_t));
+  buffer = static_cast<uint8_t*>(malloc(bufflen * sizeof(uint8_t)));
   if (NULL == buffer) {
     return NFCSTATUS_FAILED;
   }
   memset(buffer, 0x00, bufflen);
-  if (GetNxpByteArrayValue(NAME_NXP_SRD_TIMEOUT, (char*)buffer, bufflen,
-                           &retlen)) {
+  if (GetNxpByteArrayValue(NAME_NXP_SRD_TIMEOUT,
+                           reinterpret_cast<char*>(buffer), bufflen, &retlen)) {
     if (retlen == NXP_SRD_TIMEOUT_BUF_LEN) {
       isValid_timeout = ((buffer[1] << 8) & TIMEOUT_MASK);
       isValid_timeout = (isValid_timeout | buffer[0]);
@@ -725,9 +725,9 @@ NFCSTATUS phNxpNciHal_getInterpolatedRssi8Am() {
     return NFCSTATUS_FAILED;
   }
 
-  uint16_t rssiAt8Am =
-      (uint16_t)((interpolatedRssi8AmRsp[RSSI_AT_8AM_INDEX + 1] << 8) |
-                 interpolatedRssi8AmRsp[RSSI_AT_8AM_INDEX]);
+  uint16_t rssiAt8Am = static_cast<uint16_t>(
+      (interpolatedRssi8AmRsp[RSSI_AT_8AM_INDEX + 1] << 8) |
+      interpolatedRssi8AmRsp[RSSI_AT_8AM_INDEX]);
   uint8_t measuredFieldStrength =
       interpolatedRssi8AmRsp[MEASURED_FIELD_STRENGTH];
   setInterpolatedRssi8Am(rssiAt8Am, measuredFieldStrength);
@@ -762,7 +762,7 @@ NFCSTATUS phNxpNciHal_configGPIOControl(uint8_t gpioCtrl[], uint8_t len) {
   phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
 
   mEEPROM_info.request_mode = SET_EEPROM_DATA;
-  mEEPROM_info.buffer = (uint8_t*)gpioCtrl;
+  mEEPROM_info.buffer = static_cast<uint8_t*>(gpioCtrl);
   // First two bytes decides purpose of GPIO config
   // LIKE ULPDET, GPIO CTRL
   mEEPROM_info.bufflen = 2;
@@ -865,7 +865,7 @@ void phNxpNciHal_setDCDCConfig(void) {
       0x32, 0x01, 0xC8, 0x03, 0x00};
   unsigned long enable = 0;
   NFCSTATUS status = NFCSTATUS_FAILED;
-  if (!GetNxpNumValue(NAME_NXP_ENABLE_DCDC_ON, (void*)&enable,
+  if (!GetNxpNumValue(NAME_NXP_ENABLE_DCDC_ON, static_cast<void*>(&enable),
                       sizeof(enable))) {
     NXPLOG_NCIHAL_D("NAME_NXP_ENABLE_DCDC_ON not found:");
     return;
@@ -1021,15 +1021,16 @@ int phNxpNciHal_hndlVndSpecificAndroidCmd(uint16_t data_len,
 void phNxpNciHal_vendorSpecificCallback(int oid, int opcode,
                                         vector<uint8_t> data) {
   static phLibNfc_Message_t msg;
-  nxpncihal_ctrl.vendor_msg[0] = (uint8_t)(NCI_GID_PROP | NCI_MT_RSP);
+  nxpncihal_ctrl.vendor_msg[0] =
+      static_cast<uint8_t>(NCI_GID_PROP | NCI_MT_RSP);
   nxpncihal_ctrl.vendor_msg[1] = oid;
-  nxpncihal_ctrl.vendor_msg[2] = 1 + (int)data.size();
+  nxpncihal_ctrl.vendor_msg[2] = 1 + static_cast<int>(data.size());
   nxpncihal_ctrl.vendor_msg[3] = opcode;
-  if ((int)data.size() > 0) {
+  if (static_cast<int>(data.size()) > 0) {
     memcpy(&nxpncihal_ctrl.vendor_msg[4], data.data(),
            data.size() * sizeof(uint8_t));
   }
-  nxpncihal_ctrl.vendor_msg_len = 4 + (int)data.size();
+  nxpncihal_ctrl.vendor_msg_len = 4 + static_cast<int>(data.size());
 
   msg.eMsgType = NCI_HAL_VENDOR_MSG;
   msg.pMsgData = NULL;
@@ -1037,8 +1038,7 @@ void phNxpNciHal_vendorSpecificCallback(int oid, int opcode,
   phNxpNciHal_print_packet("RECV", nxpncihal_ctrl.vendor_msg,
                            nxpncihal_ctrl.vendor_msg_len,
                            RfFwRegionDnld_handle == NULL);
-  phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId,
-                        (phLibNfc_Message_t*)&msg);
+  phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &msg);
 }
 
 /*******************************************************************************

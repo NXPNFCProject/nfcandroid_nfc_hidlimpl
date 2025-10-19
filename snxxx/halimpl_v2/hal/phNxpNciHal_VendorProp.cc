@@ -132,7 +132,7 @@ int phNxpNciHal_setFragmentedVendorProp(const char* key, const char* value) {
 
   // Store the property in multiple fragments
   int len = strlen(value);
-  for (size_t i = 0; i < (size_t)len; i += fragmentSize) {
+  for (size_t i = 0; i < static_cast<size_t>(len); i += fragmentSize) {
     std::string propName = key;
     propName.append(std::to_string((i / fragmentSize) + 1));
     std::string propValue(value + i, fragmentSize);

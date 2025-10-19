@@ -587,8 +587,8 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
         NXPLOG_NCIHAL_E("%s invalid CORE_RESET_NTF len", __func__);
         goto core_reset_err;
       }
-      wFwVerRsp = (((uint32_t)p_ntf[len - 2]) << 16U) |
-                  (((uint32_t)p_ntf[len - 1]) << 8U) | p_ntf[len];
+      wFwVerRsp = ((static_cast<uint32_t>(p_ntf[len - 2])) << 16U) |
+                  ((static_cast<uint32_t>(p_ntf[len - 1])) << 8U) | p_ntf[len];
       NXPLOG_NCIHAL_D("NxpNci> FW Version: %x.%x.%x", p_ntf[len - 2],
                       p_ntf[len - 1], p_ntf[len]);
     } else {
@@ -615,7 +615,7 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
       /* If NDEF T4T is enabled, then change Max Logical Connections to 5
       By default FW will return 0x01 but nfc_alloc_conn_cb will fail this way*/
       uint8_t retlen = 0;
-      if (GetNxpNumValue(NAME_T4T_NFCEE_ENABLE, (void*)&retlen,
+      if (GetNxpNumValue(NAME_T4T_NFCEE_ENABLE, static_cast<void*>(&retlen),
                          sizeof(retlen))) {
         if (retlen > 0 && *p_len > 8) {
           p_ntf[8] = NXP_NDEF_TAG_EMULATION_LOGICAL_CHANNEL;
@@ -638,8 +638,8 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
         NXPLOG_NCIHAL_E("%s invalid CORE_INIT_RSP len", __func__);
         goto core_reset_err;
       }
-      wFwVerRsp = (((uint32_t)p_ntf[len - 2]) << 16U) |
-                  (((uint32_t)p_ntf[len - 1]) << 8U) | p_ntf[len];
+      wFwVerRsp = ((static_cast<uint32_t>(p_ntf[len - 2])) << 16U) |
+                  ((static_cast<uint32_t>(p_ntf[len - 1])) << 8U) | p_ntf[len];
       if (wFwVerRsp == 0) {
         NXPLOG_NCIHAL_E("%s invalid FW Version: %x.%x.%x", __func__,
                         p_ntf[len - 2], p_ntf[len - 1], p_ntf[len]);
@@ -1399,25 +1399,25 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
   }
 
   uint8_t get_cfg_eeprom[6] = {
-      0x20,              // get_cfg header
-      0x03,              // get_cfg header
-      0x03,              // len of following value
-      0x01,              // Num Parameters
-      (uint8_t)addr[0],  // First byte of Address
-      (uint8_t)addr[1]   // Second byte of Address
+      0x20,                           // get_cfg header
+      0x03,                           // get_cfg header
+      0x03,                           // len of following value
+      0x01,                           // Num Parameters
+      static_cast<uint8_t>(addr[0]),  // First byte of Address
+      static_cast<uint8_t>(addr[1])   // Second byte of Address
   };
   uint8_t set_cfg_cmd_hdr[7] = {
-      0x20,              // set_cfg header
-      0x02,              // set_cfg header
-      len,               // len of following value
-      0x01,              // Num Param
-      (uint8_t)addr[0],  // First byte of Address
-      (uint8_t)addr[1],  // Second byte of Address
-      fieldLen           // Data len
+      0x20,                           // set_cfg header
+      0x02,                           // set_cfg header
+      len,                            // len of following value
+      0x01,                           // Num Param
+      static_cast<uint8_t>(addr[0]),  // First byte of Address
+      static_cast<uint8_t>(addr[1]),  // Second byte of Address
+      fieldLen                        // Data len
   };
 
   set_cfg_cmd_len = sizeof(set_cfg_cmd_hdr) + fieldLen;
-  set_cfg_eeprom = (uint8_t*)malloc(set_cfg_cmd_len);
+  set_cfg_eeprom = static_cast<uint8_t*>(malloc(set_cfg_cmd_len));
   if (set_cfg_eeprom == NULL) {
     ALOGE("memory allocation failed");
     return status;
@@ -1643,7 +1643,8 @@ void phNxpNciHal_conf_nfc_forum_mode() {
   uint16_t rsp_len = 0;
 
   if (GetNxpByteArrayValue(NAME_NXP_PROP_RESET_EMVCO_CMD,
-                           (char*)cmd_reset_emvcocfg, cmdlen, &retlen)) {
+                           reinterpret_cast<char*>(cmd_reset_emvcocfg), cmdlen,
+                           &retlen)) {
   }
   if (retlen != 0x08) {
     NXPLOG_NCIHAL_E("%s: command is not provided", __func__);

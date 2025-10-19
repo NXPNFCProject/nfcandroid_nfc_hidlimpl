@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2019 NXP
+ *  Copyright 2019, 2025 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -60,8 +60,8 @@ void checkEseClientUpdate() {
   fpCheckEseClientUpdate_t fpCheckEseClientUpdate = NULL;
 
   /*find the address of function and data objects*/
-  fpCheckEseClientUpdate =
-      (fpCheckEseClientUpdate_t)dlsym(HalLibnfc_handle, "checkEseClientUpdate");
+  fpCheckEseClientUpdate = reinterpret_cast<fpCheckEseClientUpdate_t>(
+      dlsym(HalLibnfc_handle, "checkEseClientUpdate"));
 
   if (!fpCheckEseClientUpdate) {
     ALOGE("Error while linking (checkEseClientUpdate) %s!!", dlerror());
@@ -88,8 +88,8 @@ void perform_eSEClientUpdate() {
   fpPerformEseClientUpdate_t fpPerformEseClientUpdate = NULL;
 
   /*find the address of function and data objects*/
-  fpPerformEseClientUpdate = (fpPerformEseClientUpdate_t)dlsym(
-      HalLibnfc_handle, "perform_eSEClientUpdate");
+  fpPerformEseClientUpdate = reinterpret_cast<fpPerformEseClientUpdate_t>(
+      dlsym(HalLibnfc_handle, "perform_eSEClientUpdate"));
 
   if (!fpPerformEseClientUpdate) {
     ALOGE("Error while linking (perform_eSEClientUpdate) !!");
@@ -115,8 +115,9 @@ void eSEClientUpdate_NFC_Thread() {
   fpEseClientUpdate_Nfc_Thread_t fpEseClientUpdate_Nfc_Thread = NULL;
 
   /*find the address of function and data objects*/
-  fpEseClientUpdate_Nfc_Thread = (fpEseClientUpdate_Nfc_Thread_t)dlsym(
-      HalLibnfc_handle, "eSEClientUpdate_NFC_Thread");
+  fpEseClientUpdate_Nfc_Thread =
+      reinterpret_cast<fpEseClientUpdate_Nfc_Thread_t>(
+          dlsym(HalLibnfc_handle, "eSEClientUpdate_NFC_Thread"));
 
   if (!fpEseClientUpdate_Nfc_Thread) {
     ALOGE("Error while linking (eSEClientUpdate_NFC_Thread) !!");
@@ -145,8 +146,8 @@ void seteSEClientState(uint8_t state) {
   ALOGD("seteSEClientState state %d", state);
 
   /*find the address of function and data objects*/
-  fpSeteSEClientState =
-      (fpSeteSEClientState_t)dlsym(HalLibnfc_handle, "seteSEClientState");
+  fpSeteSEClientState = reinterpret_cast<fpSeteSEClientState_t>(
+      dlsym(HalLibnfc_handle, "seteSEClientState"));
 
   if (!fpSeteSEClientState) {
     ALOGE("Error while linking (seteSEClientState) !!");

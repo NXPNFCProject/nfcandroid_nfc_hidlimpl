@@ -241,8 +241,8 @@ int handleObserveModeTechCommand(uint16_t data_len, const uint8_t* p_data) {
         // send Observe Mode Tech command
         NciDiscoveryCommandBuilderInstance.setObserveModePerTech(techValue);
 
-        nciStatus =
-            phNxpNciHal_send_ext_cmd(data_len, (uint8_t*)p_data, &rsp_len, rsp);
+        nciStatus = phNxpNciHal_send_ext_cmd(
+            data_len, const_cast<uint8_t*>(p_data), &rsp_len, rsp);
         if (nciStatus != NFCSTATUS_SUCCESS) {
           NXPLOG_NCIHAL_E("%s ObserveMode tech command failed", __func__);
         }
