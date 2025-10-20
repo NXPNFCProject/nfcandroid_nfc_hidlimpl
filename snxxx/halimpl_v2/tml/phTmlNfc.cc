@@ -125,11 +125,9 @@ NFCSTATUS phTmlNfc_Init(pphTmlNfc_Config_t pConfig) {
           pConfig->fragment_len = PH_TMLNFC_FRGMENT_SIZE_PN557;
         gpphTmlNfc_Context->fragment_len = pConfig->fragment_len;
 
-        if (0 != sem_init(&gpphTmlNfc_Context->rxSemaphore, 0, 0)) {
-          wInitStatus = NFCSTATUS_FAILED;
-        } else if (0 != phTmlNfc_WaitReadInit()) {
-          wInitStatus = NFCSTATUS_FAILED;
-        } else if (0 != sem_init(&gpphTmlNfc_Context->postMsgSemaphore, 0, 0)) {
+        if (0 != sem_init(&gpphTmlNfc_Context->rxSemaphore, 0, 0) ||
+            (0 != phTmlNfc_WaitReadInit()) ||
+            (0 != sem_init(&gpphTmlNfc_Context->postMsgSemaphore, 0, 0))) {
           wInitStatus = NFCSTATUS_FAILED;
         } else {
           sem_post(&gpphTmlNfc_Context->postMsgSemaphore);
