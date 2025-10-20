@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2021-2024 NXP
+ *  Copyright 2021-2025 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ class NfcHalThreadMutex {
   virtual ~NfcHalThreadMutex();
   void lock();
   void unlock();
-  operator pthread_mutex_t*() { return &mMutex; }
+  explicit operator pthread_mutex_t*() { return &mMutex; }
 
  private:
   pthread_mutex_t mMutex;
@@ -38,7 +38,7 @@ class NfcHalThreadCondVar : public NfcHalThreadMutex {
   void signal();
   void timedWait(struct timespec* time);
   void timedWait(uint8_t sec);
-  operator pthread_cond_t*() { return &mCondVar; }
+  explicit operator pthread_cond_t*() { return &mCondVar; }
   operator pthread_mutex_t*() {
     return NfcHalThreadMutex::operator pthread_mutex_t*();
   }

@@ -72,9 +72,9 @@ typedef union WiredSeEvtData {
   // Default
   WiredSeEvtData() {}
   // For typecasting from NfcState to WiredSeEvtData
-  WiredSeEvtData(NfcState inNfcState) { nfcState = inNfcState; }
+  explicit WiredSeEvtData(NfcState inNfcState) { nfcState = inNfcState; }
   // For typecasting from NfcPkt to WiredSeEvtData
-  WiredSeEvtData(std::shared_ptr<NfcPkt> inNfcPkt) : nfcPkt(inNfcPkt) {}
+  explicit WiredSeEvtData(std::shared_ptr<NfcPkt> inNfcPkt) : nfcPkt(inNfcPkt) {}
   WiredSeEvtData(const WiredSeEvtData& evtData) : nfcPkt(evtData.nfcPkt) {
     nfcState = evtData.nfcState;
   }
