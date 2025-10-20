@@ -32,14 +32,16 @@
 #include "phNxpNciHal_ULPDet.h"
 #include "phNxpNciHal_VendorProp.h"
 
+using std::string;
+
 #define NCI_HEADER_SIZE 3
 #define NCI_SE_CMD_LEN 4
 #define EEPROM_TLV_SIZE 4 //numParam+2add+val
 nxp_nfc_config_ext_t config_ext;
-static vector<uint8_t> uicc1HciParams(0);
-static vector<uint8_t> uicc2HciParams(0);
-static vector<uint8_t> uiccHciCeParams(0);
-static vector<uint8_t> interpolatedRssi8AmRsp(0);
+static std::vector<uint8_t> uicc1HciParams(0);
+static std::vector<uint8_t> uicc2HciParams(0);
+static std::vector<uint8_t> uiccHciCeParams(0);
+static std::vector<uint8_t> interpolatedRssi8AmRsp(0);
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 extern phTmlNfc_Context_t* gpphTmlNfc_Context;
 extern void* RfFwRegionDnld_handle;
@@ -489,7 +491,7 @@ NFCSTATUS phNxpNciHal_restore_uicc_params() {
  *
  ******************************************************************************/
 NFCSTATUS
-phNxpNciHal_get_uicc_hci_params(vector<uint8_t>& ptr, uint8_t bufflen,
+phNxpNciHal_get_uicc_hci_params(std::vector<uint8_t>& ptr, uint8_t bufflen,
                                 phNxpNci_EEPROM_request_type_t uiccType) {
   if (IS_CHIP_TYPE_L(sn220u)) {
     NXPLOG_NCIHAL_E("%s Not supported", __func__);
@@ -517,7 +519,7 @@ phNxpNciHal_get_uicc_hci_params(vector<uint8_t>& ptr, uint8_t bufflen,
  *
  *****************************************************************************/
 NFCSTATUS
-phNxpNciHal_set_uicc_hci_params(vector<uint8_t>& ptr, uint8_t bufflen,
+phNxpNciHal_set_uicc_hci_params(std::vector<uint8_t>& ptr, uint8_t bufflen,
                                 phNxpNci_EEPROM_request_type_t uiccType) {
   if (IS_CHIP_TYPE_L(sn220u)) {
     NXPLOG_NCIHAL_E("%s Not supported", __func__);
@@ -921,17 +923,17 @@ int handleReaderModeAnnoationCommand(uint16_t data_len, const uint8_t* p_data) {
   }
 
   if (data_len < 4) {
-    vector<uint8_t> errorResponse = {0x01};  // Error status
+    std::vector<uint8_t> errorResponse = {0x01};  // Error status
     phNxpNciHal_vendorSpecificCallback(p_data[NCI_OID_INDEX],
                                        p_data[NCI_MSG_INDEX_FOR_FEATURE],
                                        std::move(errorResponse));
     return 0;
   }
 
-  vector<uint8_t> convertedCommand =
+  std::vector<uint8_t> convertedCommand =
       covertAnnotatonToBrodcastPollCommand(data_len, p_data);
 
-  vector<uint8_t> response;
+  std::vector<uint8_t> response;
 
   if (!convertedCommand.empty()) {
     // Send the converted command to NFCC
@@ -1019,7 +1021,7 @@ int phNxpNciHal_hndlVndSpecificAndroidCmd(uint16_t data_len,
 **
 *******************************************************************************/
 void phNxpNciHal_vendorSpecificCallback(int oid, int opcode,
-                                        vector<uint8_t> data) {
+                                        std::vector<uint8_t> data) {
   static phLibNfc_Message_t msg;
   nxpncihal_ctrl.vendor_msg[0] =
       static_cast<uint8_t>(NCI_GID_PROP | NCI_MT_RSP);
@@ -1087,7 +1089,7 @@ int handleGetCapability(uint16_t data_len, const uint8_t* p_data) {
 
   // First byte is status is ok
   // next 2 bytes is version for Android requirements
-  vector<uint8_t> capability = {0x00, 0x00, 0x00};
+  std::vector<uint8_t> capability = {0x00, 0x00, 0x00};
   capability.push_back(5);  // 5 capability event's
   // Observe mode
   capability.push_back(nfcFL.nfccCap.OBSERVE_MODE.id);

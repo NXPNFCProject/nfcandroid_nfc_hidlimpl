@@ -21,9 +21,6 @@
 #include "phNxpConfig.h"
 #include "phNxpLog.h"
 
-using std::string;
-using std::vector;
-
 /******************************************************************************
  ** Function         phNxpNciHal_ioctlIf
  **
@@ -44,7 +41,7 @@ int phNxpNciHal_ioctlIf(long arg, void* p_data);
 **
 ** Returns          It returns the property value of the key
 *******************************************************************************/
-string phNxpNciHal_getSystemProperty(string key);
+std::string phNxpNciHal_getSystemProperty(std::string key);
 
 /*******************************************************************************
  **
@@ -57,7 +54,7 @@ string phNxpNciHal_getSystemProperty(string key);
  **
  ** Returns          true if success, false if fail
  *******************************************************************************/
-bool phNxpNciHal_setSystemProperty(string key, string value);
+bool phNxpNciHal_setSystemProperty(std::string key, std::string value);
 
 /*******************************************************************************
 **
@@ -70,7 +67,7 @@ bool phNxpNciHal_setSystemProperty(string key, string value);
 **
 ** Returns          void
 *******************************************************************************/
-string phNxpNciHal_getNxpConfigIf();
+std::string phNxpNciHal_getNxpConfigIf();
 
 /*******************************************************************************
 **

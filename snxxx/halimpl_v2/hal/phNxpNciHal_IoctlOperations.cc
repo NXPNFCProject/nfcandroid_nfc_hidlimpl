@@ -40,6 +40,7 @@
 
 using android::base::WriteStringToFile;
 using namespace ::android::base;
+using std::string;
 using std::stringstream;
 
 #define TERMINAL_LEN 5

@@ -27,6 +27,8 @@
 #include <NciDiscoveryCommandBuilder.h>
 #include <phNfcNciConstants.h>
 
+using std::vector;
+
 DualAntenna::DualAntenna() {
   NXPLOG_NCIHAL_D("%s Enter", __func__);
   mDualAntennaContext.mDualAntennaFeature = false;

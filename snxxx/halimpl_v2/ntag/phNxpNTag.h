@@ -304,7 +304,7 @@ class NxpNTag {
    * @return returns NFCSTATUS_EXTN_FEATURE_SUCCESS, if it is vendor specific
    * feature and handled it internally otherwise NFCSTATUS_EXTN_FEATURE_FAILURE.
    */
-  NFCSTATUS processRfDiscCmd(vector<uint8_t>& rfDiscCmd);
+  NFCSTATUS processRfDiscCmd(std::vector<uint8_t>& rfDiscCmd);
 
   /**
    * @brief Process NTag NCi responses

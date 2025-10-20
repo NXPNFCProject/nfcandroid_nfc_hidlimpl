@@ -16,8 +16,6 @@
 
 #include <vector>
 
-using std::vector;
-
 #define NciDiscoveryCommandBuilderInstance \
   (NciDiscoveryCommandBuilder::getInstance())
 
@@ -44,8 +42,8 @@ class DiscoveryConfiguration {
 class NciDiscoveryCommandBuilder {
  private:
   uint8_t currentObserveModeTech = 0x00;
-  vector<uint8_t> currentDiscoveryCommand;
-  vector<DiscoveryConfiguration> mRfDiscoverConfiguration;
+  std::vector<uint8_t> currentDiscoveryCommand;
+  std::vector<DiscoveryConfiguration> mRfDiscoverConfiguration;
   bool mIsRfDiscoveryReceived = false;
 
   /*****************************************************************************
@@ -60,7 +58,7 @@ class NciDiscoveryCommandBuilder {
    * Returns          return true if parse is successful otherwise false
    *
    ****************************************************************************/
-  bool parse(vector<uint8_t> data);
+  bool parse(std::vector<uint8_t> data);
 
   /*****************************************************************************
    *
@@ -93,7 +91,7 @@ class NciDiscoveryCommandBuilder {
    * Returns          return the discovery command
    *
    ****************************************************************************/
-  vector<uint8_t> build();
+  std::vector<uint8_t> build();
 
   /*****************************************************************************
    *
@@ -107,7 +105,7 @@ class NciDiscoveryCommandBuilder {
    *                  otherwise false
    *
    ****************************************************************************/
-  bool isDiscoveryCommand(vector<uint8_t> data);
+  bool isDiscoveryCommand(std::vector<uint8_t> data);
 
 #if (NXP_UNIT_TEST == TRUE)
   /*
@@ -139,7 +137,7 @@ class NciDiscoveryCommandBuilder {
    * Returns          return current discovery command which is set
    *
    ****************************************************************************/
-  vector<uint8_t> getDiscoveryCommand();
+  std::vector<uint8_t> getDiscoveryCommand();
 
   /*****************************************************************************
    *
@@ -153,7 +151,7 @@ class NciDiscoveryCommandBuilder {
    * Returns          return the discovery command for Observe mode
    *
    ****************************************************************************/
-  vector<uint8_t> reConfigRFDiscCmd();
+  std::vector<uint8_t> reConfigRFDiscCmd();
 
   /*****************************************************************************
    *

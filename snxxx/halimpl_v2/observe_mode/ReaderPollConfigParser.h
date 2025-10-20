@@ -18,9 +18,6 @@
 
 #include <vector>
 
-using std::string;
-using std::vector;
-
 typedef void(reader_poll_info_callback_t)(uint16_t data_len, uint8_t* p_data);
 void setInterpolatedRssi8Am(uint16_t rssiAt8Am, uint8_t measuredFieldStrength);
 
@@ -51,9 +48,10 @@ class ReaderPollConfigParser {
    * Returns          Returns Well known type reader poll info notification
    *
    ****************************************************************************/
-  vector<uint8_t> getWellKnownModEventData(uint8_t event,
-                                           vector<uint8_t> timeStamp,
-                                           uint8_t gain, vector<uint8_t> data);
+  std::vector<uint8_t> getWellKnownModEventData(uint8_t event,
+                                                std::vector<uint8_t> timeStamp,
+                                                uint8_t gain,
+                                                std::vector<uint8_t> data);
 
   /*****************************************************************************
    *
@@ -68,8 +66,8 @@ class ReaderPollConfigParser {
    * Returns          Returns RF State reader poll info notification
    *
    ****************************************************************************/
-  vector<uint8_t> getRFEventData(vector<uint8_t> timeStamp, uint8_t gain,
-                                 bool rfState);
+  std::vector<uint8_t> getRFEventData(std::vector<uint8_t> timeStamp,
+                                      uint8_t gain, bool rfState);
 
   /*****************************************************************************
    *
@@ -84,8 +82,9 @@ class ReaderPollConfigParser {
    * Returns          Returns Unknown type reader poll info notification
    *
    ***************************************************************************/
-  vector<uint8_t> getUnknownEvent(vector<uint8_t> data,
-                                  vector<uint8_t> timeStamp, uint8_t gain);
+  std::vector<uint8_t> getUnknownEvent(std::vector<uint8_t> data,
+                                       std::vector<uint8_t> timeStamp,
+                                       uint8_t gain);
 
   /*****************************************************************************
    *
@@ -99,7 +98,7 @@ class ReaderPollConfigParser {
    *                  and converts other frame to  unknown frame
    *
    ***************************************************************************/
-  vector<uint8_t> parseCmaEvent(vector<uint8_t> p_event);
+  std::vector<uint8_t> parseCmaEvent(std::vector<uint8_t> p_event);
 
   /*****************************************************************************
    *
@@ -115,7 +114,8 @@ class ReaderPollConfigParser {
    * Returns          This function return reader poll info notification
    *
    ****************************************************************************/
-  vector<uint8_t> getEvent(vector<uint8_t> p_event, uint8_t cmaEventType);
+  std::vector<uint8_t> getEvent(std::vector<uint8_t> p_event,
+                                uint8_t cmaEventType);
 
   /*****************************************************************************
    *
@@ -128,7 +128,7 @@ class ReaderPollConfigParser {
    * Returns          void
    *
    ****************************************************************************/
-  void notifyPollingLoopInfoEvent(const vector<uint8_t>& p_data);
+  void notifyPollingLoopInfoEvent(const std::vector<uint8_t>& p_data);
 
 #if (NXP_UNIT_TEST == TRUE)
   /*
@@ -141,8 +141,8 @@ class ReaderPollConfigParser {
   bool readExtraBytesForUnknownEvent = false;
   uint8_t extraByteLength = 0;
   uint8_t notificationType = 0;
-  vector<uint8_t> unknownEventTimeStamp;
-  vector<uint8_t> extraBytes = vector<uint8_t>();
+  std::vector<uint8_t> unknownEventTimeStamp;
+  std::vector<uint8_t> extraBytes = std::vector<uint8_t>();
   /*****************************************************************************
    *
    * Function         parseAndSendReaderPollInfo
@@ -226,7 +226,8 @@ class ReaderPollConfigParser {
    * Returns          vector<uint8_t>
    *
    ****************************************************************************/
-  vector<uint8_t> getTimestampInMicroSeconds(vector<uint8_t> rawFrame);
+  std::vector<uint8_t> getTimestampInMicroSeconds(
+      std::vector<uint8_t> rawFrame);
 
   /*****************************************************************************
    *

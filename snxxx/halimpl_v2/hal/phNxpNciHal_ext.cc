@@ -1550,7 +1550,7 @@ NFCSTATUS phNxpNciHal_enableDefaultUICC2SWPline(uint8_t uicc2_sel) {
  ******************************************************************************/
 void phNxpNciHal_prop_conf_lpcd(bool enableLPCD) {
   uint8_t cmd_get_lpcdval[] = {0x20, 0x03, 0x03, 0x01, 0xA0, 0x68};
-  vector<uint8_t> cmd_set_lpcdval{0x20, 0x02, 0x2E};
+  std::vector<uint8_t> cmd_set_lpcdval{0x20, 0x02, 0x2E};
   uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
   uint16_t rsp_len = 0;
   if (NFCSTATUS_SUCCESS == phNxpNciHal_send_ext_cmd(sizeof(cmd_get_lpcdval),
@@ -1597,9 +1597,9 @@ void phNxpNciHal_prop_conf_rssi() {
     NXPLOG_NCIHAL_D("%s: feature is not supported", __func__);
     return;
   }
-  vector<uint8_t> cmd_get_rssival = {0x20, 0x03, 0x03, 0x01, 0xA1, 0x55};
-  vector<uint8_t> cmd_set_rssival = {0x20, 0x02, 0x06, 0x01, 0xA1,
-                                     0x55, 0x02, 0x00, 0x00};
+  std::vector<uint8_t> cmd_get_rssival = {0x20, 0x03, 0x03, 0x01, 0xA1, 0x55};
+  std::vector<uint8_t> cmd_set_rssival = {0x20, 0x02, 0x06, 0x01, 0xA1,
+                                          0x55, 0x02, 0x00, 0x00};
   uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
   uint16_t rsp_len = 0;
 

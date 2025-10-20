@@ -451,7 +451,7 @@ NFCSTATUS NxpNTag::handleNTagNciRsp(uint8_t* pData, uint16_t dataLen) {
             NTAG_REMOVAL_STATUS)
           mNtagControl.mNtagDetectStatus = 0;
 
-        vector<uint8_t> rfDeact_Ntf = {0x61, 0x06, 0x02, 0x03, 0x00};
+        std::vector<uint8_t> rfDeact_Ntf = {0x61, 0x06, 0x02, 0x03, 0x00};
         phNxpHal_NfcDataCallback(rfDeact_Ntf.size(), &rfDeact_Ntf[0]);
       }
       return NFCSTATUS_EXTN_FEATURE_SUCCESS;
@@ -474,7 +474,7 @@ NFCSTATUS NxpNTag::handleNTagNciRsp(uint8_t* pData, uint16_t dataLen) {
       if (mNtagControl.mQPOLLMode == NFC_RF_DISC_RESTART &&
           (mNtagControl.mNtagDetectStatus &
            (NTAG_READ_COMPLETE | NTAG_PRESENCE_CHK_STATUS))) {
-        vector<uint8_t> rfDeAct_Rsp = {0x41, 0x06, 0x01, 0x00};
+        std::vector<uint8_t> rfDeAct_Rsp = {0x41, 0x06, 0x01, 0x00};
         phNxpHal_NfcDataCallback(rfDeAct_Rsp.size(), &rfDeAct_Rsp[0]);
         return NFCSTATUS_EXTN_FEATURE_SUCCESS;
       }
@@ -585,7 +585,7 @@ NFCSTATUS NxpNTag::handleVendorNciMessage(uint16_t dataLen, uint8_t* pData) {
   if ((pData[NCI_GID_INDEX] == (NCI_MT_CMD | NCI_GID_RF_MANAGE)) &&
       ((pData[NCI_OID_INDEX] == NCI_MSG_RF_DISCOVER) ||
        (pData[NCI_OID_INDEX] == NCI_MSG_RF_DEACTIVATE))) {
-    vector<uint8_t> rfDiscCmd(pData, pData + dataLen);
+    std::vector<uint8_t> rfDiscCmd(pData, pData + dataLen);
     if (NFCSTATUS_EXTN_FEATURE_SUCCESS == processRfDiscCmd(rfDiscCmd))
       return NFCSTATUS_EXTN_FEATURE_SUCCESS;
   }
@@ -707,8 +707,8 @@ NFCSTATUS NxpNTag::processRfDiscCmd(std::vector<uint8_t>& rfDiscCmd) {
 }
 
 NFCSTATUS NxpNTag::sendNTagPropConfig(bool flag) {
-  vector<uint8_t> setPropNtfEnable = {0x20, 0x02, 0x05, 0x01,
-                                      0xA1, 0xDA, 0x01, 0x01};
+  std::vector<uint8_t> setPropNtfEnable = {0x20, 0x02, 0x05, 0x01,
+                                           0xA1, 0xDA, 0x01, 0x01};
   constexpr uint8_t PROP_NTF_SET_INDEX = 7;
   NFCSTATUS status;
   NXPLOG_NCIHAL_D("NxpNTag::%s Flag: %d", __func__, flag);
@@ -730,7 +730,7 @@ NFCSTATUS NxpNTag::sendRfDeactivate() {
 
   if (IDLE == phNxpExtn_NfcGetRfState()) return NFCSTATUS_SUCCESS;
 
-  vector<uint8_t> rfIdleCmd = {0x21, 0x06, 0x01, 0x00};
+  std::vector<uint8_t> rfIdleCmd = {0x21, 0x06, 0x01, 0x00};
   mNtagControl.mCmdRspStatus = NFCSTATUS_FAILED;
   if (NFCSTATUS_SUCCESS ==
       phNxpHal_EnqueueWrite(&rfIdleCmd[0], rfIdleCmd.size()))
@@ -743,7 +743,7 @@ NFCSTATUS NxpNTag::sendRfDiscCmd(uint8_t pollMode) {
   constexpr uint8_t NCI_NTAG_PAYLOAD_LEN = 2;
   constexpr uint8_t NCI_RF_DISC_PAYLOAD_LEN_INDEX = 2;
   constexpr uint8_t NCI_RF_DISC_NUM_OF_CONFIG_INDEX = 3;
-  vector<uint8_t> rfDiscCmd = {0x21, 0x03, 0x01, 0x00};
+  std::vector<uint8_t> rfDiscCmd = {0x21, 0x03, 0x01, 0x00};
   bool sendRfDiscCmdFlag = true;
 
   if (IDLE != phNxpExtn_NfcGetRfState()) {

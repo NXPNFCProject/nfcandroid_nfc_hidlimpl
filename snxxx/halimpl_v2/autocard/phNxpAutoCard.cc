@@ -143,9 +143,9 @@ NFCSTATUS AutoCard::handleVendorNciRspNtf(uint16_t dataLen, uint8_t* pData) {
   }
 
   if (pData[NCI_GID_INDEX] == (NCI_MT_NTF | NCI_GID_PROP)) {
-    vector<uint8_t> autocardNtf = {(NCI_MT_NTF | NCI_GID_PROP),
-                                   NCI_ROW_MAINLINE_OID, AUTOCARD_PAYLOAD_LEN,
-                                   AUTOCARD_FEATURE_SUB_GID};
+    std::vector<uint8_t> autocardNtf = {
+        (NCI_MT_NTF | NCI_GID_PROP), NCI_ROW_MAINLINE_OID, AUTOCARD_PAYLOAD_LEN,
+        AUTOCARD_FEATURE_SUB_GID};
     autocardNtf[NCI_MSG_LEN_INDEX] =
         pData[NCI_MSG_LEN_INDEX] + AUTOCARD_HEADER_LEN;
     autocardNtf.insert(autocardNtf.end(), pData + NCI_MSG_LEN_INDEX,
@@ -156,9 +156,9 @@ NFCSTATUS AutoCard::handleVendorNciRspNtf(uint16_t dataLen, uint8_t* pData) {
   uint8_t status = (dataLen > AUTOCARD_STATUS_INDEX)
                        ? pData[AUTOCARD_STATUS_INDEX]
                        : pData[3];
-  vector<uint8_t> autocardRsp = {(NCI_MT_RSP | NCI_GID_PROP),
-                                 NCI_ROW_MAINLINE_OID, AUTOCARD_PAYLOAD_LEN,
-                                 AUTOCARD_FEATURE_SUB_GID};
+  std::vector<uint8_t> autocardRsp = {
+      (NCI_MT_RSP | NCI_GID_PROP), NCI_ROW_MAINLINE_OID, AUTOCARD_PAYLOAD_LEN,
+      AUTOCARD_FEATURE_SUB_GID};
 
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("%s Set autocard failed. Error: %d", __func__, status);
@@ -216,7 +216,7 @@ NFCSTATUS AutoCard::handleVendorNciMessage(uint16_t dataLen, uint8_t* pData) {
         pData[AUTOCARD_SUB_OID_IDEX] == AUTOCARD_FEATURE_DISABLE_SUB_OID) {
       if (pData[AUTOCARD_SUB_OID_IDEX] == AUTOCARD_FEATURE_ENABLE_SUB_OID &&
           mAutoCardEnableStatus == AUTOCARD_FEATURE_ENABLED) {
-        vector<uint8_t> autocardRsp = {
+        std::vector<uint8_t> autocardRsp = {
             (NCI_MT_RSP | NCI_GID_PROP), NCI_ROW_MAINLINE_OID,
             AUTOCARD_PAYLOAD_LEN,        AUTOCARD_FEATURE_SUB_GID,
             AUTOCARD_HEADER_LEN,         AUTOCARD_FEATURE_ENABLE_SUB_OID,

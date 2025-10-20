@@ -59,6 +59,7 @@
 
 using android::base::StringPrintf;
 using android::base::WriteStringToFile;
+using std::vector;
 
 /*********************** Global Variables *************************************/
 #define PN547C2_CLOCK_SETTING

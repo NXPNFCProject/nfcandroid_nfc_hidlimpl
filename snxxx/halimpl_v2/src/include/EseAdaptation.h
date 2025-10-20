@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  *
- *  Copyright 2015-2019, 2021-2023 NXP
+ *  Copyright 2015-2019, 2021-2023, 2025 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@
 #include "NxpNfcThreadMutex.h"
 #include "ese_hal_api.h"
 #include "hal_nxpese.h"
-using vendor::nxp::nxpese::V1_0::INxpEse;
 
 class EseAdaptation {
  public:
