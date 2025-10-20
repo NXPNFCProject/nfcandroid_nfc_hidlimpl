@@ -227,6 +227,10 @@ void phNxpNciHal_ReaderThread::Run() {
         REENTRANCE_UNLOCK();
         break;
       }
+      default : {
+        NXPLOG_NCIHAL_E("unexpected msg type recieved");
+        break;
+      }
     }
   }
   REENTRANCE_LOCK();

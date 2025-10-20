@@ -139,6 +139,10 @@ void phNxpNciHal_WriterThread::Run() {
         phNxpExtn_NfcHalControlGranted();
         break;
       }
+      default: {
+        NXPLOG_NCIHAL_E("Unexpected msg type");
+        break;
+      }
     }
   }
   return;

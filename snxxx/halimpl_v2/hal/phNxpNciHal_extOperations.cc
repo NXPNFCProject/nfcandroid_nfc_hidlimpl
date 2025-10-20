@@ -162,6 +162,9 @@ static int8_t get_system_property_se_type(uint8_t se_type) {
     case SE_TYPE_UICC2:
       len = property_get("nfc.product.support.uicc2", valueStr, "");
       break;
+    default :
+      NXPLOG_NCIHAL_E("unexpected se_type recieved");
+      break;
   }
   if (strlen(valueStr) == 0 || len <= 0) {
     return retVal;
@@ -222,6 +225,9 @@ void phNxpNciHal_read_and_update_se_state() {
         }
         NXPLOG_NCIHAL_D("Get property : SUPPORT_UICC2 %d", val);
         break;
+      default :
+        NXPLOG_NCIHAL_E("unexpected se_type recieved");
+        break;
     }
   }
   if (num_se < 1) {
@@ -273,6 +279,9 @@ void phNxpNciHal_read_and_update_se_state() {
           *index++ = 0x01;
           *index++ = values[SE_TYPE_UICC2];
         }
+        break;
+      default :
+        NXPLOG_NCIHAL_E("unexpected se_type recieved");
         break;
     }
   }

@@ -495,6 +495,9 @@ NFCSTATUS NxpNTag::handleNTagNciRsp(uint8_t* pData, uint16_t dataLen) {
     case NCI_MSG_RF_ISO_DEP_NAK_PRESENCE:
       handleNTagPresenceCheckRsp();
       break;
+    default :
+      NXPLOG_NCIHAL_E("unexpected msg type recieved");
+      break;
   }
   phNxpNciHal_client_data_callback(dataLen, pData);
   return NFCSTATUS_EXTN_FEATURE_SUCCESS;
@@ -527,6 +530,8 @@ NFCSTATUS NxpNTag::handleNTagNciNtf(uint8_t* pData, uint16_t dataLen) {
     case NCI_MSG_RF_INTF_PROP_NTF:
       if (handleNTagPropNtf(dataLen, pData) == NFCSTATUS_EXTN_FEATURE_FAILURE)
         return NFCSTATUS_EXTN_FEATURE_FAILURE;
+      break;
+    default :
       break;
   }
   phNxpNciHal_client_data_callback(dataLen, pData);
