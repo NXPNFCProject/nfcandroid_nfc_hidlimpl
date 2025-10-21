@@ -1434,7 +1434,7 @@ retryget:
     if (status != NFCSTATUS_SUCCESS) {
       ALOGE("failed to get requested memory address");
     } else if (mEEPROM_info->request_mode == GET_EEPROM_DATA) {
-      if (mEEPROM_info->bufflen == 0xFF) {
+      if (mEEPROM_info->bufflen >= 0xFB) {
         /* Max buffer length for single Get Config Command is 0xFF.
          * If buffer length set to max value, reassign buffer value
          * depends on response from Get Config command */
