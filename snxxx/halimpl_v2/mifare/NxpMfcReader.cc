@@ -182,8 +182,8 @@ void NxpMfcReader::CalcSectorAddress() {
   uint8_t BlockNumber = mMfcTagCmdIntfData.sendBuf[1];
   if (BlockNumber >= MFC_4K_BLK128) {
     mMfcTagCmdIntfData.byAddr =
-        static_cast<uint8_t>(MFC_SECTOR_NO32 + ((BlockNumber - MFC_4K_BLK128) /
-                                                MFC_BYTES_PER_BLOCK));
+        (uint8_t)(MFC_SECTOR_NO32 +
+                  ((BlockNumber - MFC_4K_BLK128) / MFC_BYTES_PER_BLOCK));
   } else {
     mMfcTagCmdIntfData.byAddr = BlockNumber / MFC_BLKS_PER_SECTOR;
   }
@@ -287,13 +287,12 @@ void NxpMfcReader::AuthForWrite() {
   NFCSTATUS status = NFCSTATUS_FAILED;
   uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
   uint16_t rsp_len = 0;
-  uint8_t authForWriteBuff[] = {
-      0x00,
-      0x00,
-      0x03,
-      static_cast<uint8_t>(eMfRawDataXchgHdr),
-      static_cast<uint8_t>(mMfcTagCmdIntfData.sendBuf[0]),
-      static_cast<uint8_t>(mMfcTagCmdIntfData.sendBuf[1])};
+  uint8_t authForWriteBuff[] = {0x00,
+                                0x00,
+                                0x03,
+                                (uint8_t)eMfRawDataXchgHdr,
+                                (uint8_t)mMfcTagCmdIntfData.sendBuf[0],
+                                (uint8_t)mMfcTagCmdIntfData.sendBuf[1]};
 
   status = phNxpNciHal_send_ext_cmd(
       sizeof(authForWriteBuff) / sizeof(authForWriteBuff[0]), authForWriteBuff,
@@ -321,9 +320,8 @@ void NxpMfcReader::SendIncDecRestoreCmdPart2(uint16_t mfcDataLen,
   uint16_t rsp_len = 0;
 
   /* Build TAG_CMD part 2 for Mifare increment ,decrement and restore commands*/
-  uint8_t incDecRestorePart2[] = {
-      0x00, 0x00, 0x05, static_cast<uint8_t>(eMfRawDataXchgHdr),
-      0x00, 0x00, 0x00, 0x00};
+  uint8_t incDecRestorePart2[] = {0x00, 0x00, 0x05, (uint8_t)eMfRawDataXchgHdr,
+                                  0x00, 0x00, 0x00, 0x00};
   uint8_t incDecRestorePart2Size =
       (sizeof(incDecRestorePart2) / sizeof(incDecRestorePart2[0]));
   if (mfcData[3] == eMifareInc || mfcData[3] == eMifareDec) {
@@ -369,7 +367,7 @@ NFCSTATUS NxpMfcReader::AnalyzeMfcResp(uint8_t* pBuff, uint16_t* pBufflen) {
   if (0 == (*pBufflen)) {
     status = NFCSTATUS_FAILED;
   } else {
-    RecvdExtnRspId = static_cast<MfcRespId_t>(pBuff[0]);
+    RecvdExtnRspId = (MfcRespId_t)pBuff[0];
     NXPLOG_NCIHAL_E("%s: RecvdExtnRspId=%d", __func__, RecvdExtnRspId);
     switch (RecvdExtnRspId) {
       case eMfXchgDataRsp: {

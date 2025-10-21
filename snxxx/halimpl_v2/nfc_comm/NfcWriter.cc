@@ -124,7 +124,7 @@ int NfcWriter::write(uint16_t data_len, const uint8_t* p_data) {
     // that it can close if session is ongoing on same NFCEE
     phNxpNciHal_WiredSeDispatchEvent(
         gWiredSeHandle, DISABLING_NFCEE,
-        createWiredSeEvtData(const_cast<uint8_t*>(p_data), data_len));
+        createWiredSeEvtData((uint8_t*)p_data, data_len));
   } else {
     NFCSTATUS status = phNxpExtn_HandleNciMsg(&data_len, p_data);
     NXPLOG_NCIHAL_D("Vendor specific status: %d", status);
@@ -132,10 +132,10 @@ int NfcWriter::write(uint16_t data_len, const uint8_t* p_data) {
   }
   long value = 0;
   /* NXP Removal Detection timeout Config */
-  if (GetNxpNumValue(NAME_NXP_REMOVAL_DETECTION_TIMEOUT,
-                     static_cast<void*>(&value), sizeof(value))) {
+  if (GetNxpNumValue(NAME_NXP_REMOVAL_DETECTION_TIMEOUT, (void*)&value,
+                     sizeof(value))) {
     // Change the timeout value as per config file
-    uint8_t* wait_time = const_cast<uint8_t*>(&p_data[3]);
+    uint8_t* wait_time = (uint8_t*)&p_data[3];
     if ((data_len == 0x04) && (p_data[0] == 0x21 && p_data[1] == 0x12)) {
       *wait_time = value;
     }
@@ -209,7 +209,7 @@ int NfcWriter::write_unlocked(uint16_t data_len, const uint8_t* p_data,
   static phLibNfc_Message_t msg;
 
   /* check for write synchronization */
-  if (this->check_ncicmd_write_window(data_len, const_cast<uint8_t*>(p_data)) !=
+  if (this->check_ncicmd_write_window(data_len, (uint8_t*)p_data) !=
       NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_D("NfcWriter::write_unlocked  CMD window  check failed");
     data_len = 0;
@@ -218,7 +218,7 @@ int NfcWriter::write_unlocked(uint16_t data_len, const uint8_t* p_data,
 
   /* Check for NXP ext before sending write */
   status =
-      phNxpNciHal_write_ext(&data_len, const_cast<uint8_t*>(p_data),
+      phNxpNciHal_write_ext(&data_len, (uint8_t*)p_data,
                             &nxpncihal_ctrl.rsp_len, nxpncihal_ctrl.p_rsp_data);
   if (status != NFCSTATUS_SUCCESS) {
     /* Do not send packet to NFCC, send response directly */
@@ -226,7 +226,8 @@ int NfcWriter::write_unlocked(uint16_t data_len, const uint8_t* p_data,
     msg.pMsgData = NULL;
     msg.Size = 0;
 
-    phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId, &msg);
+    phTmlNfc_DeferredCall(gpphTmlNfc_Context->dwCallbackThreadId,
+                          (phLibNfc_Message_t*)&msg);
     NXPLOG_NCIHAL_E("NXP ext check failed 0x%x", status);
     goto clean_and_return;
   }
@@ -237,7 +238,7 @@ int NfcWriter::write_unlocked(uint16_t data_len, const uint8_t* p_data,
     phNxpTempMgr::GetInstance().Wait();
   }
 
-  status = phTmlNfc_Write(const_cast<uint8_t*>(p_data), data_len);
+  status = phTmlNfc_Write((uint8_t*)p_data, (uint16_t)data_len);
   if (status == NFCSTATUS_SUCCESS) {
     if (origin == ORIG_EXTNS &&
         p_data[NCI_GID_INDEX] == NCI_RF_DISC_COMMD_GID &&

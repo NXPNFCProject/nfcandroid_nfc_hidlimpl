@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  *
- *  Copyright 2015-2023, 2025 NXP
+ *  Copyright 2015-2023 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -213,7 +213,7 @@ void EseAdaptation::HalDeviceContextDataCallback(uint16_t data_len,
 void IoctlCallback(hidl_vec<uint8_t> outputData) {
   const char* func = "IoctlCallback";
   ese_nxp_ExtnOutputData_t* pOutData =
-      reinterpret_cast<ese_nxp_ExtnOutputData_t*>(&outputData[0]);
+      (ese_nxp_ExtnOutputData_t*)&outputData[0];
   ALOGD_IF(nfc_debug_enabled, "%s Ioctl Type=%lu", func,
            (unsigned long)pOutData->ioctlType);
   EseAdaptation* pAdaptation = &EseAdaptation::GetInstance();
@@ -242,14 +242,11 @@ int EseAdaptation::HalIoctl(long arg, void* p_data) {
   const char* func = "EseAdaptation::HalIoctl";
   hidl_vec<uint8_t> data;
   NfcHalAutoThreadMutex a(sIoctlLock);
-  ese_nxp_IoctlInOutData_t* pInpOutData =
-      static_cast<ese_nxp_IoctlInOutData_t*>(p_data);
+  ese_nxp_IoctlInOutData_t* pInpOutData = (ese_nxp_IoctlInOutData_t*)p_data;
   ALOGD_IF(nfc_debug_enabled, "%s arg=%ld", func, arg);
 
   EseAdaptation::GetInstance().mCurrentIoctlData = pInpOutData;
-  data.setToExternal(reinterpret_cast<uint8_t*>(pInpOutData),
-                     sizeof(ese_nxp_IoctlInOutData_t));
-
+  data.setToExternal((uint8_t*)pInpOutData, sizeof(ese_nxp_IoctlInOutData_t));
   if (mHalNxpEse != nullptr) mHalNxpEse->ioctl(arg, data, IoctlCallback);
   ALOGD_IF(nfc_debug_enabled, "%s Ioctl Completed for Type=%lu", func,
            (unsigned long)pInpOutData->out.ioctlType);

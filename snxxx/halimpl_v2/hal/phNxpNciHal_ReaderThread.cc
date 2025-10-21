@@ -71,7 +71,7 @@ bool phNxpNciHal_ReaderThread::Stop() {
   if (thread_running.load()) {
     thread_running.store(false);
     phDal4Nfc_msgsempost(reader_queue);
-    if (pthread_join(reader_thread, static_cast<void**>(NULL)) != 0) {
+    if (pthread_join(reader_thread, (void**)NULL) != 0) {
       NXPLOG_NCIHAL_E("pthread_join failed");
       phDal4Nfc_msgdestroy(reader_queue);
       reader_queue = 0;
@@ -111,9 +111,9 @@ void phNxpNciHal_ReaderThread::Run() {
       case NCI_HAL_OEM_RSP_NTF_MSG: {
         REENTRANCE_LOCK();
         phLibNfc_DeferredCall_t* deferCall =
-            static_cast<phLibNfc_DeferredCall_t*>(msg.pMsgData);
+            (phLibNfc_DeferredCall_t*)(msg.pMsgData);
         phTmlNfc_TransactInfo_t* pInfo =
-            static_cast<phTmlNfc_TransactInfo_t*>(deferCall->pParameter);
+            (phTmlNfc_TransactInfo_t*)deferCall->pParameter;
         if (nxpncihal_ctrl.p_nfc_stack_data_cback != NULL) {
           (*nxpncihal_ctrl.p_nfc_stack_data_cback)(pInfo->wLength,
                                                    pInfo->pBuff);
@@ -124,7 +124,7 @@ void phNxpNciHal_ReaderThread::Run() {
       case PH_LIBNFC_DEFERREDCALL_MSG: {
         REENTRANCE_LOCK();
         phLibNfc_DeferredCall_t* deferCall =
-            static_cast<phLibNfc_DeferredCall_t*>(msg.pMsgData);
+            (phLibNfc_DeferredCall_t*)(msg.pMsgData);
 
         phTmlNfc_TransactInfo_t transact_info;
         phTmlNfc_TransactInfo_t* ptransact_info = &transact_info;
@@ -180,8 +180,7 @@ void phNxpNciHal_ReaderThread::Run() {
         if (nxpncihal_ctrl.p_nfc_stack_cback != NULL) {
           /* Send the event */
           (*nxpncihal_ctrl.p_nfc_stack_cback)(
-              static_cast<uint32_t>(HAL_HCI_NETWORK_RESET_EVT),
-              HAL_NFC_STATUS_OK);
+              (uint32_t)HAL_HCI_NETWORK_RESET_EVT, HAL_NFC_STATUS_OK);
         }
         REENTRANCE_UNLOCK();
         break;
@@ -221,8 +220,8 @@ void phNxpNciHal_ReaderThread::Run() {
         REENTRANCE_LOCK();
         if (nxpncihal_ctrl.p_nfc_stack_cback != NULL) {
           /* Send the event */
-          (*nxpncihal_ctrl.p_nfc_stack_cback)(
-              msg.eMsgType, *(static_cast<uint8_t*>(msg.pMsgData)));
+          (*nxpncihal_ctrl.p_nfc_stack_cback)(msg.eMsgType,
+                                              *((uint8_t*)msg.pMsgData));
         }
         REENTRANCE_UNLOCK();
         break;

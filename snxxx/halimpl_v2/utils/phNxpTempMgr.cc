@@ -29,7 +29,7 @@
 static void tempNTf_timeout_cb(uint32_t TimerId, void* pContext) {
   (void)TimerId;
   NXPLOG_NCIHAL_D("phNxpTempMgr::tempNTf_timeout_cb timedout");
-  phNxpTempMgr* tMgr = static_cast<phNxpTempMgr*>(pContext);
+  phNxpTempMgr* tMgr = (phNxpTempMgr*)pContext;
   tMgr->Reset(false /*reset timer*/);
 }
 

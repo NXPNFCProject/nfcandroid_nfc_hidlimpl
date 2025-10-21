@@ -1,5 +1,5 @@
 /*
- * Copyright 2022, 2025 NXP
+ * Copyright 2022 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ static bool phNxpNciHal_isPowerTrackerConfigured(unsigned long* pollDuration) {
 
   if ((GetNxpNumValue(NAME_NXP_SYSTEM_POWER_TRACE_POLL_DURATION, &num,
                       sizeof(num)))) {
-    if (static_cast<uint8_t>(num) > 0) {
+    if ((uint8_t)num > 0) {
       NXPLOG_NCIHAL_D("%s: NxpNci isPowerTrackerSupported true", __func__);
       if (pollDuration) {
         // Convert from seconds to Milliseconds
@@ -77,23 +77,23 @@ NFCSTATUS phNxpNciHal_PowerTrackerInit(PowerTrackerHandle* outHandle) {
                     dlerror());
     return NFCSTATUS_FAILED;
   }
-  outHandle->start = reinterpret_cast<PowerTrackerStartFunc_t>(
-      dlsym(outHandle->dlHandle, "phNxpNciHal_startPowerTracker"));
+  outHandle->start = (PowerTrackerStartFunc_t)dlsym(
+      outHandle->dlHandle, "phNxpNciHal_startPowerTracker");
   if (outHandle->start == NULL) {
     NXPLOG_NCIHAL_D(
         "Error : Failed to find symbol phNxpNciHal_startPowerTracker %s!!",
         dlerror());
   }
-  outHandle->stateChange = reinterpret_cast<PowerTrackerStateChangeFunc_t>(
-      dlsym(outHandle->dlHandle, "phNxpNciHal_onRefreshNfccPowerState"));
+  outHandle->stateChange = (PowerTrackerStateChangeFunc_t)dlsym(
+      outHandle->dlHandle, "phNxpNciHal_onRefreshNfccPowerState");
   if (outHandle->stateChange == NULL) {
     NXPLOG_NCIHAL_D(
         "Error : Failed to find symbol phNxpNciHal_onRefreshNfccPowerState "
         "%s!!",
         dlerror());
   }
-  outHandle->stop = reinterpret_cast<PowerTrackerStopFunc_t>(
-      dlsym(outHandle->dlHandle, "phNxpNciHal_stopPowerTracker"));
+  outHandle->stop = (PowerTrackerStopFunc_t)dlsym(
+      outHandle->dlHandle, "phNxpNciHal_stopPowerTracker");
   if (outHandle->stop == NULL) {
     NXPLOG_NCIHAL_D(
         "Error : Failed to find symbol phNxpNciHal_stopPowerTracker %s !!",

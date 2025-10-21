@@ -395,7 +395,7 @@ NFCSTATUS phDnldNfc_Write(bool_t bRecoverSeq, pphDnldNfc_Buff_t pData,
         wLen = pData->wLen;
       } else {
         if (bRecoverSeq == false) {
-          pImgPtr = const_cast<uint8_t*>(gpphDnldContext->nxp_nfc_fw);
+          pImgPtr = (uint8_t*)gpphDnldContext->nxp_nfc_fw;
           wLen = gpphDnldContext->nxp_nfc_fw_len;
 
         } else {
@@ -410,7 +410,7 @@ NFCSTATUS phDnldNfc_Write(bool_t bRecoverSeq, pphDnldNfc_Buff_t pData,
           }
 
           if (NFCSTATUS_SUCCESS == wStatus) {
-            pImgPtr = const_cast<uint8_t*>(gpphDnldContext->nxp_nfc_fwp);
+            pImgPtr = (uint8_t*)gpphDnldContext->nxp_nfc_fwp;
             wLen = gpphDnldContext->nxp_nfc_fwp_len;
           } else {
             NXPLOG_FWDNLD_E("Platform Recovery Image extraction Failed!!");
@@ -635,8 +635,8 @@ void phDnldNfc_SetHwDevHandle(void) {
   if (NULL == gpphDnldContext) {
     NXPLOG_FWDNLD_D("Allocating Mem for Dnld Context..");
     /* Create the memory for Download Mgmt Context */
-    gpphDnldContext = static_cast<pphDnldNfc_DlContext_t>(
-        calloc(1, sizeof(phDnldNfc_DlContext_t)));
+    gpphDnldContext =
+        (pphDnldNfc_DlContext_t)calloc(1, sizeof(phDnldNfc_DlContext_t));
     if (gpphDnldContext == NULL) {
       NXPLOG_FWDNLD_E("Error Allocating Mem for Dnld Context..");
       return;
@@ -645,13 +645,12 @@ void phDnldNfc_SetHwDevHandle(void) {
     if (gpphDnldContext->tCmdRspFrameInfo.aFrameBuff != NULL) {
       free(gpphDnldContext->tCmdRspFrameInfo.aFrameBuff);
     }
-    (void)memset(static_cast<void*>(gpphDnldContext), 0,
-                 sizeof(phDnldNfc_DlContext_t));
+    (void)memset((void*)gpphDnldContext, 0, sizeof(phDnldNfc_DlContext_t));
   }
   // Set the gpphDnldContext->nxp_i2c_fragment_len as per chiptype
   phDnldNfc_SetI2CFragmentLength();
-  gpphDnldContext->tCmdRspFrameInfo.aFrameBuff = static_cast<uint8_t*>(
-      calloc(gpphDnldContext->nxp_i2c_fragment_len, sizeof(uint8_t)));
+  gpphDnldContext->tCmdRspFrameInfo.aFrameBuff =
+      (uint8_t*)calloc(gpphDnldContext->nxp_i2c_fragment_len, sizeof(uint8_t));
   if (gpphDnldContext->tCmdRspFrameInfo.aFrameBuff == NULL) {
     NXPLOG_FWDNLD_E("Error Allocating Mem for Dnld Context aFrameBuff..");
   }
@@ -774,7 +773,7 @@ NFCSTATUS phDnldNfc_InitImgInfo(bool bMinimalFw, bool degradedFwDnld) {
   phDnldNfc_SetHwDevHandle();
 
   gpphDnldContext->FwFormat = FW_FORMAT_UNKNOWN;
-  phDnldNfc_SetDlRspTimeout(static_cast<uint16_t>(PHDNLDNFC_RSP_TIMEOUT));
+  phDnldNfc_SetDlRspTimeout((uint16_t)PHDNLDNFC_RSP_TIMEOUT);
   if (bMinimalFw) {
     fwType = FW_FORMAT_ARRAY;
   } else if (GetNxpNumValue(NAME_NXP_FW_TYPE, &fwType, sizeof(fwType)) ==
@@ -789,7 +788,7 @@ NFCSTATUS phDnldNfc_InitImgInfo(bool bMinimalFw, bool degradedFwDnld) {
   if (fwType == FW_FORMAT_ARRAY) {
     gpphDnldContext->FwFormat = FW_FORMAT_ARRAY;
 #if (NXP_NFC_RECOVERY == TRUE)
-    pImageInfo = const_cast<uint8_t*>(gphDnldNfc_DlSequence);
+    pImageInfo = (uint8_t*)gphDnldNfc_DlSequence;
     ImageInfoLen = gphDnldNfc_DlSeqSz;
 #endif
     wStatus = NFCSTATUS_SUCCESS;
@@ -822,26 +821,21 @@ NFCSTATUS phDnldNfc_InitImgInfo(bool bMinimalFw, bool degradedFwDnld) {
   if (NFCSTATUS_SUCCESS == wStatus) {
     // NXPLOG_FWDNLD_D("MW Major Version Num - %x",NXP_MW_VERSION_MAJ);
     // NXPLOG_FWDNLD_D("MW Minor Version Num - %x",NXP_MW_VERSION_MIN);
-    wMwVer = ((static_cast<uint16_t>(NXP_MW_VERSION_MAJ) << 8U) |
-              (NXP_MW_VERSION_MIN));
+    wMwVer = (((uint16_t)(NXP_MW_VERSION_MAJ) << 8U) | (NXP_MW_VERSION_MIN));
   }
 
   if (NFCSTATUS_SUCCESS == wStatus) {
-    gpphDnldContext->nxp_nfc_fw = pImageInfo;
+    gpphDnldContext->nxp_nfc_fw = (uint8_t*)pImageInfo;
     gpphDnldContext->nxp_nfc_fw_len = ImageInfoLen;
     if ((NULL != gpphDnldContext->nxp_nfc_fw) &&
         (0 != gpphDnldContext->nxp_nfc_fw_len)) {
       uint16_t offsetFwMajorNum, offsetFwMinorNum;
       if (IS_CHIP_TYPE_GE(sn220u) || IS_CHIP_TYPE_EQ(pn560)) {
-        offsetFwMajorNum =
-            (static_cast<uint16_t>(gpphDnldContext->nxp_nfc_fw[795]) << 8U);
-        offsetFwMinorNum =
-            (static_cast<uint16_t>(gpphDnldContext->nxp_nfc_fw[794]));
+        offsetFwMajorNum = ((uint16_t)(gpphDnldContext->nxp_nfc_fw[795]) << 8U);
+        offsetFwMinorNum = ((uint16_t)(gpphDnldContext->nxp_nfc_fw[794]));
       } else {
-        offsetFwMajorNum =
-            (static_cast<uint16_t>(gpphDnldContext->nxp_nfc_fw[5]) << 8U);
-        offsetFwMinorNum =
-            (static_cast<uint16_t>(gpphDnldContext->nxp_nfc_fw[4]));
+        offsetFwMajorNum = ((uint16_t)(gpphDnldContext->nxp_nfc_fw[5]) << 8U);
+        offsetFwMinorNum = ((uint16_t)(gpphDnldContext->nxp_nfc_fw[4]));
       }
       NXPLOG_FWDNLD_D("FW Major Version Num - %x", offsetFwMajorNum);
       NXPLOG_FWDNLD_D("FW Minor Version Num - %x", offsetFwMinorNum);
@@ -895,7 +889,7 @@ NFCSTATUS phDnldNfc_LoadRecInfo(void) {
 
   if (NFCSTATUS_SUCCESS == wStatus) {
     /* fetch the PLL recovery image pointer and the image length */
-    gpphDnldContext->nxp_nfc_fwp = pImageInfo;
+    gpphDnldContext->nxp_nfc_fwp = (uint8_t*)pImageInfo;
     gpphDnldContext->nxp_nfc_fwp_len = ImageInfoLen;
 
     if ((NULL != gpphDnldContext->nxp_nfc_fwp) &&
@@ -948,7 +942,7 @@ NFCSTATUS phDnldNfc_LoadPKInfo(void) {
 
   if (NFCSTATUS_SUCCESS == wStatus) {
     /* fetch the PKU image pointer and the image length */
-    gpphDnldContext->nxp_nfc_fwp = pImageInfo;
+    gpphDnldContext->nxp_nfc_fwp = (uint8_t*)pImageInfo;
     gpphDnldContext->nxp_nfc_fwp_len = ImageInfoLen;
 
     if ((NULL != gpphDnldContext->nxp_nfc_fwp) &&
@@ -1045,24 +1039,24 @@ NFCSTATUS phDnldNfc_LoadFW(const char* pathName, uint8_t** pImgInfo,
   }
 
   /* load the address of download image pointer and image size */
-  pImageInfo = reinterpret_cast<void*>(dlsym(pFwHandle, pFwSymbol));
+  pImageInfo = (void*)dlsym(pFwHandle, pFwSymbol);
 
   if (dlerror() || (NULL == pImageInfo)) {
     NXPLOG_FWDNLD_E("Problem loading symbol : %s", pFwSymbol);
     return NFCSTATUS_FAILED;
   }
-  (*pImgInfo) = (*(static_cast<uint8_t**>(pImageInfo)));
+  (*pImgInfo) = (*(uint8_t**)pImageInfo);
 
-  pImageInfoLen = reinterpret_cast<void*>(dlsym(pFwHandle, pFwSymbolSz));
+  pImageInfoLen = (void*)dlsym(pFwHandle, pFwSymbolSz);
   if (dlerror() || (NULL == pImageInfoLen)) {
     NXPLOG_FWDNLD_E("Problem loading symbol : %s", pFwSymbolSz);
     return NFCSTATUS_FAILED;
   }
 
   if (IS_CHIP_TYPE_GE(sn100u)) {
-    (*pImgInfoLen) = (*(static_cast<uint32_t*>(pImageInfoLen)));
+    (*pImgInfoLen) = (uint32_t)(*((uint32_t*)pImageInfoLen));
   } else {
-    (*pImgInfoLen) = (*(static_cast<uint16_t*>(pImageInfoLen)));
+    (*pImgInfoLen) = (uint16_t)(*((uint16_t*)pImageInfoLen));
   }
   NXPLOG_FWDNLD_D("FW image loaded for chipType %s",
                   pConfigFL->product[nfcFL.chipType]);
@@ -1122,7 +1116,7 @@ NFCSTATUS phDnldNfc_LoadBinFW(uint8_t** pImgInfo, uint32_t* pImgInfoLen) {
   fseek(pFile, 0, SEEK_SET);
 
   /* allocate the memory to read the FW binary image */
-  pFwHandle = static_cast<void*>(malloc(sizeof(uint8_t) * fileSize));
+  pFwHandle = (void*)malloc(sizeof(uint8_t) * fileSize);
 
   /* check for valid memory allocation */
   if (NULL == pFwHandle) {
@@ -1132,8 +1126,8 @@ NFCSTATUS phDnldNfc_LoadBinFW(uint8_t** pImgInfo, uint32_t* pImgInfoLen) {
   }
 
   /* Read the actual contents of the FW binary image */
-  bytesRead = static_cast<uint32_t>(
-      fread(pFwHandle, sizeof(uint8_t), static_cast<size_t>(fileSize), pFile));
+  bytesRead =
+      (uint32_t)fread(pFwHandle, sizeof(uint8_t), (size_t)fileSize, pFile);
   if (bytesRead != fileSize) {
     NXPLOG_FWDNLD_E("Unable to read the specified size from file !!!\n");
     fclose(pFile);
@@ -1143,8 +1137,8 @@ NFCSTATUS phDnldNfc_LoadBinFW(uint8_t** pImgInfo, uint32_t* pImgInfoLen) {
   }
 
   /* Update the image info pointer to the caller */
-  *pImgInfo = static_cast<uint8_t*>(pFwHandle);
-  *pImgInfoLen = static_cast<uint32_t>(bytesRead & 0xFFFFFFFF);
+  *pImgInfo = (uint8_t*)pFwHandle;
+  *pImgInfoLen = (uint32_t)(bytesRead & 0xFFFFFFFF);
 
   /* close the FW binary image file */
   fclose(pFile);

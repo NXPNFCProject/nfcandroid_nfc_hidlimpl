@@ -51,7 +51,7 @@ typedef struct {
 ** Returns          WiredSeEvtData object.
 *******************************************************************************/
 static inline WiredSeEvtData createWiredSeEvtData(NfcState nfcState) {
-  return WiredSeEvtData(nfcState);
+  return (WiredSeEvtData)nfcState;
 }
 
 /*******************************************************************************
@@ -65,7 +65,7 @@ static inline WiredSeEvtData createWiredSeEvtData(NfcState nfcState) {
 *******************************************************************************/
 static inline WiredSeEvtData createWiredSeEvtData(uint8_t* nciPkt,
                                                   uint16_t len) {
-  return WiredSeEvtData(std::make_shared<NfcPkt>(nciPkt, len));
+  return (WiredSeEvtData)std::make_shared<NfcPkt>(nciPkt, len);
 }
 
 /*******************************************************************************

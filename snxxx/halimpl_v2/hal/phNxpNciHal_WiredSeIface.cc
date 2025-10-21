@@ -37,8 +37,7 @@
 *******************************************************************************/
 
 WiredSeHandle* phNxpNciHal_WiredSeStart() {
-  WiredSeHandle* outHandle =
-      static_cast<WiredSeHandle*>(calloc(1, sizeof(WiredSeHandle)));
+  WiredSeHandle* outHandle = (WiredSeHandle*)calloc(1, sizeof(WiredSeHandle));
   if (outHandle == NULL) {
     return NULL;
   }
@@ -51,8 +50,8 @@ WiredSeHandle* phNxpNciHal_WiredSeStart() {
     free(outHandle);
     return NULL;
   }
-  outHandle->start = reinterpret_cast<WiredSeStartFunc_t>(
-      dlsym(outHandle->dlHandle, "WiredSeService_Start"));
+  outHandle->start =
+      (WiredSeStartFunc_t)dlsym(outHandle->dlHandle, "WiredSeService_Start");
   if (outHandle->start == NULL) {
     NXPLOG_NCIHAL_E("Error : Failed to find symbol WiredSeService_Start %s!!",
                     dlerror());
@@ -60,8 +59,8 @@ WiredSeHandle* phNxpNciHal_WiredSeStart() {
     free(outHandle);
     return NULL;
   }
-  outHandle->dispatchEvent = reinterpret_cast<WiredSeDispatchEventFunc_t>(
-      dlsym(outHandle->dlHandle, "WiredSeService_DispatchEvent"));
+  outHandle->dispatchEvent = (WiredSeDispatchEventFunc_t)dlsym(
+      outHandle->dlHandle, "WiredSeService_DispatchEvent");
   if (outHandle->dispatchEvent == NULL) {
     NXPLOG_NCIHAL_E(
         "Error : Failed to find symbol WiredSeService_DispatchEvent "

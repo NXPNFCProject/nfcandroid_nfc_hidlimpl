@@ -166,8 +166,8 @@ static NFCSTATUS phNxpNciHal_writeCmd(uint16_t data_len, const uint8_t* p_data,
   /* Create local copy of cmd_data */
   memcpy(nxpncihal_ctrl.p_cmd_data, p_data, data_len);
   nxpncihal_ctrl.cmd_len = data_len;
-  status = phTmlNfc_Write(static_cast<uint8_t*>(nxpncihal_ctrl.p_cmd_data),
-                          nxpncihal_ctrl.cmd_len);
+  status = phTmlNfc_Write((uint8_t*)nxpncihal_ctrl.p_cmd_data,
+                          (uint16_t)nxpncihal_ctrl.cmd_len);
   return status;
 }
 
@@ -198,8 +198,8 @@ static NFCSTATUS phNxpNciHal_ReadResponse(uint16_t* len, uint8_t* rsp_buffer,
   }
   status = phTmlNfc_Read(
       nxpncihal_ctrl.p_rsp_data, NCI_MAX_DATA_LEN,
-      static_cast<pphTmlNfc_TransactCompletionCb_t>(&phNxpNciHal_read_callback),
-      static_cast<void*>(const_cast<char*>(context)));
+      (pphTmlNfc_TransactCompletionCb_t)&phNxpNciHal_read_callback,
+      (void*)context);
   if (phNxpNciHal_semWaitTimeout(timeout) == NFCSTATUS_SUCCESS) {
     if (*len > 0) {
       status = NFCSTATUS_SUCCESS;
@@ -497,8 +497,7 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
   /*nci version NCI_VERSION_2_0 version by default for SN100 chip type*/
   nxpncihal_ctrl.nci_info.nci_version = NCI_VERSION_2_0;
   /* Read the nfc device node name */
-  nfc_dev_node =
-      static_cast<char*>(malloc(NXP_MAX_CONFIG_STRING_LEN * sizeof(char)));
+  nfc_dev_node = (char*)malloc(NXP_MAX_CONFIG_STRING_LEN * sizeof(char));
   if (nfc_dev_node == NULL) {
     NXPLOG_NCIHAL_D("malloc of nfc_dev_node failed ");
     CONCURRENCY_UNLOCK();
@@ -519,7 +518,7 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
   } else {
     nxpncihal_ctrl.gDrvCfg.nLinkType = ENUM_LINK_TYPE_I2C; /* For NFCC */
   }
-  tTmlConfig.pDevName = reinterpret_cast<int8_t*>(nfc_dev_node);
+  tTmlConfig.pDevName = (int8_t*)nfc_dev_node;
   tOsalConfig.pLogFile = NULL;
 
   /* Create the client thread */
@@ -529,10 +528,8 @@ static NFCSTATUS phnxpNciHal_partialOpen(void) {
     return phnxpNciHal_partialOpenCleanUp(nfc_dev_node);
   }
   nxpncihal_ctrl.gDrvCfg.nClientId = g_readThread.GetMsgQueue();
-  tOsalConfig.dwCallbackThreadId =
-      static_cast<uintptr_t>(nxpncihal_ctrl.gDrvCfg.nClientId);
-  tTmlConfig.dwGetMsgThreadId =
-      static_cast<uintptr_t>(nxpncihal_ctrl.gDrvCfg.nClientId);
+  tOsalConfig.dwCallbackThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
+  tTmlConfig.dwGetMsgThreadId = (uintptr_t)nxpncihal_ctrl.gDrvCfg.nClientId;
   /* Initialize TML layer */
   if (phTmlNfc_Init(&tTmlConfig) != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("phTmlNfc_Init Failed");

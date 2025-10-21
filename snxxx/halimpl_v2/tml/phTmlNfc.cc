@@ -91,7 +91,7 @@ NFCSTATUS phTmlNfc_Init(pphTmlNfc_Config_t pConfig) {
   } else {
     /* Allocate memory for TML context */
     gpphTmlNfc_Context =
-        static_cast<phTmlNfc_Context_t*>(malloc(sizeof(phTmlNfc_Context_t)));
+        (phTmlNfc_Context_t*)malloc(sizeof(phTmlNfc_Context_t));
 
     if (NULL == gpphTmlNfc_Context) {
       wInitStatus = PHNFCSTVAL(CID_NFC_TML, NFCSTATUS_FAILED);
@@ -178,8 +178,7 @@ NFCSTATUS phTmlNfc_ConfigTransport() {
   if (isfound > 0) {
     transportType = value;
   }
-  gpTransportObj =
-      transportFactory.getTransport(static_cast<transportIntf>(transportType));
+  gpTransportObj = transportFactory.getTransport((transportIntf)transportType);
   if (gpTransportObj == nullptr) {
     NXPLOG_TML_E("No Transport channel available \n");
     return NFCSTATUS_FAILED;
@@ -208,7 +207,7 @@ static NFCSTATUS phTmlNfc_StartThread(void) {
   /* Create Reader thread */
   pthread_create_status =
       pthread_create(&gpphTmlNfc_Context->readerThread, NULL,
-                     &phTmlNfc_TmlThread, h_threadsEvent);
+                     &phTmlNfc_TmlThread, (void*)h_threadsEvent);
   if (0 != pthread_create_status) {
     wStartStatus = NFCSTATUS_FAILED;
     NXPLOG_TML_E("pthread_create failed error no : %d \n", errno);
@@ -346,7 +345,7 @@ void phTmlNfc_CleanUp(void) {
   pthread_mutex_destroy(&gpphTmlNfc_Context->wait_busy_lock);
   gpTransportObj = NULL;
   /* Clear memory allocated for storing Context variables */
-  free(static_cast<void*>(gpphTmlNfc_Context));
+  free((void*)gpphTmlNfc_Context);
   /* Set the pointer to NULL to indicate De-Initialization */
   gpphTmlNfc_Context = NULL;
 
@@ -392,8 +391,7 @@ NFCSTATUS phTmlNfc_Shutdown(void) {
     phTmlNfc_IoCtl(phTmlNfc_e_ResetNfcState);
     gpTransportObj->Close(gpphTmlNfc_Context->pDevHandle);
     gpphTmlNfc_Context->pDevHandle = NULL;
-    if (0 != pthread_join(gpphTmlNfc_Context->readerThread,
-                          static_cast<void**>(NULL))) {
+    if (0 != pthread_join(gpphTmlNfc_Context->readerThread, (void**)NULL)) {
       NXPLOG_TML_E("Fail to kill reader thread!");
     }
     NXPLOG_TML_D("bThreadDone == 0");
@@ -786,8 +784,7 @@ void phTmlNfc_DeferredCall(uintptr_t dwThreadId,
 *******************************************************************************/
 static void phTmlNfc_ReadDeferredCb(void* pParams) {
   /* Transaction info buffer to be passed to Callback Function */
-  phTmlNfc_TransactInfo_t* pTransactionInfo =
-      static_cast<phTmlNfc_TransactInfo_t*>(pParams);
+  phTmlNfc_TransactInfo_t* pTransactionInfo = (phTmlNfc_TransactInfo_t*)pParams;
 
   /* Reset the flag to accept another Read Request */
   gpphTmlNfc_Context->tReadInfo.bThreadBusy = false;
