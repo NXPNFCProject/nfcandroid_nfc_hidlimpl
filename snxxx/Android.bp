@@ -208,6 +208,7 @@ cc_library_shared {
         "halimpl_v2/hal/phNxpNciHal_WiredSeIface.cc",
         "halimpl_v2/ntag/phNxpNTag.cc",
         "halimpl_v2/hal/phNxpNciHal_ReaderAnnotation.cc",
+        "halimpl_v2/dualAntenna/DualAntenna.cc",
     ],
 
     local_include_dirs: [
@@ -228,6 +229,7 @@ cc_library_shared {
         "halimpl_v2/nfc_comm",
         "halimpl_v2/nfc_extn",
         "halimpl_v2/ntag",
+        "halimpl_v2/dualAntenna",
     ],
 
     include_dirs: [
