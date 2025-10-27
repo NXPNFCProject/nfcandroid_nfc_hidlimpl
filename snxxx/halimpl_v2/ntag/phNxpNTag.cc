@@ -37,6 +37,7 @@ void NxpNTag::clearNTagFlags() {
   mNtagControl.mQPOLLMode = 0x00;
   mNtagControl.mNtagDetectStatus = 0x00;
   mNtagControl.mCmdRspStatus = 0x00;
+  mNtagControl.mRfDeactDisc = false;
   mNtagControl.mNtagUid.clear();
   mNtagControl.mCurrentDiscCmd.clear();
   mNtagControl.mNtagEnableRequest = false;
@@ -107,7 +108,7 @@ NFCSTATUS NxpNTag::waitForRfDiscRsp(NFCSTATUS status) {
   if (mWaitingforDiscRsp) status = NFCSTATUS_FAILED;
 
   if (status == NFCSTATUS_FAILED && IDLE == phNxpExtn_NfcGetRfState()) {
-    phNxpHal_EnqueueWrite(mNtagControl.mCurrentDiscCmd.data(),
+    status = phNxpHal_EnqueueWrite(mNtagControl.mCurrentDiscCmd.data(),
                           mNtagControl.mCurrentDiscCmd.size());
   }
   return status;
@@ -374,6 +375,17 @@ NFCSTATUS NxpNTag::handleNTagPropNtf(uint16_t dataLen, uint8_t* pData) {
 
   if (dataLen == NTAG_LOAD_CHANGE_NTF_LEN &&
       pData[NTAG_LOAD_CHANGE_NTF_INDEX] == NTAG_LOAD_CHANGE_VAL) {
+    if (!mNtagControl.mNtagUid.empty()) {
+      NXPLOG_NCIHAL_E("%s Tag Uid is found and starting the Timer", __func__);
+      if (!mNtagControl.mNTagTimer.set((3000), NULL,
+                                       QPollTimerTimeoutCallback)) {
+        NXPLOG_NCIHAL_E("%s Failed to start load change Timer", __func__);
+        mNtagControl.mNtagDetectStatus &= ~NTAG_LOADCHANGE_TIMER_STATUS;
+      } else {
+        mNtagControl.mNtagDetectStatus |= NTAG_LOADCHANGE_TIMER_STATUS;
+        return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+      }
+    }
     mNtagControl.mQPOLLMode = NFC_RF_DISC_REPLACE_QPOLL;
     NFCSTATUS status =
         processNTagEvent(NTagEvent::ACTION_NTAG_RF_LOAD_CHANGE_NTF);
@@ -652,11 +664,27 @@ NFCSTATUS NxpNTag::processRfDiscCmd(std::vector<uint8_t>& rfDiscCmd) {
   }
 
   if (msgType == NCI_MSG_RF_DEACTIVATE) {
+    uint8_t deactivateType = rfDiscCmd[RF_DISC_CMD_NO_OF_CONFIG_INDEX];
+
+    if (!(mNtagControl.mNtagDetectStatus & NTAG_PRESENCE_CHECK_TIMER_STATUS) &&
+        (mNtagControl.mNtagDetectStatus & NTAG_ACTIVATED_STATUS) &&
+        (deactivateType == NCI_DEACTIVATE_TYPE_DISCOVERY)) {
+      unsigned long timeout = NTAG_DETECT_TIMER_VALUE;
+      if (!GetNxpNumValue(NAME_NXP_NTAG_DETECTION_TIMEOUT_VALUE, &timeout,
+                          sizeof(timeout))) {
+        NXPLOG_NCIHAL_W(
+            "%s: Failed to get NTAG detect timer , using default: %lu",
+            __func__, timeout);
+      }
+      mNtagControl.mRfDeactDisc = true;
+      if (!QPollTimerStart(timeout)) {
+        NXPLOG_NCIHAL_E("NxpNTag::%s Failed to start timer", __func__);
+      }
+    }
+
     if (!(mNtagControl.mNtagDetectStatus & NTAG_PRESENCE_CHK_STATUS) &&
         !(mNtagControl.mNtagDetectStatus & NTAG_REMOVAL_STATUS))
       return NFCSTATUS_EXTN_FEATURE_FAILURE;
-
-    uint8_t deactivateType = rfDiscCmd[RF_DISC_CMD_NO_OF_CONFIG_INDEX];
 
     if (deactivateType == NCI_DEACTIVATE_TYPE_DISCOVERY) {
       mNtagControl.mQPOLLMode = NFC_RF_DISC_RESTART;
@@ -889,6 +917,26 @@ void NxpNTag::updateNTagRemoveStatus() {
 }
 
 void NxpNTag::checkNTagRemoveStatus() {
+  if (mNtagControl.mNtagDetectStatus & NTAG_LOADCHANGE_TIMER_STATUS) {
+    mNtagControl.mNtagDetectStatus &= ~NTAG_LOADCHANGE_TIMER_STATUS;
+    mNtagControl.mQPOLLMode = NFC_RF_DISC_REPLACE_QPOLL;
+    mNtagControl.mNTagTimer.kill();
+    NFCSTATUS status =
+        processNTagEvent(NTagEvent::ACTION_NTAG_RF_LOAD_CHANGE_NTF);
+    if (status != NFCSTATUS_SUCCESS)
+      NXPLOG_NCIHAL_E("NxpNTag::%s Failed to trigger RF discovery", __func__);
+
+    return;
+  }
+  if (mNtagControl.mRfDeactDisc == true) {
+    mNtagControl.mRfDeactDisc = false;
+    mNtagControl.mNTagTimer.kill();
+    mNtagControl.mQPOLLMode = NFC_RF_DISC_START;
+    mWaitingforDiscRsp = true;
+    NFCSTATUS status =
+        processNTagEvent(NTagEvent::ACTION_NTAG_REMOVAL_DETECTED);
+    waitForRfDiscRsp(status);
+  }
   // Transition presence check timer to timeout if active
   if (mNtagControl.mNtagDetectStatus & NTAG_PRESENCE_CHECK_TIMER_STATUS) {
     // Transition presence check timer to timeout status
