@@ -823,7 +823,12 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             status = ERROR_UNKNOWN;
             e.printStackTrace();
         }
-        mNfcOperations.enableDiscovery();
+        if (mIsEFDMStarted || isFieldDetectStarted()) {
+            mNfcOperations.setDiscoveryTech(NfcAdapter.FLAG_READER_KEEP,
+                    NfcAdapter.FLAG_LISTEN_DISABLE);
+        } else {
+            mNfcOperations.enableDiscovery();
+        }
         /* check if discovery started */
         if (!mNfcOperations.isDiscoveryStarted()) {
             NxpNfcLogger.e(TAG, "Not able to start discovery");
