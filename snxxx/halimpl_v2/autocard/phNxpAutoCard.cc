@@ -82,10 +82,10 @@ void AutoCard::phNxpNciHal_getAutoCardConfig() {
                            rsp + COUNTER_START_INDEX + NO_OF_CNT_TO_UPDATE);
 
   uint8_t buffer[CNT_CONFIG_BUFF_MAX_SIZE] = {0};
-  long bufflen = CNT_CONFIG_BUFF_MAX_SIZE;
+  const long bufflen = CNT_CONFIG_BUFF_MAX_SIZE;
   long retlen = 0;
 
-  int isFound =
+  const int isFound =
       GetNxpByteArrayValue(NAME_NXP_AUTOCARD_COUNTERS,
                            reinterpret_cast<char*>(buffer), bufflen, &retlen);
   if (isFound > 0 && retlen == NO_OF_CNT_TO_UPDATE) {
@@ -153,7 +153,7 @@ NFCSTATUS AutoCard::handleVendorNciRspNtf(uint16_t dataLen, uint8_t* pData) {
     phNxpHal_NfcDataCallback(autocardNtf.size(), &autocardNtf[0]);
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
   }
-  uint8_t status = (dataLen > AUTOCARD_STATUS_INDEX)
+  const uint8_t status = (dataLen > AUTOCARD_STATUS_INDEX)
                        ? pData[AUTOCARD_STATUS_INDEX]
                        : pData[3];
   std::vector<uint8_t> autocardRsp = {
@@ -233,7 +233,7 @@ NFCSTATUS AutoCard::handleVendorNciMessage(uint16_t dataLen, uint8_t* pData) {
       autocardCmd.insert(autocardCmd.end(), mAutoCardCounters.begin(),
                          mAutoCardCounters.end());
     }
-    NFCSTATUS status =
+    const NFCSTATUS status =
         phNxpHal_EnqueueWrite(autocardCmd.data(), autocardCmd.size());
     if (status != NFCSTATUS_SUCCESS) {
       autocardStatus = AUTOCARD_STATUS_CMD_FAIL;

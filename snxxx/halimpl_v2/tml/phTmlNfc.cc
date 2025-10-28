@@ -172,7 +172,7 @@ NFCSTATUS phTmlNfc_Init(pphTmlNfc_Config_t pConfig) {
 NFCSTATUS phTmlNfc_ConfigTransport() {
   unsigned long transportType = UNKNOWN;
   unsigned long value = 0;
-  int isfound = GetNxpNumValue(NAME_NXP_TRANSPORT, &value, sizeof(value));
+  const int isfound = GetNxpNumValue(NAME_NXP_TRANSPORT, &value, sizeof(value));
   if (isfound > 0) {
     transportType = value;
   }
@@ -602,7 +602,7 @@ NFCSTATUS phTmlNfc_IoCtl(phTmlNfc_ControlCode_t eControlCode) {
     wStatus = NFCSTATUS_FAILED;
   } else {
     pthread_mutex_lock(&gpphTmlNfc_Context->tReadInfo.lock);
-    uint8_t read_flag = (gpphTmlNfc_Context->tReadInfo.bEnable > 0);
+    const uint8_t read_flag = (gpphTmlNfc_Context->tReadInfo.bEnable > 0);
 
     switch (eControlCode) {
       case phTmlNfc_e_PowerReset: {
@@ -870,7 +870,7 @@ bool phTmlNfc_IsFwDnldModeEnabled(void) {
 **
 *******************************************************************************/
 NFCSTATUS phTmlNfc_Shutdown_CleanUp() {
-  NFCSTATUS wShutdownStatus = phTmlNfc_Shutdown();
+  const NFCSTATUS wShutdownStatus = phTmlNfc_Shutdown();
   phTmlNfc_CleanUp();
   return wShutdownStatus;
 }

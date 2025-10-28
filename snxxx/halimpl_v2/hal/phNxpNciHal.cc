@@ -237,11 +237,11 @@ static void phNxpNciHal_initialize_debug_enabled_flag() {
     nfc_debug_enabled = (num == 0) ? false : true;
   }
 
-  int len = property_get("nfc.debug_enabled", valueStr, "");
+  const int len = property_get("nfc.debug_enabled", valueStr, "");
   if (len > 0) {
     // let Android property override .conf variable
     unsigned debug_enabled = 0;
-    int ret = sscanf(valueStr, "%u", &debug_enabled);
+    const int ret = sscanf(valueStr, "%u", &debug_enabled);
     if (ret) nfc_debug_enabled = (debug_enabled == 0) ? false : true;
   }
   NXPLOG_NCIHAL_D("nfc_debug_enabled : %d", nfc_debug_enabled);
@@ -394,7 +394,7 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset,
 
   /* Make sure read thread is pending before updating phTmlNfc_EnableFwDnldMode
    * to true*/
-  NFCSTATUS readStatus = phNxpNciHal_enableTmlRead();
+  const NFCSTATUS readStatus = phNxpNciHal_enableTmlRead();
   if (readStatus != PHNFCSTVAL(CID_NFC_TML, NFCSTATUS_BUSY)) {
     NXPLOG_NCIHAL_E("Read Thread is not pending already. status = 0x%x \n",
                     readStatus);
@@ -458,8 +458,8 @@ NFCSTATUS phNxpNciHal_CheckValidFwVersion(void) {
   NFCSTATUS status = NFCSTATUS_NOT_ALLOWED;
   const unsigned char sfw_infra_major_no = 0x02;
   unsigned char ufw_current_major_no = 0x00;
-  uint8_t rom_version = 0xFF & (wFwVerRsp >> 16);
-  uint8_t fw_maj_ver = 0xFF & (wFwVerRsp >> 8);
+  const uint8_t rom_version = 0xFF & (wFwVerRsp >> 16);
+  const uint8_t fw_maj_ver = 0xFF & (wFwVerRsp >> 8);
 
   /* extract the firmware's major no */
   ufw_current_major_no = ((0x00FF) & (wFwVer >> 8U));
@@ -610,7 +610,7 @@ int phNxpNciHal_MinOpen() {
     strlcpy(nfc_dev_node, "/dev/nxp-nci", (max_len * sizeof(char)));
   }
   /* Configure hardware link */
-  int isfound = GetNxpNumValue(NAME_NXP_TRANSPORT, &value, sizeof(value));
+  const int isfound = GetNxpNumValue(NAME_NXP_TRANSPORT, &value, sizeof(value));
   if (isfound > 0 && value == I3C) {
     nxpncihal_ctrl.gDrvCfg.nLinkType = ENUM_LINK_TYPE_I3C; /* For NFCC */
     strlcat(nfc_dev_node, "-i3c", max_len);
@@ -831,7 +831,7 @@ int phNxpNciHal_MinOpen() {
  ******************************************************************************/
 int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
                      nfc_stack_data_callback_t* p_data_cback) {
-  NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
+  const NFCSTATUS wConfigStatus = NFCSTATUS_SUCCESS;
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   NXPLOG_NCIHAL_E("phNxpNciHal_open NFC HAL OPEN");
 #ifdef NXP_BOOTTIME_UPDATE
@@ -844,7 +844,7 @@ int phNxpNciHal_open(nfc_stack_callback_t* p_cback,
     return NFCSTATUS_FAILED;
   }
 #endif
-  NfcHalAutoThreadMutex a(sHalFnLock);
+  const NfcHalAutoThreadMutex a(sHalFnLock);
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_OPEN) {
     NXPLOG_NCIHAL_D("phNxpNciHal_open already open");
     phNxpNciHal_complete(wConfigStatus, PHNXP_NCIHAL_OP_OPEN);
@@ -894,8 +894,8 @@ clean_and_return:
  ******************************************************************************/
 int phNxpNciHal_fw_mw_ver_check() {
   NFCSTATUS status = NFCSTATUS_FAILED;
-  uint8_t rom_version = 0xFF & (wFwVerRsp >> 16);
-  uint8_t fw_maj_ver = 0xFF & (wFwVerRsp >> 8);
+  const uint8_t rom_version = 0xFF & (wFwVerRsp >> 16);
+  const uint8_t fw_maj_ver = 0xFF & (wFwVerRsp >> 8);
 
   switch (nfcFL.chipType) {
     case pn557:
@@ -1128,7 +1128,7 @@ static void phNxpNciHal_read_complete(void* pContext,
       SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
     } else if (!sendRspToUpperLayer && (pInfo->pBuff[0x00] == 0x00)) {
       sendRspToUpperLayer = true;
-      NFCSTATUS mfcRspStatus =
+      const NFCSTATUS mfcRspStatus =
           NxpMfcReaderInstance.CheckMfcResponse(pInfo->pBuff, pInfo->wLength);
       NXPLOG_NCIHAL_D("Mfc Response Status = 0x%x", mfcRspStatus);
       phNxpNciHal_update_ext_buffer(pInfo->wLength, pInfo->pBuff);
@@ -1141,7 +1141,7 @@ static void phNxpNciHal_read_complete(void* pContext,
     }
     /* Read successful send the event to higher layer */
     else if (status == NFCSTATUS_SUCCESS) {
-      NFCSTATUS extStatus =
+      const NFCSTATUS extStatus =
           phNxpExtn_HandleNciRspNtf(&pInfo->wLength, pInfo->pBuff);
       NXPLOG_NCIHAL_D("extStatus = 0x%d", extStatus);
       // Send the response to upper layer, if it is not handled by Nfc
@@ -1200,7 +1200,7 @@ void phNxpNciHal_client_data_callback(uint16_t rx_data_len,
       p_rx_data[NCI_OID_INDEX] == NCI_PROP_LX_NTF_OID) {
     unsigned long notificationType = 0;
     ReaderPollConfigParser readerPollConfigParser;
-    int isFound = GetNxpNumValue(NAME_NXP_OBSERVE_MODE_REQ_NOTIFICATION_TYPE,
+    const int isFound = GetNxpNumValue(NAME_NXP_OBSERVE_MODE_REQ_NOTIFICATION_TYPE,
                                  &notificationType, sizeof(notificationType));
     if (isFound == 0) {
       notificationType = 0;
@@ -1260,7 +1260,7 @@ void phNxpNciHal_client_data_callback(uint16_t rx_data_len,
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_enableTmlRead() {
   /* Read again because read must be pending always.*/
-  NFCSTATUS status = phTmlNfc_Read(
+  const NFCSTATUS status = phTmlNfc_Read(
       NULL, 0x00,
       static_cast<pphTmlNfc_TransactCompletionCb_t>(&phNxpNciHal_read_complete),
       NULL);
@@ -1297,7 +1297,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
 
   uint8_t swp_switch_timeout_cmd[] = {0x20, 0x02, 0x06, 0x01, 0xA0,
                                       0xF3, 0x02, 0x00, 0x00};
-  long bufflen = 260;
+  const long bufflen = 260;
   long retlen = 0;
   phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
 #if (NFC_NXP_HFO_SETTINGS == TRUE)
@@ -1635,7 +1635,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
     }
   }
 
-  NFCSTATUS getCommandStatus = phNxpNciHal_getInterpolatedRssi8Am();
+  const NFCSTATUS getCommandStatus = phNxpNciHal_getInterpolatedRssi8Am();
   if (getCommandStatus != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_D("Get Interpolated Rssi 8 A/m command failed");
   }
@@ -1755,12 +1755,12 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
     // Check the permissible range [0 - 60]
     if (0 <= retlen && retlen <= 60) {
       if (0 < retlen) {
-        unsigned int timeout = static_cast<uint32_t>(retlen) * 1000;
+        const unsigned int timeout = static_cast<uint32_t>(retlen) * 1000;
         unsigned int timeoutHx = 0x0000;
 
         char tmpbuffer[10] = {0};
         snprintf(static_cast<char*>(tmpbuffer), 10, "%04x", timeout);
-        int ret = sscanf(static_cast<char*>(tmpbuffer), "%x", &timeoutHx);
+        const int ret = sscanf(static_cast<char*>(tmpbuffer), "%x", &timeoutHx);
         if (!ret) timeoutHx = 0x0000;
 
         swp_switch_timeout_cmd[7] = (timeoutHx & 0xFF);
@@ -1899,7 +1899,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
     vector<uint8_t> convertedCommand =
         covertAnnotatonToBrodcastPollCommand(retlen, buffer);
 
-    NFCSTATUS broadcastPollCmdStatus = phNxpNciHal_send_ext_cmd(
+    const NFCSTATUS broadcastPollCmdStatus = phNxpNciHal_send_ext_cmd(
         convertedCommand.size(), convertedCommand.data(), &rsp_len, rsp);
 
     if (broadcastPollCmdStatus != NFCSTATUS_SUCCESS) {
@@ -1913,7 +1913,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   if (isfound) {
     uint8_t silentModeCommand[] = {0x2F, 0x48, 0x02, 0x02,
                                    static_cast<uint8_t>(num)};
-    NFCSTATUS silentModeCmdStatus = phNxpNciHal_send_ext_cmd(
+    const NFCSTATUS silentModeCmdStatus = phNxpNciHal_send_ext_cmd(
         sizeof(silentModeCommand), silentModeCommand, &rsp_len, rsp);
     if (silentModeCmdStatus != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("NXP_SILENT_MODE_FLAG Command failed");
@@ -1956,7 +1956,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_CheckRFCmdRespStatus(uint16_t rsp_len, uint8_t* rsp) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
-  static uint16_t INVALID_PARAM = 0x09;
+  const static uint16_t INVALID_PARAM = 0x09;
   if ((rsp_len > 0) && (rsp[2] > 0)) {
     if (rsp[3] == 0x09) {
       status = INVALID_PARAM;
@@ -2075,7 +2075,7 @@ int phNxpNciHal_close(bool bShutdown) {
   uint8_t num = 0x00;
 
   phNxpNciHal_deinitializeRegRfFwDnld();
-  NfcHalAutoThreadMutex a(sHalFnLock);
+  const NfcHalAutoThreadMutex a(sHalFnLock);
   CONCURRENCY_LOCK();
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
     NXPLOG_NCIHAL_D("phNxpNciHal_close is already closed, ignoring close");
@@ -2226,7 +2226,7 @@ close_and_return:
         usleep(1000 * 1000);
         if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
           // make sure read is pending
-          NFCSTATUS readStatus = phNxpNciHal_enableTmlRead();
+          const NFCSTATUS readStatus = phNxpNciHal_enableTmlRead();
           NXPLOG_NCIHAL_D("read status = %x", readStatus);
         }
         retry++;
@@ -2932,7 +2932,7 @@ retry_send_ext:
     return status;
   }
 
-  bool isUpdateRequired = phNxpNciHal_UpdateRfMiscSettings();
+  const bool isUpdateRequired = phNxpNciHal_UpdateRfMiscSettings();
 
   if (isUpdateRequired) {
     vector<uint8_t> set_rf_cmd = {0x20, 0x02, 0x08, 0x01};
@@ -3008,20 +3008,20 @@ bool phNxpNciHal_UpdateRfMiscSettings() {
   vector<phRfMiscSettings>::iterator it;
   for (it = settings.begin(); it != settings.end(); ++it) {
     unsigned long config_value = 0;
-    int position = it->configPosition;
+    const int position = it->configPosition;
     if (static_cast<int>(phNxpNciRfSet.p_rx_data.size()) <= position) {
       NXPLOG_NCIHAL_E(
           "Can't update the value due to the length issue, hence ignoring %s",
           it->configName);
       continue;
     }
-    int rf_val = phNxpNciRfSet.p_rx_data[position];
-    int isfound =
+    const int rf_val = phNxpNciRfSet.p_rx_data[position];
+    const int isfound =
         (GetNxpNumValue(it->configName, static_cast<void*>(&config_value),
                         sizeof(config_value)));
     if (isfound > 0) {
-      uint8_t configBitMask = it->configBitMask;
-      int enable_bit = rf_val & configBitMask;
+      const uint8_t configBitMask = it->configBitMask;
+      const int enable_bit = rf_val & configBitMask;
       if ((enable_bit != configBitMask) && (config_value == 1)) {
         phNxpNciRfSet.p_rx_data[position] |=
             configBitMask;  // Enable if it is disabled
@@ -3568,7 +3568,7 @@ static void phNxpNciHal_hci_network_reset(void) {
   msg.pMsgData = NULL;
   msg.Size = 0;
 
-  NFCSTATUS status = phNxpNciHal_do_swp_session_reset();
+  const NFCSTATUS status = phNxpNciHal_do_swp_session_reset();
 
   if (status != NFCSTATUS_SUCCESS) {
     msg.eMsgType = NCI_HAL_ERROR_MSG;
@@ -3685,7 +3685,7 @@ NFCSTATUS phNxpNciHal_send_get_cfgs() {
   NFCSTATUS status = NFCSTATUS_FAILED;
   uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
   uint16_t rsp_len = 0;
-  uint8_t num_cfgs = sizeof(get_cfg_arr) / sizeof(uint8_t);
+  const uint8_t num_cfgs = sizeof(get_cfg_arr) / sizeof(uint8_t);
   uint8_t cfg_count = 0, retry_cnt = 0;
   if (mGetCfg_info != NULL) {
     mGetCfg_info->isGetcfg = true;
@@ -3729,7 +3729,7 @@ NFCSTATUS phNxpNciHal_send_get_cfgs() {
 *******************************************************************************/
 void phNxpNciHal_configFeatureList(uint8_t* init_rsp, uint16_t rsp_len) {
   nxpncihal_ctrl.chipType = pConfigFL->processChipType(init_rsp, rsp_len);
-  tNFC_chipType chipType = nxpncihal_ctrl.chipType;
+  const tNFC_chipType chipType = nxpncihal_ctrl.chipType;
   bool is4KFragmentSupported = false;
   NXPLOG_NCIHAL_D("%s chipType = %s", __func__, pConfigFL->product[chipType]);
   CONFIGURE_FEATURELIST(chipType);
@@ -3948,7 +3948,7 @@ static void phNxpNciHal_check_and_recover_fw() {
   uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
   uint16_t rsp_len = 0;
 
-  int32_t core_reset_count =
+  const int32_t core_reset_count =
       phNxpNciHal_getVendorProp_int32(core_reset_ntf_count_prop_name, 0);
   if (core_reset_count < CORE_RESET_NTF_RECOVERY_REQ_COUNT) {
     return;

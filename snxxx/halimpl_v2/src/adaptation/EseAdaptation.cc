@@ -86,7 +86,7 @@ EseAdaptation::~EseAdaptation() { mpInstance = NULL; }
 **
 *******************************************************************************/
 EseAdaptation& EseAdaptation::GetInstance() {
-  NfcHalAutoThreadMutex a(sLock);
+  const NfcHalAutoThreadMutex a(sLock);
 
   if (!mpInstance) mpInstance = new EseAdaptation;
   return *mpInstance;
@@ -134,9 +134,6 @@ void EseAdaptation::signal() { mCondVar.signal(); }
 uint32_t EseAdaptation::Thread() {
   const char* func = "EseAdaptation::Thread";
   ALOGD_IF(nfc_debug_enabled, "%s: enter", func);
-  {
-    NfcHalThreadCondVar CondVar;
-  }
 
   EseAdaptation::GetInstance().signal();
 
@@ -241,7 +238,7 @@ void IoctlCallback(hidl_vec<uint8_t> outputData) {
 int EseAdaptation::HalIoctl(long arg, void* p_data) {
   const char* func = "EseAdaptation::HalIoctl";
   hidl_vec<uint8_t> data;
-  NfcHalAutoThreadMutex a(sIoctlLock);
+  const NfcHalAutoThreadMutex a(sIoctlLock);
   ese_nxp_IoctlInOutData_t* pInpOutData =
       static_cast<ese_nxp_IoctlInOutData_t*>(p_data);
   ALOGD_IF(nfc_debug_enabled, "%s arg=%ld", func, arg);

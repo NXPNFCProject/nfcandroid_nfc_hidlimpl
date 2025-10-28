@@ -194,7 +194,7 @@ NFCSTATUS phOsalNfc_Timer_Start(uint32_t dwTimerId, uint32_t dwRegTimeCnt,
 *******************************************************************************/
 NFCSTATUS phOsalNfc_Timer_Stop(uint32_t dwTimerId) {
   NFCSTATUS wStopStatus = NFCSTATUS_SUCCESS;
-  static struct itimerspec its = {{0, 0}, {0, 0}};
+  const static struct itimerspec its = {{0, 0}, {0, 0}};
 
   uint32_t dwIndex;
   phOsalNfc_TimerHandle_t* pTimerHandle;

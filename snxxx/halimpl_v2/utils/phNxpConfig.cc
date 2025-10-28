@@ -110,7 +110,7 @@ size_t readConfigFile(const char* fileName, uint8_t** p_data) {
   if (fd == nullptr) return 0;
 
   // RAII wrapper for automatic file closure
-  struct FileGuard {
+  const struct FileGuard {
     FILE* f;
     FileGuard(FILE* file) : f(file) {}
     ~FileGuard() {
@@ -140,7 +140,7 @@ size_t readConfigFile(const char* fileName, uint8_t** p_data) {
     return 0;
   }
 
-  size_t read = fread(buffer.get(), file_size, 1, fd);
+  const size_t read = fread(buffer.get(), file_size, 1, fd);
   if (read == 1) {
     buffer[file_size] = '\n';
     *p_data = buffer.release();  // Transfer ownership to caller
@@ -321,7 +321,7 @@ bool findConfigFilePathFromTransportConfigPaths(const string& configName,
 **
 *******************************************************************************/
 bool CNfcConfig::readConfig(const char* name, bool bResetContent) {
-  std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
+  const std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
 
   if (!name) {
     ALOGE("%s Invalid file name parameter", __func__);
@@ -339,14 +339,14 @@ bool CNfcConfig::readConfig(const char* name, bool bResetContent) {
   };
 
   uint8_t* p_config = nullptr;
-  size_t config_size = readConfigFile(name, &p_config);
+  const size_t config_size = readConfigFile(name, &p_config);
   if (p_config == nullptr) {
     ALOGE("%s Cannot open config file %s", __func__, name);
     if (bResetContent) mValidFile = false;
     return false;
   }
 
-  std::unique_ptr<uint8_t[]> config_guard(p_config);
+  const std::unique_ptr<uint8_t[]> config_guard(p_config);
   string token;
   string strValue;
   unsigned long numValue = 0;
@@ -458,7 +458,7 @@ bool CNfcConfig::readConfig(const char* name, bool bResetContent) {
             int n = (i + 1) / 2;
             while (n-- > 0) {
               numValue = numValue >> (n * 8);
-              unsigned char chVal = (numValue) & 0xFF;
+              const unsigned char chVal = (numValue) & 0xFF;
               strValue.push_back(chVal);
             }
           }
@@ -558,7 +558,7 @@ CNfcConfig::~CNfcConfig() { clean(); }
 CNfcConfig& CNfcConfig::GetInstance() {
   // Double-checked locking pattern
   if (!is_initialized.load()) {
-    std::lock_guard<std::mutex> lock(initialization_mutex);
+    const std::lock_guard<std::mutex> lock(initialization_mutex);
 
     // Check again after acquiring lock
     if (!is_initialized.load()) {
@@ -605,7 +605,7 @@ CNfcConfig& CNfcConfig::GetInstance() {
 }
 
 void CNfcConfig::DestroyCNfcConfig() {
-  std::lock_guard<std::mutex> lock(initialization_mutex);
+  const std::lock_guard<std::mutex> lock(initialization_mutex);
   if (theInstance != nullptr) {
     delete theInstance;
     theInstance = nullptr;
@@ -623,7 +623,7 @@ void CNfcConfig::DestroyCNfcConfig() {
 **
 *******************************************************************************/
 bool CNfcConfig::getValue(const char* name, char* pValue, size_t len) const {
-  std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
+  const std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
 
   if (!name || !pValue || len == 0) {
     ALOGE("%s Invalid parameters: name=%p, pValue=%p, len=%zu", __func__, name,
@@ -638,7 +638,7 @@ bool CNfcConfig::getValue(const char* name, char* pValue, size_t len) const {
   }
 
   if (pParam->str_len() > 0) {
-    size_t copy_len = std::min(pParam->str_len(), len - 1);
+    const size_t copy_len = std::min(pParam->str_len(), len - 1);
     memset(pValue, 0, len);
     memcpy(pValue, pParam->str_value(), copy_len);
     pValue[copy_len] = '\0';
@@ -649,7 +649,7 @@ bool CNfcConfig::getValue(const char* name, char* pValue, size_t len) const {
 
 bool CNfcConfig::getValue(const char* name, char* pValue, long len,
                           long* readlen) const {
-  std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
+  const std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
 
   if (!name || !pValue || !readlen || len <= 0) {
     ALOGE("%s Invalid parameters: name=%p, pValue=%p, readlen=%p, len=%ld",
@@ -689,7 +689,7 @@ bool CNfcConfig::getValue(const char* name, char* pValue, long len,
 **
 *******************************************************************************/
 bool CNfcConfig::getValue(const char* name, unsigned long& rValue) const {
-  std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
+  const std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
 
   if (!name) {
     ALOGE("%s Invalid parameter: name is null", __func__);
@@ -716,7 +716,7 @@ bool CNfcConfig::getValue(const char* name, unsigned long& rValue) const {
 **
 *******************************************************************************/
 bool CNfcConfig::getValue(const char* name, unsigned short& rValue) const {
-  std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
+  const std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
 
   if (!name) {
     ALOGE("%s Invalid parameter: name is null", __func__);
@@ -727,7 +727,7 @@ bool CNfcConfig::getValue(const char* name, unsigned short& rValue) const {
   if (pParam == NULL) return false;
 
   if (pParam->str_len() == 0) {
-    unsigned long numVal = pParam->numValue();
+    const unsigned long numVal = pParam->numValue();
     if (numVal <= USHRT_MAX) {
       rValue = static_cast<unsigned short>(numVal);
       return true;
@@ -751,7 +751,7 @@ bool CNfcConfig::getValue(const char* name, unsigned short& rValue) const {
 **
 *******************************************************************************/
 const CNfcParam* CNfcConfig::find(const char* p_name) const {
-  std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
+  const std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
 
   if (!p_name) {
     ALOGE("%s Invalid parameter: p_name is null", __func__);
@@ -769,7 +769,7 @@ const CNfcParam* CNfcConfig::find(const char* p_name) const {
     const char* param_name = (*it)->c_str();
     if (!param_name) continue;
 
-    int cmp = strcmp(param_name, p_name);
+    const int cmp = strcmp(param_name, p_name);
     if (cmp < 0) {
       continue;
     } else if (cmp == 0) {
@@ -825,7 +825,7 @@ void CNfcConfig::readNxpRFConfig(const char* fileName) const {
 **
 *******************************************************************************/
 void CNfcConfig::clean() {
-  std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
+  const std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
 
   ALOGD("%s Cleaning up all configuration data", __func__);
   // Create a set to track unique objects and avoid double-deletion
@@ -867,7 +867,7 @@ void CNfcConfig::clean() {
 **
 *******************************************************************************/
 void CNfcConfig::add(const CNfcParam* pParam) {
-  std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
+  const std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
 
   if (!pParam) {
     ALOGE("%s Invalid parameter: pParam is null", __func__);
@@ -898,7 +898,7 @@ void CNfcConfig::add(const CNfcParam* pParam) {
     const char* existing_name = (*it)->c_str();
     if (!existing_name) continue;
 
-    int cmp = strcmp(existing_name, param_name);
+    const int cmp = strcmp(existing_name, param_name);
     if (mCurrentFile.find("libnfc-nci-update.conf") != std::string::npos) {
       m_transit_set.insert(param_name);
     }
@@ -926,7 +926,7 @@ void CNfcConfig::add(const CNfcParam* pParam) {
 **
 *******************************************************************************/
 void CNfcConfig::dump() {
-  std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
+  const std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
 
   ALOGD("%s Enter", __func__);
 
@@ -950,7 +950,7 @@ void CNfcConfig::dump() {
 **
 *******************************************************************************/
 bool CNfcConfig::isAllowed(const char* name) {
-  string token(name);
+  const string token(name);
   bool stat = false;
   if ((token.find("HOST_LISTEN_TECH_MASK") != std::string::npos) ||
       (token.find("UICC_LISTEN_TECH_MASK") != std::string::npos) ||
@@ -977,7 +977,7 @@ bool CNfcConfig::isAllowed(const char* name) {
 **
 *******************************************************************************/
 void CNfcConfig::moveFromList() {
-  std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
+  const std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
 
   if (m_list.size() == 0) return;
 
@@ -998,7 +998,7 @@ void CNfcConfig::moveFromList() {
 **
 *******************************************************************************/
 void CNfcConfig::moveToList() {
-  std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
+  const std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
 
   if (size() == 0) return;
   if (m_list.size() != 0) {
@@ -1018,7 +1018,7 @@ void CNfcConfig::moveToList() {
 }
 
 bool CNfcConfig::isModified(tNXP_CONF_FILE aType) {
-  std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
+  const std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
 
   const char* timestamp_path = nullptr;
   uint32_t current_crc32 = 0;
@@ -1053,7 +1053,7 @@ bool CNfcConfig::isModified(tNXP_CONF_FILE aType) {
     return true;
   }
 
-  struct FileGuard {
+  const struct FileGuard {
     FILE* f;
     FileGuard(FILE* file) : f(file) {}
     ~FileGuard() {
@@ -1062,7 +1062,7 @@ bool CNfcConfig::isModified(tNXP_CONF_FILE aType) {
   } guard(fd);
 
   uint32_t stored_crc32 = 0;
-  size_t read_count = fread(&stored_crc32, sizeof(uint32_t), 1, fd);
+  const size_t read_count = fread(&stored_crc32, sizeof(uint32_t), 1, fd);
   if (read_count != 1) {
     ALOGE("%s File read failed for %s: read %zu items, errno=%d: %s", __func__,
           timestamp_path, read_count, errno, strerror(errno));
@@ -1073,7 +1073,7 @@ bool CNfcConfig::isModified(tNXP_CONF_FILE aType) {
 }
 
 void CNfcConfig::resetModified(tNXP_CONF_FILE aType) {
-  std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
+  const std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
 
   const char* timestamp_path = nullptr;
   uint32_t current_crc32 = 0;
@@ -1113,7 +1113,7 @@ void CNfcConfig::resetModified(tNXP_CONF_FILE aType) {
     return;
   }
 
-  struct FileGuard {
+  const struct FileGuard {
     FILE* f;
     FileGuard(FILE* file) : f(file) {}
     ~FileGuard() {
@@ -1121,7 +1121,7 @@ void CNfcConfig::resetModified(tNXP_CONF_FILE aType) {
     }
   } guard(fd);
 
-  size_t write_count = fwrite(&current_crc32, sizeof(uint32_t), 1, fd);
+  const size_t write_count = fwrite(&current_crc32, sizeof(uint32_t), 1, fd);
   if (write_count != 1) {
     ALOGE("%s Failed to write CRC32 to %s: wrote %zu items (errno=%d: %s)",
           __func__, timestamp_path, write_count, errno, strerror(errno));
@@ -1222,8 +1222,8 @@ void readOptionalConfig(const char* extra) {
 *******************************************************************************/
 extern "C" int GetNxpStrValue(const char* name, char* pValue,
                               unsigned long len) {
-  CNfcConfig& rConfig = CNfcConfig::GetInstance();
-  bool result = rConfig.getValue(name, pValue, static_cast<size_t>(len));
+  const CNfcConfig& rConfig = CNfcConfig::GetInstance();
+  const bool result = rConfig.getValue(name, pValue, static_cast<size_t>(len));
   return result ? 1 : 0;
 }
 
@@ -1246,8 +1246,8 @@ extern "C" int GetNxpStrValue(const char* name, char* pValue,
 *******************************************************************************/
 extern "C" int GetNxpByteArrayValue(const char* name, char* pValue,
                                     long bufflen, long* len) {
-  CNfcConfig& rConfig = CNfcConfig::GetInstance();
-  bool result = rConfig.getValue(name, pValue, bufflen, len);
+  const CNfcConfig& rConfig = CNfcConfig::GetInstance();
+  const bool result = rConfig.getValue(name, pValue, bufflen, len);
   return result ? 1 : 0;
 }
 
@@ -1316,7 +1316,7 @@ extern "C" void setNxpRfConfigPath(const char* name) {
     return;
   }
 
-  size_t name_len = strlen(name);
+  const size_t name_len = strlen(name);
   if (name_len == 0) {
     ALOGE("%s Empty path provided", __func__);
     return;
@@ -1387,7 +1387,7 @@ extern "C" void resetNxpConfig() {
 **
 *******************************************************************************/
 extern "C" int isNxpConfigModified() {
-  bool modified = CNfcConfig::GetInstance().isModified(CONF_FILE_NXP);
+  const bool modified = CNfcConfig::GetInstance().isModified(CONF_FILE_NXP);
   return modified ? 1 : 0;
 }
 
@@ -1403,7 +1403,7 @@ extern "C" int isNxpConfigModified() {
 extern "C" int isNxpRFConfigModified() {
   CNfcConfig& rConfig = CNfcConfig::GetInstance();
 
-  int retRF = rConfig.isModified(CONF_FILE_NXP_RF) ? 1 : 0;
+  const int retRF = rConfig.isModified(CONF_FILE_NXP_RF) ? 1 : 0;
   ALOGD("%s RF config modification: RF=%s", __func__,
         retRF ? "MODIFIED" : "NOT MODIFIED");
 
@@ -1421,7 +1421,7 @@ extern "C" int isNxpRFConfigModified() {
 extern "C" bool isLibNfcUpdateConfigModified() {
   CNfcConfig& rConfig = CNfcConfig::GetInstance();
 
-  bool retTransit = rConfig.isModified(CONF_FILE_NXP_TRANSIT) ? true : false;
+  const bool retTransit = rConfig.isModified(CONF_FILE_NXP_TRANSIT) ? true : false;
   ALOGD("%s Transit config modification: Transit=%s", __func__,
         retTransit ? "MODIFIED" : "NOT MODIFIED");
 

@@ -103,7 +103,7 @@ NFCSTATUS NfccI2cTransport::OpenAndConfigure(pphTmlNfc_Config_t pConfig,
 **
 *******************************************************************************/
 void FlushTimeoutHandler(uint32_t timerId, void* pContext) {
-  int handle = *(static_cast<int*>(pContext));
+  const int handle = *(static_cast<int*>(pContext));
   NXPLOG_TML_D("%s: FlushTimer expired, Closing fd %d", __func__, handle);
   if (handle != 0) {
     close(handle);
@@ -134,13 +134,13 @@ bool NfccI2cTransport::Flushdata(pphTmlNfc_Config_t pConfig) {
     return false;
   }
   /* Start timer */
-  uint32_t timerId = phOsalNfc_Timer_Create();
+  const uint32_t timerId = phOsalNfc_Timer_Create();
   if (timerId == PH_OSALNFC_TIMER_ID_INVALID) {
     NXPLOG_TML_D("%s: Failed to create FlushTimer", __func__);
     close(nHandle);
     return false;
   }
-  NFCSTATUS status =
+  const NFCSTATUS status =
       phOsalNfc_Timer_Start(timerId, FLUSH_READ_TIMEOUT_MS,
                             &FlushTimeoutHandler, static_cast<void*>(&nHandle));
   if (status != NFCSTATUS_SUCCESS) {

@@ -51,7 +51,7 @@ class phNxpTempMgr {
    * Return current temp status.
    */
   inline bool IsICTempOk(void) {
-    std::lock_guard<std::mutex> lock(ic_temp_mutex_);
+    const std::lock_guard<std::mutex> lock(ic_temp_mutex_);
     return is_ic_temp_ok_;
   }
 

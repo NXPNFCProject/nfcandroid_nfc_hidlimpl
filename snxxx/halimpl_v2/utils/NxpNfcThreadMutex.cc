@@ -145,7 +145,7 @@ void NfcHalThreadCondVar::timedWait(uint8_t sec) {
 **
 *******************************************************************************/
 void NfcHalThreadCondVar::signal() {
-  NfcHalAutoThreadMutex a(*this);
+  const NfcHalAutoThreadMutex a(*this);
   pthread_cond_signal(&mCondVar);
 }
 

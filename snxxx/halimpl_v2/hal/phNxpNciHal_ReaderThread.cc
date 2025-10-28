@@ -54,7 +54,7 @@ bool phNxpNciHal_ReaderThread::Start() {
       return false;
     }
 
-    int val = pthread_create(&reader_thread, NULL,
+    const int val = pthread_create(&reader_thread, NULL,
                              phNxpNciHal_ReaderThread::ReaderThread, this);
     if (val != 0) {
       thread_running.store(false);

@@ -61,7 +61,7 @@ static bool phNxpNciHal_isPowerTrackerConfigured(unsigned long* pollDuration) {
 *******************************************************************************/
 
 NFCSTATUS phNxpNciHal_PowerTrackerInit(PowerTrackerHandle* outHandle) {
-  NFCSTATUS status = NFCSTATUS_SUCCESS;
+  const NFCSTATUS status = NFCSTATUS_SUCCESS;
 
   if (outHandle == NULL) {
     return NFCSTATUS_FAILED;

@@ -45,7 +45,7 @@ phNxpTempMgr& phNxpTempMgr::GetInstance() {
 }
 
 void phNxpTempMgr::UpdateTempStatusLocked(bool temp_status) {
-  std::lock_guard<std::mutex> lock(ic_temp_mutex_);
+  const std::lock_guard<std::mutex> lock(ic_temp_mutex_);
   is_ic_temp_ok_ = temp_status;
 }
 void phNxpTempMgr::UpdateICTempStatus(uint8_t* p_ntf, uint16_t p_len) {
@@ -88,7 +88,7 @@ void phNxpTempMgr::UpdateICTempStatus(uint8_t* p_ntf, uint16_t p_len) {
 void phNxpTempMgr::Wait() {
   if (!IsICTempOk()) {
     NXPLOG_NCIHAL_D("Wait for %d seconds", total_delay_ms_ / 1000);
-    uint16_t delay_per_try = 500;  // milli seconds
+    const uint16_t delay_per_try = 500;  // milli seconds
     while (!IsICTempOk()) {
       usleep(delay_per_try * 1000);  // 500 milli seconds
     }

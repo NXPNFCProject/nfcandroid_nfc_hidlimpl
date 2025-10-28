@@ -47,7 +47,7 @@ int NxpMfcReader::Write(uint16_t mfcDataLen, const uint8_t* pMfcData) {
   // Eg:- From the App pMfcData- {|PART1-00 00 06 C1 04| PART2-01 00 00 00|}
   uint16_t mfcTagCmdBuffLen = 0;
   uint8_t mfcTagCmdBuff[MAX_MFC_BUFF_SIZE] = {0};
-  uint16_t mfcTagCmdRemainingCmdLen = mfcDataLen;
+  const uint16_t mfcTagCmdRemainingCmdLen = mfcDataLen;
 
   if (mfcDataLen > MAX_MFC_BUFF_SIZE) {
     android_errorWriteLog(0x534e4554, "169259605");
@@ -69,7 +69,7 @@ int NxpMfcReader::Write(uint16_t mfcDataLen, const uint8_t* pMfcData) {
       return 0;
     }
   }
-  int writtenDataLen = phNxpNciHal_write_internal(
+  const int writtenDataLen = phNxpNciHal_write_internal(
       mfcTagCmdBuffLen + NCI_HEADER_SIZE, mfcTagCmdBuff);
 
   /* send TAG_CMD part 2 for Mifare increment ,decrement and restore commands */
@@ -98,7 +98,7 @@ int NxpMfcReader::Write(uint16_t mfcDataLen, const uint8_t* pMfcData) {
 **
 *******************************************************************************/
 void NxpMfcReader::BuildMfcCmd(uint8_t* pData, uint16_t* pLength) {
-  uint16_t cmdBuffLen = *pLength;
+  const uint16_t cmdBuffLen = *pLength;
   memcpy(mMfcTagCmdIntfData.sendBuf, pData, cmdBuffLen);
   mMfcTagCmdIntfData.sendBufLen = cmdBuffLen;
 
@@ -179,7 +179,7 @@ void NxpMfcReader::BuildAuthCmd() {
 **
 *******************************************************************************/
 void NxpMfcReader::CalcSectorAddress() {
-  uint8_t BlockNumber = mMfcTagCmdIntfData.sendBuf[1];
+  const uint8_t BlockNumber = mMfcTagCmdIntfData.sendBuf[1];
   if (BlockNumber >= MFC_4K_BLK128) {
     mMfcTagCmdIntfData.byAddr =
         static_cast<uint8_t>(MFC_SECTOR_NO32 + ((BlockNumber - MFC_4K_BLK128) /
@@ -505,7 +505,8 @@ void NxpMfcReader::MfcNotifyOnAckReceived(uint8_t* buff) {
 *******************************************************************************/
 NFCSTATUS NxpMfcReader::MfcWaitForAck() {
   NFCSTATUS status = NFCSTATUS_FAILED;
-  int sem_timedout = 2, s;
+  const int sem_timedout = 2; 
+  int s;
   struct timespec ts;
   isAck = false;
   clock_gettime(CLOCK_MONOTONIC, &ts);

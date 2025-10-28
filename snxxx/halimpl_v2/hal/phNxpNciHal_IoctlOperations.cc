@@ -264,7 +264,7 @@ bool phNxpNciHal_setSystemProperty(string key, string value) {
 string phNxpNciHal_getNxpConfigIf() {
   std::string config;
   uint8_t* p_config = nullptr;
-  size_t config_size = readConfigFile(default_nxp_config_path, &p_config);
+  const size_t config_size = readConfigFile(default_nxp_config_path, &p_config);
   if (config_size) {
     config.assign(reinterpret_cast<char*>(p_config), config_size);
     free(p_config);
@@ -313,7 +313,7 @@ static string phNxpNciHal_extractConfig(string& config) {
     auto search = line.find('=');
     if (search == string::npos) continue;
 
-    string key(Trim(line.substr(0, search)));
+    const string key(Trim(line.substr(0, search)));
     if (!phNxpNciHal_CheckKeyNeeded(key)) continue;
     if (key == "NXP_NFC_SE_TERMINAL_NUM" && !apduGate) {
       line = "NXP_SE_APDU_GATE_SUPPORT=0x01\n";
@@ -438,7 +438,7 @@ NFCSTATUS phNxpNciHal_resetEse(uint64_t resetType) {
   NFCSTATUS status = NFCSTATUS_FAILED;
 
   {
-    NfcHalAutoThreadMutex a(sHalFnLock);
+    const NfcHalAutoThreadMutex a(sHalFnLock);
     if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
       if (NFCSTATUS_SUCCESS != phNxpNciHal_MinOpen()) {
         return NFCSTATUS_FAILED;
@@ -490,8 +490,8 @@ NFCSTATUS phNxpNciHal_GetNfcGpiosStatus(uint32_t* gpiosstatus) {
 bool phNxpNciHal_setNxpTransitConfig(char* transitConfValue) {
   bool status = true;
   NXPLOG_NCIHAL_D("%s : Enter", __func__);
-  std::string transitConfFileName = "/data/vendor/nfc/libnfc-nxpTransit.conf";
-  long transitConfValueLen = strlen(transitConfValue) + 1;
+  const std::string transitConfFileName = "/data/vendor/nfc/libnfc-nxpTransit.conf";
+  const long transitConfValueLen = strlen(transitConfValue) + 1;
 
   if (transitConfValueLen > 1) {
     if (!WriteStringToFile(transitConfValue, transitConfFileName)) {
@@ -614,7 +614,7 @@ void phNxpNciHal_txNfccClockSetCmd(void) {
   NFCSTATUS status = NFCSTATUS_FAILED;
 
   uint8_t set_clock_cmd[] = {0x20, 0x02, 0x05, 0x01, 0xA0, 0x03, 0x01, 0x08};
-  uint8_t setClkCmdLen = sizeof(set_clock_cmd);
+  const uint8_t setClkCmdLen = sizeof(set_clock_cmd);
   unsigned long clockSource = 0;
   unsigned long frequency = 0;
   uint32_t pllSetRetryCount = 3, dpllSetRetryCount = 3,

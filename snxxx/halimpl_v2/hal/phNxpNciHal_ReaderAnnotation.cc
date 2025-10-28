@@ -73,14 +73,14 @@ vector<uint8_t> covertAnnotatonToBrodcastPollCommand(uint16_t data_len,
   }
 
   // Parse input data
-  uint8_t num_entries = p_data[4];
+  const uint8_t num_entries = p_data[4];
 
   // Build output format
   result.push_back(0x21);
   result.push_back(0x1A);
 
   // Reserve space for length (will be filled later)
-  size_t length_pos = result.size();
+  const size_t length_pos = result.size();
   result.push_back(0x00);  // Placeholder for length
 
   // Number of entries
@@ -88,7 +88,7 @@ vector<uint8_t> covertAnnotatonToBrodcastPollCommand(uint16_t data_len,
 
   if (num_entries == 0) {
     // Disable broadcast poll command case
-    uint8_t output_len = 1;  // Only num_entries byte
+    const uint8_t output_len = 1;  // Only num_entries byte
     result[length_pos] = output_len;
     return result;
   }
@@ -101,14 +101,14 @@ vector<uint8_t> covertAnnotatonToBrodcastPollCommand(uint16_t data_len,
       return vector<uint8_t>();  // Return empty vector on error
     }
 
-    uint8_t position_type = p_data[input_offset];
-    uint8_t annotation_plus_wait_length = p_data[input_offset + 1];
-    uint8_t waiting_time = p_data[input_offset + 2];
+    const uint8_t position_type = p_data[input_offset];
+    const uint8_t annotation_plus_wait_length = p_data[input_offset + 1];
+    const uint8_t waiting_time = p_data[input_offset + 2];
 
     input_offset += 3;
 
     // Calculate annotation data length
-    uint8_t annotation_len =
+    const uint8_t annotation_len =
         annotation_plus_wait_length > 0 ? annotation_plus_wait_length - 1 : 0;
 
     // Check if we have enough data for annotation + extra settings length
@@ -119,7 +119,7 @@ vector<uint8_t> covertAnnotatonToBrodcastPollCommand(uint16_t data_len,
     const uint8_t* annotation_data = &p_data[input_offset];
     input_offset += annotation_len;
 
-    uint8_t proprietary_setting_length = p_data[input_offset];
+    const uint8_t proprietary_setting_length = p_data[input_offset];
     input_offset += 1;
 
     // Check if we have enough data for extra settings
@@ -131,12 +131,12 @@ vector<uint8_t> covertAnnotatonToBrodcastPollCommand(uint16_t data_len,
     input_offset += proprietary_setting_length;
 
     // RF Tech type - extract from position_type (position is upper nibble)
-    uint8_t rf_tech_type =
+    const uint8_t rf_tech_type =
         (position_type & 0x0F);  // Convert position to tech type
     result.push_back(rf_tech_type);
 
     // Param length
-    uint8_t param_len = 1 + 1 + annotation_len + 1 + proprietary_setting_length;
+    const uint8_t param_len = 1 + 1 + annotation_len + 1 + proprietary_setting_length;
     result.push_back(param_len);
 
     // Control message - Bit 0 for annotation data, Bit 7 for proprietary TLVs
@@ -165,7 +165,7 @@ vector<uint8_t> covertAnnotatonToBrodcastPollCommand(uint16_t data_len,
 
   // Calculate and set the output length (excluding header and length byte
   // itself)
-  uint8_t output_len =
+  const uint8_t output_len =
       result.size() -
       3;  // Total size minus header (2 bytes) and length byte (1 byte)
   result[length_pos] = output_len;

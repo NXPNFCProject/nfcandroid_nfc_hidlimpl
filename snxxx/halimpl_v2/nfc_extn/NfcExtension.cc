@@ -125,7 +125,7 @@ void phNxpExtn_LibClose() {
   phNxpNfcExtn_deInit();
   if (p_oem_extn_handle != NULL) {
     NXPLOG_NCIHAL_D("%s Closing libnfc_vendor_extn.so lib", __func__);
-    int32_t status = dlclose(p_oem_extn_handle);
+    const int32_t status = dlclose(p_oem_extn_handle);
     dlerror(); /* Clear any existing error */
     if (status != 0) {
       NXPLOG_NCIHAL_E("%s Free libnfc_vendor_extn.so failed", __func__);

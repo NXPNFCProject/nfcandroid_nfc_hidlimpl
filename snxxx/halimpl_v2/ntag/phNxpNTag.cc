@@ -215,7 +215,7 @@ NFCSTATUS NxpNTag::processNTagSetSubState(NTagEvent event) {
     case NTagSetSubState::NTAG_SET_SUB_STATE_WAIT_FOR_RF_IDLE_RSP: {
       if (event == NTagEvent::ACTION_NTAG_RF_DEACTIVATE_IDLE &&
           (mNtagControl.mCmdRspStatus != NFCSTATUS_SUCCESS)) {
-        bool enable = (mNTagState == NTagState::NTAG_STATE_ENABLE);
+        const bool enable = (mNTagState == NTagState::NTAG_STATE_ENABLE);
         status = sendNTagPropConfig(enable);
         if (status != NFCSTATUS_SUCCESS) {
           NXPLOG_NCIHAL_E("%s : sendNTagPropConfig(%s) failed", __func__,
@@ -387,7 +387,7 @@ NFCSTATUS NxpNTag::handleNTagPropNtf(uint16_t dataLen, uint8_t* pData) {
       }
     }
     mNtagControl.mQPOLLMode = NFC_RF_DISC_REPLACE_QPOLL;
-    NFCSTATUS status =
+    const NFCSTATUS status =
         processNTagEvent(NTagEvent::ACTION_NTAG_RF_LOAD_CHANGE_NTF);
     if (status != NFCSTATUS_SUCCESS)
       NXPLOG_NCIHAL_E("NxpNTag::%s Failed to trigger RF discovery", __func__);
@@ -460,7 +460,7 @@ NFCSTATUS NxpNTag::handleNTagNciRsp(uint8_t* pData, uint16_t dataLen) {
     case NCI_MSG_RF_DEACTIVATE: {
       if (!mNtagControl.mQPOLLMode) return NFCSTATUS_EXTN_FEATURE_FAILURE;
 
-      bool isQPollMode = mNtagControl.mQPOLLMode == NFC_RF_DISC_START ||
+      const bool isQPollMode = mNtagControl.mQPOLLMode == NFC_RF_DISC_START ||
                          mNtagControl.mQPOLLMode == NFC_RF_DISC_REPLACE_QPOLL;
 
       processNTagEvent(NTagEvent::ACTION_NTAG_RF_DEACTIVATE_IDLE);
@@ -607,7 +607,7 @@ NFCSTATUS NxpNTag::processRfDiscCmd(std::vector<uint8_t>& rfDiscCmd) {
   constexpr uint8_t NFC_V_PASSIVE_POLL_MODE = 0x06;
   constexpr uint8_t POLL_MODE_ENABLE_STATE = 0x01;
 
-  uint8_t msgType = rfDiscCmd[NCI_OID_INDEX] & NCI_GID_MASK;
+  const uint8_t msgType = rfDiscCmd[NCI_OID_INDEX] & NCI_GID_MASK;
 
   if (msgType == NCI_MSG_RF_DISCOVER) {
     if (!mNtagControl.mNtagUid.empty()) return NFCSTATUS_EXTN_FEATURE_FAILURE;
@@ -615,8 +615,8 @@ NFCSTATUS NxpNTag::processRfDiscCmd(std::vector<uint8_t>& rfDiscCmd) {
     bool isRfPollEnabled = false;
 
     for (auto it = rfDiscCmd.begin(); it + 1 != rfDiscCmd.end(); ++it) {
-      uint8_t mode = *it;
-      uint8_t state = *(it + 1);
+      const uint8_t mode = *it;
+      const uint8_t state = *(it + 1);
 
       if ((mode == NFC_A_PASSIVE_POLL_MODE || mode == NFC_B_PASSIVE_POLL_MODE ||
            mode == NFC_F_PASSIVE_POLL_MODE || mode == NFC_ACTIVE_POLL_MODE ||
@@ -660,7 +660,7 @@ NFCSTATUS NxpNTag::processRfDiscCmd(std::vector<uint8_t>& rfDiscCmd) {
     mNtagControl.mNtagDetectStatus |= NTAG_DETECT_TIMER_STATUS;
 
     // Send extended RF Discover command
-    NFCSTATUS status = phNxpHal_EnqueueWrite(&rfCmd[0], rfCmd.size());
+    const NFCSTATUS status = phNxpHal_EnqueueWrite(&rfCmd[0], rfCmd.size());
     if (status != NFCSTATUS_SUCCESS) return NFCSTATUS_EXTN_FEATURE_FAILURE;
 
     updateState(NTagState::NTAG_STATE_RF_DISCOVERY);
@@ -669,7 +669,7 @@ NFCSTATUS NxpNTag::processRfDiscCmd(std::vector<uint8_t>& rfDiscCmd) {
   }
 
   if (msgType == NCI_MSG_RF_DEACTIVATE) {
-    uint8_t deactivateType = rfDiscCmd[RF_DISC_CMD_NO_OF_CONFIG_INDEX];
+    const uint8_t deactivateType = rfDiscCmd[RF_DISC_CMD_NO_OF_CONFIG_INDEX];
 
     if (!(mNtagControl.mNtagDetectStatus & NTAG_PRESENCE_CHECK_TIMER_STATUS) &&
         (mNtagControl.mNtagDetectStatus & NTAG_ACTIVATED_STATUS) &&
@@ -839,14 +839,14 @@ void NxpNTag::processNTagDetectNtf(const std::vector<uint8_t>& uid) {
 }
 
 bool NxpNTag::isNTagReadComplete(const std::vector<uint8_t>& uid) {
-  bool isSameUid = (mNtagControl.mNtagUid == uid);
+  const bool isSameUid = (mNtagControl.mNtagUid == uid);
 
   if (isSameUid && (mNtagControl.mNtagDetectStatus &
                     (NTAG_READ_COMPLETE | NTAG_PRESENCE_CHK_STATUS))) {
     mNtagControl.mQPOLLMode = NFC_RF_DISC_START;
     mNtagControl.mNtagDetectStatus &= ~NTAG_ACTIVATED_STATUS;
     updateState(NTagState::NTAG_STATE_SAME_UID_DETECTED);
-    NFCSTATUS status = processNTagEvent(NTagEvent::ACTION_NTAG_UID_MATCHED);
+    const NFCSTATUS status = processNTagEvent(NTagEvent::ACTION_NTAG_UID_MATCHED);
     if (status != NFCSTATUS_SUCCESS)
       NXPLOG_NCIHAL_E("NxpNTag::%s Failed to trigger RF discovery", __func__);
 
@@ -881,7 +881,7 @@ NFCSTATUS NxpNTag::handleRfIntfActivated(uint8_t* pData, uint16_t dataLen) {
   // Modify the tech type to A Poll
   pData[TECH_TYPE_INDEX] = NCI_TECH_A_POLL_VAL;
 
-  uint8_t uidLength = pData[NCI_RF_INTF_ACT_AID_LEN_INDEX];
+  const uint8_t uidLength = pData[NCI_RF_INTF_ACT_AID_LEN_INDEX];
 
   // Validate UID length
   if (dataLen <= (NTAG_UID_START_INDEX + uidLength)) {
@@ -891,7 +891,7 @@ NFCSTATUS NxpNTag::handleRfIntfActivated(uint8_t* pData, uint16_t dataLen) {
   }
 
   // Extract UID directly from pData
-  std::vector<uint8_t> extractedUid(pData + NTAG_UID_START_INDEX,
+  const std::vector<uint8_t> extractedUid(pData + NTAG_UID_START_INDEX,
                                     pData + NTAG_UID_START_INDEX + uidLength);
 
   // Update tag control status
@@ -926,7 +926,7 @@ void NxpNTag::checkNTagRemoveStatus() {
     mNtagControl.mNtagDetectStatus &= ~NTAG_LOADCHANGE_TIMER_STATUS;
     mNtagControl.mQPOLLMode = NFC_RF_DISC_REPLACE_QPOLL;
     mNtagControl.mNTagTimer.kill();
-    NFCSTATUS status =
+    const NFCSTATUS status =
         processNTagEvent(NTagEvent::ACTION_NTAG_RF_LOAD_CHANGE_NTF);
     if (status != NFCSTATUS_SUCCESS)
       NXPLOG_NCIHAL_E("NxpNTag::%s Failed to trigger RF discovery", __func__);
@@ -938,7 +938,7 @@ void NxpNTag::checkNTagRemoveStatus() {
     mNtagControl.mNTagTimer.kill();
     mNtagControl.mQPOLLMode = NFC_RF_DISC_START;
     mWaitingforDiscRsp = true;
-    NFCSTATUS status =
+    const NFCSTATUS status =
         processNTagEvent(NTagEvent::ACTION_NTAG_REMOVAL_DETECTED);
     waitForRfDiscRsp(status);
   }
@@ -970,7 +970,7 @@ void NxpNTag::checkNTagRemoveStatus() {
 
   mNtagControl.mQPOLLMode = NFC_RF_DISC_START;
   mWaitingforDiscRsp = true;
-  NFCSTATUS status = processNTagEvent(NTagEvent::ACTION_NTAG_REMOVAL_DETECTED);
+  const NFCSTATUS status = processNTagEvent(NTagEvent::ACTION_NTAG_REMOVAL_DETECTED);
   waitForRfDiscRsp(status);
 }
 

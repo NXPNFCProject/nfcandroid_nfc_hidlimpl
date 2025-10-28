@@ -41,7 +41,7 @@ bool NciDiscoveryCommandBuilder::parse(vector<uint8_t> data) {
   if (!isDiscoveryCommand(data)) return false;
 
   mRfDiscoverConfiguration.clear();
-  int dataSize = static_cast<int>(data.size());
+  const int dataSize = static_cast<int>(data.size());
 
   if (dataSize <= NCI_HEADER_MIN_LEN &&
       (dataSize < ((data[RF_DISC_CMD_NO_OF_CONFIG_INDEX] *
@@ -157,7 +157,7 @@ vector<uint8_t> NciDiscoveryCommandBuilder::reConfigRFDiscCmd() {
   if (size(currentDiscoveryCommand) <= 0) {
     return vector<uint8_t>();
   }
-  bool status = parse(currentDiscoveryCommand);
+  const bool status = parse(currentDiscoveryCommand);
   if (status) {
     removeListenParams();
     addObserveModeParams();

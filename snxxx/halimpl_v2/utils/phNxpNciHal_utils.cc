@@ -462,7 +462,7 @@ void phNxpNciHal_releaseall_cb_data(void) {
 *******************************************************************************/
 void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
                               uint16_t len, bool isNxpAvcNciPrint) {
-  tNFC_printType printType = getPrintType(pString);
+  const tNFC_printType printType = getPrintType(pString);
   if (printType == PRINT_UNKNOWN) return;  // logging is disabled
   uint32_t i;
   char* print_buffer = static_cast<char*>(calloc((len * 3 + 1), sizeof(char)));

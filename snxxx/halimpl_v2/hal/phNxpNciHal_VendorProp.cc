@@ -120,9 +120,9 @@ int phNxpNciHal_setFragmentedVendorProp(const char* key, const char* value) {
   if (key == NULL) {
     return -1;
   }
-  int fragmentSize = PROPERTY_VALUE_MAX - 1;  // One byte for null character
+  const int fragmentSize = PROPERTY_VALUE_MAX - 1;  // One byte for null character
   // Clear all previous fragments
-  std::string previousValue = phNxpNciHal_getFragmentedVendorProp(key);
+  const std::string previousValue = phNxpNciHal_getFragmentedVendorProp(key);
 
   for (size_t i = 0; i < previousValue.length(); i += fragmentSize) {
     std::string propName = key;
@@ -131,12 +131,12 @@ int phNxpNciHal_setFragmentedVendorProp(const char* key, const char* value) {
   }
 
   // Store the property in multiple fragments
-  int len = strlen(value);
+  const int len = strlen(value);
   for (size_t i = 0; i < static_cast<size_t>(len); i += fragmentSize) {
     std::string propName = key;
     propName.append(std::to_string((i / fragmentSize) + 1));
-    std::string propValue(value + i, fragmentSize);
-    int status = property_set(propName.c_str(), propValue.c_str());
+    const std::string propValue(value + i, fragmentSize);
+    const int status = property_set(propName.c_str(), propValue.c_str());
     if (status < 0) {
       return status;
     }

@@ -351,7 +351,7 @@ NFCSTATUS phNxpNciHal_save_uicc_params() {
   }
 
   NFCSTATUS status = NFCSTATUS_FAILED;
-  uint8_t maxbufflen = (0xFF - EEPROM_TLV_SIZE);
+  const uint8_t maxbufflen = (0xFF - EEPROM_TLV_SIZE);
 
   /* Getting UICC2 CL params */
   uicc1HciParams.resize(maxbufflen);
@@ -361,9 +361,9 @@ NFCSTATUS phNxpNciHal_save_uicc_params() {
     NXPLOG_NCIHAL_E("%s: Save UICC1 CLPP failed .", __func__);
   } else {
     // Convert from hexadecimal to character
-    string uicc1HciParamsStr =
+    const string uicc1HciParamsStr =
         phNxpNciHal_HexToString(uicc1HciParams.data(), uicc1HciParams.size());
-    string propName = "persist.vendor.nfc.nxp.uicc1HciParams";
+    const string propName = "persist.vendor.nfc.nxp.uicc1HciParams";
     phNxpNciHal_setFragmentedVendorProp(propName.c_str(),
                                         uicc1HciParamsStr.c_str());
   }
@@ -376,9 +376,9 @@ NFCSTATUS phNxpNciHal_save_uicc_params() {
     NXPLOG_NCIHAL_E("%s: Save UICC2 CLPP failed .", __func__);
   } else {
     // Convert to character
-    string uicc2HciParamsStr =
+    const string uicc2HciParamsStr =
         phNxpNciHal_HexToString(uicc2HciParams.data(), uicc2HciParams.size());
-    string propName = "persist.vendor.nfc.nxp.uicc2HciParams";
+    const string propName = "persist.vendor.nfc.nxp.uicc2HciParams";
     phNxpNciHal_setFragmentedVendorProp(propName.c_str(),
                                         uicc2HciParamsStr.c_str());
   }
@@ -391,9 +391,9 @@ NFCSTATUS phNxpNciHal_save_uicc_params() {
     NXPLOG_NCIHAL_E("%s: Save UICC_HCI_CE_STATE failed .", __func__);
   } else {
     // Convert to character
-    string uiccHciCeParamsStr =
+    const string uiccHciCeParamsStr =
         phNxpNciHal_HexToString(uiccHciCeParams.data(), uiccHciCeParams.size());
-    string propName = "persist.vendor.nfc.nxp.uiccHciCeParams";
+    const string propName = "persist.vendor.nfc.nxp.uiccHciCeParams";
     phNxpNciHal_setVendorProp(propName.c_str(), uiccHciCeParamsStr.c_str());
   }
   return status;
@@ -511,7 +511,7 @@ phNxpNciHal_get_uicc_hci_params(std::vector<uint8_t>& ptr, uint8_t bufflen,
   mEEPROM_info.bufflen = bufflen;
   mEEPROM_info.request_type = uiccType;
   mEEPROM_info.request_mode = GET_EEPROM_DATA;
-  NFCSTATUS status = request_EEPROM(&mEEPROM_info);
+  const NFCSTATUS status = request_EEPROM(&mEEPROM_info);
   ptr.resize(mEEPROM_info.bufflen);
   return status;
 }
@@ -625,7 +625,7 @@ NFCSTATUS phNxpNciHal_configure_merge_sak() {
 NFCSTATUS phNxpNciHal_setSrdtimeout() {
   long retlen = 0;
   uint8_t* buffer = nullptr;
-  long bufflen = 260;
+  const long bufflen = 260;
   const int NXP_SRD_TIMEOUT_BUF_LEN = 2;
   const uint16_t TIMEOUT_MASK = 0xFFFF;
   const uint16_t MAX_TIMEOUT_VALUE = 0xFD70;
@@ -728,7 +728,7 @@ NFCSTATUS phNxpNciHal_getInterpolatedRssi8Am() {
   mEEPROM_info.bufflen = interpolatedRssi8AmRsp.size();
   mEEPROM_info.request_type = EEPROM_INTERPOLATED_RSSI_8AM;
   mEEPROM_info.request_mode = GET_EEPROM_DATA;
-  NFCSTATUS status = request_EEPROM(&mEEPROM_info);
+  const NFCSTATUS status = request_EEPROM(&mEEPROM_info);
   interpolatedRssi8AmRsp.resize(mEEPROM_info.bufflen);
 
   if (interpolatedRssi8AmRsp.size() < 4) {
@@ -736,10 +736,10 @@ NFCSTATUS phNxpNciHal_getInterpolatedRssi8Am() {
     return NFCSTATUS_FAILED;
   }
 
-  uint16_t rssiAt8Am = static_cast<uint16_t>(
+  const uint16_t rssiAt8Am = static_cast<uint16_t>(
       (interpolatedRssi8AmRsp[RSSI_AT_8AM_INDEX + 1] << 8) |
       interpolatedRssi8AmRsp[RSSI_AT_8AM_INDEX]);
-  uint8_t measuredFieldStrength =
+  const uint8_t measuredFieldStrength =
       interpolatedRssi8AmRsp[MEASURED_FIELD_STRENGTH];
   setInterpolatedRssi8Am(rssiAt8Am, measuredFieldStrength);
   return status;
@@ -949,12 +949,12 @@ int handleReaderModeAnnoationCommand(uint16_t data_len, const uint8_t* p_data) {
     uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
     uint16_t rsp_len = 0;
 
-    NFCSTATUS broadcastPollCmdStatus = phNxpNciHal_send_ext_cmd(
+    const NFCSTATUS broadcastPollCmdStatus = phNxpNciHal_send_ext_cmd(
         convertedCommand.size(), convertedCommand.data(), &rsp_len, rsp);
 
     if (broadcastPollCmdStatus == NFCSTATUS_SUCCESS) {
       // Parse the response to get status
-      uint8_t responseStatus = parseBroadcastPollCommandResponse(rsp_len, rsp);
+      const uint8_t responseStatus = parseBroadcastPollCommandResponse(rsp_len, rsp);
       response.push_back(responseStatus);  // Use parsed status byte
 
       if (responseStatus == 0x00) {

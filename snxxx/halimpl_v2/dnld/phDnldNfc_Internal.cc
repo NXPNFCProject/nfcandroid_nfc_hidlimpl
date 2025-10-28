@@ -202,7 +202,7 @@ NFCSTATUS phDnldNfc_CmdHandler(void* pContext, phDnldNfc_Event_t TrigEvent) {
 *******************************************************************************/
 static void phDnldNfc_ProcessSeqState(void* pContext,
                                       phTmlNfc_TransactInfo_t* pInfo) {
-  NfcHalAutoThreadMutex a(sProcessSeqStateLock);
+  const NfcHalAutoThreadMutex a(sProcessSeqStateLock);
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   NFCSTATUS wIntStatus;
   uint32_t TimerId;
@@ -348,7 +348,7 @@ static void phDnldNfc_ProcessSeqState(void* pContext,
 *******************************************************************************/
 static void phDnldNfc_ProcessRWSeqState(void* pContext,
                                         phTmlNfc_TransactInfo_t* pInfo) {
-  NfcHalAutoThreadMutex a(sProcessRwSeqStateLock);
+  const NfcHalAutoThreadMutex a(sProcessRwSeqStateLock);
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   uint32_t TimerId;
   pphDnldNfc_DlContext_t pDlCtxt =
@@ -995,7 +995,7 @@ static NFCSTATUS phDnldNfc_SetupResendTimer(pphDnldNfc_DlContext_t pDlContext) {
 *******************************************************************************/
 static void phDnldNfc_accessStatusWithLock(pphDnldNfc_DlContext_t pDlCtxt,
                                            NfcHalThreadMutex seqStateLock) {
-  NfcHalAutoThreadMutex a(seqStateLock);
+  const NfcHalAutoThreadMutex a(seqStateLock);
   (pDlCtxt->TimerInfo.wTimerExpStatus) = NFCSTATUS_RF_TIMEOUT;
 }
 
@@ -1072,7 +1072,7 @@ static void phDnldNfc_ResendTimeOutCb(uint32_t TimerId, void* pContext) {
       /* No response received and the timer expired */
       pDlCtxt->TimerInfo.TimerStatus = 0; /* Reset timer status flag */
       {
-        NfcHalAutoThreadMutex a(sProcessRwSeqStateLock);
+        const NfcHalAutoThreadMutex a(sProcessRwSeqStateLock);
         (pDlCtxt->TimerInfo.wTimerExpStatus) = 0;
 
         pDlCtxt->tCurrState = phDnldNfc_StateSend;

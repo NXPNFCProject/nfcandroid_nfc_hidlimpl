@@ -11,7 +11,7 @@
  ** See the License for the specific language governing permissions and
  ** limitations under the License.
  **
- ** Copyright 2022-2024 NXP
+ ** Copyright 2022-2025 NXP
  **
  */
 #include "phNxpEventLogger.h"
@@ -40,14 +40,14 @@ PhNxpEventLogger& PhNxpEventLogger::GetInstance() {
 static void GetCurrentTimestamp(char* timestamp) {
   struct timespec tv;
   clock_gettime(CLOCK_REALTIME, &tv);
-  time_t rawtime = tv.tv_sec;
+  const time_t rawtime = tv.tv_sec;
   struct tm* timeinfo;
   char buffer[TIMESTAMP_BUFFER_SIZE];
 
   timeinfo = localtime(&rawtime);
   // Need to calculate milliseconds separately as timeinfo doesn't
   // have milliseconds field
-  int milliseconds = tv.tv_nsec / 1000000;
+  const int milliseconds = tv.tv_nsec / 1000000;
 
   strftime(buffer, sizeof(buffer), "%m-%d %H:%M:%S", timeinfo);
   sprintf(timestamp, "[%s.%03d]:", buffer, milliseconds);
@@ -62,7 +62,7 @@ void PhNxpEventLogger::Initialize() {
     NXPLOG_NCIHAL_D("EventLogger: Log file %s couldn't be opened! %d",
                     kDPDEventFilePath, errno);
   } else {
-    mode_t permissions = 0744;  // rwxr--r--
+    const mode_t permissions = 0744;  // rwxr--r--
     if (chmod(kDPDEventFilePath, permissions) == -1) {
       NXPLOG_NCIHAL_D("EventLogger: chmod failed on %s errno: %d",
                       kDPDEventFilePath, errno);

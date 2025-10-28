@@ -44,7 +44,7 @@ bool phNxpNciHal_WriterThread::Start() {
       NXPLOG_NCIHAL_E("%s:Failed to create writer queue", __func__);
       return false;
     }
-    int val = pthread_create(&writer_thread, NULL,
+    const int val = pthread_create(&writer_thread, NULL,
                              phNxpNciHal_WriterThread::WriterThread, this);
     if (val != 0) {
       thread_running.store(false);
@@ -123,7 +123,7 @@ void phNxpNciHal_WriterThread::Run() {
       case NCI_HAL_TML_WRITE_MSG: {
         NXPLOG_NCIHAL_D("%s: Received NCI_HAL_TML_WRITE_MSG", __func__);
         CONCURRENCY_LOCK();
-        uint32_t bytesWritten = phNxpNciHal_write_unlocked(
+        const uint32_t bytesWritten = phNxpNciHal_write_unlocked(
             static_cast<uint16_t>(msg.Size), static_cast<uint8_t*>(msg.data),
             ORIG_EXTNS);
         CONCURRENCY_UNLOCK();

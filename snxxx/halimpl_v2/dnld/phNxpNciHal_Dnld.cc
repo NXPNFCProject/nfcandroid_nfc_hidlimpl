@@ -438,7 +438,7 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
     if ((0 != pRespBuff->wLen) && (NULL != pRespBuff->pBuff)) {
       bHwVer = (pRespBuff->pBuff[0]);
       bHwVer &= 0x0F; /* 0x0F is the mask to extract chip version */
-      bool isChipTypeMatchedWithHwVersion =
+      const bool isChipTypeMatchedWithHwVersion =
           ((PHDNLDNFC_HWVER_MRA2_1 == bHwVer) ||
            (PHDNLDNFC_HWVER_MRA2_2 == bHwVer) ||
            (IS_CHIP_TYPE_EQ(pn551) &&
@@ -1512,7 +1512,7 @@ NFCSTATUS phNxpNciHal_fw_dnld_switch_normal_mode() {
 static NFCSTATUS phNxpNciHal_fw_dnld_complete(void* pContext, NFCSTATUS status,
                                               void* pInfo, bool bMinimalFw) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
-  NFCSTATUS fStatus = status;
+  const NFCSTATUS fStatus = status;
   UNUSED_PROP(pContext);
 
   if (NFCSTATUS_WRITE_FAILED == status) {
@@ -1774,7 +1774,7 @@ static NFCSTATUS phLibNfc_VerifyCrcStatus(uint8_t bCrcStatus) {
 
 static NFCSTATUS phLibNfc_VerifySNxxxU_CrcStatus(uint8_t* bCrcStatus) {
   uint8_t CODEINFO_LEN = 4;
-  uint8_t DATAINFO_LEN = 28;
+  const uint8_t DATAINFO_LEN = 28;
   uint8_t* crc_info_buf;
   /*acceptable CRC values defined in little indian format
    * Actual CRC values are 0FC03FFF         */
@@ -1786,7 +1786,7 @@ static NFCSTATUS phLibNfc_VerifySNxxxU_CrcStatus(uint8_t* bCrcStatus) {
     /* Accepted CRC value according to SN220 integrity bit mapping */
     acceptable_crc_values = 0xFBFFC00F;
   }
-  NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
+  const NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   phDnldChkIntegrityRsp_Buff_t chkIntgRspBuf;
 
   if (bCrcStatus == NULL) return NFCSTATUS_FAILED;
@@ -1835,7 +1835,7 @@ static NFCSTATUS phNxpNciHal_releasePendingRead() {
         "/dev/nxp-nci");
     strlcpy(nfc_dev_node, "/dev/nxp-nci", (sizeof(nfc_dev_node)));
   }
-  int isfound = GetNxpNumValue(NAME_NXP_TRANSPORT, &value, sizeof(value));
+  const int isfound = GetNxpNumValue(NAME_NXP_TRANSPORT, &value, sizeof(value));
   if (isfound > 0 && value == I3C) {
     strlcat(nfc_dev_node, "-i3c", sizeof(nfc_dev_node));
   }

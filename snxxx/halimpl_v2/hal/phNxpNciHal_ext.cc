@@ -581,7 +581,7 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
       nxpncihal_ctrl.nci_info.nci_version = p_ntf[5];
       if (!nxpncihal_ctrl.halStatus)
         phNxpNciHal_configFeatureList(p_ntf, *p_len);
-      int len = p_ntf[2] + 2; /*include 2 byte header*/
+      const int len = p_ntf[2] + 2; /*include 2 byte header*/
       if (len != *p_len - 1) {
         android_errorWriteLog(0x534e4554, "121263487");
         NXPLOG_NCIHAL_E("%s invalid CORE_RESET_NTF len", __func__);
@@ -632,7 +632,7 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
         NXPLOG_NCIHAL_E("%s invalid CORE_INIT_RSP len", __func__);
         goto core_reset_err;
       }
-      int len = p_ntf[2] + 2; /*include 2 byte header*/
+      const int len = p_ntf[2] + 2; /*include 2 byte header*/
       if (len != *p_len - 1) {
         android_errorWriteLog(0x534e4554, "121263487");
         NXPLOG_NCIHAL_E("%s invalid CORE_INIT_RSP len", __func__);
@@ -1094,8 +1094,8 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
       mEEPROM_info->bufflen);
   NFCSTATUS status = NFCSTATUS_FAILED;
   uint8_t retry_cnt = 0;
-  uint8_t getCfgStartIndex = 0x08;
-  uint8_t setCfgStartIndex = 0x07;
+  const uint8_t getCfgStartIndex = 0x08;
+  const uint8_t setCfgStartIndex = 0x07;
   uint8_t memIndex = 0x00;
   uint8_t fieldLen = 0x01;  // Memory field len 1bytes
   char addr[2] = {0};
@@ -1441,7 +1441,7 @@ retryget:
 NFCSTATUS phNxpNciHal_enableDefaultUICC2SWPline(uint8_t uicc2_sel) {
   NFCSTATUS status = NFCSTATUS_FAILED;
   uint8_t p_data[255] = {NCI_MT_CMD, NXP_CORE_SET_CONFIG_CMD};
-  uint8_t LEN_INDEX = 2, PARAM_INDEX = 3;
+  const uint8_t LEN_INDEX = 2, PARAM_INDEX = 3;
   uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
   uint16_t rsp_len = 0;
   uint8_t* p = p_data;
@@ -1567,7 +1567,7 @@ void phNxpNciHal_prop_conf_rssi() {
 void phNxpNciHal_conf_nfc_forum_mode() {
   uint8_t cmd_get_emvcocfg[] = {0x20, 0x03, 0x03, 0x01, 0xA0, 0x44};
   uint8_t cmd_reset_emvcocfg[8];
-  long cmdlen = 8;
+  const long cmdlen = 8;
   long retlen = 0;
   uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
   uint16_t rsp_len = 0;
@@ -1616,12 +1616,12 @@ void phNxpNciHal_conf_nfc_forum_mode() {
 void RemoveNfcDepIntfFromInitResp(uint8_t* coreInitResp,
                                   uint16_t* coreInitRespLen) {
   /* As per NCI 2.0 index Number of Supported RF interfaces is 13 */
-  uint8_t indexOfSupportedRfIntf = 13;
+  const uint8_t indexOfSupportedRfIntf = 13;
   /* as per NCI 2.0 Number of Supported RF Interfaces Payload field index is 13
    * & 3 bytes for NCI_MSG_HEADER */
-  uint8_t noOfSupportedInterface =
+  const uint8_t noOfSupportedInterface =
       *(coreInitResp + indexOfSupportedRfIntf + NCI_HEADER_SIZE);
-  uint8_t rfInterfacesLength = static_cast<uint8_t>(
+  const uint8_t rfInterfacesLength = static_cast<uint8_t>(
       *coreInitRespLen - (indexOfSupportedRfIntf + 1 + NCI_HEADER_SIZE));
   uint8_t* supportedRfInterfaces = NULL;
   bool removeNfcDepRequired = false;
@@ -1645,7 +1645,7 @@ void RemoveNfcDepIntfFromInitResp(uint8_t* coreInitResp,
       removeNfcDepRequired = true;
       break;
     }
-    uint8_t noOfExtensions = *(supportedRfInterfaces + 1);
+    const uint8_t noOfExtensions = *(supportedRfInterfaces + 1);
     /* 2 bytes for RF interface type & length of Extensions */
     supportedRfInterfaces += (2 + noOfExtensions);
   }
@@ -1656,7 +1656,7 @@ void RemoveNfcDepIntfFromInitResp(uint8_t* coreInitResp,
     return;
   } else {
     coreInitResp[16] = noOfSupportedInterface - 1;
-    uint8_t noBytesToSkipForNfcDep = 2 + *(supportedRfInterfaces + 1);
+    const uint8_t noBytesToSkipForNfcDep = 2 + *(supportedRfInterfaces + 1);
     if (rfInterfacesLength <
         (supportedRfInterfaces - supportedRfInterfacesDetails) +
             noBytesToSkipForNfcDep) {
@@ -1740,7 +1740,7 @@ static bool phNxpNciHal_update_core_reset_ntf_prop() {
     is_abort_req = false;
   }
   ++core_reset_count;
-  std::string ntf_count_str = std::to_string(core_reset_count);
+  const std::string ntf_count_str = std::to_string(core_reset_count);
   NXPLOG_NCIHAL_D("Core reset counter prop value  %d", core_reset_count);
   if (NFCSTATUS_SUCCESS !=
       phNxpNciHal_setVendorProp(core_reset_ntf_count_prop_name,

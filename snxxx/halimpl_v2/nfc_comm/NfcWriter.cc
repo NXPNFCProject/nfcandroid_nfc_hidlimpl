@@ -111,7 +111,7 @@ int NfcWriter::write(uint16_t data_len, const uint8_t* p_data) {
     }
     uint8_t* p_data_mutable = const_cast<uint8_t*>(p_data);
     copy(rfDiscCmd.begin(), rfDiscCmd.end(), p_data_mutable);
-    NFCSTATUS status = phNxpExtn_HandleNciMsg(&data_len, p_data);
+    const NFCSTATUS status = phNxpExtn_HandleNciMsg(&data_len, p_data);
     if (status != NFCSTATUS_EXTN_FEATURE_SUCCESS)
       return this->direct_write(data_len, p_data);
     else
@@ -126,7 +126,7 @@ int NfcWriter::write(uint16_t data_len, const uint8_t* p_data) {
         gWiredSeHandle, DISABLING_NFCEE,
         createWiredSeEvtData(const_cast<uint8_t*>(p_data), data_len));
   } else {
-    NFCSTATUS status = phNxpExtn_HandleNciMsg(&data_len, p_data);
+    const NFCSTATUS status = phNxpExtn_HandleNciMsg(&data_len, p_data);
     NXPLOG_NCIHAL_D("Vendor specific status: %d", status);
     if (status == NFCSTATUS_EXTN_FEATURE_SUCCESS) return data_len;
   }
@@ -202,7 +202,6 @@ clean_and_return:
 int NfcWriter::write_unlocked(uint16_t data_len, const uint8_t* p_data,
                               int origin) {
   NFCSTATUS status = NFCSTATUS_INVALID_PARAMETER;
-  phNxpNciHal_Sem_t cb_data;
   nxpncihal_ctrl.retry_cnt = 0;
   int sem_val = 0;
   write_unlocked_status = NFCSTATUS_FAILED;
@@ -288,7 +287,8 @@ clean_and_return:
 
 int NfcWriter::check_ncicmd_write_window(uint16_t cmd_len, uint8_t* p_cmd) {
   NFCSTATUS status = NFCSTATUS_FAILED;
-  int sem_timedout = 2, s;
+  const int sem_timedout = 2;
+  int s;
   struct timespec ts;
 
   if (cmd_len < 1) {
