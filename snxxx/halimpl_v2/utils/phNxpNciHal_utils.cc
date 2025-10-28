@@ -94,7 +94,7 @@ int listAdd(struct listHead* pList, void* pData) {
   int result;
 
   /* Create node */
-  pNode = (struct listNode*)malloc(sizeof(struct listNode));
+  pNode = static_cast<struct listNode*>(malloc(sizeof(struct listNode)));
   if (pNode == NULL) {
     result = 0;
     NXPLOG_NCIHAL_E("Failed to malloc");
@@ -271,8 +271,8 @@ phNxpNciHal_Monitor_t* phNxpNciHal_init_monitor(void) {
   NXPLOG_NCIHAL_D("Entering phNxpNciHal_init_monitor");
 
   if (nxpncihal_monitor == NULL) {
-    nxpncihal_monitor =
-        (phNxpNciHal_Monitor_t*)malloc(sizeof(phNxpNciHal_Monitor_t));
+    nxpncihal_monitor = static_cast<phNxpNciHal_Monitor_t*>(
+        malloc(sizeof(phNxpNciHal_Monitor_t)));
   }
 
   if (nxpncihal_monitor != NULL) {
@@ -439,7 +439,7 @@ void phNxpNciHal_releaseall_cb_data(void) {
 
   if (head == NULL) return;
 
-  while (listGetAndRemoveNext(head, (void**)&pCallbackData)) {
+  while (listGetAndRemoveNext(head, reinterpret_cast<void**>(&pCallbackData))) {
     pCallbackData->status = NFCSTATUS_FAILED;
     sem_post(&pCallbackData->sem);
   }
@@ -465,7 +465,7 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
   tNFC_printType printType = getPrintType(pString);
   if (printType == PRINT_UNKNOWN) return;  // logging is disabled
   uint32_t i;
-  char* print_buffer = (char*)calloc((len * 3 + 1), sizeof(char));
+  char* print_buffer = static_cast<char*>(calloc((len * 3 + 1), sizeof(char)));
   if (NULL != print_buffer) {
     for (i = 0; i < len; i++) {
       snprintf(&print_buffer[i * 2], 3, "%02X", p_data[i]);
@@ -537,17 +537,18 @@ void phNxpNciHal_StringToHex(const char* str, size_t len, char* hex) {
     uint8_t temp = 0x00;
     // 1st Nibble of byte
     if (str[i] >= '0' && str[i] <= '9') {
-      temp = (char(str[i]) - ASCII_OFFSET_NUM) << 4;
+      temp = ((str[i]) - ASCII_OFFSET_NUM) << 4;
     } else if (toupper(str[i]) >= 'A' && toupper(str[i]) <= 'F') {
-      temp = (char(toupper(str[i])) - ASCII_OFFSET_CHAR) << 4;
+      temp = (static_cast<char>(toupper(str[i])) - ASCII_OFFSET_CHAR) << 4;
     } else {
       return;
     }
     // 2nd Nibble of byte
     if (str[i + 1] >= '0' && str[i + 1] <= '9') {
-      temp = temp | (char(str[i + 1]) - ASCII_OFFSET_NUM);
+      temp = temp | ((str[i + 1]) - ASCII_OFFSET_NUM);
     } else if (toupper(str[i + 1]) >= 'A' && toupper(str[i + 1]) <= 'F') {
-      temp = temp | (char(toupper(str[i + 1])) - ASCII_OFFSET_CHAR);
+      temp =
+          temp | (static_cast<char>(toupper(str[i + 1])) - ASCII_OFFSET_CHAR);
     } else {
       return;
     }

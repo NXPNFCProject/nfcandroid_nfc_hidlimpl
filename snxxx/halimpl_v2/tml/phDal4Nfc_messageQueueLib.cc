@@ -55,8 +55,8 @@ intptr_t phDal4Nfc_msgget(key_t key, int msgflg) {
   phDal4Nfc_message_queue_t* pQueue;
   UNUSED_PROP(key);
   UNUSED_PROP(msgflg);
-  pQueue =
-      (phDal4Nfc_message_queue_t*)malloc(sizeof(phDal4Nfc_message_queue_t));
+  pQueue = static_cast<phDal4Nfc_message_queue_t*>(
+      malloc(sizeof(phDal4Nfc_message_queue_t)));
   if (pQueue == NULL) return -1;
   memset(pQueue, 0, sizeof(phDal4Nfc_message_queue_t));
   if (pthread_mutex_init(&pQueue->nCriticalSectionMutex, NULL) != 0) {
@@ -68,7 +68,7 @@ intptr_t phDal4Nfc_msgget(key_t key, int msgflg) {
     return -1;
   }
 
-  return ((intptr_t)pQueue);
+  return (reinterpret_cast<intptr_t>(pQueue));
 }
 
 /*******************************************************************************
@@ -83,7 +83,8 @@ intptr_t phDal4Nfc_msgget(key_t key, int msgflg) {
 **
 *******************************************************************************/
 void phDal4Nfc_msgsempost(intptr_t msqid) {
-  phDal4Nfc_message_queue_t* pQueue = (phDal4Nfc_message_queue_t*)msqid;
+  phDal4Nfc_message_queue_t* pQueue =
+      reinterpret_cast<phDal4Nfc_message_queue_t*>(msqid);
   if (pQueue != NULL) {
     sem_post(&pQueue->nProcessSemaphore);
   }
@@ -102,7 +103,8 @@ void phDal4Nfc_msgsempost(intptr_t msqid) {
 **
 *******************************************************************************/
 void phDal4Nfc_msgdestroy(intptr_t msqid) {
-  phDal4Nfc_message_queue_t* pQueue = (phDal4Nfc_message_queue_t*)msqid;
+  phDal4Nfc_message_queue_t* pQueue =
+      reinterpret_cast<phDal4Nfc_message_queue_t*>(msqid);
 
   if (pQueue != NULL) {
     if (sem_destroy(&pQueue->nProcessSemaphore)) {
@@ -139,9 +141,9 @@ intptr_t phDal4Nfc_msgsnd(intptr_t msqid, phLibNfc_Message_t* msg, int msgflg) {
   UNUSED_PROP(msgflg);
   if ((msqid == 0) || (msg == NULL)) return -1;
 
-  pQueue = (phDal4Nfc_message_queue_t*)msqid;
-  pNew = (phDal4Nfc_message_queue_item_t*)malloc(
-      sizeof(phDal4Nfc_message_queue_item_t));
+  pQueue = reinterpret_cast<phDal4Nfc_message_queue_t*>(msqid);
+  pNew = static_cast<phDal4Nfc_message_queue_item_t*>(
+      malloc(sizeof(phDal4Nfc_message_queue_item_t)));
   if (pNew == NULL) {
     NXPLOG_TML_E("Failed to malloc pNew errno = %d", errno);
     return -1;
@@ -193,7 +195,7 @@ int phDal4Nfc_msgrcv(intptr_t msqid, phLibNfc_Message_t* msg, long msgtyp,
   UNUSED_PROP(msgtyp);
   if ((msqid == 0) || (msg == NULL)) return -1;
 
-  pQueue = (phDal4Nfc_message_queue_t*)msqid;
+  pQueue = reinterpret_cast<phDal4Nfc_message_queue_t*>(msqid);
 
   if (-1 == sem_wait(&pQueue->nProcessSemaphore)) {
     NXPLOG_TML_E("sem_wait didn't return success errno = %d", errno);

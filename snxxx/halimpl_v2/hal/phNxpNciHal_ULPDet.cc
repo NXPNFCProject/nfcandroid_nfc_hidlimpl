@@ -40,7 +40,7 @@ extern PowerTrackerHandle gPowerTrackerHandle;
 bool phNxpNciHal_isULPDetSupported() {
   unsigned long num = 0;
   if ((GetNxpNumValue(NAME_NXP_DEFAULT_ULPDET_MODE, &num, sizeof(num)))) {
-    if ((uint8_t)num > 0) {
+    if (static_cast<uint8_t>(num) > 0) {
       NXPLOG_NCIHAL_E("%s: NxpNci isULPDetSupported true", __func__);
       return true;
     }

@@ -85,7 +85,7 @@ bool phNxpNciHal_WriterThread::Stop() {
   if (thread_running.load()) {
     thread_running.store(false);
     phDal4Nfc_msgsempost(writer_queue);
-    if (pthread_join(writer_thread, (void**)NULL) != 0) {
+    if (pthread_join(writer_thread, static_cast<void**>(NULL)) != 0) {
       NXPLOG_NCIHAL_E("%s:pthread_join failed", __func__);
       phDal4Nfc_msgdestroy(writer_queue);
       writer_queue = 0;
@@ -124,7 +124,8 @@ void phNxpNciHal_WriterThread::Run() {
         NXPLOG_NCIHAL_D("%s: Received NCI_HAL_TML_WRITE_MSG", __func__);
         CONCURRENCY_LOCK();
         uint32_t bytesWritten = phNxpNciHal_write_unlocked(
-            (uint16_t)msg.Size, (uint8_t*)msg.data, ORIG_EXTNS);
+            static_cast<uint16_t>(msg.Size), static_cast<uint8_t*>(msg.data),
+            ORIG_EXTNS);
         CONCURRENCY_UNLOCK();
         if (bytesWritten == msg.Size) {
           phNxpExtn_WriteCompleteStatusUpdate(NFCSTATUS_SUCCESS);

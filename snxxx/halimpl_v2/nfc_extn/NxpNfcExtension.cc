@@ -33,8 +33,8 @@ NFCSTATUS phNxpNfcExtn_HandleNciMsg(uint16_t* dataLen, const uint8_t* pData) {
   NXPLOG_NCIHAL_D("%s Enter dataLen:%d", __func__, *dataLen);
 
   if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
-      AutoCard::getInstance()->handleVendorNciMessage(*dataLen,
-                                                      (uint8_t*)pData))
+      AutoCard::getInstance()->handleVendorNciMessage(
+          *dataLen, const_cast<uint8_t*>(pData)))
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 
   if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
@@ -42,8 +42,8 @@ NFCSTATUS phNxpNfcExtn_HandleNciMsg(uint16_t* dataLen, const uint8_t* pData) {
                                                          (uint8_t*)pData))
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 
-  return NxpNTag::getInstance()->handleVendorNciMessage(*dataLen,
-                                                        (uint8_t*)pData);
+  return NxpNTag::getInstance()->handleVendorNciMessage(
+      *dataLen, const_cast<uint8_t*>(pData));
 }
 
 NFCSTATUS phNxpNfcExtn_HandleNciRspNtf(uint16_t* dataLen,
@@ -51,12 +51,13 @@ NFCSTATUS phNxpNfcExtn_HandleNciRspNtf(uint16_t* dataLen,
   NXPLOG_NCIHAL_D("%s Enter dataLen:%d", __func__, *dataLen);
 
   if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
-      handleObserveModeRfStateRspNtf(*dataLen, (uint8_t*)pData)) {
+      handleObserveModeRfStateRspNtf(*dataLen, const_cast<uint8_t*>(pData))) {
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
   }
 
   if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
-      AutoCard::getInstance()->handleVendorNciRspNtf(*dataLen, (uint8_t*)pData))
+      AutoCard::getInstance()->handleVendorNciRspNtf(
+          *dataLen, const_cast<uint8_t*>(pData)))
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 
   if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
@@ -64,8 +65,8 @@ NFCSTATUS phNxpNfcExtn_HandleNciRspNtf(uint16_t* dataLen,
                                                         (uint8_t*)pData))
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 
-  return NxpNTag::getInstance()->handleVendorNciRspNtf(*dataLen,
-                                                       (uint8_t*)pData);
+  return NxpNTag::getInstance()->handleVendorNciRspNtf(
+      *dataLen, const_cast<uint8_t*>(pData));
 }
 
 void phNxpNfcExtn_core_initialized() {

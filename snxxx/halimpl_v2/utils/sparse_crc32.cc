@@ -1,6 +1,8 @@
 /*-
  *  COPYRIGHT (C) 1986 Gary S. Brown.  You may use this program, or
  *  code or tables extracted from it, as desired without restriction.
+ *
+ *  Copyright 2025 NXP
  */
 
 /*
@@ -98,7 +100,7 @@ static uint32_t crc32_tab[] = {
  */
 
 uint32_t sparse_crc32(uint32_t crc_in, const void* buf, int size) {
-  const uint8_t* p = (const uint8_t*)buf;
+  const uint8_t* p = static_cast<const uint8_t*>(buf);
   uint32_t crc;
 
   crc = crc_in ^ ~0U;
