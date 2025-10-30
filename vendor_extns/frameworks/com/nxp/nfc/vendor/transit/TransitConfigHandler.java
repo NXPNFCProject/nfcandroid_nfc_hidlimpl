@@ -48,6 +48,7 @@ public class TransitConfigHandler implements INxpOEMCallbacks {
     private static final int SUB_GIDOID_INDEX = 0x00;
     private static final int PAYLOAD_LEN_INDEX = 0x01;
     private static final int PBF_INDEX = 0x02;
+    private static final int DEFAULT_PBF_VAL = 0x00;
     private static final String TAG = "TransitConfigHandler";
 
     public TransitConfigHandler(NfcAdapter nfcAdapter) {
@@ -119,7 +120,7 @@ public class TransitConfigHandler implements INxpOEMCallbacks {
     private boolean clearConfig(byte subGidOid) throws IOException {
         Boolean clearConfigStatus = false;
         try {
-            byte[] emptyPayload = {subGidOid, DISABLE_TRANSIT};
+            byte[] emptyPayload = {subGidOid, DISABLE_TRANSIT, DEFAULT_PBF_VAL};
             clearConfigStatus = sendCmd(emptyPayload);
         } catch (Exception e) {
             NxpNfcLogger.e(TAG, "Exception in clearConfig");
@@ -132,7 +133,7 @@ public class TransitConfigHandler implements INxpOEMCallbacks {
         boolean nciCmdStatus = false;
         int startIndex = 0;
         int endIndex = 0;
-        byte[] cmdBytes = {subGidOid, 0x00, 0x00};
+        byte[] cmdBytes = {subGidOid, DISABLE_TRANSIT, DEFAULT_PBF_VAL};
         while (startIndex < configBytes.length) {
             int pbf = 1;
             endIndex = startIndex + MAX_CONFIG_LEN;
@@ -175,7 +176,7 @@ public class TransitConfigHandler implements INxpOEMCallbacks {
         NxpNfcLogger.d(TAG, "Updating RF Register config");
         byte[] configBytes = configs.getBytes(StandardCharsets.UTF_8);
         byte subGidOid = (byte) (TRANSIT_CONFIG_SUB_GID | RF_REGISTER_SUB_OID);
-        byte[] cmdBytes = {subGidOid, 0x00, 0x00};
+        byte[] cmdBytes = {subGidOid, DISABLE_TRANSIT, DEFAULT_PBF_VAL};
 
         try {
             if (configBytes.length > MAX_CONFIG_LEN) {
@@ -214,7 +215,7 @@ public class TransitConfigHandler implements INxpOEMCallbacks {
             } else {
                 NxpNfcLogger.d(TAG, "Updating libnfc-nci-update.conf");
                 byte[] configBytes = configs.getBytes(StandardCharsets.UTF_8);
-                byte[] cmdBytes = {subGidOid, 0x00, 0x00};
+                byte[] cmdBytes = {subGidOid, DISABLE_TRANSIT, DEFAULT_PBF_VAL};
                 if (configBytes.length > MAX_CONFIG_LEN) {
                     cmdStatus = handleSegmentMsg(configBytes, subGidOid);
                 } else {
