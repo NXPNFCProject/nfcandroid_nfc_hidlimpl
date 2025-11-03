@@ -93,6 +93,7 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
   private final Object lock = new Object();
   private final Object mposStateSync = new Object();
   private boolean isCardActivated = false;
+  private boolean isNfcReset = false;
   private static final ExecutorService MPOS_CALLBACK_EXECUTOR =
                         Executors.newSingleThreadExecutor();
 
@@ -270,6 +271,13 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
             Thread.currentThread().interrupt();
           }
         }
+
+        if(isNfcReset) {
+          NxpNfcLogger.e(TAG, "Boot finish event, api is unblocked and returnig failure");
+          isNfcReset = false;
+          return MPOS_STATUS_FAILED;
+        }
+        isNfcReset = false;
       }
     }
 
@@ -345,5 +353,10 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
   public void onBootFinished(int status) {
       NxpNfcLogger.d(TAG, "onBootFinished: ");
       resetMPOS();
+      synchronized (lock) {
+        isCardActivated = false;
+        isNfcReset = true;
+        lock.notify();
+      }
   }
 }
