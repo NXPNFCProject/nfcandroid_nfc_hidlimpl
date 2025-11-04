@@ -297,8 +297,13 @@ static NFCSTATUS phNxpNciHal_syncPowerTrackerData() {
   // Standby counter is same as active counter less one as current
   // data sync will move NFCC to active resulting in one value
   // higher than standby
-  gContext.stateData[STANDBY].stateEntryCount =
-      (gContext.stateData[ACTIVE].stateEntryCount - 1);
+  if (gContext.stateData[ACTIVE].stateEntryCount == 0) {
+    gContext.stateData[STANDBY].stateEntryCount = 0;
+    NXPLOG_NCIHAL_D("Initialized standby count to 0 (active count is 0)");
+  } else {
+    gContext.stateData[STANDBY].stateEntryCount =
+        (gContext.stateData[ACTIVE].stateEntryCount - 1);
+  }
   if ((totalTimeMs / STEP_TIME_MS) > activeTick) {
     gContext.stateData[STANDBY].stateTickCount +=
         ((totalTimeMs / STEP_TIME_MS) - activeTick);
