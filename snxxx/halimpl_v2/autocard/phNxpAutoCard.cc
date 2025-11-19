@@ -192,7 +192,7 @@ NFCSTATUS AutoCard::handleVendorNciMessage(uint16_t dataLen, uint8_t* pData) {
   uint8_t autocardStatus = NFCSTATUS_SUCCESS;
   AutoCard::getInstance()->autoCardCmdType = pData[AUTOCARD_SUB_OID_IDEX];
 
-  if (IS_CHIP_TYPE_NE(sn220u)) {
+  if (IS_CHIP_TYPE_L(sn220u)) {
     autocardStatus = AUTOCARD_STATUS_FEATURE_NOT_SUPPORTED;
     NXPLOG_NCIHAL_E("AutoCard selection is not supported.");
   } else if (!GetNxpNumValue(NAME_NXP_AUTOCARD_SELECTION_PHONE_OFF,
