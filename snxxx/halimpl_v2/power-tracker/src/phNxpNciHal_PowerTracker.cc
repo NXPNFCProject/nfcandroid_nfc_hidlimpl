@@ -452,6 +452,7 @@ NFCSTATUS phNxpNciHal_stopPowerTracker() {
     }
   } else {
     NXPLOG_NCIHAL_E("PowerTracker is already disabled");
+    return status;
   }
   gContext.ulpdetTimer.kill();
   mEEPROM_info.request_mode = SET_EEPROM_DATA;

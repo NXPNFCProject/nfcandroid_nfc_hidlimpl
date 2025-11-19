@@ -2417,6 +2417,15 @@ int phNxpNciHal_configDiscShutdown(void) {
       return status;
     }
   }
+
+  CONCURRENCY_UNLOCK();
+
+  if (gPowerTrackerHandle.stop != NULL) {
+    gPowerTrackerHandle.stop();
+  }
+
+  CONCURRENCY_LOCK();
+
   status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_disc_nci), cmd_ce_disc_nci,
                                     &rsp_len, rsp);
   if (status != NFCSTATUS_SUCCESS) {
