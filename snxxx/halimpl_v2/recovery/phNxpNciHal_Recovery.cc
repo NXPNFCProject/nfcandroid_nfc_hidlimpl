@@ -123,7 +123,9 @@ static NFCSTATUS phNxpNciHal_semWaitTimeout(long timeout) {
   NFCSTATUS status = NFCSTATUS_FAILED;
   int retVal = 0;
   struct timespec ts;
-  clock_gettime(CLOCK_MONOTONIC, &ts);
+  if (clock_gettime(CLOCK_MONOTONIC, &ts) == -1) {
+    NXPLOG_NCIHAL_E("%s Fail get time; errno=0x%X", __func__, errno);
+  }
   ts.tv_nsec += timeout;
   ts.tv_sec += ts.tv_nsec / 1000000000;
   ts.tv_nsec %= 1000000000;

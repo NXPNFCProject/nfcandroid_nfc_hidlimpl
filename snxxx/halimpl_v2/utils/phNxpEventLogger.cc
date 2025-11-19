@@ -39,7 +39,9 @@ PhNxpEventLogger& PhNxpEventLogger::GetInstance() {
 
 static void GetCurrentTimestamp(char* timestamp) {
   struct timespec tv;
-  clock_gettime(CLOCK_REALTIME, &tv);
+  if (clock_gettime(CLOCK_REALTIME, &tv) == -1) {
+    NXPLOG_NCIHAL_E("%s Fail get time; errno=0x%X", __func__, errno);
+  }
   const time_t rawtime = tv.tv_sec;
   struct tm* timeinfo;
   char buffer[TIMESTAMP_BUFFER_SIZE];

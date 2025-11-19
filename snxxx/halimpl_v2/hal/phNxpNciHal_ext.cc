@@ -207,7 +207,9 @@ NFCSTATUS phNxpNciHal_set_ext_buffer(uint16_t* rsp_len, uint8_t* p_rsp) {
 NFCSTATUS phNxpNciHal_update_ext_buffer(uint16_t rsp_len, uint8_t* p_rsp) {
   // If response buffer is not yet set wait for it to set
   struct timespec timeout_spec;
-  clock_gettime(CLOCK_REALTIME, &timeout_spec);
+  if (clock_gettime(CLOCK_REALTIME, &timeout_spec) == -1) {
+    NXPLOG_NCIHAL_E("%s Fail get time; errno=0x%X", __func__, errno);
+  }
   timeout_spec.tv_sec += 1;
   pthread_mutex_lock(&gExtRxDataCtrl.rx_mutex);
   int status = 0;

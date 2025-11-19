@@ -3968,7 +3968,9 @@ static void phNxpNciHal_check_and_recover_fw() {
     // as interval b/w 2 consecutive NTF is 1.4 secs
     struct timespec ts;
 
-    clock_gettime(CLOCK_MONOTONIC, &ts);
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) == -1) {
+      NXPLOG_NCIHAL_E("%s Fail get time; errno=0x%X", __func__, errno);
+    }
     // Normalize timespec
     ts.tv_sec += MAX_WAIT_MS_FOR_RESET_NTF / 1000;
     ts.tv_nsec += (MAX_WAIT_MS_FOR_RESET_NTF % 1000) * 1000000;

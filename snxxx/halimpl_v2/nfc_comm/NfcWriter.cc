@@ -297,7 +297,9 @@ int NfcWriter::check_ncicmd_write_window(uint16_t cmd_len, uint8_t* p_cmd) {
   }
 
   if ((p_cmd[0] & 0xF0) == 0x20) {
-    clock_gettime(CLOCK_MONOTONIC, &ts);
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) == -1) {
+      NXPLOG_NCIHAL_E("%s Fail get time; errno=0x%X", __func__, errno);
+    }
     ts.tv_sec += sem_timedout;
     while ((s = sem_timedwait_monotonic_np(&nxpncihal_ctrl.syncSpiNfc, &ts)) ==
                -1 &&

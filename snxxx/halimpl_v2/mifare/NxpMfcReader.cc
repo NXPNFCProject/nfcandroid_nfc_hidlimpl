@@ -509,7 +509,9 @@ NFCSTATUS NxpMfcReader::MfcWaitForAck() {
   int s;
   struct timespec ts;
   isAck = false;
-  clock_gettime(CLOCK_MONOTONIC, &ts);
+  if (clock_gettime(CLOCK_MONOTONIC, &ts) == -1) {
+    NXPLOG_NCIHAL_E("%s Fail get time; errno=0x%X", __func__, errno);
+  }
   ts.tv_sec += sem_timedout;
   while ((s = sem_timedwait_monotonic_np(&mNacksem, &ts)) == -1 &&
          errno == EINTR) {
