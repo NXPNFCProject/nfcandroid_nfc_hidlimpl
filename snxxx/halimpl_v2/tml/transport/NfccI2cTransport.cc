@@ -73,9 +73,11 @@ NFCSTATUS NfccI2cTransport::OpenAndConfigure(pphTmlNfc_Config_t pConfig,
                                              void** pLinkHandle) {
   int nHandle;
   NFCSTATUS status = NFCSTATUS_SUCCESS;
+  pthread_mutex_lock(&mMutex);
   NXPLOG_TML_D("%s Opening port=%s\n", __func__, pConfig->pDevName);
   /* open port */
   nHandle = open(reinterpret_cast<const char*>(pConfig->pDevName), O_RDWR);
+  pthread_mutex_unlock(&mMutex);
   if (nHandle < 0) {
     NXPLOG_TML_E("_i2c_open() Failed: retval %x", nHandle);
     *pLinkHandle = NULL;
@@ -103,12 +105,16 @@ NFCSTATUS NfccI2cTransport::OpenAndConfigure(pphTmlNfc_Config_t pConfig,
 **
 *******************************************************************************/
 void FlushTimeoutHandler(uint32_t timerId, void* pContext) {
-  const int handle = *(static_cast<int*>(pContext));
-  NXPLOG_TML_D("%s: FlushTimer expired, Closing fd %d", __func__, handle);
-  if (handle != 0) {
-    close(handle);
+  NfccI2cTransport* transport = static_cast<NfccI2cTransport*>(pContext);
+  pthread_mutex_lock(&transport->mMutex);
+  NXPLOG_TML_D("%s: FlushTimer expired, Closing fd %d", __func__,
+               transport->mHandle);
+  if (transport->mHandle != 0) {
+    close(transport->mHandle);
     NXPLOG_TML_D("%s: fd closed", __func__);
+    transport->mHandle = 0;
   }
+  pthread_mutex_unlock(&transport->mMutex);
 }
 
 /*******************************************************************************
@@ -124,33 +130,32 @@ void FlushTimeoutHandler(uint32_t timerId, void* pContext) {
 *******************************************************************************/
 bool NfccI2cTransport::Flushdata(pphTmlNfc_Config_t pConfig) {
   int retRead = 0;
-  int nHandle;
   uint8_t pBuffer[FLUSH_BUFFER_SIZE];
   NXPLOG_TML_D("%s: Enter", __func__);
 
-  nHandle = open(reinterpret_cast<const char*>(pConfig->pDevName), O_RDWR);
-  if (nHandle < 0) {
-    NXPLOG_TML_E("%s: _i2c_open() Failed: retval %x", __func__, nHandle);
+  mHandle = open(reinterpret_cast<const char*>(pConfig->pDevName), O_RDWR);
+  if (mHandle < 0) {
+    NXPLOG_TML_E("%s: _i2c_open() Failed: retval %x", __func__, mHandle);
     return false;
   }
   /* Start timer */
   const uint32_t timerId = phOsalNfc_Timer_Create();
   if (timerId == PH_OSALNFC_TIMER_ID_INVALID) {
     NXPLOG_TML_D("%s: Failed to create FlushTimer", __func__);
-    close(nHandle);
+    close(mHandle);
     return false;
   }
   const NFCSTATUS status =
       phOsalNfc_Timer_Start(timerId, FLUSH_READ_TIMEOUT_MS,
-                            &FlushTimeoutHandler, static_cast<void*>(&nHandle));
+                            &FlushTimeoutHandler, static_cast<void*>(this));
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_TML_D("%s: Failed to start FlushTimer", __func__);
-    close(nHandle);
+    close(mHandle);
     phOsalNfc_Timer_Delete(timerId);
     return false;
   }
   do {
-    retRead = read(nHandle, pBuffer, sizeof(pBuffer));
+    retRead = read(mHandle, pBuffer, sizeof(pBuffer));
     if (retRead > 0) {
       phNxpNciHal_print_packet("RECV", pBuffer, retRead);
       usleep(2 * 1000);

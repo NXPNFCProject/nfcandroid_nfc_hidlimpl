@@ -18,6 +18,7 @@
 
 #pragma once
 #include <NfccTransport.h>
+#include <pthread.h>
 
 #define NFC_MAGIC 0xE9
 /*
@@ -70,6 +71,8 @@ class NfccI2cTransport : public NfccTransport {
   sem_t mTxRxSemaphore;
 
  public:
+  pthread_mutex_t mMutex = PTHREAD_MUTEX_INITIALIZER;
+  int mHandle = 0;
   /*****************************************************************************
   **
   ** Function         Close
