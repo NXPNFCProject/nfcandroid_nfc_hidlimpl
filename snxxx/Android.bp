@@ -125,7 +125,7 @@ cc_library_shared {
     include_dirs: [
         "hardware/nxp/nfc/snxxx/aidl/2.0",
         "hardware/nxp/secure_element/snxxx/extns/impl",
-        "hardware/nxp/secure_element_extns/inc",
+        "hardware/nxp/secure_element/libese_vendor_extn/inc",
     ],
 
     shared_libs: [
