@@ -176,7 +176,7 @@ int phNxpNciHal_ioctlIf(long arg, void* p_data) {
  ** Parameters       string key
  **
  ** Returns          If Key is found, returns the respective property values
- **                  else returns the null/empty string
+ **                  else returns the empty string
  *******************************************************************************/
 string phNxpNciHal_getSystemProperty(string key) {
   int len;
@@ -187,7 +187,7 @@ string phNxpNciHal_getSystemProperty(string key) {
   } else if (property_get(key.c_str(), valueStr, "") > 0) {
     return valueStr;
   } else {
-    return NULL;
+    return "";
   }
 }
 /*******************************************************************************
