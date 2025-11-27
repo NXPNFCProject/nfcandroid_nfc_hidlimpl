@@ -187,7 +187,7 @@ string phNxpNciHal_getSystemProperty(string key) {
   } else if (property_get(key.c_str(), valueStr, "") > 0) {
     return valueStr;
   } else {
-    return valueStr;
+    return NULL;
   }
 }
 /*******************************************************************************
