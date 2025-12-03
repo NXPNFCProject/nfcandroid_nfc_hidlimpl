@@ -64,7 +64,7 @@ public class UtilsHandler implements INxpOEMCallbacks {
     /**
      * This api is called by applications to Activate Secure Element Interface.
      * <p>Requires {@link android.Manifest.permission#NFC} permission.<ul>
-     * <li>This api shall be called only Nfcservice is enabled.
+     * <li>This api shall be called only NfcService is enabled.
      * </ul>
      * @return whether  the update of configuration is
      *          success or not.
@@ -82,7 +82,7 @@ public class UtilsHandler implements INxpOEMCallbacks {
     /**
      * This api is called by applications to Deactivate Secure Element Interface.
      * <p>Requires {@link android.Manifest.permission#NFC} permission.<ul>
-     * <li>This api shall be called only Nfcservice is enabled.
+     * <li>This api shall be called only NfcService is enabled.
      * </ul>
      * @return whether  the update of configuration is
      *          success or not.
@@ -100,7 +100,7 @@ public class UtilsHandler implements INxpOEMCallbacks {
     /**
      * This API is called by application to stop RF discovery
      * <p>Requires {@link android.Manifest.permission#NFC} permission.
-     * <li>This api shall be called only Nfcservice is enabled.
+     * <li>This api shall be called only NfcService is enabled.
      * </ul>
      * @return None
      * @throws IOException If a failure occurred during stop discovery
@@ -117,7 +117,7 @@ public class UtilsHandler implements INxpOEMCallbacks {
     /**
      * This API is called by application to start RF discovery
      * <p>Requires {@link android.Manifest.permission#NFC} permission.
-     * <li>This api shall be called only Nfcservice is enabled.
+     * <li>This api shall be called only NfcService is enabled.
      * </ul>
      * @return None
      * @throws IOException If a failure occurred during start discovery

@@ -42,7 +42,7 @@ import java.util.concurrent.Executors;
 
 /**
 * This class is responsible to start/stop the Srd reader and
-* handles the srd action notfications
+* handles the srd action notifications
 */
 public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
 
@@ -126,7 +126,7 @@ public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
                 mNfcOperations.disableDiscovery();
                 isSrdEnabled = false;
                 if (mSrdCallbacks != null) {
-                    NxpNfcLogger.d(TAG, "Sending SRD Callabck to Application");
+                    NxpNfcLogger.d(TAG, "Sending SRD Callback to Application");
                     mSrdCallbacks.onSrdTimedout();
                 } else {
                     NxpNfcLogger.i(TAG, "No callback registered for SRD");
@@ -141,7 +141,7 @@ public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
                 break;
             case SRD_MODE_NTF_SRD_FEATURE_NOT_SUPPORTED:
                 if (mSrdCallbacks != null) {
-                    NxpNfcLogger.d(TAG, "Sending SRD_FEATURE_NOT_SUPPORTED Callabck to Application");
+                    NxpNfcLogger.d(TAG, "Sending SRD_FEATURE_NOT_SUPPORTED Callback to Application");
                     mSrdCallbacks.onSrdFeatureSupport(false);
                 } else {
                     NxpNfcLogger.e(TAG, "No callback registered for SRD");
@@ -297,8 +297,8 @@ public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
         return STATUS_SUCCESS;
     }
 
-    public int srdinit() throws IOException {
-        NxpNfcLogger.d(TAG, "srdinit");
+    public int srdInit() throws IOException {
+        NxpNfcLogger.d(TAG, "srdInit");
         byte[] prop_init_cmd = new byte[2];
         prop_init_cmd[0] = (byte) SRD_INIT_MODE;
         prop_init_cmd[1] = 0x01;
@@ -312,7 +312,7 @@ public class SrdHandler implements INxpNfcNtfHandler, INxpOEMCallbacks  {
     }
     public void stopPoll() throws IOException {
        NxpNfcLogger.d(TAG, "stopPoll");
-       srdinit();
+       srdInit();
        mNfcOperations.disableDiscovery();
     }
 

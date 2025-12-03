@@ -261,7 +261,7 @@ public class NfcOperations {
     }
 
     /**
-     * @brief registers to the OEM callbacks through NXP extentions
+     * @brief registers to the OEM callbacks through NXP extensions
      * @param nxpOEMCallback callback to be register
      */
     public void registerNxpOemCallback(INxpOEMCallbacks nxpOEMCallback) {
@@ -292,7 +292,7 @@ public class NfcOperations {
 
 
     /**
-     * @brief unregisters to OEM callbacks through NXP extenstions
+     * @brief unregisters to OEM callbacks through NXP extensions
      */
     public void unregisterNxpOemCallback() {
         synchronized (NfcOperations.this) {

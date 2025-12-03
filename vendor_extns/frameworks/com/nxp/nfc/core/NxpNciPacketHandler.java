@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @class NxpNciPacketHandler
- * @brief Responsible for Sending VendorNciCmd's,
+ * @brief Responsible for Sending VendorNciCmds,
  *        Listening the to the NfcState Changes etc..
  * @hide
  */

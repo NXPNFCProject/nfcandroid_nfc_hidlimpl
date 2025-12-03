@@ -40,11 +40,11 @@ public interface INxpNfcAdapter {
    *
    * @return NxpNfc Extensions interface
    */
-  INxpNfcExtentions getNxpNfcExtentionsInterface();
+  INxpNfcExtensions getNxpNfcExtensionsInterface();
   /**
    * This is the first API to be called to start or stop the mPOS mode
    * <ul>
-   * <li>This api shall be called only Nfcservice is enabled.
+   * <li>This api shall be called only NfcService is enabled.
    * <li>This api shall be called only when there are no NFC transactions
    * ongoing
    * </ul>
@@ -60,7 +60,7 @@ public interface INxpNfcAdapter {
   /**
    * This is provides the info whether mPOS mode is activated or not
    * <ul>
-   * <li>This api shall be called only Nfcservice is enabled.
+   * <li>This api shall be called only NfcService is enabled.
    * <li>This api shall be called only when there are no NFC transactions
    * ongoing
    * </ul>
@@ -105,7 +105,7 @@ public interface INxpNfcAdapter {
 
   /**
    * This API get Autocard AID's  to NFCC using the vendor NCI message
-   * <li>This api shall be called only Nfcservice is enabled.
+   * <li>This api shall be called only NfcService is enabled.
    * @return status     :-0x00 :SUCCESS
    *                      0x01 - 0x06: NCI Status Codes
    *                           : Refer NCI spec v2.3 Table 140
@@ -126,7 +126,7 @@ public interface INxpNfcAdapter {
   /**
    * This API sends Autocard AID's  to NFCC using the vendor NCI message
    * <ul>
-   * <li>This api shall be called only when Nfcservice is enabled and also
+   * <li>This api shall be called only when NfcService is enabled and also
    * <li>autocard feature should be enabled in NFCC.
    * </ul>
    * @param aids  No of AID's to configure.
@@ -144,7 +144,7 @@ public interface INxpNfcAdapter {
 
   /**
    * This API get Autocard AID RF parameters from NFCC using the vendor NCI cmd
-   * <li>This api shall be called only Nfcservice is enabled.
+   * <li>This api shall be called only NfcService is enabled.
    * @return status     :-0x00 :SUCCESS
    *                      0x01 - 0x06: NCI Status Codes
    *                           : Refer NCI spec v2.3 Table 140
@@ -162,7 +162,7 @@ public interface INxpNfcAdapter {
   /**
    * This API sends Autocard AID RF parameters to NFCC using the vendor NCI cmd
    * <ul>
-   * <li>This api shall be called only when Nfcservice is enabled and also
+   * <li>This api shall be called only when NfcService is enabled and also
    * <li>autocard feature should be enabled in NFCC.
    * </ul>
    * @param aids  No of AID's to configure.
@@ -182,7 +182,7 @@ public interface INxpNfcAdapter {
   /**
    * This API to enable Autocard feature in NFCC using the vendor NCI message
    * <ul>
-   * <li>This api shall be called only Nfcservice is enabled.
+   * <li>This api shall be called only NfcService is enabled.
    * @return status     :-0x00 :SUCCESS
    *                      0x01 - 0x06: NCI Status Codes
    *                           : Refer NCI spec v2.3 Table 140
@@ -200,7 +200,7 @@ public interface INxpNfcAdapter {
   /**
    * This API to disable Autocard feature in NFCC using the vendor NCI message.
    * <ul>
-   * <li>This api shall be called only Nfcservice is enabled.
+   * <li>This api shall be called only NfcService is enabled.
    * @return status     :-0x00 :SUCCESS
    *                      0x01 - 0x06: NCI Status Codes
    *                           : Refer NCI spec v2.3 Table 140
@@ -216,10 +216,10 @@ public interface INxpNfcAdapter {
   /**
    * This API sets Autocard AID's status to NFCC using the vendor NCI message
    * <ul>
-   * <li>This api shall be called only when Nfcservice is enabled and also
+   * <li>This api shall be called only when NfcService is enabled and also
    * <li>autocard feature should be enabled in NFCC.
    * </ul>
-   * @param appletStatus  Updayte status of configured AID's.
+   * @param appletStatus  Update status of configured AID's.
    * @return status     :-0x00 :SUCCESS
    *                      0x01 - 0x06: NCI Status Codes
    *                           : Refer NCI spec v2.3 Table 140
@@ -236,7 +236,7 @@ public interface INxpNfcAdapter {
   /**
    * This API sends suspend/resume cmd to NFCC using the vendor NCI message
    * <ul>
-   * <li>This api shall be called only when Nfcservice is enabled and also
+   * <li>This api shall be called only when NfcService is enabled and also
    * <li>autocard feature should be enabled in NFCC.
    * </ul>
    * @param flag  true/false.
@@ -254,7 +254,7 @@ public interface INxpNfcAdapter {
   /**
    * This is the API to be called to enable or disable QTag RF mode.
    * <ul>
-   * <li>This api shall be called only when Nfcservice is enabled.
+   * <li>This api shall be called only when NfcService is enabled.
    * <li>This api shall be called only when there are no NFC transactions
    * ongoing.
    * <li>Limit the NFC controller to reader mode while this Activity is in the
@@ -282,7 +282,7 @@ public interface INxpNfcAdapter {
      * are already part of libnfc-nci.conf <p>Requires
      * {@link android.Manifest.permission#NFC} permission.
      * <ul>
-     * <li>This api shall be called only Nfcservice is enabled.
+     * <li>This api shall be called only NfcService is enabled.
      * <li>This api shall be called only when there are no NFC transactions ongoing
      * </ul>
      * @param  configs NFC Configuration to be updated.
@@ -301,7 +301,7 @@ public interface INxpNfcAdapter {
   /**
    * This api is called to get current FW version.
    * @return byte array of fwVersion
-   *         fwVersion byte array of length 3 - Suceess
+   *         fwVersion byte array of length 3 - Success
    *            byte[0] - Major version
    *            byte[1] - Minor version
    *            byte[2] - Rom version
@@ -356,7 +356,7 @@ public interface INxpNfcAdapter {
 
   /**
    * This API starts card emulation mode. Starts RF Discovery with Default
-   * POLL configurations and sets the Listen tech paramaters.
+   * POLL configurations and sets the Listen tech parameters.
    * @param listenTech Flags indicating listen technologies.
    * @return status     :-0x00 :EFDSTATUS_SUCCESS
    *                      0x01 :EFDSTATUS_FAILED
@@ -367,8 +367,8 @@ public interface INxpNfcAdapter {
 
   /**
    * This api is called by applications enable or disable field
-   * detect feauture.
-   * This api shall be called only Nfcservice is enabled.
+   * detect feature.
+   * This api shall be called only NfcService is enabled.
    * @param  mode to Enable(true) and Disable(false)
    * @return whether  the update of configuration is
    *          success or not with reason.
@@ -395,7 +395,7 @@ public interface INxpNfcAdapter {
    * Once RSSI is enabled, RSSI data notifications are broadcasted to registered
    * application when the device is in the reader field. Application can then
    * analyze this data and find best position for transaction.
-   * This api shall be called only after Nfcservice is enabled.
+   * This api shall be called only after NfcService is enabled.
    * @param  rssiNtfTimeIntervalInMillisec to set time interval between RSSI
    * notification in milliseconds. It is recommended that this value is
    * greater than 10 millisecs and multiple of 10.
@@ -411,7 +411,7 @@ public interface INxpNfcAdapter {
 
   /**
    * This api is called by applications to stop RSSI mode
-   * This api shall be called only after Nfcservice is enabled.
+   * This api shall be called only after NfcService is enabled.
    * @return whether  the update of configuration is
    *          success or not with reason.
    *          0x01  - NFC_IS_OFF,
@@ -435,7 +435,7 @@ public interface INxpNfcAdapter {
   /**
    * @deprecated This api is called by application to enable various debug notigications
    * of NFCC.
-   * This api shall be called only if Nfcservice is enabled.
+   * This api shall be called only if NfcService is enabled.
    *
    * @return whether  the update of configuration is
    *          success or not.
@@ -449,7 +449,7 @@ public interface INxpNfcAdapter {
   /**
    * This api is called by application to enable various debug notigications
    * of NFCC.
-   * This api shall be called only if Nfcservice is enabled.
+   * This api shall be called only if NfcService is enabled.
    * @param fieldValue : bytes to be set for lxdebug config.
    * @return whether  the update of configuration is
    *          success or not.

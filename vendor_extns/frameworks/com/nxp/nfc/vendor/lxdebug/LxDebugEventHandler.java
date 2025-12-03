@@ -42,7 +42,7 @@ import java.util.TimerTask;
 
 /**
  * This class is responsible to control lxdebug features
- * handles LxDebug Events specific notfications as well
+ * handles LxDebug Events specific notifications as well
  */
 public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
 
@@ -84,7 +84,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
     private static final int STATUS_FAILED = 0x01;
     private static final int ERROR_UNKNOWN = 0x03;
     private static final int INVALID_ARGUMENTS = 0x04;
-    private static final int SERVICE_UNAVIABLE = 0xFF;
+    private static final int SERVICE_UNAVAILABLE = 0xFF;
 
     private static final byte NCI_OID_SYSTEM_DEBUG_STATE_L1_MESSAGE = 0x35;
     private static final byte NCI_OID_SYSTEM_DEBUG_STATE_L2_MESSAGE = 0x36;
@@ -114,7 +114,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
             STATUS_SUCCESS,
             FDSTATUS_ERROR_NFC_IS_OFF,
             ERROR_UNKNOWN,
-            SERVICE_UNAVIABLE,
+            SERVICE_UNAVAILABLE,
 
     })
     @Retention(RetentionPolicy.SOURCE)
@@ -325,7 +325,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
                         case MODE_DISABLED_CONFIG:
                             return EFDSTATUS_ERROR_FEATURE_DISABLED_IN_CONFIG;
                         default:
-                            NxpNfcLogger.e(TAG, "unkonwn mode");
+                            NxpNfcLogger.e(TAG, "unknown mode");
                             break;
                     }
                 }
@@ -490,8 +490,8 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
 
     /**
      * This api is called by applications enable or disable field
-     * detect feauture.
-     * This api shall be called only Nfcservice is enabled.
+     * detect feature.
+     * This api shall be called only NfcService is enabled.
      * @param  mode to Enable(true) and Disable(false)
      * @return whether  the update of configuration is
      *          success or not with reason.
@@ -601,7 +601,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
      * Once RSSI is enabled, RSSI data notifications are broadcasted to registered
      * application when the device is in the reader field. Application can then
      * analyze this data and find best position for transaction.
-     * This api shall be called only after Nfcservice is enabled.
+     * This api shall be called only after NfcService is enabled.
      * @param  rssiNtfTimeIntervalInMillisec to set time interval between RSSI
      * notification in milliseconds. It is recommended that this value is
      * greater than 10 millisecs and multiple of 10.
@@ -652,7 +652,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
 
     /**
      * This api is called by applications to stop RSSI mode
-     * This api shall be called only after Nfcservice is enabled.
+     * This api shall be called only after NfcService is enabled.
      * @return whether  the update of configuration is
      *          success or not with reason.
      *          0x01  - NFC_IS_OFF,
@@ -697,7 +697,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
 
    /**
      * This api is called by applications to check whether RSSI is enabled or not
-     * This api shall be called only after Nfcservice is enabled.
+     * This api shall be called only after NfcService is enabled.
      * @return whether  the feature is enabled(true) disabled (false)
      *          success or not.
      *          Enabled  - true
@@ -739,7 +739,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
      *
      * @deprecated This api is called by application to enable various debug notigications
      * of NFCC.
-     * This api shall be called only if Nfcservice is enabled.
+     * This api shall be called only if NfcService is enabled.
      * @return whether  the update of configuration is
      *          success or not.
      *          0x00 - success
@@ -759,7 +759,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
     /**
      * This api is called by application to enable various debug notigications
      * of NFCC.
-     * This api shall be called only if Nfcservice is enabled.
+     * This api shall be called only if NfcService is enabled.
      * @param fieldValue : bytes to be set for lxdebug config.
      * @return whether  the update of configuration is
      *          success or not.
@@ -772,7 +772,7 @@ public class LxDebugEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks 
      */
     public @FdErrorCode int enableDebugNtf(byte[] fieldValue) {
         NxpNfcLogger.d(TAG, "Entry enableDebugNtf");
-        int status = SERVICE_UNAVIABLE;
+        int status = SERVICE_UNAVAILABLE;
         if (mNfcOperations == null) {
             NxpNfcLogger.e(TAG, "NFC Operations is null");
             return status;

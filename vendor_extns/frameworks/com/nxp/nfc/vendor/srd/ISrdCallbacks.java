@@ -22,7 +22,7 @@ package com.nxp.nfc.vendor.srd;
 
 /**
 * @interface ILxDebugDataCallbacks
-* @brief Interface to perform LxDebug releated callbacks to apps.
+* @brief Interface to perform LxDebug related callbacks to apps.
 */
 public interface ISrdCallbacks {
     /**

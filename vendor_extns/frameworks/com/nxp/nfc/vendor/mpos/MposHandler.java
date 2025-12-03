@@ -37,7 +37,7 @@ import java.util.concurrent.Executors;
 
 /**
  * This class is responsible to start/stop the mPos reader and
- * handles the mPos action notfications
+ * handles the mPos action notifications
  */
 public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
 

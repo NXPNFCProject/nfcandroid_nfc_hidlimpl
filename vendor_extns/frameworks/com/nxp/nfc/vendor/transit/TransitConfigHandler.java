@@ -163,7 +163,7 @@ public class TransitConfigHandler implements INxpOEMCallbacks {
         return nciCmdStatus;
     }
 
-    private boolean handlRfRegisterConfig(String configs) throws IOException {
+    private boolean handleRfRegisterConfig(String configs) throws IOException {
         Boolean cmdStatus = false;
 
         if (configs == null) {
@@ -191,13 +191,13 @@ public class TransitConfigHandler implements INxpOEMCallbacks {
                 cmdStatus = sendCmd(payloadBytes);
             }
             if(!cmdStatus) {
-                NxpNfcLogger.e(TAG, "Error in handlRfRegisterConfig, clearing stored config...");
+                NxpNfcLogger.e(TAG, "Error in handleRfRegisterConfig, clearing stored config...");
                 clearConfig(subGidOid);
             }
         } catch (Exception e) {
-            NxpNfcLogger.e(TAG, "Exception in handlRfRegisterConfig");
+            NxpNfcLogger.e(TAG, "Exception in handleRfRegisterConfig");
             clearConfig(subGidOid);
-            throw new IOException("Error in handlRfRegisterConfig", e);
+            throw new IOException("Error in handleRfRegisterConfig", e);
         } finally {
             mNfcOperations.enableDiscovery();
         }
@@ -264,7 +264,7 @@ public class TransitConfigHandler implements INxpOEMCallbacks {
                     break;
 
                 case TRANSIT_CONFIG_REQUIRE_RF_RESET:
-                    updateStatus = handlRfRegisterConfig(configs);
+                    updateStatus = handleRfRegisterConfig(configs);
                     break;
 
                 default:

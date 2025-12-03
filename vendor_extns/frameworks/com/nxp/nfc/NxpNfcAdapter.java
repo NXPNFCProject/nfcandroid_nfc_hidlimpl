@@ -54,10 +54,10 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     private static NxpNfcAdapter sNxpNfcAdapter;
 
     /**
-     * @brief Reflection variables for loading {@link NxpNfcExtentions}
+     * @brief Reflection variables for loading {@link NxpNfcExtensions}
      */
-    private Class mNxpNfcExtentionsClass;
-    private Object mNxpNfcExtentionsObj;
+    private Class mNxpNfcExtensionsClass;
+    private Object mNxpNfcExtensionsObj;
 
     private NfcAdapter mNfcAdapter;
     private AutoCardHandler mAutoCardHandler;
@@ -126,21 +126,21 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     }
 
     /**
-     * @brief Creates the Instance of {@link NxpNfcExtentions}
+     * @brief Creates the Instance of {@link NxpNfcExtensions}
      * @param nfcAdapter
      * @return None
      */
     private void getNxpNfcExtnAdapter() {
       try {
-        mNxpNfcExtentionsClass = Class.forName("com.nxp.nfc.NxpNfcExtentions");
-        logExtentionsInterface();
-        Constructor<?> nxpNfcExtentionsCon =
-            mNxpNfcExtentionsClass.getDeclaredConstructor(NfcAdapter.class);
-        mNxpNfcExtentionsObj = nxpNfcExtentionsCon.newInstance(mNfcAdapter);
+        mNxpNfcExtensionsClass = Class.forName("com.nxp.nfc.NxpNfcExtensions");
+        logExtensionsInterface();
+        Constructor<?> nxpNfcExtensionsCon =
+            mNxpNfcExtensionsClass.getDeclaredConstructor(NfcAdapter.class);
+        mNxpNfcExtensionsObj = nxpNfcExtensionsCon.newInstance(mNfcAdapter);
       } catch (ClassNotFoundException | InstantiationException |
                IllegalAccessException | IllegalArgumentException |
                InvocationTargetException | NoSuchMethodException e) {
-        NxpNfcLogger.e(TAG, "Error in Instantiating NxpNfcExtentions! Msg: " +
+        NxpNfcLogger.e(TAG, "Error in Instantiating NxpNfcExtensions! Msg: " +
                                 e.getLocalizedMessage());
       }
     }
@@ -149,8 +149,8 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
      * @brief method to print {@link INxpNfcAdapter} declared methods
      * @return None
      */
-    private void logExtentionsInterface() {
-      Method[] methods = mNxpNfcExtentionsClass.getDeclaredMethods();
+    private void logExtensionsInterface() {
+      Method[] methods = mNxpNfcExtensionsClass.getDeclaredMethods();
       NxpNfcLogger.d(TAG, "Total methods:" + methods.length);
       for (Method method : methods) {
         NxpNfcLogger.d(TAG, "Method: " + method.getName());
@@ -162,9 +162,9 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
      * @return {@link INxpNfcExtras} instance
      */
     @Override
-    public INxpNfcExtentions getNxpNfcExtentionsInterface() {
-      if (mNxpNfcExtentionsObj != null)
-        return ((INxpNfcExtentions) mNxpNfcExtentionsObj);
+    public INxpNfcExtensions getNxpNfcExtensionsInterface() {
+      if (mNxpNfcExtensionsObj != null)
+        return ((INxpNfcExtensions) mNxpNfcExtensionsObj);
       return null;
     }
 
@@ -408,7 +408,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
 
     /**
      * This API starts card emulation mode. Starts RF Discovery with Default
-     * POLL configurations and sets the Listen tech paramaters.
+     * POLL configurations and sets the Listen tech parameters.
      * @param listenTech Flags indicating listen technologies.
      * @return status     :-0x00 :EFDSTATUS_SUCCESS
      *                      0x01 :EFDSTATUS_FAILED
@@ -422,8 +422,8 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
 
     /**
      * This api is called by applications enable or disable field
-     * detect feauture.
-     * This api shall be called only Nfcservice is enabled.
+     * detect feature.
+     * This api shall be called only NfcService is enabled.
      * @param  mode to Enable(true) and Disable(false)
      * @return whether  the update of configuration is
      *          success or not with reason.
@@ -460,7 +460,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
      * Once RSSI is enabled, RSSI data notifications are broadcasted to registered
      * application when the device is in the reader field. Application can then
      * analyze this data and find best position for transaction.
-     * This api shall be called only after Nfcservice is enabled.
+     * This api shall be called only after NfcService is enabled.
      * @param  rssiNtfTimeIntervalInMillisec to set time interval between RSSI
      * notification in milliseconds. It is recommended that this value is
      * greater than 10 millisecs and multiple of 10.
@@ -483,7 +483,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
 
     /**
      * This api is called by applications to stop RSSI mode
-     * This api shall be called only after Nfcservice is enabled.
+     * This api shall be called only after NfcService is enabled.
      * @return whether  the update of configuration is
      *          success or not with reason.
      *          0x01  - NFC_IS_OFF,
@@ -517,7 +517,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     /**
      * @deprecated This api is called by application to enable various debug notigications
      * of NFCC.
-     * This api shall be called only if Nfcservice is enabled.
+     * This api shall be called only if NfcService is enabled.
      * @return whether  the update of configuration is
      *          success or not.
      *          0x00 - success
@@ -533,7 +533,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     /**
      * This api is called by application to enable various debug notigications
      * of NFCC.
-     * This api shall be called only if Nfcservice is enabled.
+     * This api shall be called only if NfcService is enabled.
      * @param fieldValue : bytes to be set for lxdebug config.
      * @return whether  the update of configuration is
      *          success or not.
@@ -568,7 +568,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     /**
      * This api is called by applications to Activate Secure Element Interface.
      * <p>Requires {@link android.Manifest.permission#NFC} permission.<ul>
-     * <li>This api shall be called only Nfcservice is enabled.
+     * <li>This api shall be called only NfcService is enabled.
      * </ul>
      * @return whether  the update of configuration is
      *          success or not.
@@ -588,7 +588,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     /**
      * This api is called by applications to Deactivate Secure Element Interface.
      * <p>Requires {@link android.Manifest.permission#NFC} permission.<ul>
-     * <li>This api shall be called only Nfcservice is enabled.
+     * <li>This api shall be called only NfcService is enabled.
      * </ul>
      * @return whether  the update of configuration is
      *          success or not.
@@ -607,7 +607,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     /**
      * This API is called by application to stop RF discovery
      * <p>Requires {@link android.Manifest.permission#NFC} permission.
-     * <li>This api shall be called only Nfcservice is enabled.
+     * <li>This api shall be called only NfcService is enabled.
      * </ul>
      * @param  mode
      *         LOW_POWER
@@ -628,7 +628,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     /**
      * This API is called by application to start RF discovery
      * <p>Requires {@link android.Manifest.permission#NFC} permission.
-     * <li>This api shall be called only Nfcservice is enabled.
+     * <li>This api shall be called only NfcService is enabled.
      * </ul>
      * @return None
      * @throws IOException If a failure occurred during start discovery

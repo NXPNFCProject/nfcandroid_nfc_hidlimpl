@@ -59,7 +59,7 @@ public interface INxpNfcNTag {
 
   /**
    * This is provides the info whether NTag mode is enabled or not
-   * <li>This api shall return false if Nfcservice is disabled.
+   * <li>This api shall return false if NfcService is disabled.
    * </ul>
    * @return TRUE if NTag mode is enabled
    *         FALSE if NTag mode is disabled
@@ -69,7 +69,7 @@ public interface INxpNfcNTag {
 
   /**
    * This is the API to be called to enable or disable NTag RF mode.
-   * <li>This api shall be called only when Nfcservice is enabled.
+   * <li>This api shall be called only when NfcService is enabled.
    * <li>This api shall be called only when there are no NFC transactions
    * ongoing.
    * <li> Tag DISCOVERED intent will be sent to application once read complete.

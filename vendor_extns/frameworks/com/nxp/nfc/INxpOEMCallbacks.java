@@ -34,14 +34,14 @@ public interface INxpOEMCallbacks {
     default void onTagConnected(boolean connected) {}
 
     /**
-     * callback when nfc state is upadated
+     * callback when nfc state is updated
      *@param state : nfc state
      */
     default void onStateUpdated(int state) {}
 
     /**
      * callback before apply routing command
-     * to be skipped or contintue
+     * to be skipped or continue
      * @return : true if oem wants to skip apply routing
      *           false if oem wants to continue apply routing
      */
@@ -117,7 +117,7 @@ public interface INxpOEMCallbacks {
 
     /**
      * callback before routing option change
-     * to be skipped or contintue
+     * to be skipped or continue
      * @return : true if oem wants to skip routing change
      *           false if oem wants to continue routing change
      */
@@ -148,7 +148,7 @@ public interface INxpOEMCallbacks {
     }
 
     /**
-     * callback when RF field detacted
+     * callback when RF field detected
      * @param isActive : true when rf activated
      *                             false when deactivated
      */

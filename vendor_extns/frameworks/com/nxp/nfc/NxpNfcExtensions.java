@@ -19,7 +19,7 @@ package com.nxp.nfc;
 import android.nfc.NfcAdapter;
 import android.os.RemoteException;
 import android.util.Log;
-import com.nxp.nfc.INxpNfcExtentions;
+import com.nxp.nfc.INxpNfcExtensions;
 import com.nxp.nfc.NxpNfcLogger;
 import com.nxp.nfc.vendor.dualAntenna.INxpNfcDualAntenna;
 import com.nxp.nfc.vendor.ntag.INxpNfcNTag;
@@ -28,8 +28,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public class NxpNfcExtentions implements INxpNfcExtentions {
-  private static final String TAG = "NxpNfcExtentions";
+public class NxpNfcExtensions implements INxpNfcExtensions {
+  private static final String TAG = "NxpNfcExtensions";
 
   /**
    * @brief Reflection variables for loading {@link NxpNfcNTag}
@@ -43,12 +43,12 @@ public class NxpNfcExtentions implements INxpNfcExtentions {
 
   /**
    * @brief private constructor to create the instance of {@link
-   * NxpNfcExtentions}
+   * NxpNfcExtensions}
    * @param nfcAdapter
    */
-  public NxpNfcExtentions(NfcAdapter nfcAdapter) { mNfcAdapter = nfcAdapter; }
+  public NxpNfcExtensions(NfcAdapter nfcAdapter) { mNfcAdapter = nfcAdapter; }
   /**
-   * @brief Creates the Instance of {@link NxpNfcExtentions}
+   * @brief Creates the Instance of {@link NxpNfcExtensions}
    * @param None
    * @return None
    */
@@ -68,13 +68,13 @@ public class NxpNfcExtentions implements INxpNfcExtentions {
     } catch (ClassNotFoundException | InstantiationException |
              IllegalAccessException | IllegalArgumentException |
              InvocationTargetException | NoSuchMethodException e) {
-      NxpNfcLogger.e(TAG, "Error in Instantiating NxpNfcExtentions! Msg: " +
+      NxpNfcLogger.e(TAG, "Error in Instantiating NxpNfcExtensions! Msg: " +
                               e.getLocalizedMessage());
     }
     return null;
   }
   /**
-   * @brief Creates the Instance of {@link NxpNfcExtentions}
+   * @brief Creates the Instance of {@link NxpNfcExtensions}
    * @param None
    * @return None
    */
@@ -95,7 +95,7 @@ public class NxpNfcExtentions implements INxpNfcExtentions {
     } catch (ClassNotFoundException | InstantiationException |
              IllegalAccessException | IllegalArgumentException |
              InvocationTargetException | NoSuchMethodException e) {
-      NxpNfcLogger.e(TAG, "Error in Instantiating NxpNfcExtentions! Msg: " +
+      NxpNfcLogger.e(TAG, "Error in Instantiating NxpNfcExtensions! Msg: " +
                               e.getLocalizedMessage());
     }
     return null;

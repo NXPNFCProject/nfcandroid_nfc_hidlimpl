@@ -55,7 +55,7 @@ public interface INxpNfcDualAntenna {
 
   /**
    * This is the API to be called to check Dual Antenna feature is supported or
-   * not. <li>This api shall be called only when Nfcservice is enabled. <li>This
+   * not. <li>This api shall be called only when NfcService is enabled. <li>This
    * api shall be called only when there are no NFC transactions ongoing.
    * </ul>
    * @throws IOException If a failure occurred
@@ -63,7 +63,7 @@ public interface INxpNfcDualAntenna {
   public boolean isDualAnetannaSupported() throws IOException;
   /**
    * This is the API to be called to configure the antenna's.
-   * <li>This api shall be called only when Nfcservice is enabled.
+   * <li>This api shall be called only when NfcService is enabled.
    * <li>This api shall be called only when there are no NFC transactions
    * ongoing.
    * </ul>
@@ -80,7 +80,7 @@ public interface INxpNfcDualAntenna {
 
   /**
    * This is the API to be called to enable reader mode on either antenna's.
-   * <li>This api shall be called only when Nfcservice is enabled.
+   * <li>This api shall be called only when NfcService is enabled.
    * <li>This api shall be called only when there are no NFC transactions
    * ongoing.
    * </ul>
@@ -97,7 +97,7 @@ public interface INxpNfcDualAntenna {
 
   /**
    * This is the API to be called to get the discovery technology on both
-   * antennas <li>This api shall be called only when Nfcservice is enabled.
+   * antennas <li>This api shall be called only when NfcService is enabled.
    * <li>This api shall be called only when there are no NFC transactions
    * ongoing.
    * </ul>
@@ -108,7 +108,7 @@ public interface INxpNfcDualAntenna {
 
   /**
    * This is the API to be called to get the Polling Mode on both antennas
-   * <li>This api shall be called only when Nfcservice is enabled. <li>This
+   * <li>This api shall be called only when NfcService is enabled. <li>This
    * api shall be called only when there are no NFC transactions ongoing.
    * </ul>
    * @throws IOException If a failure occurred

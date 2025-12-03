@@ -22,7 +22,7 @@ package com.nxp.nfc.vendor.lxdebug;
 
 /**
  * @interface ILxDebugDataCallbacks
- * @brief Interface to perform LxDebug releated callbacks to apps.
+ * @brief Interface to perform LxDebug related callbacks to apps.
  *
  */
 public interface ILxDebugCallbacks {
@@ -33,7 +33,7 @@ public interface ILxDebugCallbacks {
 
     /**
      * This callback triggers on receiving the LX Debug data.
-     * @param lxDebugData : LX Dbug data received from NFCC
+     * @param lxDebugData : LX Debug data received from NFCC
      */
     void onLxDebugDataReceived(byte[] lxDebugData);
 

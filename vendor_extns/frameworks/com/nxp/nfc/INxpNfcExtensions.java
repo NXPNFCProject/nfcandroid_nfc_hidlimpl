@@ -17,26 +17,26 @@
 package com.nxp.nfc;
 
 import android.nfc.NfcAdapter;
-import com.nxp.nfc.NxpNfcExtentions;
+import com.nxp.nfc.NxpNfcExtensions;
 import com.nxp.nfc.vendor.dualAntenna.INxpNfcDualAntenna;
 import com.nxp.nfc.vendor.ntag.INxpNfcNTag;
 
 /**
- * @class INxpNfcExtentions
+ * @class INxpNfcExtensions
  * @brief Interface to perform the NFC Extension functionality.
  *
  * @hide
  */
-public interface INxpNfcExtentions {
+public interface INxpNfcExtensions {
   /**
-   * @brief Creates the Instance of {@link NxpNfcExtentions}
+   * @brief Creates the Instance of {@link NxpNfcExtensions}
    * @param nfcAdapter
    * @return None
    */
   public INxpNfcNTag getNxpNfcNTagInterface();
 
   /**
-   * @brief Creates the Instance of {@link NxpNfcExtentions}
+   * @brief Creates the Instance of {@link NxpNfcExtensions}
    * @param nfcAdapter
    * @return None
    */
