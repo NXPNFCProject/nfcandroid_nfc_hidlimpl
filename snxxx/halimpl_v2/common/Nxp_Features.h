@@ -351,16 +351,12 @@ extern tNfc_featureList nfcFL;
         nfcFL.nfccCap.OBSERVE_MODE.val = OBSERVE_MODE_WITHOUT_RF_DEACTIVATE;   \
       }                                                                        \
     }                                                                          \
-    uint8_t max_exit_frames = 0x00;                                            \
     uint8_t no_of_exit_frames_supported = 0x00;                                \
     if (IS_CHIP_TYPE_GE(sn100u) &&                                             \
-        GetNxpNumValue(NAME_NXP_MAX_EXIT_FRAMES_SUPPORTED, &max_exit_frames,   \
-                       sizeof(max_exit_frames)) &&                             \
         GetNxpNumValue(NAME_NXP_NUMBER_OF_EXIT_FRAMES_SUPPORTED,               \
                        &no_of_exit_frames_supported,                           \
                        sizeof(no_of_exit_frames_supported))) {                 \
-      if (no_of_exit_frames_supported > 0 &&                                   \
-          no_of_exit_frames_supported <= max_exit_frames) {                    \
+      if (no_of_exit_frames_supported > 0) {                                   \
         nfcFL.nfccCap.AUTOTRANSACT_PLF.val = 0x01;                             \
         nfcFL.nfccCap.NO_OF_EXIT_FRAMES_PLF.val = no_of_exit_frames_supported; \
       }                                                                        \
