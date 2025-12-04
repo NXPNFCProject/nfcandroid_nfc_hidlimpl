@@ -537,6 +537,10 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
                                                       uint16_t* p_len) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   bool is_abort_req = false;
+  char vendorName = 'N';
+  char result[15];
+  uint8_t rfFileVer[2] = {0x00};
+
   /* Parsing CORE_RESET_RSP and CORE_RESET_NTF to update NCI version.*/
   if (p_ntf == NULL || *p_len < 2) {
     return NFCSTATUS_FAILED;
@@ -593,6 +597,16 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
                   ((static_cast<uint32_t>(p_ntf[len - 1])) << 8U) | p_ntf[len];
       NXPLOG_NCIHAL_D("NxpNci> FW Version: %x.%x.%x", p_ntf[len - 2],
                       p_ntf[len - 1], p_ntf[len]);
+      long retlen = 0;
+      bool isfound = GetNxpByteArrayValue(NAME_NXP_RF_FILE_VERSION_INFO,
+             reinterpret_cast<char*>(rfFileVer), sizeof(rfFileVer), &retlen);
+      if ((!isfound) || (retlen != 0x02)) {
+        NXPLOG_NCIHAL_E("%s NXP_RF_FILE_VERSION_INFO not found. retlen %ld", __func__, retlen);
+      }
+      snprintf(result, sizeof(result), "%c%02X.%02X.%02X.%02X", vendorName,
+          p_ntf[len - 2], p_ntf[len - 1], p_ntf[len], rfFileVer[1]);
+      NXPLOG_NCIHAL_D( "%s nfc.fw.ver [ %s ]", __func__, result);
+      phNxpNciHal_setVendorProp("nfc.fw.ver", result);
     } else {
       if ((p_ntf[3] == CORE_RESET_TRIGGER_TYPE_WATCHDOG_RESET ||
            p_ntf[3] == CORE_RESET_TRIGGER_TYPE_FW_ASSERT) ||
