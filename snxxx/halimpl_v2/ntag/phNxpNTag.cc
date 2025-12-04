@@ -496,7 +496,7 @@ NFCSTATUS NxpNTag::handleNTagNciRsp(uint8_t* pData, uint16_t dataLen) {
       handleNTagPresenceCheckRsp();
       break;
     default :
-      NXPLOG_NCIHAL_E("unexpected msg type recieved");
+      NXPLOG_NCIHAL_E("unexpected msg type received");
       break;
   }
   phNxpNciHal_client_data_callback(dataLen, pData);

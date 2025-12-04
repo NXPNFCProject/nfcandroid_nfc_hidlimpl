@@ -281,11 +281,11 @@ int handleGetCapability(uint16_t data_len, const uint8_t* p_data);
 
 /*******************************************************************************
  *
- * Function         handleReaderModeAnnoationCommand()
+ * Function         handleReaderModeAnnotationCommand()
  *
  * Description      Handles reader mode annotation command processing
  *
  * Returns          It returns number of bytes received.
  *
  ******************************************************************************/
-int handleReaderModeAnnoationCommand(uint16_t data_len, const uint8_t* p_data);
+int handleReaderModeAnnotationCommand(uint16_t data_len, const uint8_t* p_data);

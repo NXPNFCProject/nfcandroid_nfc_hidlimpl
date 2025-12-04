@@ -1918,7 +1918,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
   if (isfound && retlen > 0) {
     // Convert annotation data to broadcast poll command format
     vector<uint8_t> convertedCommand =
-        covertAnnotatonToBrodcastPollCommand(retlen, buffer);
+        covertAnnotationToBrodcastPollCommand(retlen, buffer);
 
     const NFCSTATUS broadcastPollCmdStatus = phNxpNciHal_send_ext_cmd(
         convertedCommand.size(), convertedCommand.data(), &rsp_len, rsp);

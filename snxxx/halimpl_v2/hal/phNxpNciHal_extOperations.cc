@@ -163,7 +163,7 @@ static int8_t get_system_property_se_type(uint8_t se_type) {
       len = property_get("nfc.product.support.uicc2", valueStr, "");
       break;
     default :
-      NXPLOG_NCIHAL_E("unexpected se_type recieved");
+      NXPLOG_NCIHAL_E("unexpected se_type received");
       break;
   }
   if (strlen(valueStr) == 0 || len <= 0) {
@@ -226,7 +226,7 @@ void phNxpNciHal_read_and_update_se_state() {
         NXPLOG_NCIHAL_D("Get property : SUPPORT_UICC2 %d", val);
         break;
       default :
-        NXPLOG_NCIHAL_E("unexpected se_type recieved");
+        NXPLOG_NCIHAL_E("unexpected se_type received");
         break;
     }
   }
@@ -281,7 +281,7 @@ void phNxpNciHal_read_and_update_se_state() {
         }
         break;
       default :
-        NXPLOG_NCIHAL_E("unexpected se_type recieved");
+        NXPLOG_NCIHAL_E("unexpected se_type received");
         break;
     }
   }
@@ -915,19 +915,19 @@ bool phNxpNciHal_isVndSpecificAndroidCmd(uint16_t data_len,
 
 /*******************************************************************************
  *
- * Function         handleReaderModeAnnoationCommand()
+ * Function         handleReaderModeAnnotationCommand()
  *
  * Description      Handles reader mode annotation command processing
  *
  * Returns          It returns number of bytes received.
  *
  ******************************************************************************/
-int handleReaderModeAnnoationCommand(uint16_t data_len, const uint8_t* p_data) {
+int handleReaderModeAnnotationCommand(uint16_t data_len, const uint8_t* p_data) {
   // Validate input parameters
   if (p_data == nullptr) {
     // Cannot send callback response if p_data is null since we need OID and
     // feature indices
-    NXPLOG_NCIHAL_E("handleReaderModeAnnoationCommand: p_data is null");
+    NXPLOG_NCIHAL_E("handleReaderModeAnnotationCommand: p_data is null");
     return 0;
   }
 
@@ -940,7 +940,7 @@ int handleReaderModeAnnoationCommand(uint16_t data_len, const uint8_t* p_data) {
   }
 
   std::vector<uint8_t> convertedCommand =
-      covertAnnotatonToBrodcastPollCommand(data_len, p_data);
+      covertAnnotationToBrodcastPollCommand(data_len, p_data);
 
   std::vector<uint8_t> response;
 
@@ -1013,8 +1013,8 @@ int phNxpNciHal_hndlVndSpecificAndroidCmd(uint16_t data_len,
     return handleGetCapability(data_len, p_data);
   } else if (data_len >= 4 && p_data[NCI_MSG_INDEX_FOR_FEATURE] ==
                                   NCI_ANDROID_READER_ANNOTATION) {
-    // 2F 0C 0xXX 09 0xXX ... => Reader mode annoation command
-    return handleReaderModeAnnoationCommand(data_len, p_data);
+    // 2F 0C 0xXX 09 0xXX ... => Reader mode Annotation command
+    return handleReaderModeAnnotationCommand(data_len, p_data);
   } else {
     return phNxpNciHal_write_internal(data_len, p_data);
   }

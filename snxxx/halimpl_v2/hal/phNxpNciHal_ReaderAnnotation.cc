@@ -60,7 +60,7 @@ using namespace std;
  * @return vector<uint8_t> Formatted broadcast poll command data, empty if input
  * is invalid
  */
-vector<uint8_t> covertAnnotatonToBrodcastPollCommand(uint16_t data_len,
+vector<uint8_t> covertAnnotationToBrodcastPollCommand(uint16_t data_len,
                                                      const uint8_t* p_data) {
   vector<uint8_t> result;
   if (data_len < 5 || p_data == nullptr) {

@@ -17,7 +17,7 @@
 
 #include <vector>
 
-std::vector<uint8_t> covertAnnotatonToBrodcastPollCommand(
+std::vector<uint8_t> covertAnnotationToBrodcastPollCommand(
     uint16_t data_len, const uint8_t* p_data);
 
 uint8_t parseBroadcastPollCommandResponse(uint16_t rsp_len,

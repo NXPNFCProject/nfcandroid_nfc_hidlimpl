@@ -228,7 +228,7 @@ void phNxpNciHal_ReaderThread::Run() {
         break;
       }
       default : {
-        NXPLOG_NCIHAL_E("unexpected msg type recieved");
+        NXPLOG_NCIHAL_E("unexpected msg type received");
         break;
       }
     }

@@ -505,7 +505,7 @@ void NxpMfcReader::MfcNotifyOnAckReceived(uint8_t* buff) {
 *******************************************************************************/
 NFCSTATUS NxpMfcReader::MfcWaitForAck() {
   NFCSTATUS status = NFCSTATUS_FAILED;
-  const int sem_timedout = 2; 
+  const int sem_timedout = 2;
   int s;
   struct timespec ts;
   isAck = false;
