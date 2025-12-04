@@ -24,6 +24,7 @@ package com.nxp.nfc;
 public interface NxpNfcConstants {
 
     int SEND_RAW_WAIT_TIME_OUT_VAL   = 4000;
+    int CALLBACK_TIME_OUT_VAL        = 200;
 
     int RF_PROTOCOL_ERR_CODE         = 0xB1;
     int TIMEOUT_ERR_CODE             = 0xB2;

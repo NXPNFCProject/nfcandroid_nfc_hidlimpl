@@ -80,6 +80,11 @@ public class NfcOperations {
      * @brief wait latch for enable/disable discovery
      */
     private CountDownLatch mDisCountDownLatch;
+
+    /**
+     * @brief wait latch to receive callback data
+     */
+    private CountDownLatch mCallbackCountDownLatch;
     /**
      * @brief wait latch for {@link #setControllerAlwaysOn(boolean)}
      */
@@ -267,8 +272,17 @@ public class NfcOperations {
     public void registerNxpOemCallback(INxpOEMCallbacks nxpOEMCallback) {
         synchronized (NfcOperations.this) {
             if (mNxpOemCallbacks == null) {
+                mCallbackCountDownLatch = new CountDownLatch(1);
                 mNfcOemExtension.registerCallback(CALLBACK_EXECUTOR,
                                                     mOemExtensionCallback);
+                try {
+                    if(mCallbackCountDownLatch != null) {
+                        mCallbackCountDownLatch.await(NxpNfcConstants.CALLBACK_TIME_OUT_VAL,
+                                                    TimeUnit.MILLISECONDS);
+                    }
+                } catch (InterruptedException e) {
+                    NxpNfcLogger.e(TAG, "Error in setControllerAlwaysOn");
+                }
             }
             mNxpOemCallbacks = nxpOEMCallback;
         }
@@ -318,6 +332,12 @@ public class NfcOperations {
         public void onTagConnected(boolean connected) {
             mIsTagConnected = connected;
             NxpNfcLogger.d(TAG, "onTagConnected: " + connected);
+            if(mCallbackCountDownLatch != null) {
+                // Since onTagConnected() is the final callback from updateNfcState() in NfcService,
+                // release the countdown latch in this callback.
+                mCallbackCountDownLatch.countDown();
+                mCallbackCountDownLatch = null;
+            }
         }
 
         @Override
