@@ -258,7 +258,7 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
 
     if (enable == false) {
       synchronized (lock) {
-        /* When card activated. we should not allow to stop mPOS untill card
+        /* When card activated. we should not allow to stop mPOS until card
          *  deactivated notification arrived.
          */
         while (isCardActivated) {

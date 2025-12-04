@@ -462,17 +462,17 @@ public interface INxpNfcAdapter {
    */
   int enableDebugNtf(byte[] fieldValue);
   /**
-   * This API registers the callback to get SRD Timout Events.
+   * This API registers the callback to get SRD Timeout Events.
    * @param callbacks : callback object to be register.
   /**
-   * This API registers the callback to get SRD Timout Events.
+   * This API registers the callback to get SRD Timeout Events.
    * @param callbacks : callback object to be register.
    */
   void registerSrdCallbacks(ISrdCallbacks callbacks);
 
   /**
    * This API unregisters the Application callbacks to be called
-   * for SRD Timout notifications.
+   * for SRD Timeout notifications.
    */
   void unregisterSrdCallbacks();
   public static final int SRD_STATUS_SUCCESS = 0;
