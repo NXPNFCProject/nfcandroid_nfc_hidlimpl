@@ -1317,8 +1317,8 @@ retryget:
         }
       } else if (mEEPROM_info->update_mode == BYTEWISE) {
         if (memcmp(set_cfg_eeprom + setCfgStartIndex + memIndex,
-                   mEEPROM_info->buffer, mEEPROM_info->bufflen)) {
-          update_req = true;
+        	mEEPROM_info->buffer, mEEPROM_info->bufflen) != 0) {  
+	update_req = true;
           memcpy(set_cfg_eeprom + setCfgStartIndex + memIndex,
                  mEEPROM_info->buffer, mEEPROM_info->bufflen);
         }
@@ -1349,7 +1349,6 @@ retryget:
     free(base_addr);
     base_addr = NULL;
   }
-  retry_cnt = 0;
   return status;
 }
 

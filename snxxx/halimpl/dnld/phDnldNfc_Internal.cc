@@ -209,7 +209,6 @@ static void phDnldNfc_ProcessSeqState(void* pContext,
 
   if (NULL == pDlCtxt) {
     NXPLOG_FWDNLD_E("Invalid Input Parameter!!");
-    wStatus = PHNFCSTVAL(CID_NFC_DNLD, NFCSTATUS_INVALID_PARAMETER);
   } else {
     switch (pDlCtxt->tCurrState) {
       case phDnldNfc_StateInit: {
@@ -351,13 +350,11 @@ static void phDnldNfc_ProcessRWSeqState(void* pContext,
                                         phTmlNfc_TransactInfo_t* pInfo) {
   NfcHalAutoThreadMutex a(sProcessRwSeqStateLock);
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
-  NFCSTATUS wIntStatus = wStatus;
   uint32_t TimerId;
   pphDnldNfc_DlContext_t pDlCtxt = (pphDnldNfc_DlContext_t)pContext;
 
   if (NULL == pDlCtxt) {
     NXPLOG_FWDNLD_E("Invalid Input Parameter!!");
-    wStatus = PHNFCSTVAL(CID_NFC_DNLD, NFCSTATUS_INVALID_PARAMETER);
   } else {
     switch (pDlCtxt->tCurrState) {
       case phDnldNfc_StateInit: {
@@ -440,7 +437,8 @@ static void phDnldNfc_ProcessRWSeqState(void* pContext,
       }
         [[fallthrough]];
       case phDnldNfc_StateResponse: {
-        if (NFCSTATUS_RF_TIMEOUT != (pDlCtxt->TimerInfo.wTimerExpStatus)) {
+        NFCSTATUS wIntStatus;
+	if (NFCSTATUS_RF_TIMEOUT != (pDlCtxt->TimerInfo.wTimerExpStatus)) {
           /* Process response */
           wStatus = phDnldNfc_ProcessFrame(pContext, pInfo);
 
@@ -598,7 +596,6 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
     }
 
     if (NFCSTATUS_SUCCESS == wStatus) {
-      wFrameLen = 0;
       wFrameLen = (pDlContext->tCmdRspFrameInfo.dwSendlength);
       if (wFrameLen > pDlContext->nxp_i2c_fragment_len) {
         NXPLOG_FWDNLD_E("wFrameLen (%x) exceeds the limit %x", wFrameLen,
@@ -877,7 +874,6 @@ static NFCSTATUS phDnldNfc_ProcessFrame(void* pContext,
         wCrcVal = phDnldNfc_CalcCrc16(
             (pInfo->pBuff), ((pInfo->wLength) - PHDNLDNFC_FRAME_CRC_LEN));
 
-        wRecvdCrc = 0;
         wRecvdCrc = (((uint16_t)(pInfo->pBuff[(pInfo->wLength) - 2]) << 8U) |
                      (pInfo->pBuff[(pInfo->wLength) - 1]));
 
