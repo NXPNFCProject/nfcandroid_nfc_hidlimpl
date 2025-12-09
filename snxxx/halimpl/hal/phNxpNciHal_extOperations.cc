@@ -933,7 +933,6 @@ bool phNxpNciHal_isObserveModeSupported() {
   }
   return false;
 }
-
 /*******************************************************************************
 **
 ** Function         phNxpNciHal_handleAutocard()
@@ -1001,7 +1000,6 @@ int phNxpNciHal_handleAutocard(uint16_t data_len, const uint8_t* p_data) {
 
   return ret;
 }
-
 /*******************************************************************************
  *
  * Function         handleGetCapability()

@@ -120,23 +120,23 @@ size_t readConfigFile(const char* fileName, uint8_t** p_data) {
     ALOGE("%s Failed to seek to end of file", __func__);
     return 0;
   }
-
+  
   const long file_size_long = ftell(fd);
   if (file_size_long < 0) {
     ALOGE("%s Invalid file size file_size = %ld", __func__, file_size_long);
     return 0;
   }
-
+  
   const size_t file_size = static_cast<size_t>(file_size_long);
   rewind(fd);
-
+  
   // Use smart pointer for automatic cleanup
   std::unique_ptr<uint8_t[]> buffer = std::make_unique<uint8_t[]>(file_size + 1);
   if (!buffer) {
     ALOGE("%s Failed to allocate buffer of size %zu", __func__, file_size + 1);
     return 0;
   }
-
+  
   size_t read = fread(buffer.get(), file_size, 1, fd);
   if (read == 1) {
     buffer[file_size] = '\n';
@@ -554,13 +554,13 @@ CNfcConfig& CNfcConfig::GetInstance() {
   // Double-checked locking pattern
   if (!is_initialized.load()) {
     std::lock_guard<std::mutex> lock(initialization_mutex);
-
+    
     // Check again after acquiring lock
     if (!is_initialized.load()) {
       if (theInstance == nullptr) {
         theInstance = new CNfcConfig();
       }
-
+      
       if (theInstance->size() == 0 && theInstance->mValidFile) {
         string strPath;
         if (alternative_config_path[0] != '\0') {
@@ -725,7 +725,7 @@ bool CNfcConfig::getValue(const char* name, unsigned short& rValue) const {
       rValue = static_cast<unsigned short>(numVal);
       return true;
     } else {
-      ALOGE("%s Parameter %s value %lu exceeds unsigned short range",
+      ALOGE("%s Parameter %s value %lu exceeds unsigned short range", 
             __func__, name, numVal);
       return false;
     }
@@ -820,7 +820,7 @@ void CNfcConfig::readNxpRFConfig(const char* fileName) const {
 *******************************************************************************/
 void CNfcConfig::clean() {
   std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
-
+  
   ALOGD("%s Cleaning up all configuration data", __func__);
   // Create a set to track unique objects and avoid double-deletion
   std::set<const CNfcParam*> unique_objects;
@@ -989,7 +989,7 @@ void CNfcConfig::moveFromList() {
 *******************************************************************************/
 void CNfcConfig::moveToList() {
   std::lock_guard<std::recursive_mutex> lock(m_config_mutex);
-
+  
   if (size() == 0) return;
   if (m_list.size() != 0) {
     for (list<const CNfcParam*>::iterator it = m_list.begin();
@@ -1053,7 +1053,7 @@ bool CNfcConfig::isModified(tNXP_CONF_FILE aType) {
   size_t read_count = fread(&stored_crc32, sizeof(uint32_t), 1, fd);
   if (read_count != 1) {
     ALOGE("%s File read failed for %s: read %zu items, errno=%d: %s",
-	  __func__, timestamp_path, read_count, errno, strerror(errno));
+          __func__, timestamp_path, read_count, errno, strerror(errno));
     return true;  // Assume modified if we can't read
   }
 
@@ -1096,7 +1096,7 @@ void CNfcConfig::resetModified(tNXP_CONF_FILE aType) {
 
   FILE* fd = fopen(timestamp_path, "w");
   if (fd == nullptr) {
-    ALOGE("%s Unable to open timestamp file %s for writing (errno=%d: %s)",
+    ALOGE("%s Unable to open timestamp file %s for writing (errno=%d: %s)", 
           __func__, timestamp_path, errno, strerror(errno));
     return;
   }
@@ -1109,18 +1109,18 @@ void CNfcConfig::resetModified(tNXP_CONF_FILE aType) {
 
   size_t write_count = fwrite(&current_crc32, sizeof(uint32_t), 1, fd);
   if (write_count != 1) {
-    ALOGE("%s Failed to write CRC32 to %s: wrote %zu items (errno=%d: %s)",
+    ALOGE("%s Failed to write CRC32 to %s: wrote %zu items (errno=%d: %s)", 
           __func__, timestamp_path, write_count, errno, strerror(errno));
     return;
   }
 
   if (fflush(fd) != 0) {
-    ALOGE("%s Failed to flush %s (errno=%d: %s)",
+    ALOGE("%s Failed to flush %s (errno=%d: %s)", 
           __func__, timestamp_path, errno, strerror(errno));
     return;
   }
   if (fsync(fileno(fd)) != 0) {
-    ALOGE("%s Failed to sync %s to disk (errno=%d: %s)",
+    ALOGE("%s Failed to sync %s to disk (errno=%d: %s)", 
           __func__, timestamp_path, errno, strerror(errno));
   }
 }
@@ -1231,7 +1231,7 @@ extern "C" int GetNxpStrValue(const char* name, char* pValue,
 **              FALSE[0]
 **
 *******************************************************************************/
-extern "C" int GetNxpByteArrayValue(const char* name, char* pValue,
+extern "C" int GetNxpByteArrayValue(const char* name, char* pValue, 
                                     long bufflen, long* len) {
 
   CNfcConfig& rConfig = CNfcConfig::GetInstance();
@@ -1342,7 +1342,7 @@ extern "C" void setNxpFwConfigPath() {
     fw_file_path = nfcFL._FW_LIB_PATH;
   }
   if (fw_file_path.length() >= sizeof(Fw_Lib_Path)) {
-    ALOGE("%s fw_file path too long: %zu >= %zu", __func__,
+    ALOGE("%s fw_file path too long: %zu >= %zu", __func__, 
           fw_file_path.length(), sizeof(Fw_Lib_Path));
     return;
   }
@@ -1393,10 +1393,10 @@ extern "C" int isNxpRFConfigModified() {
   int retRF = rConfig.isModified(CONF_FILE_NXP_RF) ? 1 : 0;
   int retTransit = rConfig.isModified(CONF_FILE_NXP_TRANSIT) ? 1 : 0;
   int ret = retRF | retTransit;
-  ALOGD("%s RF config modification: RF=%s, Transit=%s, Combined=%s",
-        __func__,
+  ALOGD("%s RF config modification: RF=%s, Transit=%s, Combined=%s", 
+        __func__, 
         retRF ? "MODIFIED" : "NOT MODIFIED",
-        retTransit ? "MODIFIED" : "NOT MODIFIED",
+        retTransit ? "MODIFIED" : "NOT MODIFIED", 
         ret ? "MODIFIED" : "NOT MODIFIED");
 
   return ret;

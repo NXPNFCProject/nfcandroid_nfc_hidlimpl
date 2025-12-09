@@ -438,7 +438,7 @@ static void phDnldNfc_ProcessRWSeqState(void* pContext,
         [[fallthrough]];
       case phDnldNfc_StateResponse: {
         NFCSTATUS wIntStatus;
-	if (NFCSTATUS_RF_TIMEOUT != (pDlCtxt->TimerInfo.wTimerExpStatus)) {
+        if (NFCSTATUS_RF_TIMEOUT != (pDlCtxt->TimerInfo.wTimerExpStatus)) {
           /* Process response */
           wStatus = phDnldNfc_ProcessFrame(pContext, pInfo);
 
