@@ -54,6 +54,13 @@
 #define NCI_STATUS_OK 0x00
 #define NCI_MODE_HEADER_LEN 3
 
+#define NCI_NFCEE_STS_PMUVCC_OFF 0x81
+#define NCI_NFCEE_STS_PROP_UNRECOVERABLE_ERROR 0x90
+#define NCI_NFCEE_STS_UNRECOVERABLE_ERROR 0x00
+#define NCI_ROUTE_ESE_ID 0xC0
+#define NCI_ROUTE_EUICC1_ID 0xC1
+#define NCI_ROUTE_EUICC2_ID 0xC2
+
 /******************* Global variables *****************************************/
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 extern phNxpNciProfile_Control_t nxpprofile_ctrl;
@@ -111,6 +118,8 @@ static bool mfc_mode = false;
 
 static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
                                                       uint16_t* p_len);
+static NFCSTATUS phNxpNciHal_ext_check_unrecoverable_errors(uint8_t* p_ntf,
+                                                            uint16_t* p_len);
 static void RemoveNfcDepIntfFromInitResp(uint8_t* coreInitResp,
                                          uint16_t* coreInitRespLen);
 
@@ -261,6 +270,11 @@ NFCSTATUS phNxpNciHal_reset_ext_buffer() {
 *******************************************************************************/
 NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
+
+  if (phNxpNciHal_ext_check_unrecoverable_errors(p_ntf, p_len) !=
+      NFCSTATUS_SUCCESS) {
+    return NFCSTATUS_SUCCESS;
+  }
 
 #if (NXP_SRD == TRUE)
   if (*p_len > 29 && p_ntf[0] == 0x01 && p_ntf[1] == 0x00 && p_ntf[5] == 0x81 &&
@@ -1765,4 +1779,31 @@ static bool phNxpNciHal_update_core_reset_ntf_prop() {
   }
   NXPLOG_NCIHAL_D("%s: Exit", __func__);
   return is_abort_req;
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_ext_check_unrecoverable_errors
+**
+** Description      Check for unrecoverable error/fatal commands and trigger
+**                  NFCEE unrecoverable error notification to upper layer.
+**
+** Returns          NFCSTATUS_FAILED if fatal error found
+**                  NFCSTATUS_SUCCESS otherwise
+**
+*******************************************************************************/
+static NFCSTATUS phNxpNciHal_ext_check_unrecoverable_errors(uint8_t* p_ntf,
+                                                            uint16_t* p_len) {
+  uint8_t reason_code = 0;
+  if (*p_len == 5 && p_ntf[0] == 0x62 && p_ntf[1] == 0x02 && p_ntf[2] == 0x02 &&
+      (p_ntf[3] == NCI_ROUTE_ESE_ID || p_ntf[3] == NCI_ROUTE_EUICC1_ID ||
+       p_ntf[3] == NCI_ROUTE_EUICC2_ID) &&
+      (p_ntf[4] == NCI_NFCEE_STS_PMUVCC_OFF ||
+       (p_ntf[4] & 0xF0) == NCI_NFCEE_STS_PROP_UNRECOVERABLE_ERROR)) {
+    NXPLOG_NCIHAL_E("NFCEE_STATUS_NTF: eSE Mailbox Reset");
+    p_ntf[4] = NCI_NFCEE_STS_UNRECOVERABLE_ERROR;
+    // Return FAILED to indicate the original packet should be dropped
+    return NFCSTATUS_FAILED;
+  }
+  return NFCSTATUS_SUCCESS;
 }
