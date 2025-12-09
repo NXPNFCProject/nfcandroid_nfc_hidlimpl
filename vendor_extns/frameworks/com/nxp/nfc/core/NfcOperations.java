@@ -32,6 +32,7 @@ import com.nxp.nfc.NxpNfcConstants;
 import com.nxp.nfc.NxpNfcLogger;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -116,6 +117,7 @@ public class NfcOperations {
      */
     private boolean mIsTagConnected = false;
 
+    Map<String, Boolean> mOemCallbackMap = new HashMap<>();
     /**
      * @brief private constructor to create singleton object
      * @param nfcAdapter
@@ -265,6 +267,33 @@ public class NfcOperations {
         }
     }
 
+    private void resetOemCallbackMap() {
+        mOemCallbackMap.clear();
+        mOemCallbackMap.put("onCardEmulationActivated", false);
+        mOemCallbackMap.put("onRfFieldDetected", false);
+        mOemCallbackMap.put("onRfDiscoveryStarted", false);
+        mOemCallbackMap.put("onEeListenActivated", false);
+        mOemCallbackMap.put("onTagConnected", false);
+    }
+
+    /**
+     * @brief Updating mOemCallbackMap once callback received and when all callbacks
+     *        received, countDown will reach to zero.
+     * @param oemCallback
+     */
+    private void updateOemCallbackMap(String oemCallback) {
+        if (mCallbackCountDownLatch != null && mOemCallbackMap.containsKey(oemCallback)) {
+            if (!mOemCallbackMap.get(oemCallback)) {
+                mOemCallbackMap.put(oemCallback, true);
+                mCallbackCountDownLatch.countDown();
+                if (mCallbackCountDownLatch.getCount() <= 0) {
+                    resetOemCallbackMap();
+                    mCallbackCountDownLatch = null;
+                }
+            }
+        }
+    }
+
     /**
      * @brief registers to the OEM callbacks through NXP extensions
      * @param nxpOEMCallback callback to be register
@@ -272,16 +301,20 @@ public class NfcOperations {
     public void registerNxpOemCallback(INxpOEMCallbacks nxpOEMCallback) {
         synchronized (NfcOperations.this) {
             if (mNxpOemCallbacks == null) {
-                mCallbackCountDownLatch = new CountDownLatch(1);
+                resetOemCallbackMap();
+                mCallbackCountDownLatch = new CountDownLatch(mOemCallbackMap.size());
                 mNfcOemExtension.registerCallback(CALLBACK_EXECUTOR,
                                                     mOemExtensionCallback);
                 try {
                     if(mCallbackCountDownLatch != null) {
-                        mCallbackCountDownLatch.await(NxpNfcConstants.CALLBACK_TIME_OUT_VAL,
+                        boolean callbackFlag  = mCallbackCountDownLatch.await(
+                                                    NxpNfcConstants.CALLBACK_TIME_OUT_VAL,
                                                     TimeUnit.MILLISECONDS);
+                        if (!callbackFlag)
+                            NxpNfcLogger.e(TAG, "All OEM callbacks are not received");
                     }
                 } catch (InterruptedException e) {
-                    NxpNfcLogger.e(TAG, "Error in setControllerAlwaysOn");
+                    NxpNfcLogger.e(TAG, "Error in registerCallback");
                 }
             }
             mNxpOemCallbacks = nxpOEMCallback;
@@ -332,12 +365,7 @@ public class NfcOperations {
         public void onTagConnected(boolean connected) {
             mIsTagConnected = connected;
             NxpNfcLogger.d(TAG, "onTagConnected: " + connected);
-            if(mCallbackCountDownLatch != null) {
-                // Since onTagConnected() is the final callback from updateNfcState() in NfcService,
-                // release the countdown latch in this callback.
-                mCallbackCountDownLatch.countDown();
-                mCallbackCountDownLatch = null;
-            }
+            if (mCallbackCountDownLatch != null) updateOemCallbackMap("onTagConnected");
         }
 
         @Override
@@ -424,6 +452,7 @@ public class NfcOperations {
         public void onCardEmulationActivated(boolean isActivated) {
             NfcOperations.this.mIsCardEmulationActivated = isActivated;
             NxpNfcLogger.d(TAG, "onCardEmulationActivated: " + isActivated);
+            if (mCallbackCountDownLatch != null) updateOemCallbackMap("onCardEmulationActivated");
         }
 
         @Override
@@ -433,6 +462,7 @@ public class NfcOperations {
             if (mNxpOemCallbacks != null) {
                 mNxpOemCallbacks.onRfFieldDetected(isActive);
             }
+            if (mCallbackCountDownLatch != null) updateOemCallbackMap("onRfFieldDetected");
         }
 
         @Override
@@ -440,12 +470,14 @@ public class NfcOperations {
             NxpNfcLogger.d(TAG, "onRfDiscoveryStarted: " + isDiscoveryStarted);
             NfcOperations.this.mIsDiscoveryStarted = isDiscoveryStarted;
             if (mDisCountDownLatch != null) mDisCountDownLatch.countDown();
+            if (mCallbackCountDownLatch != null) updateOemCallbackMap("onRfDiscoveryStarted");
         }
 
         @Override
         public void onEeListenActivated(boolean isActivated) {
             NfcOperations.this.mIsEeListenActivated = isActivated;
             NxpNfcLogger.d(TAG, "mIsEeListenActivated: " + isActivated);
+            if (mCallbackCountDownLatch != null) updateOemCallbackMap("onEeListenActivated");
         }
 
         @Override
