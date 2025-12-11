@@ -120,7 +120,7 @@ static void printPowerTrackerVersion() {
   validation |= (NXP_EN_SN330U << 18);
   validation |= (NXP_EN_PN557 << 11);
 
-  NXPLOG_NCIHAL_I("Power Tracker Version: NXP_AR_%02X_%05X_%02d.%02x.%02x_TC2",
+  NXPLOG_NCIHAL_I("Power Tracker Version: NXP_AR_%02X_%05X_%02d.%02x.%02x",
         NFC_NXP_MW_CUSTOMER_ID, validation, NFC_NXP_MW_ANDROID_VER,
         NFC_NXP_MW_VERSION_MAJ, NFC_NXP_MW_VERSION_MIN);
 }
