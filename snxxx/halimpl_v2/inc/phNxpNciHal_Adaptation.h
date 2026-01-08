@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020, 2022-2023 NXP
+ * Copyright (C) 2012-2020, 2022-2023, 2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_len = 0,
 int phNxpNciHal_pre_discover(void);
 int phNxpNciHal_close(bool);
 int phNxpNciHal_configDiscShutdown(void);
+void phNxpNciHal_configDiscIdle(void);
 int phNxpNciHal_control_granted(void);
 int phNxpNciHal_power_cycle(void);
 int phNxpNciHal_ioctl(long arg, void* p_data);

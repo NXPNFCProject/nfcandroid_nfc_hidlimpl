@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2022-2024 NXP
+ *  Copyright 2022-2024, 2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ void OnDeath(void* cookie) {
   if (Nfc::mCallback != nullptr &&
       !AIBinder_isAlive(Nfc::mCallback->asBinder().get())) {
     std::lock_guard<std::mutex> lk(syncNfcOpenClose);
+    phNxpNciHal_configDiscIdle();
     LOG(INFO) << __func__ << " Nfc service has died";
     Nfc* nfc = static_cast<Nfc*>(cookie);
     nfc->close(NfcCloseType::DISABLE);

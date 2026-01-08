@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 NXP
+ * Copyright 2012-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2367,6 +2367,33 @@ void phNxpNciHal_clean_resources() {
   phNxpNciHal_release_info();
   /* reset config cache */
   resetNxpConfig();
+}
+
+/******************************************************************************
+ * Function         phNxpNciHal_configDiscIdle
+ *
+ * Description      Enable to send RF idle on nfc service death recipent when
+ *                  power tracker feature is enabled.
+ *
+ * Returns          none.
+ *
+ ******************************************************************************/
+void phNxpNciHal_configDiscIdle(void) {
+  NFCSTATUS status;
+  unsigned long num = 0;
+  uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+  uint16_t rsp_len = 0;
+  uint8_t cmd_disable_disc[] = {0x21, 0x06, 0x01, 0x00};
+  if ((GetNxpNumValue(NAME_NXP_SYSTEM_POWER_TRACE_POLL_DURATION, &num,
+                      sizeof(num)))) {
+    if ((uint8_t)num > 0) {
+      status = phNxpNciHal_send_ext_cmd(sizeof(cmd_disable_disc),
+                                        cmd_disable_disc, &rsp_len, rsp);
+      if (status != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("%s: CMD_DISABLE_DISCOVERY: Failed", __func__);
+      }
+    }
+  }
 }
 
 /******************************************************************************
