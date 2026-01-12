@@ -20,7 +20,7 @@
  *
  *  The original Work has been changed by NXP.
  *
- *  Copyright 2013-2025 NXP
+ *  Copyright 2013-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -84,6 +84,7 @@ extern char Fw_Lib_Path[256];
 #define NAME_NXP_ACT_PROP_EXTN "NXP_ACT_PROP_EXTN"
 #define NAME_NXP_DUAL_ANTENNA_SUPPORTED "NXP_DUAL_ANTENNA_SUPPORTED"
 #define NAME_NXP_DUAL_ANTENNA_FOLDABLE "NXP_DUAL_ANTENNA_FOLDABLE"
+#define NAME_NXP_NTAG_REMOVAL_TIMER_VALUE "NXP_NTAG_REMOVAL_TIMER_VALUE"
 #define NAME_NXP_EXT_TVDD_CFG "NXP_EXT_TVDD_CFG"
 #define NAME_NXP_EXT_TVDD_CFG_1 "NXP_EXT_TVDD_CFG_1"
 #define NAME_NXP_EXT_TVDD_CFG_2 "NXP_EXT_TVDD_CFG_2"

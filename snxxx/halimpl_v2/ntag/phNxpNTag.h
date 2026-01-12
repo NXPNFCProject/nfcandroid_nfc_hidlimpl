@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2025 NXP
+ *  Copyright 2025-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -57,8 +57,16 @@ enum class NTagState : uint8_t {
   NTAG_STATE_SAME_UID_DETECTED,
   /* NTag presence check is on going */
   NTAG_STATE_PRESENCE_CHECK,
+  /* NTag screen on*/
+  NTAG_STATE_SCREEN_ON,
+  /* NTag screen off */
+  NTAG_STATE_SCREEN_OFF,
+  /*Ntag CE complete*/
+  NTAG_STATE_CE_FINISHED,
   /* Max State */
   NTAG_STATE_MAX,
+  /*Ntag detection state in screen off*/
+  NTAG_DETECTION_IN_SCREEN_OFF,
 };
 
 enum class NTagEvent : uint8_t {
@@ -71,7 +79,8 @@ enum class NTagEvent : uint8_t {
   ACTION_NTAG_RF_LOAD_CHANGE_NTF,
   ACTION_NTAG_PRESENCE_CHECK,
   ACTION_NTAG_UID_MATCHED,
-  ACTION_NTAG_REMOVAL_DETECTED
+  ACTION_NTAG_REMOVAL_DETECTED,
+  ACTION_NTAG_SCREEN_STATE_ON
 };
 
 struct NtagControl {
@@ -100,12 +109,20 @@ struct NtagControl {
   bool isNTagNtfCmdReq;
   /* Ntag ntf enable/disable status */
   bool isNTagNtfEnabled;
+  /* Screen state status flag*/
+  bool isScreenOff;
+  /*falg to indicate the CE mode start*/
+  bool isCeStarted;
   /* Timer used for tracking Detect/Removal Ntag status. */
   IntervalTimer mNTagTimer;
   /* Response status for RF Idle/Discovery commands */
   NFCSTATUS mCmdRspStatus;
   /* RF deactivate discovery flag */
   bool mRfDeactDisc;
+  /* state flag indicating to remain in lpcd during poll enabled */
+  bool mLpcdWoutPoll;
+  /*falg to indicate RF_DEACTIVATE_NTF sent*/
+  bool isRfNtfSent;
 };
 
 class NxpNTag {
@@ -188,6 +205,12 @@ class NxpNTag {
   constexpr static uint8_t QTAG_FEATURE_SUB_GID = 0x30;
   constexpr static uint8_t QTAG_ENABLE_OID = 0x01;
   constexpr static uint8_t NCI_TECH_Q_POLL_VAL = 0x71;
+
+  constexpr static uint8_t CON_DISC_POLL_DISABLE = 0x00;
+  constexpr static uint8_t NTAG_LPCD_PROP_VAL = 0x44;
+  constexpr static uint8_t NCI_PROP_LPCD_WOUT_POLL_SET_CMD = 0x01;
+  constexpr static uint8_t NCI_LPCD_WOUT_POLL_SET_DISABLE = 0x00;
+  constexpr static uint8_t NCI_LPCD_WOUT_POLL_SET_ENABLE = 0x01;
 
   /**
    * @brief Update the current state of the NTag.
@@ -356,6 +379,13 @@ class NxpNTag {
    * @return True/False
    */
   static bool isNtagSupported();
+
+  /**
+   * @brief To send LPCD without poll on/off command to NFCC.
+   * @param flag True/False to set it ON/OFF
+   * @return None
+   */
+  NFCSTATUS sendLpcdWoPoll(bool flag);
 
   static void QPollTimerTimeoutCallback(union sigval val);
   bool QPollTimerStart(unsigned long sec);

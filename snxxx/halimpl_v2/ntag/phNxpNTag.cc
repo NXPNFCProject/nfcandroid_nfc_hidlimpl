@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2025 NXP
+ *  Copyright 2025-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -43,8 +43,12 @@ void NxpNTag::clearNTagFlags() {
   mNtagControl.mNtagEnableRequest = false;
   mNtagControl.isNTagNtfCmdReq = false;
   mNtagControl.isNTagNtfEnabled = false;
+  mNtagControl.isScreenOff = false;
+  mNtagControl.isCeStarted = false;
   mNtagControl.mNTagTimer.kill();
   mWaitingforDiscRsp = false;
+  mNtagControl.mLpcdWoutPoll = false;
+  mNtagControl.isRfNtfSent = false;
   mNTagState = NTagState::NTAG_STATE_IDLE;
   mNTagSetSubState = NTagSetSubState::NTAG_SET_SUB_STATE_IDLE;
 }
@@ -77,13 +81,22 @@ bool NxpNTag::isNtagSupported() {
 
 void NxpNTag::phNxpNciHal_disableNtagNtfConfig() {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
+  uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+  uint16_t rsp_len = 0;
+  // LPCD without poll off cmd to reset the lpcd setting
+  static uint8_t LPCD_WOUT_POLL_SET_OFF[] = {
+      (NCI_MT_CMD | NCI_GID_PROP), NTAG_LPCD_PROP_VAL, PAYLOAD_TWO_LEN,
+      NCI_PROP_LPCD_WOUT_POLL_SET_CMD, NCI_LPCD_WOUT_POLL_SET_DISABLE};
+  status = phNxpNciHal_send_ext_cmd(sizeof(LPCD_WOUT_POLL_SET_OFF),
+                                    LPCD_WOUT_POLL_SET_OFF, &rsp_len, rsp);
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_NCIHAL_E("LPCD_WOUT_POLL_SET_OFF: Failed");
+  }
 
   if (!NxpNTag::isNtagSupported()) return;
 
   uint8_t getNtagNtfConfig[] = {0x20, 0x03, 0x03, 0x01, 0xA1, 0xDA};
   constexpr uint8_t PROP_NTF_STATUS_INDEX = 8;
-  uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
-  uint16_t rsp_len = 0;
   status = phNxpNciHal_send_ext_cmd(sizeof(getNtagNtfConfig), getNtagNtfConfig,
                                     &rsp_len, rsp);
   if ((status == NFCSTATUS_SUCCESS) &&
@@ -104,6 +117,7 @@ NFCSTATUS NxpNTag::waitForRfDiscRsp(NFCSTATUS status) {
   mNTagDiscRspCv.lock();
   mNTagDiscRspCv.timedWait(NCI_CMD_TIMEOUT_IN_SEC);
   mNTagDiscRspCv.unlock();
+  mNtagControl.isRfNtfSent = false;
 
   if (mWaitingforDiscRsp) status = NFCSTATUS_FAILED;
 
@@ -122,6 +136,7 @@ NFCSTATUS NxpNTag::setNTagMode(uint16_t dataLen, uint8_t* pData) {
       mWaitingforDiscRsp = true;
       mNtagControl.mNtagEnableRequest = true;
       mNtagControl.mQPOLLMode = NFC_RF_DISC_REPLACE_QPOLL;
+      mNtagControl.isRfNtfSent = true;
       mNtagControl.mCurrentDiscCmd =
           NciDiscoveryCommandBuilderInstance.getDiscoveryCommand();
       for (auto it = mNtagControl.mCurrentDiscCmd.begin();
@@ -146,6 +161,7 @@ NFCSTATUS NxpNTag::setNTagMode(uint16_t dataLen, uint8_t* pData) {
       mWaitingforDiscRsp = true;
       mNtagControl.mNtagEnableRequest = false;
       mNtagControl.mQPOLLMode = NFC_RF_DISC_START;
+      mNtagControl.isRfNtfSent = true;
       mNtagControl.mNtagDetectStatus = 0x00;
       mNtagControl.mNTagTimer.kill();
       updateState(NTagState::NTAG_STATE_DISABLE);
@@ -291,6 +307,17 @@ void NxpNTag::updateState(NTagState state) {
   mNTagState = state;
 }
 
+NFCSTATUS NxpNTag::sendLpcdWoPoll(bool flag) {
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  std::vector<uint8_t> LPCD_WOUT_POLL_SET = {
+      (NCI_MT_CMD | NCI_GID_PROP), NTAG_LPCD_PROP_VAL, PAYLOAD_TWO_LEN,
+      NCI_PROP_LPCD_WOUT_POLL_SET_CMD};
+  LPCD_WOUT_POLL_SET.push_back(flag ? NCI_LPCD_WOUT_POLL_SET_ENABLE
+                                    : NCI_LPCD_WOUT_POLL_SET_DISABLE);
+  return phNxpHal_EnqueueWrite(&LPCD_WOUT_POLL_SET[0],
+                               LPCD_WOUT_POLL_SET.size());
+}
+
 NFCSTATUS NxpNTag::processNTagEvent(NTagEvent event) {
   NFCSTATUS status = NFCSTATUS_FAILED;
   NTagState mState = NTagState::NTAG_STATE_IDLE;
@@ -336,6 +363,7 @@ NFCSTATUS NxpNTag::processNTagEvent(NTagEvent event) {
           break;
         case NTagEvent::ACTION_NTAG_REMOVAL_DETECTED:
         case NTagEvent::ACTION_NTAG_RF_LOAD_CHANGE_NTF:
+        case NTagEvent::ACTION_NTAG_SCREEN_STATE_ON:
           status = sendRfDeactivate();
           mState = NTagState::NTAG_STATE_RF_DEACTIVATE_IDLE;
           break;
@@ -351,16 +379,33 @@ NFCSTATUS NxpNTag::processNTagEvent(NTagEvent event) {
       }
       break;
     }
-    case NTagState::NTAG_STATE_PRESENCE_CHECK: {
+    case NTagState::NTAG_STATE_PRESENCE_CHECK:
+    case NTagState::NTAG_STATE_SCREEN_OFF:
+    case NTagState::NTAG_STATE_CE_FINISHED: {
       if (event == NTagEvent::ACTION_NTAG_RF_DEACTIVATE_IDLE) {
         status = sendRfDeactivate();
         mState = NTagState::NTAG_STATE_RF_DEACTIVATE_IDLE;
       }
       break;
     }
+    case NTagState::NTAG_STATE_SCREEN_ON: {
+      mState = NTagState::NTAG_STATE_RF_DISCOVERY;
+      break;
+    }
+
+    case NTagState::NTAG_DETECTION_IN_SCREEN_OFF: {
+      status = sendRfDeactivate();
+      if ((NFCSTATUS_SUCCESS == status) && (!mNtagControl.mLpcdWoutPoll)) {
+        status = sendLpcdWoPoll(true);
+        mNtagControl.mLpcdWoutPoll = true;
+      }
+      mState = NTagState::NTAG_STATE_RF_DEACTIVATE_IDLE;
+      break;
+    }
+
     default:
       status = NFCSTATUS_FAILED;
-      NXPLOG_NCIHAL_E("%s : Invalid state:%d", __func__, mNTagState);
+      NXPLOG_NCIHAL_D("%s : Invalid state:%d", __func__, mNTagState);
       break;
   }
   if (status == NFCSTATUS_SUCCESS && mNTagState != mState) updateState(mState);
@@ -371,26 +416,58 @@ NFCSTATUS NxpNTag::handleNTagPropNtf(uint16_t dataLen, uint8_t* pData) {
   constexpr uint8_t NTAG_LOAD_CHANGE_NTF_LEN = 7;
   constexpr uint8_t NTAG_LOAD_CHANGE_NTF_INDEX = 6;
   constexpr uint8_t NTAG_LOAD_CHANGE_VAL = 0xA9;
+  constexpr uint8_t NXP_TIMER_DEFAULT_MS = 3;
+  constexpr uint8_t NXP_TIMER_MIN_SEC = 2;
+  constexpr uint8_t NXP_TIMER_MAX_SEC = 5;
+  uint8_t num = 0;
+
   NXPLOG_NCIHAL_D("NxpNTag::%s Enter", __func__);
 
   if (dataLen == NTAG_LOAD_CHANGE_NTF_LEN &&
       pData[NTAG_LOAD_CHANGE_NTF_INDEX] == NTAG_LOAD_CHANGE_VAL) {
-    if (!mNtagControl.mNtagUid.empty()) {
-      NXPLOG_NCIHAL_E("%s Tag Uid is found and starting the Timer", __func__);
-      if (!mNtagControl.mNTagTimer.set((3000), NULL,
-                                       QPollTimerTimeoutCallback)) {
-        NXPLOG_NCIHAL_E("%s Failed to start load change Timer", __func__);
-        mNtagControl.mNtagDetectStatus &= ~NTAG_LOADCHANGE_TIMER_STATUS;
-      } else {
-        mNtagControl.mNtagDetectStatus |= NTAG_LOADCHANGE_TIMER_STATUS;
-        return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+    if (!mNtagControl.isScreenOff) {
+      // Recieved load change ntf in Screen on state
+      if (!mNtagControl.mNtagUid.empty()) {
+        uint32_t time_ms = NXP_TIMER_DEFAULT_MS * 1000U; // convert seconds to milliseconds
+        if (GetNxpNumValue(NAME_NXP_NTAG_REMOVAL_TIMER_VALUE, &num, sizeof(num))) {
+          if (num >= NXP_TIMER_MIN_SEC && num <= NXP_TIMER_MAX_SEC) {
+              time_ms = num * 1000U;
+          }
+        }
+        NXPLOG_NCIHAL_D("%s Tag Uid is found and starting the Timer", __func__);
+        if (!mNtagControl.mNTagTimer.set((time_ms), NULL,
+                                         QPollTimerTimeoutCallback)) {
+          NXPLOG_NCIHAL_D("%s Failed to start load change Timer", __func__);
+          mNtagControl.mNtagDetectStatus &= ~NTAG_LOADCHANGE_TIMER_STATUS;
+        } else {
+          mNtagControl.mNtagDetectStatus |= NTAG_LOADCHANGE_TIMER_STATUS;
+          return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+        }
+      }
+      mNtagControl.mQPOLLMode = NFC_RF_DISC_REPLACE_QPOLL;
+      updateState(NTagState::NTAG_STATE_RF_DISCOVERY);
+      NFCSTATUS status =
+          processNTagEvent(NTagEvent::ACTION_NTAG_RF_LOAD_CHANGE_NTF);
+      if (status != NFCSTATUS_SUCCESS)
+        NXPLOG_NCIHAL_D("NxpNTag::%s Failed to trigger RF discovery", __func__);
+    } else {
+      // Screen OFF state, after load change ntf LPCD is getting reset to without poll off
+      if (mNtagControl.mLpcdWoutPoll) {
+        NFCSTATUS status = sendLpcdWoPoll(false);
+        if (status != NFCSTATUS_SUCCESS) {
+          NXPLOG_NCIHAL_D("LPCD_WOUT_POLL_SET_OFF cmd failed");
+          return NFCSTATUS_EXTN_FEATURE_FAILURE;
+        } else {
+          mNtagControl.mLpcdWoutPoll = false;
+          mNTagState = NTagState::NTAG_STATE_RF_DEACTIVATE_IDLE;
+          mNtagControl.mQPOLLMode = NFC_RF_DISC_REPLACE_QPOLL;
+          status = processNTagEvent(NTagEvent::ACTION_NTAG_RF_DEACTIVATE_IDLE);
+          if (status != NFCSTATUS_SUCCESS)
+            NXPLOG_NCIHAL_E("NxpNTag::%s Failed to trigger RF discovery",
+                            __func__);
+        }
       }
     }
-    mNtagControl.mQPOLLMode = NFC_RF_DISC_REPLACE_QPOLL;
-    const NFCSTATUS status =
-        processNTagEvent(NTagEvent::ACTION_NTAG_RF_LOAD_CHANGE_NTF);
-    if (status != NFCSTATUS_SUCCESS)
-      NXPLOG_NCIHAL_E("NxpNTag::%s Failed to trigger RF discovery", __func__);
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
   }
   return NFCSTATUS_EXTN_FEATURE_FAILURE;
@@ -398,7 +475,6 @@ NFCSTATUS NxpNTag::handleNTagPropNtf(uint16_t dataLen, uint8_t* pData) {
 
 void NxpNTag::handleNTagPresenceCheckRsp() {
   if (!(mNtagControl.mNtagDetectStatus & NTAG_ACTIVATED_STATUS)) return;
-
   if (!(mNtagControl.mNtagDetectStatus & NTAG_PRESENCE_CHECK_TIMER_STATUS)) {
     unsigned long timeout = NTAG_PRESENCE_CHECK_DEFAULT_CONF_VAL;
     if (!GetNxpNumValue(NAME_NXP_NTAG_PRESENCE_CHECK_TIMEOUT, &timeout,
@@ -438,7 +514,6 @@ NFCSTATUS NxpNTag::handleNTagNciRsp(uint8_t* pData, uint16_t dataLen) {
   switch (pData[NCI_OID_INDEX] & NCI_OID_MASK) {
     case NCI_MSG_RF_DISCOVER:
       if (!mNtagControl.mQPOLLMode) return NFCSTATUS_EXTN_FEATURE_FAILURE;
-
       mNtagControl.mQPOLLMode = 0x00;
       mNtagControl.mCmdRspStatus = pData[NCI_CMD_STATUS_INDEX];
       processNTagEvent(NTagEvent::ACTION_NTAG_RF_DISCOVERY);
@@ -511,10 +586,34 @@ NFCSTATUS NxpNTag::handleNTagNciNtf(uint8_t* pData, uint16_t dataLen) {
       return handleRfIntfActivated(pData, dataLen);
 
     case NCI_MSG_RF_DEACTIVATE:
+      if (mNtagControl.isScreenOff && mNtagControl.isCeStarted) {
+        // screen off CE transaction completed restart discovery
+        mNtagControl.isCeStarted = false;
+        mNtagControl.mQPOLLMode = NFC_RF_DISC_RESTART;
+        updateState(NTagState::NTAG_STATE_CE_FINISHED);
+        processNTagEvent(NTagEvent::ACTION_NTAG_RF_DEACTIVATE_IDLE);
+        NXPLOG_NCIHAL_D("NxpNTag::%s Sending discovery in screen off",
+                        __func__);
+        return NFCSTATUS_EXTN_FEATURE_FAILURE;
+      }
+
       if (dataLen >= NCI_RF_IDLE_NFC_LEN &&
           pData[NCI_MSG_INDEX_FOR_FEATURE] == NCI_MSG_RF_DISCOVER)
         updateState(NTagState::NTAG_STATE_RF_DISCOVERY);
 
+      /* Replace RF_DIACTIVATE_IDLE notification with RF_DIACTIVATE_DISC notification
+         to the upper layer when enabling or disabling the NTAG feature during an
+         ongoing presence check
+      */
+      if (mNtagControl.isRfNtfSent && dataLen == 5 && (pData[NCI_GID_INDEX] == (NCI_MT_NTF | NCI_GID_RF_MANAGE)) &&
+        (pData[NCI_OID_INDEX] == NCI_MSG_RF_DEACTIVATE) &&
+        (pData[NCI_MSG_LEN_INDEX] == PAYLOAD_TWO_LEN) && (pData[3] == NCI_DEACTIVATE_TYPE_IDLE) &&
+        (pData[4] == NFCSTATUS_SUCCESS)) {
+        std::vector<uint8_t> rfDeact_Ntf = {0x61, 0x06, 0x02, 0x03, 0x00};
+        phNxpHal_NfcDataCallback(rfDeact_Ntf.size(), &rfDeact_Ntf[0]);
+        mNtagControl.isRfNtfSent = false;
+        return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+      }
       if ((!(mNtagControl.mNtagDetectStatus & NTAG_ACTIVATED_STATUS) ||
            mNtagControl.mQPOLLMode != NFC_RF_DISC_RESTART) &&
           ((mNtagControl.mNtagDetectStatus & NTAG_REMOVAL_STATUS) !=
@@ -540,8 +639,63 @@ NFCSTATUS NxpNTag::handleNTagNciNtf(uint8_t* pData, uint16_t dataLen) {
 
 NFCSTATUS NxpNTag::handleVendorNciRspNtf(uint16_t dataLen, uint8_t* pData) {
   NXPLOG_NCIHAL_D("NxpNTag::%s Enter", __func__);
+  constexpr uint8_t PWR_SUB_STATE_CMD_PAYLOAD_LEN = 0x01;
 
   if (!isNtagSupported()) return NFCSTATUS_EXTN_FEATURE_FAILURE;
+
+  // LPCD_WO_POLL_CMD response to be consumed in HAL
+  if (dataLen == 5 && (pData[NCI_GID_INDEX] == (NCI_MT_RSP | NCI_GID_PROP)) &&
+      (pData[NCI_OID_INDEX] == NTAG_LPCD_PROP_VAL) &&
+      (pData[NCI_MSG_LEN_INDEX] == PAYLOAD_TWO_LEN) &&
+      (pData[3] == NCI_PROP_LPCD_WOUT_POLL_SET_CMD)) {
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+  }
+
+  // sending LPCD cmd afetr receiving deactivate to idle/disc ntf during screen off
+  if (mNtagControl.isScreenOff) {
+    if (dataLen == 5 &&
+        (pData[NCI_GID_INDEX] == (NCI_MT_NTF | NCI_GID_RF_MANAGE)) &&
+        (pData[NCI_OID_INDEX] == NCI_MSG_RF_DEACTIVATE) &&
+        (pData[NCI_MSG_LEN_INDEX] == PAYLOAD_TWO_LEN) &&
+        (pData[3] == NCI_DEACTIVATE_TYPE_DISCOVERY ||
+         pData[3] == NCI_DEACTIVATE_TYPE_IDLE) &&
+        (pData[4] == NFCSTATUS_SUCCESS)) {
+      if (!mNtagControl.mLpcdWoutPoll) {
+        const NFCSTATUS status = sendLpcdWoPoll(true);
+        if (status != NFCSTATUS_SUCCESS) return NFCSTATUS_EXTN_FEATURE_FAILURE;
+        mNtagControl.mLpcdWoutPoll = true;
+      }
+    }
+  }
+
+  if (!mNtagControl.isScreenOff && dataLen == 4 &&
+      (pData[NCI_GID_INDEX] == NCI_MT_RSP) &&
+      (pData[NCI_OID_INDEX] == NCI_MSG_CORE_SET_POWER_SUB_STATE) &&
+      (pData[NCI_MSG_LEN_INDEX] == PWR_SUB_STATE_CMD_PAYLOAD_LEN) &&
+      (pData[3] == NFCSTATUS_SUCCESS)) {
+    // Entering to screen on state handling
+    bool isTagPresent =
+        !mNtagControl.mNtagUid.empty() &&  // UID is not empty → tag detected
+        (mNtagControl.mNtagDetectStatus & NTAG_REMOVAL_STATUS) == 0;
+    bool isTagNotRead =
+        (mNtagControl.mNtagDetectStatus & NTAG_READ_COMPLETE) == 0;
+
+    if (isTagPresent && isTagNotRead) {
+      mNtagControl.mNtagDetectStatus &= ~NTAG_ACTIVATED_STATUS;
+      mNtagControl.mQPOLLMode = NFC_RF_DISC_REPLACE_QPOLL;
+      NXPLOG_NCIHAL_E("NxpNTag::%s RF discovery with Q-Poll in screen On",
+                      __func__);
+    } else {
+      mNtagControl.mQPOLLMode = NFC_RF_DISC_START;
+      NXPLOG_NCIHAL_E(
+          "NxpNTag::%s RF Discovery with Full poll+Listen in screen on",
+          __func__);
+    }
+    NFCSTATUS status = processNTagEvent(NTagEvent::ACTION_NTAG_SCREEN_STATE_ON);
+    if (status != NFCSTATUS_SUCCESS)
+      NXPLOG_NCIHAL_E("NxpNTag::%s Failed to trigger RF discovery", __func__);
+    return NFCSTATUS_EXTN_FEATURE_FAILURE;
+  }
 
   if (mNtagControl.mNtagEnableRequest != mNtagControl.isNTagNtfEnabled)
     mNtagControl.isNTagNtfCmdReq = true;
@@ -574,6 +728,72 @@ NFCSTATUS NxpNTag::handleVendorNciMessage(uint16_t dataLen, uint8_t* pData) {
 
   if (!isNtagSupported()) return NFCSTATUS_EXTN_FEATURE_FAILURE;
 
+  if (mNtagControl.isNTagNtfEnabled) {
+    if (dataLen == 7 && (pData[NCI_GID_INDEX] == NCI_MT_CMD) &&
+        (pData[NCI_OID_INDEX] == NCI_MSG_CORE_SET_CONFIG) &&
+        (pData[NCI_MSG_LEN_INDEX] == 0x04) && (pData[3] == 0x01) &&
+        (pData[4] == 0x02) && (pData[5] == 0x01)) {
+      if (pData[6] == CON_DISC_POLL_DISABLE) {
+        // Blocking con_disc_without_poll cmd during screenoff
+        // 20020401020100
+        mNtagControl.isScreenOff = true;
+        mNtagControl.mCurrentDiscCmd =
+            NciDiscoveryCommandBuilderInstance.getDiscoveryCommand();
+
+        if (!mNtagControl.mLpcdWoutPoll &&
+            (IDLE == phNxpExtn_NfcGetRfState() ||
+             DISCOVER == phNxpExtn_NfcGetRfState())) {
+          const NFCSTATUS status = sendLpcdWoPoll(true);
+          if (status != NFCSTATUS_SUCCESS)
+            return NFCSTATUS_EXTN_FEATURE_FAILURE;
+          mNtagControl.mLpcdWoutPoll = true;
+        }
+
+        static constexpr uint8_t CONN_DISC_STATUS[] = {0x40, 0x02, 0x02, 0x00,
+                                                       0x00};
+
+        // Notify removal and reset NTAG state
+        phNxpHal_NfcDataCallback(sizeof(CONN_DISC_STATUS), CONN_DISC_STATUS);
+        updateState(NTagState::NTAG_STATE_SCREEN_OFF);
+        return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+      } else {
+        // Entering screen on state, and resetting LPCD by sending LPCD WoPoll off
+        if (mNtagControl.isScreenOff) {
+          mNtagControl.isScreenOff = false;
+          if (mNtagControl.mLpcdWoutPoll) {
+            const NFCSTATUS status = sendLpcdWoPoll(false);
+            if (status != NFCSTATUS_SUCCESS)
+              return NFCSTATUS_EXTN_FEATURE_FAILURE;
+            mNtagControl.mLpcdWoutPoll = false;
+          }
+          updateState(NTagState::NTAG_STATE_RF_DISCOVERY);
+        }
+      }
+    }
+  }
+
+  if (mNtagControl.isScreenOff) {
+    //  update Screen off configuration in case of presence check failed causing
+    //  MW to move to RF_DISCOVERY(LISTEN_ONLY)
+    if (!(dataLen < 5) && (pData[NCI_GID_INDEX] == 0x21) &&
+        (pData[NCI_OID_INDEX] == 0x03)) {
+      std::vector<uint8_t> p(pData + 4, pData + pData[2]);
+      for (size_t i = 0; i < p.size()-1; i+=2) {
+        uint8_t tech_mode = p[i]; // [Tech&Mode]
+        // Any Tech&Mode < 0x80 means POLL (including proprietary like 0x70)
+        if (tech_mode < 0x80) {
+            return NFCSTATUS_EXTN_FEATURE_FAILURE; // not listen-only
+        }
+      }
+      // Override/Restore RF discovery with (Listen + Poll).
+      NFCSTATUS status =
+          phNxpHal_EnqueueWrite(&mNtagControl.mCurrentDiscCmd[0],
+                                mNtagControl.mCurrentDiscCmd.size());
+      if (status != NFCSTATUS_SUCCESS) return NFCSTATUS_EXTN_FEATURE_FAILURE;
+      return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+    }
+  }
+
   // Handle vendor-specific NCI command
   if (dataLen >= 5 && (pData[NCI_GID_INDEX] == (NCI_MT_CMD | NCI_GID_PROP)) &&
       (pData[NCI_OID_INDEX] == NCI_ROW_PROP_OID_VAL) &&
@@ -594,7 +814,6 @@ NFCSTATUS NxpNTag::handleVendorNciMessage(uint16_t dataLen, uint8_t* pData) {
     if (NFCSTATUS_EXTN_FEATURE_SUCCESS == processRfDiscCmd(rfDiscCmd))
       return NFCSTATUS_EXTN_FEATURE_SUCCESS;
   }
-
   return NFCSTATUS_EXTN_FEATURE_FAILURE;
 }
 
@@ -660,12 +879,13 @@ NFCSTATUS NxpNTag::processRfDiscCmd(std::vector<uint8_t>& rfDiscCmd) {
     mNtagControl.mNtagDetectStatus |= NTAG_DETECT_TIMER_STATUS;
 
     // Send extended RF Discover command
-    const NFCSTATUS status = phNxpHal_EnqueueWrite(&rfCmd[0], rfCmd.size());
-    if (status != NFCSTATUS_SUCCESS) return NFCSTATUS_EXTN_FEATURE_FAILURE;
-
-    updateState(NTagState::NTAG_STATE_RF_DISCOVERY);
-    mNtagControl.mQPOLLMode = 0x00;
-    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+    if (DISCOVER != phNxpExtn_NfcGetRfState()) {
+      const NFCSTATUS status = phNxpHal_EnqueueWrite(&rfCmd[0], rfCmd.size());
+      if (status != NFCSTATUS_SUCCESS) return NFCSTATUS_EXTN_FEATURE_FAILURE;
+      updateState(NTagState::NTAG_STATE_RF_DISCOVERY);
+      mNtagControl.mQPOLLMode = 0x00;
+      return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+    }
   }
 
   if (msgType == NCI_MSG_RF_DEACTIVATE) {
@@ -688,9 +908,9 @@ NFCSTATUS NxpNTag::processRfDiscCmd(std::vector<uint8_t>& rfDiscCmd) {
     }
 
     if (!(mNtagControl.mNtagDetectStatus & NTAG_PRESENCE_CHK_STATUS) &&
-        !(mNtagControl.mNtagDetectStatus & NTAG_REMOVAL_STATUS))
+        !(mNtagControl.mNtagDetectStatus & NTAG_REMOVAL_STATUS)) {
       return NFCSTATUS_EXTN_FEATURE_FAILURE;
-
+    }
     if (deactivateType == NCI_DEACTIVATE_TYPE_DISCOVERY) {
       mNtagControl.mQPOLLMode = NFC_RF_DISC_RESTART;
       if (!(mNtagControl.mNtagDetectStatus & NTAG_REMOVAL_STATUS))
@@ -713,7 +933,7 @@ NFCSTATUS NxpNTag::processRfDiscCmd(std::vector<uint8_t>& rfDiscCmd) {
 
 NFCSTATUS NxpNTag::sendNTagPropConfig(bool flag) {
   std::vector<uint8_t> setPropNtfEnable = {0x20, 0x02, 0x05, 0x01,
-                                           0xA1, 0xDA, 0x01, 0x01};
+                                           0xA1, 0xDA, 0x01, 0x03};
   constexpr uint8_t PROP_NTF_SET_INDEX = 7;
   NFCSTATUS status;
   NXPLOG_NCIHAL_D("NxpNTag::%s Flag: %d", __func__, flag);
@@ -841,6 +1061,21 @@ void NxpNTag::processNTagDetectNtf(const std::vector<uint8_t>& uid) {
 bool NxpNTag::isNTagReadComplete(const std::vector<uint8_t>& uid) {
   const bool isSameUid = (mNtagControl.mNtagUid == uid);
 
+  if (mNtagControl.isScreenOff) {
+    if (!isSameUid) {
+      processNTagDetectNtf(uid);
+      NXPLOG_NCIHAL_E("NxpNTag::%s Sent UID in Screen Off", __func__);
+    }
+
+    updateState(NTagState::NTAG_DETECTION_IN_SCREEN_OFF);
+    mNtagControl.mQPOLLMode = NFC_RF_DISC_RESTART;
+    NFCSTATUS status =
+        processNTagEvent(NTagEvent::ACTION_NTAG_RF_DEACTIVATE_IDLE);
+    if (status != NFCSTATUS_SUCCESS) return false;
+
+    return true;
+  }
+
   if (isSameUid && (mNtagControl.mNtagDetectStatus &
                     (NTAG_READ_COMPLETE | NTAG_PRESENCE_CHK_STATUS))) {
     mNtagControl.mQPOLLMode = NFC_RF_DISC_START;
@@ -866,14 +1101,16 @@ NFCSTATUS NxpNTag::handleRfIntfActivated(uint8_t* pData, uint16_t dataLen) {
   constexpr uint8_t NTAG_UID_START_INDEX = 13;
 
   // Validate input length and expected values
-  if (dataLen <= RF_INTF_ACT_LEN ||
-      pData[NCI_MSG_LEN_INDEX] != RF_INTF_ACT_LEN ||
+  if (dataLen <= TECH_TYPE_INDEX ||
       pData[TECH_TYPE_INDEX] != NCI_TECH_Q_POLL_VAL) {
     if (mNtagControl.mNtagDetectStatus & NTAG_DETECT_TIMER_STATUS)
       mNtagControl.mNtagDetectStatus &=
           (NTAG_DETECT_TIMER_STATUS | NTAG_READ_COMPLETE);
-    else
-      mNtagControl.mNtagDetectStatus &= NTAG_READ_COMPLETE;
+
+    if (mNtagControl.isScreenOff) {
+      mNtagControl.isCeStarted = true;
+      NXPLOG_NCIHAL_D("NxpNTag::%s CE Tx in screen off", __func__);
+    }
 
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
   }
@@ -966,6 +1203,11 @@ void NxpNTag::checkNTagRemoveStatus() {
     NXPLOG_NCIHAL_E("NxpNTag::%s: NTAG removed and clearing the status",
                     __func__);
     updateNTagRemoveStatus();
+  }
+  // In screen off Ntag not detected confirmed with timeout, hence restoring LPCD without poll
+  if (!mNtagControl.mLpcdWoutPoll && mNtagControl.isScreenOff) {
+    sendLpcdWoPoll(true);
+    mNtagControl.mLpcdWoutPoll = true;
   }
 
   mNtagControl.mQPOLLMode = NFC_RF_DISC_START;
