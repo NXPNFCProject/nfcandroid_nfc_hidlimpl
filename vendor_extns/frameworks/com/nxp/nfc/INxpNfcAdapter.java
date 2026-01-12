@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,13 @@ package com.nxp.nfc;
 import android.annotation.IntDef;
 import android.app.Activity;
 import com.nxp.nfc.NxpNfcAdapter.AutoCardStatusCallback;
+import com.nxp.nfc.NxpNfcAdapter.NxpNTagStatusCallback;
 import com.nxp.nfc.NxpNfcAdapter.NxpReaderCallback;
+import com.nxp.nfc.vendor.dualAntenna.DualAntennaHandler.DualAntennaStatus;
+import com.nxp.nfc.vendor.dualAntenna.DualAntennaHandler.ReaderModeStatus;
 import com.nxp.nfc.vendor.lxdebug.ILxDebugCallbacks;
+import com.nxp.nfc.vendor.ntag.NTagHandler.NTagMode;
+import com.nxp.nfc.vendor.ntag.NTagHandler.NTagStatus;
 import com.nxp.nfc.vendor.srd.ISrdCallbacks;
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -34,13 +39,6 @@ import java.lang.annotation.RetentionPolicy;
  */
 public interface INxpNfcAdapter {
 
-
-  /**
-   * @brief gets the NxpNfc Extensions interface
-   *
-   * @return NxpNfc Extensions interface
-   */
-  INxpNfcExtensions getNxpNfcExtensionsInterface();
   /**
    * This is the first API to be called to start or stop the mPOS mode
    * <ul>
@@ -490,4 +488,107 @@ public interface INxpNfcAdapter {
     @Retention(RetentionPolicy.SOURCE)
     public @interface SRDStatus{}
 
+    public @interface DualAntennaStatus {}
+
+    /**
+     * This is the API to be called to check Dual Antenna feature is supported
+     * or not. <li>This api shall be called only when Nfcservice is enabled.
+     * <li>This api shall be called only when there are no NFC transactions
+     * ongoing.
+     * </ul>
+     * @throws IOException If a failure occurred
+     */
+    public boolean isDualAnetannaSupported() throws IOException;
+    /**
+     * This is the API to be called to configure the antenna's.
+     * <li>This api shall be called only when Nfcservice is enabled.
+     * <li>This api shall be called only when there are no NFC transactions
+     * ongoing.
+     * </ul>
+     * @param  tech1 , To configure antenna 1 with given polling configuration
+     * @param  tech2 , To configure antenna 2 with given polling configuration
+     * @return whether the update of state is
+     *          ENABLE_DISABLE_STATUS_SUCCESS,
+     *          ENABLE_DISABLE_STATUS_FAILED,
+     * @throws IOException If a failure occurred during enable/disable the
+     *     feature
+     */
+    public @DualAntennaStatus int setDiscoveryTechnology_DualAntenna(int tech1,
+                                                                     int tech2)
+        throws IOException;
+
+    /**
+     * This is the API to be called to enable reader mode on either antenna's.
+     * <li>This api shall be called only when Nfcservice is enabled.
+     * <li>This api shall be called only when there are no NFC transactions
+     * ongoing.
+     * </ul>
+     * @param  ant1 , To configure readerMode in antenna1
+     * @param  ant2 , To configure readerMode in antenna2
+     * @return whether the update of state is
+     *          ENABLE_DISABLE_STATUS_SUCCESS,
+     *          ENABLE_DISABLE_STATUS_FAILED,
+     * @throws IOException If a failure occurred during enable reader mode
+     */
+    public @DualAntennaStatus int
+    setPollingMode_DualAntenna(@ReaderModeStatus int ant1,
+                               @ReaderModeStatus int ant2) throws IOException;
+
+    /**
+     * This is the API to be called to get the discovery technology on both
+     * antennas <li>This api shall be called only when Nfcservice is enabled.
+     * <li>This api shall be called only when there are no NFC transactions
+     * ongoing.
+     * </ul>
+     * @throws IOException If a failure occurred
+     */
+    public @DualAntennaStatus int[] getDiscoveryTechnology_DualAntenna()
+        throws IOException;
+
+    /**
+     * This is the API to be called to get the Polling Mode on both antennas
+     * <li>This api shall be called only when Nfcservice is enabled. <li>This
+     * api shall be called only when there are no NFC transactions ongoing.
+     * </ul>
+     * @throws IOException If a failure occurred
+     */
+    public @DualAntennaStatus int getPollingMode_DualAntenna()
+        throws IOException;
+
+    /**
+     * This is provides the info whether NTag mode is enabled or not
+     * <li>This api shall return false if Nfcservice is disabled.
+     * </ul>
+     * @return TRUE if NTag mode is enabled
+     *         FALSE if NTag mode is disabled
+     * @throws IOException If a failure occurred during NTag RF mode set or
+     *     reset
+     */
+    public boolean isNTagEnabled() throws IOException;
+
+    /**
+     * This is the API to be called to enable or disable NTag RF mode.
+     * <li>This api shall be called only when Nfcservice is enabled.
+     * <li>This api shall be called only when there are no NFC transactions
+     * ongoing.
+     * <li> Tag DISCOVERED intent will be sent to application once read
+     * complete.
+     * </ul>
+     * @param  activity activity the Activity that requests the adapter to be in
+     *     reader mode.
+     * @param mNTagStatusCallback the callback to be called when NTAG is
+     *     added/removed
+     *      UID value and detected status will be to updated when tag is added.
+     *      Removed status will be update on tag removal.
+     * @param  mode to ENABLE_NTAG.
+     *                 DISABLE_NTAG & reset to default discovery.
+     * @return whether the update of state is
+     *          0x00 - STATUS_SUCCESS,
+     *          0x01 - STATUS_FAILED,
+     * @throws IOException If a failure occurred during NTag RF mode set or
+     *     reset
+     */
+    public @NTagStatus int
+    setNTagMode(Activity activity, NxpNTagStatusCallback mNTagStatusCallback,
+                @NTagMode int mode) throws IOException;
 }

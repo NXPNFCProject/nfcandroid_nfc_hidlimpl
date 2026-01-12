@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,26 +20,30 @@ import android.app.Activity;
 import android.content.Context;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
-
+import android.os.RemoteException;
+import android.util.Log;
+import com.nxp.nfc.INxpNfcAdapter.AutoCardStatus.*;
+import com.nxp.nfc.INxpNfcAdapter.SRDStatus.*;
+import com.nxp.nfc.vendor.autoCard.AutoCardHandler;
+import com.nxp.nfc.vendor.dualAntenna.DualAntennaHandler;
+import com.nxp.nfc.vendor.dualAntenna.DualAntennaHandler.DualAntennaStatus;
+import com.nxp.nfc.vendor.dualAntenna.DualAntennaHandler.ReaderModeStatus;
 import com.nxp.nfc.vendor.fw.NfcFirmwareInfo;
 import com.nxp.nfc.vendor.lxdebug.ILxDebugCallbacks;
 import com.nxp.nfc.vendor.lxdebug.LxDebugEventHandler;
+import com.nxp.nfc.vendor.mpos.MposHandler;
+import com.nxp.nfc.vendor.ntag.NTagHandler;
+import com.nxp.nfc.vendor.ntag.NTagHandler.NTagMode;
+import com.nxp.nfc.vendor.ntag.NTagHandler.NTagStatus;
+import com.nxp.nfc.vendor.qtag.QTagHandler;
 import com.nxp.nfc.vendor.srd.ISrdCallbacks;
 import com.nxp.nfc.vendor.srd.SrdHandler;
-import com.nxp.nfc.vendor.utils.UtilsHandler;
-import com.nxp.nfc.vendor.autoCard.AutoCardHandler;
-import com.nxp.nfc.vendor.mpos.MposHandler;
-import com.nxp.nfc.vendor.qtag.QTagHandler;
 import com.nxp.nfc.vendor.transit.TransitConfigHandler;
-import com.nxp.nfc.INxpNfcAdapter.AutoCardStatus.*;
-import com.nxp.nfc.INxpNfcAdapter.SRDStatus.*;
-import android.os.RemoteException;
-import android.util.Log;
+import com.nxp.nfc.vendor.utils.UtilsHandler;
 import java.io.IOException;
-
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 /**
  * @class NxpNfcAdapter
  * @brief Concrete implementation of NFC Extension features
@@ -68,6 +72,8 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     private NfcFirmwareInfo mFwHandler;
     private SrdHandler mSrdHandler;
     private UtilsHandler mUtilsHandler;
+    private DualAntennaHandler mDualAntennaHandler;
+    private NTagHandler mNTagHandler;
 
     private boolean mIsSrdMode = false;
 
@@ -123,6 +129,8 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
         mFwHandler = new NfcFirmwareInfo(nfcAdapter);
         mSrdHandler = new SrdHandler(nfcAdapter, context);
         mUtilsHandler = new UtilsHandler(nfcAdapter, context);
+        mDualAntennaHandler = new DualAntennaHandler(nfcAdapter);
+        mNTagHandler = new NTagHandler(nfcAdapter);
     }
 
     /**
@@ -155,17 +163,6 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
       for (Method method : methods) {
         NxpNfcLogger.d(TAG, "Method: " + method.getName());
       }
-    }
-
-    /**
-     * @brief getter for accessing {@link INxpNfcExtras}
-     * @return {@link INxpNfcExtras} instance
-     */
-    @Override
-    public INxpNfcExtensions getNxpNfcExtensionsInterface() {
-      if (mNxpNfcExtensionsObj != null)
-        return ((INxpNfcExtensions) mNxpNfcExtensionsObj);
-      return null;
     }
 
     public interface NxpReaderCallback {
@@ -639,5 +636,85 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
         } else {
             mUtilsHandler.startPoll();
         }
+    }
+
+    /**
+     * @brief To be called to check feature is supported or not
+     * @return {@link INxpNfcDualAntenna.isDualAnetannaSupported} instance
+     */
+    @Override
+    public boolean isDualAnetannaSupported() throws IOException {
+      return mDualAntennaHandler.isDualAnetannaSupported();
+    }
+
+    /**
+     * @brief To be called to configure the antenna's with different polling
+     * @return {@link
+     *     INxpNfcDualAntenna.setDiscoveryTechnology_DualAntenna} instance
+     */
+    @Override
+    public @DualAntennaStatus int setDiscoveryTechnology_DualAntenna(int tech1,
+                                                                     int tech2)
+        throws IOException {
+      return mDualAntennaHandler.setDiscoveryTechnology_DualAntenna(tech1,
+                                                                    tech2);
+    }
+
+    /**
+     * @brief To be called to enable reader mode on either antenna's.
+     * @return {@link INxpNfcDualAntenna.setPollingMode_DualAntenna}
+     *     instance
+     */
+    @Override
+    public @DualAntennaStatus int
+    setPollingMode_DualAntenna(@ReaderModeStatus int ant1,
+                               @ReaderModeStatus int ant2) throws IOException {
+      return mDualAntennaHandler.setPollingMode_DualAntenna(ant1, ant2);
+    }
+
+    /**
+     * @brief To be called to get the discovery technology on both antennas.
+     * @return {@link INxpNfcDualAntenna.getDiscoveryTechnology_DualAntenna}
+     *     instance
+     */
+    @Override
+    public @DualAntennaStatus int[] getDiscoveryTechnology_DualAntenna()
+        throws IOException {
+      return mDualAntennaHandler.getDiscoveryTechnology_DualAntenna();
+    }
+
+    /**
+     * @brief To be called to get the polling mode of both antennas.
+     * @return {@link INxpNfcDualAntenna.getDiscoveryTechnology_DualAntenna}
+     *     instance
+     */
+    @Override
+    public @DualAntennaStatus int getPollingMode_DualAntenna()
+        throws IOException {
+      return mDualAntennaHandler.getPollingMode_DualAntenna();
+    }
+
+    public interface NxpNTagStatusCallback {
+      void onNTagDiscovered(byte[] uid, boolean isNTagDetected);
+    }
+
+    /**
+     * @brief This is provides the info whether NTag mode is enabled or not
+     * @return {@link INxpNfcNTag.isNTagEnabled} instance
+     */
+    @Override
+    public boolean isNTagEnabled() throws IOException {
+      return mNTagHandler.isNTagEnabled();
+    }
+
+    /**
+     * @brief To be called to enable NTag
+     * @return {@link INxpNfcNTag.setNTagMode} instance
+     */
+    @Override
+    public @NTagStatus int
+    setNTagMode(Activity activity, NxpNTagStatusCallback mNTagStatusCallback,
+                @NTagMode int mode) throws IOException {
+      return mNTagHandler.setNTagMode(activity, mNTagStatusCallback, mode);
     }
 }

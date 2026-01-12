@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NXP
+ * Copyright 2025-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.nxp.nfc.vendor.dualAntenna;
 
+import android.annotation.IntDef;
 import android.nfc.NfcAdapter;
 import com.nxp.nfc.INxpNfcNtfHandler;
 import com.nxp.nfc.NxpNfcAdapter;
@@ -24,9 +25,9 @@ import com.nxp.nfc.NxpNfcConstants;
 import com.nxp.nfc.NxpNfcLogger;
 import com.nxp.nfc.core.NfcOperations;
 import com.nxp.nfc.core.NxpNciPacketHandler;
-import com.nxp.nfc.vendor.dualAntenna.INxpNfcDualAntenna.DualAntennaStatus;
-import com.nxp.nfc.vendor.dualAntenna.INxpNfcDualAntenna.ReaderModeStatus;
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Set;
 
 /**
@@ -48,6 +49,28 @@ public class DualAntennaHandler implements INxpNfcNtfHandler {
   static int antennaOneConfiguration = 0x00;
   static int antennaTwoConfiguration = 0x00;
   static int antennaPolling = 0x00;
+
+  public static final int STATUS_SUCCESS = 0x00;
+  public static final int STATUS_FAILED = 0x01;
+
+  public static final int ENABLE_READERMODE = 0x01;
+  public static final int DISABLE_READERMODE = 0x00;
+
+  @IntDef(value =
+              {
+                  ENABLE_READERMODE,
+                  DISABLE_READERMODE,
+              })
+  @Retention(RetentionPolicy.SOURCE)
+  public @interface ReaderModeStatus {}
+
+  @IntDef(value =
+              {
+                  STATUS_SUCCESS,
+                  STATUS_FAILED,
+              })
+  @Retention(RetentionPolicy.SOURCE)
+  public @interface DualAntennaStatus {}
 
   public enum DualAntennaStatusCode {
     Success(0x00),
