@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +55,7 @@
 #define NCI_PROP_NTF_GID 0x6F
 #define NCI_PROP_LX_NTF_OID 0x36
 #define NCI_PROP_NTF_ANDROID_OID 0x0C
+#define NCI_PROP_GENERIC_NTF_OID 0x0F
 #define NCI_ROW_MAINLINE_OID 0x70
 #define NCI_OEM_MAINLINE_OID 0x3E
 

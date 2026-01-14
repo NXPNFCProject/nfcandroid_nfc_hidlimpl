@@ -1865,6 +1865,17 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
     }
   }
 
+  if (GetNxpNumValue(NAME_NXP_RF_Q_FULL_ERROR_NTF, static_cast<void*>(&retlen),
+                     sizeof(retlen))) {
+    uint8_t value = static_cast<uint8_t>(retlen);
+    NXPLOG_NCIHAL_D("RF_Q_FULL_ERROR_NTF %x", value);
+    mEEPROM_info.buffer = &value;
+    mEEPROM_info.bufflen = sizeof(value);
+    mEEPROM_info.request_type = EEPROM_RF_Q_FULL_ERROR_NTF;
+    mEEPROM_info.request_mode = SET_EEPROM_DATA;
+    request_EEPROM(&mEEPROM_info);
+  }
+
   config_access = false;
   {
     if (isNxpRFConfigModified() || isNxpConfigModified() || fw_dwnld_flag ||

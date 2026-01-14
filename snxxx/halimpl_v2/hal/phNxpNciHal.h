@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2025 NXP
+ * Copyright 2010-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -331,6 +331,7 @@ enum phNxpNci_EEPROM_request_type : uint8_t {
   EEPROM_POWER_TRACKER_ENABLE,
   EEPROM_VDDPA,
   EEPROM_INTERPOLATED_RSSI_8AM,
+  EEPROM_RF_Q_FULL_ERROR_NTF,
 };
 using phNxpNci_EEPROM_request_type_t = phNxpNci_EEPROM_request_type;
 typedef struct phNxpNci_EEPROM_info {

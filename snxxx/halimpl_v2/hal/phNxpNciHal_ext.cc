@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 NXP
+ * Copyright 2012-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@
 #include <vector>
 
 #include "NfcExtension.h"
+#include "phNfcNciConstants.h"
 #include "phNxpEventLogger.h"
 #include "phNxpNciHal.h"
 #include "phNxpNciHal_IoctlOperations.h"
@@ -120,6 +121,8 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
                                                       uint16_t* p_len);
 static NFCSTATUS phNxpNciHal_ext_check_unrecoverable_errors(uint8_t* p_ntf,
                                                             uint16_t* p_len);
+static NFCSTATUS phNxpNciHal_ext_check_rf_queue_full_error(uint8_t* p_ntf,
+                                                           uint16_t* p_len);
 static void RemoveNfcDepIntfFromInitResp(uint8_t* coreInitResp,
                                          uint16_t* coreInitRespLen);
 
@@ -272,6 +275,10 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
 
   if (phNxpNciHal_ext_check_unrecoverable_errors(p_ntf, p_len) !=
+      NFCSTATUS_SUCCESS) {
+    return NFCSTATUS_SUCCESS;
+  }
+  if (phNxpNciHal_ext_check_rf_queue_full_error(p_ntf, p_len) !=
       NFCSTATUS_SUCCESS) {
     return NFCSTATUS_SUCCESS;
   }
@@ -1353,6 +1360,14 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
       addr[0] = 0xA0;
       addr[1] = 0x0E;
       break;
+    case EEPROM_RF_Q_FULL_ERROR_NTF:
+      mEEPROM_info->update_mode = static_cast<uint8_t>(BYTEWISE);
+      memIndex = 0x00;
+      fieldLen = mEEPROM_info->bufflen;
+      len = fieldLen + 4;
+      addr[0] = 0xA0;
+      addr[1] = 0xB0;
+      break;
     default:
       ALOGE("No valid request information found");
       break;
@@ -1805,5 +1820,68 @@ static NFCSTATUS phNxpNciHal_ext_check_unrecoverable_errors(uint8_t* p_ntf,
     // Return FAILED to indicate the original packet should be dropped
     return NFCSTATUS_FAILED;
   }
+  return NFCSTATUS_SUCCESS;
+}
+
+/*******************************************************************************
+**
+** Function         phNxpNciHal_ext_check_rf_queue_full_error
+**
+** Description      Check for RF queue full error and trigger prop generic
+**                  error notification to upper layer to restart discovery.
+**
+** Returns          NFCSTATUS_FAILED if queue full error is detected
+**                  NFCSTATUS_SUCCESS otherwise
+**
+*******************************************************************************/
+static NFCSTATUS phNxpNciHal_ext_check_rf_queue_full_error(uint8_t* p_ntf,
+                                                           uint16_t* p_len) {
+  constexpr uint8_t TAG_GENERIC_ASSERTION = 0x00;
+  constexpr uint8_t STATUS_CODE_Q_FULL = 0x60;
+  constexpr uint8_t RF_Q_FULL_FOLLOWED_BY_CLEAR = 0x02;
+  uint8_t propNtf[4] = {0x6F, 0x0C, 0x01, 0x07};
+  int index = NCI_HEADER_MIN_LEN - 1;
+
+  if (*p_len < (NCI_HEADER_MIN_LEN + 1) ||
+      (p_ntf[index++] != (*p_len - NCI_HEADER_MIN_LEN))) {
+    // No Rf queue full error detected, return success
+    return NFCSTATUS_SUCCESS;
+  }
+  if (p_ntf[0] != NCI_PROP_NTF_GID || p_ntf[1] != NCI_PROP_GENERIC_NTF_OID) {
+    // No Rf queue full error detected, return success
+    return NFCSTATUS_SUCCESS;
+  }
+  // Get number of TLVS
+  uint8_t numOfParams = p_ntf[index++];
+  while (numOfParams > 0) {
+    if ((index + 1) >= *p_len) {
+      // Expect atleast tag and len field
+      NXPLOG_NCIHAL_E("%s: Invalid packet", __func__);
+      return NFCSTATUS_SUCCESS;
+    }
+    // Parse all TLVS
+    uint8_t tag = p_ntf[index++];
+    uint8_t len = p_ntf[index++];
+    uint8_t* value = p_ntf + index;
+    if (index + len > *p_len) {
+      // Make sure value length is valid
+      NXPLOG_NCIHAL_E("%s: Invalid packet", __func__);
+      return NFCSTATUS_SUCCESS;
+    }
+    index += len;
+    numOfParams--;
+    if (tag == TAG_GENERIC_ASSERTION && len == 0x02 &&
+        value[0] == STATUS_CODE_Q_FULL &&
+        value[1] == RF_Q_FULL_FOLLOWED_BY_CLEAR) {
+      NXPLOG_NCIHAL_E("%s: Rf queue is full, need to restart rf discovery",
+                      __func__);
+      // Rf queue full error detected, update ntf with prop ntf and return
+      // failure
+      memcpy(p_ntf, propNtf, sizeof(propNtf));
+      *p_len = (uint16_t)sizeof(propNtf);
+      return NFCSTATUS_FAILED;
+    }
+  }
+  // No Rf queue full error detected, return success
   return NFCSTATUS_SUCCESS;
 }
