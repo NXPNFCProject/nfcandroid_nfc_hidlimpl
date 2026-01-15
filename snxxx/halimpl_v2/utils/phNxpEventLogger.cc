@@ -11,7 +11,7 @@
  ** See the License for the specific language governing permissions and
  ** limitations under the License.
  **
- ** Copyright 2022-2025 NXP
+ ** Copyright 2022-2026 NXP
  **
  */
 #include "phNxpEventLogger.h"
@@ -42,17 +42,32 @@ static void GetCurrentTimestamp(char* timestamp) {
   if (clock_gettime(CLOCK_REALTIME, &tv) == -1) {
     NXPLOG_NCIHAL_E("%s Fail get time; errno=0x%X", __func__, errno);
   }
-  const time_t rawtime = tv.tv_sec;
+  time_t rawtime = tv.tv_sec;
   struct tm* timeinfo;
   char buffer[TIMESTAMP_BUFFER_SIZE];
 
   timeinfo = localtime(&rawtime);
+  if (timeinfo == nullptr) {
+    // fallback without human-readable time
+    int milliseconds = tv.tv_nsec / 1000000;
+    snprintf(timestamp, TIMESTAMP_BUFFER_SIZE,
+             "[00-00 00:00:00.%03d]:", milliseconds);
+    return;
+  }
+
   // Need to calculate milliseconds separately as timeinfo doesn't
   // have milliseconds field
-  const int milliseconds = tv.tv_nsec / 1000000;
+  int milliseconds = tv.tv_nsec / 1000000;
 
-  strftime(buffer, sizeof(buffer), "%m-%d %H:%M:%S", timeinfo);
-  sprintf(timestamp, "[%s.%03d]:", buffer, milliseconds);
+  if (strftime(buffer, sizeof(buffer), "%m-%d %H:%M:%S", timeinfo) == 0) {
+    // strftime failed or buffer too small
+    snprintf(timestamp, TIMESTAMP_BUFFER_SIZE,
+             "[00-00 00:00:00.%03d]:", milliseconds);
+    return;
+  }
+
+  snprintf(timestamp, TIMESTAMP_BUFFER_SIZE, "[%s.%03d]:", buffer,
+           milliseconds);
 }
 
 void PhNxpEventLogger::Initialize() {

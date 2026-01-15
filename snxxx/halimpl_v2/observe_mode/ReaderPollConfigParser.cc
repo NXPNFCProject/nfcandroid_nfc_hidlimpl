@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -137,7 +137,7 @@ vector<uint8_t> ReaderPollConfigParser::getRFEventData(
  *
  ***************************************************************************/
 vector<uint8_t> ReaderPollConfigParser::parseCmaEvent(vector<uint8_t> p_event) {
-  vector<uint8_t> event_data = vector<uint8_t>();
+    vector<uint8_t> event_data{};
   if (ReaderPollConfigParser::lastKnownModEvent == EVENT_MOD_B &&
       p_event.size() > 0 &&
       p_event[0] == TYPE_B_APF) {  // Type B Apf value is 0x05
