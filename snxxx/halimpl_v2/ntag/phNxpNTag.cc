@@ -83,17 +83,21 @@ void NxpNTag::phNxpNciHal_disableNtagNtfConfig() {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
   uint16_t rsp_len = 0;
-  // LPCD without poll off cmd to reset the lpcd setting
-  static uint8_t LPCD_WOUT_POLL_SET_OFF[] = {
-      (NCI_MT_CMD | NCI_GID_PROP), NTAG_LPCD_PROP_VAL, PAYLOAD_TWO_LEN,
-      NCI_PROP_LPCD_WOUT_POLL_SET_CMD, NCI_LPCD_WOUT_POLL_SET_DISABLE};
-  status = phNxpNciHal_send_ext_cmd(sizeof(LPCD_WOUT_POLL_SET_OFF),
-                                    LPCD_WOUT_POLL_SET_OFF, &rsp_len, rsp);
-  if (status != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("LPCD_WOUT_POLL_SET_OFF: Failed");
-  }
 
   if (!NxpNTag::isNtagSupported()) return;
+
+  // LPCD without poll off cmd to reset the lpcd setting
+  if (wFwVerRsp >= DEFAULT_LPCD_WITHOUT_POLL_SUPPORT_MIN_FW_VER) {
+    static uint8_t LPCD_WOUT_POLL_SET_OFF[] = {
+        (NCI_MT_CMD | NCI_GID_PROP), NTAG_LPCD_PROP_VAL, PAYLOAD_TWO_LEN,
+        NCI_PROP_LPCD_WOUT_POLL_SET_CMD, NCI_LPCD_WOUT_POLL_SET_DISABLE};
+    status = phNxpNciHal_send_ext_cmd(sizeof(LPCD_WOUT_POLL_SET_OFF),
+                                      LPCD_WOUT_POLL_SET_OFF, &rsp_len, rsp);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("LPCD_WOUT_POLL_SET_OFF: Failed");
+    }
+  }
+
 
   uint8_t getNtagNtfConfig[] = {0x20, 0x03, 0x03, 0x01, 0xA1, 0xDA};
   constexpr uint8_t PROP_NTF_STATUS_INDEX = 8;
@@ -309,6 +313,10 @@ void NxpNTag::updateState(NTagState state) {
 
 NFCSTATUS NxpNTag::sendLpcdWoPoll(bool flag) {
   NFCSTATUS status = NFCSTATUS_FAILED;
+
+  if (wFwVerRsp < DEFAULT_LPCD_WITHOUT_POLL_SUPPORT_MIN_FW_VER)
+    return status;
+
   std::vector<uint8_t> LPCD_WOUT_POLL_SET = {
       (NCI_MT_CMD | NCI_GID_PROP), NTAG_LPCD_PROP_VAL, PAYLOAD_TWO_LEN,
       NCI_PROP_LPCD_WOUT_POLL_SET_CMD};

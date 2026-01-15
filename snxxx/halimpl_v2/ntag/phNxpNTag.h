@@ -33,6 +33,7 @@
 #define NTAG_NTF_ENABLE_STATE 0x01
 #define NTAG_PRESENCE_CHECK_DEFAULT_CONF_VAL 13
 #define DEFAULT_NTAG_SUPPORT_MIN_FW_VER 0x02204A
+#define DEFAULT_LPCD_WITHOUT_POLL_SUPPORT_MIN_FW_VER 0x022051
 
 enum class NTagSetSubState : uint8_t {
   /* Initial state, no operation in progress */
