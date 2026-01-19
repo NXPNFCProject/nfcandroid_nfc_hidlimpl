@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2025 NXP
+ * Copyright 2019-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1099,7 +1099,7 @@ int handleGetCapability(uint16_t data_len, const uint8_t* p_data) {
   // First byte is status is ok
   // next 2 bytes is version for Android requirements
   std::vector<uint8_t> capability = {0x00, 0x00, 0x00};
-  capability.push_back(5);  // 5 capability event's
+  capability.push_back(6);  // 6 capability event's
   // Observe mode
   capability.push_back(nfcFL.nfccCap.OBSERVE_MODE.id);
   capability.push_back(nfcFL.nfccCap.OBSERVE_MODE.len);
@@ -1120,6 +1120,10 @@ int handleGetCapability(uint16_t data_len, const uint8_t* p_data) {
   capability.push_back(nfcFL.nfccCap.NO_OF_EXIT_FRAMES_PLF.id);
   capability.push_back(nfcFL.nfccCap.NO_OF_EXIT_FRAMES_PLF.len);
   capability.push_back(nfcFL.nfccCap.NO_OF_EXIT_FRAMES_PLF.val);
+  // Reader mode annotation support
+  capability.push_back(nfcFL.nfccCap.READER_MODE_ANNOTATION.id);
+  capability.push_back(nfcFL.nfccCap.READER_MODE_ANNOTATION.len);
+  capability.push_back(nfcFL.nfccCap.READER_MODE_ANNOTATION.val);
 
   phNxpNciHal_vendorSpecificCallback(p_data[NCI_OID_INDEX],
                                      p_data[NCI_MSG_INDEX_FOR_FEATURE],

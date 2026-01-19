@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2022-2025 NXP
+ *  Copyright 2022-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -144,6 +144,7 @@ typedef struct {
   tNfc_capability POWER_SAVING;
   tNfc_capability AUTOTRANSACT_PLF;
   tNfc_capability NO_OF_EXIT_FRAMES_PLF;
+  tNfc_capability READER_MODE_ANNOTATION;
 } tNfc_nfccCapability;
 
 typedef struct {
@@ -324,6 +325,7 @@ extern tNfc_featureList nfcFL;
 #define CAP_POWER_SAVING_MODE_ID 0x02
 #define CAP_AUTOTRANSACT_PLF_ID 0x03
 #define CAP_NUMBER_OF_EXIT_FRAMES_PLF_ID 0x04
+#define CAP_READER_MODE_ANNOTATION 0x05
 #define OBSERVE_MODE_WITHOUT_RF_DEACTIVATE 0x02
 
 #define UPDATE_NFCC_CAPABILITY()                                               \
@@ -343,6 +345,9 @@ extern tNfc_featureList nfcFL;
     nfcFL.nfccCap.NO_OF_EXIT_FRAMES_PLF.id = CAP_NUMBER_OF_EXIT_FRAMES_PLF_ID; \
     nfcFL.nfccCap.NO_OF_EXIT_FRAMES_PLF.len = 0x01;                            \
     nfcFL.nfccCap.NO_OF_EXIT_FRAMES_PLF.val = 0x00;                            \
+    nfcFL.nfccCap.READER_MODE_ANNOTATION.id = CAP_READER_MODE_ANNOTATION;      \
+    nfcFL.nfccCap.READER_MODE_ANNOTATION.len = 0x01;                           \
+    nfcFL.nfccCap.READER_MODE_ANNOTATION.val = 0x00;                           \
     uint8_t extended_field_mode = 0x00;                                        \
     if (IS_CHIP_TYPE_GE(sn100u) &&                                             \
         GetNxpNumValue(NAME_NXP_EXTENDED_FIELD_DETECT_MODE,                    \
@@ -365,6 +370,14 @@ extern tNfc_featureList nfcFL;
     if ((GetNxpNumValue(NAME_NXP_DEFAULT_ULPDET_MODE, &num, sizeof(num)))) {   \
       if ((uint8_t)num > 0) {                                                  \
         nfcFL.nfccCap.POWER_SAVING.val = 0x01;                                 \
+      }                                                                        \
+    }                                                                          \
+    uint8_t readerModeAnnotationSupported = 0;                                 \
+    if ((GetNxpNumValue(NAME_NXP_READERMODE_ANNOTATION_SUPPORTED,              \
+                        &readerModeAnnotationSupported,                        \
+                        sizeof(readerModeAnnotationSupported)))) {             \
+      if ((uint8_t)readerModeAnnotationSupported > 0) {                        \
+        nfcFL.nfccCap.READER_MODE_ANNOTATION.val = 0x01;                       \
       }                                                                        \
     }                                                                          \
   }
