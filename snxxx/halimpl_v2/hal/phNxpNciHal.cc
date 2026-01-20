@@ -1699,6 +1699,22 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
       fpVerInfoStoreInEeprom();
     }
   }
+  if (IS_CHIP_TYPE_GE(sn100u) && isNxpConfigModified()) {
+    // Reset the exit-frame data whenever the configuration value is set to 0.
+    uint8_t no_of_exit_frames_supported = 0x00;
+    bool isFound = GetNxpNumValue(NAME_NXP_NUMBER_OF_EXIT_FRAMES_SUPPORTED,
+                                  &no_of_exit_frames_supported,
+                                  sizeof(no_of_exit_frames_supported));
+    if (isFound && no_of_exit_frames_supported == 0x00) {
+      uint8_t reset_exit_frames[] = {0x2F, 0x0C, 0x05, 0x06,
+                                     0x00, 0x00, 0x00, 0x00};
+      status = phNxpNciHal_send_ext_cmd(sizeof(reset_exit_frames),
+                                        reset_exit_frames, &rsp_len, rsp);
+      if (status != NFCSTATUS_SUCCESS) {
+        NXPLOG_NCIHAL_E("Failed to send exit frame command with zero frames");
+      }
+    }
+  }
   config_access = false;
   if (fw_dwnld_flag || setConfigAlways || isNxpRFConfigModified() ||
       isLibNfcUpdateConfigModified()) {
