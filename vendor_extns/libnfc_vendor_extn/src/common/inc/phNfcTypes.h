@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2020, 2023-2025 NXP
+ * Copyright 2010-2020, 2023-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@
 #include <stdint.h>
 
 #define UNUSED_PROP(X) (void)(X);
+
+#define PHNCI_MAX_DATA_LEN 300
 
 typedef uint16_t NFCSTATUS; /* Return values */
 

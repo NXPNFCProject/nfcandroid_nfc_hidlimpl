@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2024-2025 NXP
+ *  Copyright 2024-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -281,3 +281,16 @@ void PlatformAbstractionLayer::updateHalConfig(
     map<string, ConfigValue>* pConfigMap) {
   mConfigHandler->updateConfig(pConfigMap);
 }
+
+std::vector<uint8_t> PlatformAbstractionLayer::palGetDiscoveryCommand() {
+  return {};
+}
+
+NFCSTATUS PlatformAbstractionLayer::palNfcSendExtCmd(uint16_t cmd_len,
+                                                     uint8_t *p_cmd,
+                                                     uint16_t *rsp_len,
+                                                     uint8_t *p_rsp) {
+  return NFCSTATUS_FAILED;
+}
+
+bool PlatformAbstractionLayer::palGetObserveModeStatus() { return false; }

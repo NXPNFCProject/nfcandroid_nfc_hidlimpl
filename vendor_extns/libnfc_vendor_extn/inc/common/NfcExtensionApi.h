@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2024-2025 NXP
+ *  Copyright 2024-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -46,6 +46,13 @@ bool vendor_nfc_init(VendorExtnCb *vendorExtnCb);
  */
 bool vendor_nfc_de_init();
 
+/**
+ * @brief Sending feature specific commands during the NFC Init.
+ * @return true in case of success.
+ *         false in case of failure.
+ *
+ */
+bool configure_vendor_feature();
 /**
  * @brief get nfc vendor extention control block
  * @return void

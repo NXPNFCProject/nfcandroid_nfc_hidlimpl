@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2024-2025 NXP
+ *  Copyright 2024-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -126,4 +126,19 @@ void PlatformAbstractionLayer::palEnQueueEvt(uint8_t, uint8_t){}
 
 unsigned PlatformAbstractionLayer::palGetLibNciConfig(const char* key, bool& found) {
   return 0;
+}
+
+std::vector<uint8_t> PlatformAbstractionLayer::palGetDiscoveryCommand() {
+  return phNxpNciHal_GetDiscoveryCommand();
+}
+
+NFCSTATUS PlatformAbstractionLayer::palNfcSendExtCmd(uint16_t cmd_len,
+                                                     uint8_t *p_cmd,
+                                                     uint16_t *rsp_len,
+                                                     uint8_t *p_rsp) {
+  return phNxpHal_NfcSendExtCmd(cmd_len, p_cmd, rsp_len, p_rsp);
+}
+
+bool PlatformAbstractionLayer::palGetObserveModeStatus() {
+  return phNxpNciHal_GetObserveModeStatus();
 }

@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2024-2025 NXP
+ *  Copyright 2024-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -100,6 +100,9 @@ constexpr uint8_t SUB_GID_OID_RSP_STATUS_INDEX = 0x04;
 
 constexpr uint8_t NCI_GID_INDEX = 0;
 constexpr uint8_t NCI_OID_INDEX = 1;
+constexpr uint8_t NCI_MSG_LEN_INDEX = 2;
+constexpr uint8_t NCI_MSG_INDEX_FOR_FEATURE = 3;
+constexpr uint8_t NCI_MSG_INDEX_FEATURE_VALUE = 4;
 constexpr uint8_t EXT_NCI_GID_MASK = 0x0F;
 constexpr uint8_t EXT_NCI_OID_MASK = 0xFF;
 
@@ -114,6 +117,7 @@ constexpr uint8_t NCI_OEM_PROP_OID_VAL = 0x3E;
 constexpr uint8_t QTAG_FEATURE_SUB_GID = 0x30;
 constexpr uint8_t MPOS_READER_SET_DMODE_SUB_GIDOID_VAL = 0xAE;
 constexpr uint8_t MPOS_READER_MODE_NTF_SUB_GIDOID_VAL = 0xA0;
+constexpr uint8_t NCI_ROW_MAINLINE_OID = 0x70;
 constexpr uint8_t TRANSIT_SUB_GIDOID = 0x71;
 constexpr uint8_t RF_REGISTER_SUB_GIDOID = 0x72;
 constexpr uint8_t FW_VERSION_SUB_GIDOID = 0x6F;

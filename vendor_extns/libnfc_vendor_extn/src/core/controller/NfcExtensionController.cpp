@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2024-2025 NXP
+ *  Copyright 2024-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,9 +17,12 @@
  **/
 
 #include "NfcExtensionController.h"
+#include "DualAntenna.h"
 #include "NfcExtensionConstants.h"
 #include "PlatformAbstractionLayer.h"
 #include "Srd.h"
+#include "phNxpAutoCard.h"
+#include "phNxpNTag.h"
 #include <NciStateMonitor.h>
 #include <phNxpLog.h>
 std::unique_ptr<NfcExtensionController>
@@ -111,6 +114,21 @@ NFCSTATUS NfcExtensionController::handleVendorNciMessage(uint16_t dataLen,
   NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s subGid:%d subOid:%d", __func__,
                  static_cast<int>(subGid), subOid);
 
+  if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
+      AutoCard::getInstance()->handleVendorNciMessage(
+          dataLen, const_cast<uint8_t *>(pData)))
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+
+  if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
+      DualAntenna::getInstance()->handleVendorNciMessage(
+          dataLen, const_cast<uint8_t *>(pData)))
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+
+  if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
+      NxpNTag::getInstance()->handleVendorNciMessage(
+          dataLen, const_cast<uint8_t *>(pData)))
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+
   auto it = mHandlers.find(subGid);
   if (it != mHandlers.end()) {
     const std::shared_ptr<IEventHandler> eventHandler = it->second;
@@ -130,6 +148,21 @@ NFCSTATUS NfcExtensionController::handleVendorNciRspNtf(uint16_t dataLen,
   if (status == NFCSTATUS_EXTN_FEATURE_SUCCESS) {
     return status;
   }
+
+  if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
+      AutoCard::getInstance()->handleVendorNciRspNtf(dataLen, pData))
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+
+  if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
+      DualAntenna::getInstance()->handleVendorNciRspNtf(dataLen,
+                                                        (uint8_t *)pData))
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+
+  if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
+      NxpNTag::getInstance()->handleVendorNciRspNtf(
+          dataLen, const_cast<uint8_t *>(pData)))
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+
   return mIEventHandler->handleVendorNciRspNtf(dataLen, pData);
 }
 

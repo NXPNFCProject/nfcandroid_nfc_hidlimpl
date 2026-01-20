@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2024-2025 NXP
+ *  Copyright 2024-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -176,6 +176,40 @@ public:
   *        from lookup table.
   */
   uint32_t palGetLibNciConfig(const char* key, bool& found);
+
+  /**
+   * @brief Retrieves the default NFCC discovery command.
+   *
+   * This function constructs and returns the discovery command that is sent to
+   * the NFCC (NFC Controller) to initiate the discovery process. The returned
+   * buffer contains the complete command frame formatted according to the
+   * platform/NFCC requirements.
+   *
+   * @return A vector of bytes representing the discovery command.
+   */
+  std::vector<uint8_t> palGetDiscoveryCommand();
+
+  /**
+   * @brief Sends an extension command to the NFCC and receives the response.
+   *
+   * @param cmd_len   Length of the command buffer in bytes.
+   * @param p_cmd     Pointer to the command buffer.
+   * @param rsp_len   Input: size of the response buffer.
+   *                  Output: actual number of response bytes received.
+   * @param p_rsp     Pointer to the response buffer where NFCC response will be
+   * stored.
+   *
+   * @return NFCSTATUS_SUCCESS on success, or an appropriate NFCSTATUS error
+   * code on failure.
+   */
+  NFCSTATUS palNfcSendExtCmd(uint16_t cmd_len, uint8_t *p_cmd,
+                             uint16_t *rsp_len, uint8_t *p_rsp);
+
+  /**
+   * @brief Get the status of observer mode status.
+   * @return True or False.
+   */
+  bool palGetObserveModeStatus();
   /**
    * @brief Release all resources.
    * @return None

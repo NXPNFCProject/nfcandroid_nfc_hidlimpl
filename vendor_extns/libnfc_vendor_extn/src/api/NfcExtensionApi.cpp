@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2024-2025 NXP
+ *  Copyright 2024-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -32,6 +32,9 @@
 #include "QTagHandler.h"
 #include "RfStateMonitor.h"
 #include "SrdHandler.h"
+#include "phNxpAutoCard.h"
+#include "phNxpNTag.h"
+#include "DualAntenna.h"
 #include "TransitConfigHandler.h"
 #include <phNxpLog.h>
 #include <stdint.h>
@@ -208,6 +211,9 @@ bool vendor_nfc_de_init() {
   NfcExtensionWriter::finalize();
   PlatformAbstractionLayer::finalize();
   ProprietaryExtn::finalize();
+  AutoCard::finalize();
+  NxpNTag::finalize();
+  DualAntenna::finalize();
   resetNxpConfig();
   return true;
 }
@@ -263,6 +269,15 @@ NFCSTATUS vendor_nfc_handle_event(NfcExtEvent_t eventCode,
   }
   }
   return status;
+}
+
+bool configure_vendor_feature() {
+  NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter!!", __func__);
+  DualAntenna::getInstance()->isDualAntennaSupported();
+  NxpNTag::getInstance()->phNxpNciHal_disableNtagNtfConfig();
+  AutoCard::getInstance()->phNxpNciHal_getAutoCardConfig();
+
+  return true;
 }
 
 bool isVendorSpecificCmd(uint16_t dataLen, const uint8_t *pData) {
