@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 #ifndef NFC_EXTENSION_H
 #define NFC_EXTENSION_H
 #include <phTmlNfc.h>
-
 #include <cstdint>
+#include <vector>
 
 #include "phNfcStatus.h"
 
@@ -109,6 +109,7 @@ typedef bool (*fp_extn_init_t)(VendorExtnCb*);
 typedef bool (*fp_extn_deinit_t)();
 typedef NFCSTATUS (*fp_extn_handle_nfc_event_t)(NfcExtEvent_t,
                                                 NfcExtEventData_t*);
+typedef bool (*fp_extn_configure_vendor_feature_t)();
 
 /**
  * @brief This function sets up and initialize the extension feature
@@ -130,6 +131,13 @@ void phNxpExtn_LibClose();
  *
  */
 NfcRfState_t phNxpExtn_NfcGetRfState();
+
+/**
+ * @brief update vendor specific configurations in NFC Init
+ * @return None
+ *
+ */
+void phNxpExtn_ConfigureVendorFeature();
 
 /**
  * @brief updates the NFC HAL state
@@ -246,6 +254,42 @@ void phNxpHal_ReleaseControl();
  *
  */
 void phNxpHal_NfcDataCallback(uint16_t dataLen, const uint8_t* pData);
+
+/******************************************************************************
+ * Function         phNxpHal_NfcSendExtCmd
+ *
+ * Description      This function send the extension command from vendor Extn .
+ *                  to HAL. No response is checked by this function but it
+ *                  waits for the response to come.
+ *
+ * Returns          Returns NFCSTATUS_SUCCESS if sending cmd is successful and
+ *                  response is received.
+ *
+ ******************************************************************************/
+NFCSTATUS phNxpHal_NfcSendExtCmd(uint16_t cmd_len, uint8_t* p_cmd,
+                                 uint16_t* rsp_len, uint8_t* p_rsp);
+
+/*****************************************************************************
+ *
+ * Function         phNxpNciHal_GetDiscoveryCommand
+ *
+ * Description      It returns the current discovery command
+ *
+ * Returns          return current discovery command which is set
+ *
+ ****************************************************************************/
+std::vector<uint8_t> phNxpNciHal_GetDiscoveryCommand();
+
+/*****************************************************************************
+ *
+ * Function         phNxpNciHal_GetObserveModeStatus
+ *
+ * Description      It returns the observer mode enabled status
+ *
+ * Returns          return true/false
+ *
+ ****************************************************************************/
+bool phNxpNciHal_GetObserveModeStatus();
 
 /**
  * @brief Read byte array value from the config file.

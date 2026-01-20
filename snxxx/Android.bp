@@ -90,15 +90,11 @@ cc_library_shared {
         "features/recovery/phNxpNciHal_Recovery.cc",
         "halimpl_v2/hal/phNxpNciHal_PowerTrackerIface.cc",
         "halimpl_v2/nfc_comm/NfcWriter.cc",
-        "features/autocard/*.cc",
         "halimpl_v2/hal/phNxpNciHal_ReaderThread.cc",
         "halimpl_v2/hal/phNxpNciHal_WriterThread.cc",
         "features/nfc_extn/NfcExtension.cc",
-        "features/nfc_extn/NxpNfcExtension.cc",
         "halimpl_v2/hal/phNxpNciHal_WiredSeIface.cc",
-        "features/ntag/phNxpNTag.cc",
         "halimpl_v2/hal/phNxpNciHal_ReaderAnnotation.cc",
-        "features/dualAntenna/DualAntenna.cc",
     ],
 
     local_include_dirs: [
@@ -115,11 +111,8 @@ cc_library_shared {
         "halimpl_v2/mifare",
         "features/recovery",
         "halimpl_v2/observe_mode",
-        "features/autocard",
         "halimpl_v2/nfc_comm",
         "features/nfc_extn",
-        "features/ntag",
-        "features/dualAntenna",
     ],
 
     include_dirs: [

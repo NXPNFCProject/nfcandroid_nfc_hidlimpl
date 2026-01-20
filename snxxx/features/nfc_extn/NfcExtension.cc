@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,14 @@
 
 #include <thread>
 #include "NfcExtension.h"
+#include <NciDiscoveryCommandBuilder.h>
 #include <dlfcn.h>
 #include <phNxpLog.h>
 #include <phNxpNciHal.h>
 #include "NfcWriter.h"
-#include "NxpNfcExtension.h"
+#include "ObserveMode.h"
 #include "phNxpNciHal_WriterThread.h"
+#include "phNxpNciHal_ext.h"
 
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 extern phTmlNfc_Context_t* gpphTmlNfc_Context;
@@ -29,9 +31,12 @@ extern tNfc_featureList nfcFL;
 fp_extn_init_t fp_extn_init = NULL;
 fp_extn_deinit_t fp_extn_deinit = NULL;
 fp_extn_handle_nfc_event_t fp_extn_handle_nfc_event = NULL;
+fp_extn_configure_vendor_feature_t fp_extn_handle_configure_vendor_feature =
+    NULL;
 const std::string vendor_nfc_init_name = "vendor_nfc_init";
 const std::string vendor_nfc_de_init_name = "vendor_nfc_de_init";
 const std::string vendor_nfc_handle_event_name = "vendor_nfc_handle_event";
+const std::string configure_vendor_feature_name = "configure_vendor_feature";
 
 void* p_oem_extn_handle = NULL;
 NfcExtEventData_t nfc_ext_event_data;
@@ -83,6 +88,16 @@ void phNxpExtn_LibSetup() {
   if (fp_extn_handle_nfc_event == nullptr) {
     NXPLOG_NCIHAL_E("%s Failed to find %s !!", __func__, vendor_nfc_handle_event_name.c_str());
   }
+
+  fp_extn_handle_configure_vendor_feature =
+      reinterpret_cast<fp_extn_configure_vendor_feature_t>(
+          dlsym(p_oem_extn_handle, configure_vendor_feature_name.c_str()));
+
+  if (fp_extn_handle_configure_vendor_feature == nullptr) {
+    NXPLOG_NCIHAL_E("%s Failed to find %s !!", __func__,
+                    configure_vendor_feature_name.c_str());
+  }
+
   // Allocate Transaction buffers
   nciMsgDeferredData.tTransactionInfo.pBuff =
       static_cast<uint8_t*>(calloc(NCI_MAX_DATA_LEN, sizeof(uint8_t)));
@@ -122,7 +137,6 @@ void phNxpExtn_LibClose() {
           __func__, vendor_nfc_de_init_name.c_str());
     }
   }
-  phNxpNfcExtn_deInit();
   if (p_oem_extn_handle != NULL) {
     NXPLOG_NCIHAL_D("%s Closing libnfc_vendor_extn.so lib", __func__);
     const int32_t status = dlclose(p_oem_extn_handle);
@@ -133,6 +147,7 @@ void phNxpExtn_LibClose() {
     fp_extn_init = NULL;
     fp_extn_deinit = NULL;
     fp_extn_handle_nfc_event = NULL;
+    fp_extn_handle_configure_vendor_feature = NULL;
     p_oem_extn_handle = NULL;
   }
   // Free transaction buffers
@@ -152,10 +167,6 @@ NFCSTATUS phNxpExtn_HandleNciMsg(uint16_t *dataLen, const uint8_t* pData) {
   nci_data.data_len = *dataLen;
   nci_data.p_data = const_cast<uint8_t*>(pData);
   nfc_ext_event_data.nci_msg = nci_data;
-
-  if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
-      phNxpNfcExtn_HandleNciMsg(dataLen, pData))
-    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 
   if (fp_extn_handle_nfc_event != NULL)
     return fp_extn_handle_nfc_event(HANDLE_VENDOR_NCI_MSG, &nfc_ext_event_data);
@@ -194,9 +205,7 @@ NFCSTATUS phNxpExtn_HandleNciRspNtf(uint16_t *dataLen, const uint8_t* pData) {
     if (NFCSTATUS_EXTN_FEATURE_SUCCESS !=
         fp_extn_handle_nfc_event(HANDLE_VENDOR_NCI_RSP_NTF,
                                  &nfc_ext_event_data)) {
-      if (NFCSTATUS_EXTN_FEATURE_SUCCESS !=
-          phNxpNfcExtn_HandleNciRspNtf(dataLen, pData))
-        return NFCSTATUS_EXTN_FEATURE_FAILURE;
+      return NFCSTATUS_EXTN_FEATURE_FAILURE;
     }
   } else {
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
@@ -232,6 +241,13 @@ void phNxpExtn_NfcHalControlGranted() {
   NXPLOG_NCIHAL_D("%s Enter", __func__);
   if (fp_extn_handle_nfc_event != NULL) {
     fp_extn_handle_nfc_event(HANDLE_HAL_CONTROL_GRANTED, &nfc_ext_event_data);
+  }
+}
+
+void phNxpExtn_ConfigureVendorFeature() {
+  NXPLOG_NCIHAL_D("%s Enter", __func__);
+  if (fp_extn_handle_configure_vendor_feature != NULL) {
+    fp_extn_handle_configure_vendor_feature();
   }
 }
 /* Extension feature API's End */
@@ -284,6 +300,16 @@ void phNxpHal_NfcDataCallback(uint16_t dataLen, const uint8_t* pData) {
   }
 }
 
+NFCSTATUS phNxpHal_NfcSendExtCmd(uint16_t cmd_len, uint8_t* p_cmd,
+                                 uint16_t* rsp_len, uint8_t* p_rsp) {
+  return phNxpNciHal_send_ext_cmd(cmd_len, p_cmd, rsp_len, p_rsp);
+}
+
+std::vector<uint8_t> phNxpNciHal_GetDiscoveryCommand() {
+  return NciDiscoveryCommandBuilderInstance.getDiscoveryCommand();
+}
+
+bool phNxpNciHal_GetObserveModeStatus() { return isObserveModeEnabled(); }
 uint8_t phNxpHal_GetNxpByteArrayValue(const char* name, char* pValue,
                                       long bufflen, long* len) {
   return GetNxpByteArrayValue(name, pValue, bufflen, len);

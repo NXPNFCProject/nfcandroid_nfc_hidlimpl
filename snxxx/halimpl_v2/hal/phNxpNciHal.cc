@@ -42,14 +42,13 @@
 #include "NfcExtension.h"
 #include "NfcWriter.h"
 #include "NfccTransportFactory.h"
-#include "NxpNfcExtension.h"
 #include "NxpNfcThreadMutex.h"
 #include "ObserveMode.h"
 #include "ReaderPollConfigParser.h"
-#include "phNxpNciHal_ReaderAnnotation.h"
 #include "phNxpNciHal_IoctlOperations.h"
 #include "phNxpNciHal_LxDebug.h"
 #include "phNxpNciHal_PowerTrackerIface.h"
+#include "phNxpNciHal_ReaderAnnotation.h"
 #include "phNxpNciHal_ReaderThread.h"
 #include "phNxpNciHal_ULPDet.h"
 #include "phNxpNciHal_VendorProp.h"
@@ -1440,7 +1439,7 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
       NXPLOG_NCIHAL_E("Failed to retrieve NFCC hard fault counter debug info");
     }
   }
-  phNxpNfcExtn_core_initialized();
+  phNxpExtn_ConfigureVendorFeature();
   num = 0;
   if (GetNxpNumValue("NXP_I3C_MODE", &num, sizeof(num))) {
     if (num == 1) {
