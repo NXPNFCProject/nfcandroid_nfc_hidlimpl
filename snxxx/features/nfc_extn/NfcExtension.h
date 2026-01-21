@@ -108,7 +108,7 @@ enum NfcExtHal_NFCC_ERROR_CODE_t : uint8_t {
 typedef bool (*fp_extn_init_t)(VendorExtnCb*);
 typedef bool (*fp_extn_deinit_t)();
 typedef NFCSTATUS (*fp_extn_handle_nfc_event_t)(NfcExtEvent_t,
-                                                NfcExtEventData_t*);
+                                                NfcExtEventData_t);
 typedef bool (*fp_extn_configure_vendor_feature_t)();
 
 /**
@@ -124,13 +124,6 @@ void phNxpExtn_LibSetup();
  *
  */
 void phNxpExtn_LibClose();
-
-/**
- * @brief get the RF state
- * @return RF state. IDLE/SLEEP/DISCOVERY
- *
- */
-NfcRfState_t phNxpExtn_NfcGetRfState();
 
 /**
  * @brief update vendor specific configurations in NFC Init
