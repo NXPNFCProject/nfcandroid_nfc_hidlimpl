@@ -17,8 +17,9 @@
  ******************************************************************************/
 #define LOG_TAG "NxpNfcThreadMutex"
 
-#include <android-base/logging.h>
 #include "NxpNfcThreadMutex.h"
+
+#include <android-base/logging.h>
 #include <android-base/stringprintf.h>
 
 using android::base::StringPrintf;

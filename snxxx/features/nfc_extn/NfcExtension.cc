@@ -72,21 +72,24 @@ void phNxpExtn_LibSetup() {
       dlsym(p_oem_extn_handle, vendor_nfc_init_name.c_str()));
 
   if (fp_extn_init == nullptr) {
-    NXPLOG_NCIHAL_E("%s Failed to find %s !!", __func__, vendor_nfc_init_name.c_str());
+    NXPLOG_NCIHAL_E("%s Failed to find %s !!", __func__,
+                    vendor_nfc_init_name.c_str());
   }
 
   fp_extn_deinit = reinterpret_cast<fp_extn_deinit_t>(
       dlsym(p_oem_extn_handle, vendor_nfc_de_init_name.c_str()));
 
   if (fp_extn_deinit == nullptr) {
-    NXPLOG_NCIHAL_E("%s Failed to find %s !!", __func__, vendor_nfc_de_init_name.c_str());
+    NXPLOG_NCIHAL_E("%s Failed to find %s !!", __func__,
+                    vendor_nfc_de_init_name.c_str());
   }
 
   fp_extn_handle_nfc_event = reinterpret_cast<fp_extn_handle_nfc_event_t>(
       dlsym(p_oem_extn_handle, vendor_nfc_handle_event_name.c_str()));
 
   if (fp_extn_handle_nfc_event == nullptr) {
-    NXPLOG_NCIHAL_E("%s Failed to find %s !!", __func__, vendor_nfc_handle_event_name.c_str());
+    NXPLOG_NCIHAL_E("%s Failed to find %s !!", __func__,
+                    vendor_nfc_handle_event_name.c_str());
   }
 
   fp_extn_handle_configure_vendor_feature =
@@ -133,8 +136,8 @@ void phNxpExtn_LibClose() {
   NXPLOG_NCIHAL_D("%s Enter", __func__);
   if (fp_extn_deinit != NULL) {
     if (!fp_extn_deinit()) {
-      NXPLOG_NCIHAL_D("%s : %s Failed ",
-          __func__, vendor_nfc_de_init_name.c_str());
+      NXPLOG_NCIHAL_D("%s : %s Failed ", __func__,
+                      vendor_nfc_de_init_name.c_str());
     }
   }
   if (p_oem_extn_handle != NULL) {
@@ -161,7 +164,7 @@ void phNxpExtn_LibClose() {
   }
 }
 
-NFCSTATUS phNxpExtn_HandleNciMsg(uint16_t *dataLen, const uint8_t* pData) {
+NFCSTATUS phNxpExtn_HandleNciMsg(uint16_t* dataLen, const uint8_t* pData) {
   NXPLOG_NCIHAL_D("%s Enter dataLen:%d", __func__, *dataLen);
   NciData_t nci_data;
   nci_data.data_len = *dataLen;
@@ -193,7 +196,7 @@ void phNxpExtn_WriteCompleteStatusUpdate(NFCSTATUS status) {
   }
 }
 
-NFCSTATUS phNxpExtn_HandleNciRspNtf(uint16_t *dataLen, const uint8_t* pData) {
+NFCSTATUS phNxpExtn_HandleNciRspNtf(uint16_t* dataLen, const uint8_t* pData) {
   NXPLOG_NCIHAL_D("%s Enter dataLen:%d", __func__, *dataLen);
   NciData_t nci_data;
   nci_data.data_len = *dataLen;

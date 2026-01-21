@@ -265,7 +265,7 @@ static void phNxpLog_setLxLoggingEnabled() {
   }
 
   config_found = GetNxpNumValue(NAME_NXP_CORE_PROP_SYSTEM_DEBUG, &config_val,
-      sizeof(config_val));
+                                sizeof(config_val));
 
   if (prop_found) {
     lx_debug_cfg |= prop_val;
@@ -275,7 +275,7 @@ static void phNxpLog_setLxLoggingEnabled() {
   }
 
   if (!prop_found && !config_found) {
-    return; // No debug config found
+    return;  // No debug config found
   }
 
   if ((property_get_bool("ro.debuggable", 0) != 0) &&

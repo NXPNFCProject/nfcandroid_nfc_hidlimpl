@@ -521,27 +521,27 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
         wStatus = NFCSTATUS_NOT_ALLOWED;
       }
       /* Major Version number check */
-      else if ((FALSE == (gphNxpNciHal_fw_IoctlCtx.bDnldInitiated)) &&
+      else if ((false == (gphNxpNciHal_fw_IoctlCtx.bDnldInitiated)) &&
                (bNewVer[1] < bCurrVer[1])) {
         NXPLOG_FWDNLD_E("Version Check Failed - MajorVerNum Mismatch\n");
         NXPLOG_FWDNLD_E("NewVer %d != CurrVer %d\n", bNewVer[1], bCurrVer[1]);
         wStatus = NFCSTATUS_NOT_ALLOWED;
       }
       /* Minor Version number check - before download.*/
-      else if ((FALSE == (gphNxpNciHal_fw_IoctlCtx.bDnldInitiated)) &&
+      else if ((false == (gphNxpNciHal_fw_IoctlCtx.bDnldInitiated)) &&
                ((bNewVer[0] == bCurrVer[0]) && (bNewVer[1] == bCurrVer[1]))) {
         wStatus = NFCSTATUS_SUCCESS;
 #if (NXP_FORCE_FW_DOWNLOAD == 0)
         NXPLOG_FWDNLD_D("Version Already UpToDate!!\n");
-        (gphNxpNciHal_fw_IoctlCtx.bSkipSeq) = TRUE;
+        (gphNxpNciHal_fw_IoctlCtx.bSkipSeq) = true;
 #else
-        (gphNxpNciHal_fw_IoctlCtx.bForceDnld) = TRUE;
+        (gphNxpNciHal_fw_IoctlCtx.bForceDnld) = true;
 #endif
 
       }
       /* Minor Version number check - after download
        * after download, we should get the same version information.*/
-      else if ((TRUE == (gphNxpNciHal_fw_IoctlCtx.bDnldInitiated)) &&
+      else if ((true == (gphNxpNciHal_fw_IoctlCtx.bDnldInitiated)) &&
                ((bNewVer[0] != bCurrVer[0]) || (bNewVer[1] != bCurrVer[1]))) {
         NXPLOG_FWDNLD_E("Version Not Updated After Download!!\n");
         wStatus = NFCSTATUS_FAILED;
@@ -549,7 +549,7 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
         NXPLOG_FWDNLD_D("Version Check Successful\n");
         /* Store the Mw & Fw Version for updating in EEPROM Log Area after
          * successful download */
-        if (TRUE == (gphNxpNciHal_fw_IoctlCtx.bDnldInitiated)) {
+        if (true == (gphNxpNciHal_fw_IoctlCtx.bDnldInitiated)) {
           NXPLOG_FWDNLD_W("Updating Fw & Mw Versions..");
           (gphNxpNciHal_fw_IoctlCtx.tLogParams.wCurrMwVer) = wMwVern;
           (gphNxpNciHal_fw_IoctlCtx.tLogParams.wCurrFwVer) = wFwVern;

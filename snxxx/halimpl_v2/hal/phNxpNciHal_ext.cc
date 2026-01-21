@@ -444,8 +444,8 @@ NFCSTATUS phNxpNciHal_process_ext_rsp(uint8_t* p_ntf, uint16_t* p_len) {
   }
   if (p_ntf[0] == 0x42 && p_ntf[1] == 0x01 && p_ntf[2] == 0x01 &&
       p_ntf[3] == 0x00) {
-    if (nxpncihal_ctrl.hal_ext_enabled == TRUE && IS_CHIP_TYPE_GE(sn100u)) {
-      nxpncihal_ctrl.nci_info.wait_for_ntf = TRUE;
+    if (nxpncihal_ctrl.hal_ext_enabled == true && IS_CHIP_TYPE_GE(sn100u)) {
+      nxpncihal_ctrl.nci_info.wait_for_ntf = true;
       NXPLOG_NCIHAL_D(" Mode set received");
     }
   } else if (*p_len > 22 && p_ntf[0] == 0x61 && p_ntf[1] == 0x05 &&
@@ -568,9 +568,9 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
     }
     if (p_ntf[2] == 0x01 && p_ntf[3] == 0x00) {
       NXPLOG_NCIHAL_D("CORE_RESET_RSP NCI2.0");
-      if (nxpncihal_ctrl.hal_ext_enabled == TRUE &&
-          nxpncihal_ctrl.isCoreRstForFwDnld != TRUE) {
-        nxpncihal_ctrl.nci_info.wait_for_ntf = TRUE;
+      if (nxpncihal_ctrl.hal_ext_enabled == true &&
+          nxpncihal_ctrl.isCoreRstForFwDnld != true) {
+        nxpncihal_ctrl.nci_info.wait_for_ntf = true;
       }
     } else if (p_ntf[2] == 0x03 && p_ntf[3] == 0x00) {
       if (*p_len < 5) {
@@ -777,10 +777,10 @@ static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
 
   /* No NTF expected for OMAPI command */
   if (p_cmd[0] == 0x2F && p_cmd[1] == 0x1 && p_cmd[2] == 0x01) {
-    nxpncihal_ctrl.nci_info.wait_for_ntf = FALSE;
+    nxpncihal_ctrl.nci_info.wait_for_ntf = false;
   }
   /* Start timer to wait for NTF*/
-  if (nxpncihal_ctrl.nci_info.wait_for_ntf == TRUE) {
+  if (nxpncihal_ctrl.nci_info.wait_for_ntf == true) {
     status = phOsalNfc_Timer_Start(timeoutTimerId, HAL_EXTNS_WRITE_RSP_TIMEOUT,
                                    &hal_extns_write_rsp_timeout_cb, NULL);
     if (NFCSTATUS_SUCCESS == status) {
@@ -840,7 +840,7 @@ static NFCSTATUS phNxpNciHal_process_ext_cmd_rsp(uint16_t cmd_len,
 clean_and_return:
   phNxpNciHal_reset_ext_buffer();
   phNxpNciHal_cleanup_cb_data(&nxpncihal_ctrl.ext_cb_data);
-  nxpncihal_ctrl.nci_info.wait_for_ntf = FALSE;
+  nxpncihal_ctrl.nci_info.wait_for_ntf = false;
   HAL_DISABLE_EXT();
   return status;
 }

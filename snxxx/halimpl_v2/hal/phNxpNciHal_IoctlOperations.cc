@@ -636,7 +636,7 @@ void phNxpNciHal_txNfccClockSetCmd(void) {
                   clockSource, frequency);
 
   if (srcCfgFound && freqCfgFound && (clockSource == CLK_SRC_PLL)) {
-    phNxpNciClock.isClockSet = TRUE;
+    phNxpNciClock.isClockSet = true;
 
     switch (frequency) {
       case CLK_FREQ_13MHZ: {
@@ -705,7 +705,7 @@ void phNxpNciHal_txNfccClockSetCmd(void) {
         break;
       }
       default:
-        phNxpNciClock.isClockSet = FALSE;
+        phNxpNciClock.isClockSet = false;
         NXPLOG_NCIHAL_E("ERROR: Invalid clock frequency!!");
         return;
     }
@@ -744,7 +744,7 @@ void phNxpNciHal_txNfccClockSetCmd(void) {
       NXPLOG_NCIHAL_E("Wrong clock source. Don't apply any modification");
       return;
   }
-  phNxpNciClock.isClockSet = FALSE;
+  phNxpNciClock.isClockSet = false;
   if (status == NFCSTATUS_SUCCESS &&
       phNxpNciClock.p_rx_data[3] == NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_D("PLL and DPLL settings applied successfully");

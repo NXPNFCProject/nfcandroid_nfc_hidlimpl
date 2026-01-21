@@ -34,19 +34,19 @@ cc_library_shared {
         "libbase",
         "libbinder_ndk",
         "//hardware/google/pixel:pixel_stateresidency_provider_aidl_interface-ndk",
-        "vendor.nxp.nxpnfc@2.0",  // This is added to avoid compilation error
+        "vendor.nxp.nxpnfc@2.0", // This is added to avoid compilation error
     ],
     header_libs: [
         "nfc_nci_nxp_snxxx_headers_v2",
-        "libhardware_headers"
+        "libhardware_headers",
     ],
     static_libs: ["libNfcProps_v2"],
 }
 
 cc_library_headers {
-  name: "power_tracker_headers_v2",
-  vendor: true,
-  export_include_dirs: [
-    "include",
-  ],
+    name: "power_tracker_headers_v2",
+    vendor: true,
+    export_include_dirs: [
+        "include",
+    ],
 }

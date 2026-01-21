@@ -15,11 +15,10 @@
  */
 
 #undef PROPERTY_VALUE_MAX
-#include <cutils/properties.h>
-
 #include <EseAdaptation.h>
 #include <android-base/file.h>
 #include <android-base/stringprintf.h>
+#include <cutils/properties.h>
 #include <dlfcn.h>
 #include <log/log.h>
 #include <phDal4Nfc_messageQueueLib.h>
@@ -319,7 +318,7 @@ static NFCSTATUS phNxpNciHal_force_fw_download(uint8_t seq_handler_offset,
     property_set("nfc.fw.force_download", "0");
     if (status == NFCSTATUS_SUCCESS) {
       wConfigStatus = NFCSTATUS_SUCCESS;
-      fw_download_success = TRUE;
+      fw_download_success = true;
     } else if (status == NFCSTATUS_FW_CHECK_INTEGRITY_FAILED ||
                (phNxpNciHal_fw_mw_ver_check() != NFCSTATUS_SUCCESS)) {
       phOsalNfc_Timer_Cleanup();
@@ -361,7 +360,7 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset,
   phNxpNciHal_nfccClockCfgRead();
 
   if (!bIsNfccDlState) {
-    status = phNxpNciHal_write_fw_dw_status(TRUE);
+    status = phNxpNciHal_write_fw_dw_status(true);
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("%s: NXP Set FW DW Flag failed", __FUNCTION__);
     }
@@ -402,7 +401,7 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset,
 
   if (nfcFL.nfccFL._NFCC_DWNLD_MODE == NFCC_DWNLD_WITH_NCI_CMD &&
       (!bIsNfccDlState)) {
-    nxpncihal_ctrl.isCoreRstForFwDnld = TRUE;
+    nxpncihal_ctrl.isCoreRstForFwDnld = true;
     /*NCI_RESET_CMD*/
     static uint8_t cmd_reset_nci_dwnld[] = {0x20, 0x00, 0x01, 0x80};
     status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci_dwnld),
@@ -410,7 +409,7 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset,
     if (status != NFCSTATUS_SUCCESS) {
       NXPLOG_NCIHAL_E("Core reset FW download command failed \n");
     }
-    nxpncihal_ctrl.isCoreRstForFwDnld = FALSE;
+    nxpncihal_ctrl.isCoreRstForFwDnld = false;
   }
   if (NFCSTATUS_SUCCESS == status) {
     phTmlNfc_EnableFwDnldMode(true);
@@ -726,8 +725,8 @@ int phNxpNciHal_MinOpen() {
       NXPLOG_NCIHAL_D(
           "phNxpNciHal_CheckFwRegFlashRequired() failed:exit status = %x",
           status);
-      fw_update_req = FALSE;
-      rf_update_req = FALSE;
+      fw_update_req = false;
+      rf_update_req = false;
     }
 
     if (!wFwUpdateReq) {
@@ -738,7 +737,7 @@ int phNxpNciHal_MinOpen() {
       }
       if (is_teared_down) {
         seq_handler_offset = PHLIBNFC_DNLD_CHECKINTEGRITY_OFFSET;
-        fw_update_req = TRUE;
+        fw_update_req = true;
       } else {
         NXPLOG_NCIHAL_D("FW update not required");
         property_set("nfc.fw.force_download", "0");
@@ -1118,7 +1117,7 @@ static void phNxpNciHal_read_complete(void* pContext,
     }
 
     /* Check if response should go to hal module only */
-    if (nxpncihal_ctrl.hal_ext_enabled == TRUE &&
+    if (nxpncihal_ctrl.hal_ext_enabled == true &&
         (pInfo->pBuff[0x00] & NCI_MT_MASK) == NCI_MT_RSP) {
       if (status == NFCSTATUS_FAILED) {
         NXPLOG_NCIHAL_D("enter into NFCC init recovery");
@@ -1133,17 +1132,17 @@ static void phNxpNciHal_read_complete(void* pContext,
         SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
       }
     }  // Notification Checking
-    else if ((nxpncihal_ctrl.hal_ext_enabled == TRUE) &&
+    else if ((nxpncihal_ctrl.hal_ext_enabled == true) &&
              ((pInfo->pBuff[0x00] & NCI_MT_MASK) == NCI_MT_NTF) &&
              ((nxpncihal_ctrl.p_cmd_data[0x00] & NCI_GID_MASK) ==
               (pInfo->pBuff[0x00] & NCI_GID_MASK)) &&
              ((nxpncihal_ctrl.p_cmd_data[0x01] & NCI_OID_MASK) ==
               (pInfo->pBuff[0x01] & NCI_OID_MASK)) &&
-             (nxpncihal_ctrl.nci_info.wait_for_ntf == TRUE)) {
+             (nxpncihal_ctrl.nci_info.wait_for_ntf == true)) {
       /* Post to extension lib */
       phNxpExtn_HandleNciRspNtf(&pInfo->wLength, pInfo->pBuff);
       /* Unlock semaphore waiting for only  ntf*/
-      nxpncihal_ctrl.nci_info.wait_for_ntf = FALSE;
+      nxpncihal_ctrl.nci_info.wait_for_ntf = false;
       phNxpNciHal_update_ext_buffer(pInfo->wLength, pInfo->pBuff);
       SEM_POST(&(nxpncihal_ctrl.ext_cb_data));
     } else if (!sendRspToUpperLayer && (pInfo->pBuff[0x00] == 0x00)) {
@@ -3850,7 +3849,7 @@ void phNxpNciHal_configureLxDebugMode() {
   }
 
   config_found = GetNxpNumValue(NAME_NXP_CORE_PROP_SYSTEM_DEBUG, &config_val,
-      sizeof(config_val));
+                                sizeof(config_val));
 
   if (prop_found) {
     lx_debug_cfg |= prop_val;

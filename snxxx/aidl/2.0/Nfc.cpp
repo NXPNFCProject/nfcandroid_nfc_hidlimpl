@@ -19,8 +19,8 @@
 #include "Nfc.h"
 
 #include <android-base/logging.h>
-
 #include <memunreachable/memunreachable.h>
+
 #include "NfcExtns.h"
 #include "phNfcStatus.h"
 #include "phNxpConfig.h"

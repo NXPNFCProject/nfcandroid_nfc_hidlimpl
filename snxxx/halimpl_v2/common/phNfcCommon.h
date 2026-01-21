@@ -182,8 +182,9 @@ typedef void (*pphOsalNfc_DeferFuncPointer_t)(void*);
  * Deferred message specific info declaration.
  */
 typedef struct phOsalNfc_DeferredCallInfo {
-  pphOsalNfc_DeferFuncPointer_t pDeferredCall; /* pointer to Deferred callback */
-  void* pParam; /* contains timer message specific details*/
+  pphOsalNfc_DeferFuncPointer_t
+      pDeferredCall; /* pointer to Deferred callback */
+  void* pParam;      /* contains timer message specific details*/
 } phOsalNfc_DeferredCallInfo_t;
 
 /*
