@@ -2,7 +2,7 @@
  *
  *  The original Work has been changed by NXP.
  *
- *  Copyright 2024-2025 NXP
+ *  Copyright 2024-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -30,6 +30,11 @@
 #include <string.h>
 
 std::unique_ptr<Mpos> Mpos::instance = nullptr;
+
+#define NFCEE_DISC_REQ_ADD 0x00
+#define NFCEE_DISC_REQ_REMOVE 0x01
+#define NFCEE_DISC_REQ_UNKNOWN 0x02
+#define NFCEE_ID_ESE 0xC0
 
 Mpos::Mpos() {
   NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter", __func__);
@@ -213,6 +218,39 @@ NFCSTATUS Mpos::processMposNciRspNtf(const std::vector<uint8_t> &pData) {
   return processMposEvent(state);
 }
 
+uint8_t Mpos::parseNfceeDiscReqNtf(const std::vector<uint8_t> &pData) {
+  constexpr uint8_t TLV_LEN = 0x03;
+  uint8_t index = 3;
+  if ((pData.size() < (NCI_HEADER_LEN + 1)) ||
+      (pData[2] != (pData.size() - NCI_HEADER_LEN))) {
+    NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN, "%s: Invalid packet", __func__)
+    return NFCEE_DISC_REQ_UNKNOWN;
+  }
+  uint8_t numOfInfoEntry = pData[index++];
+  while (numOfInfoEntry > 0) {
+    if ((index + 1) > pData.size()) {
+      // Expect atleast tag and len field
+      NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN, "%s: Invalid packet", __func__);
+      return NFCEE_DISC_REQ_UNKNOWN;
+    }
+    uint8_t type = pData[index++];
+    uint8_t len = pData[index++];
+    if ((index + len) > pData.size()) {
+      // Make sure value length is valid
+      NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN, "%s: Invalid packet", __func__);
+      return NFCEE_DISC_REQ_UNKNOWN;
+    }
+    std::vector<uint8_t> value((pData.data() + index),
+                               (pData.data() + index + len));
+    index += len;
+    numOfInfoEntry--;
+    if (len == TLV_LEN && value[0] == NFCEE_ID_ESE) {
+      return type;
+    }
+  }
+  return NFCEE_DISC_REQ_UNKNOWN;
+}
+
 ScrState_t Mpos::getScrState(const std::vector<uint8_t> &pData) {
 
   if (pData.size() < (NCI_HEADER_LEN - 1)) {
@@ -222,18 +260,38 @@ ScrState_t Mpos::getScrState(const std::vector<uint8_t> &pData) {
   const uint16_t mGidOid = ((pData[0] << 8) | pData[1]);
 
   switch (mGidOid) {
-  case NCI_DISC_REQ_NTF_GID_OID:
+  case NCI_DISC_REQ_NTF_GID_OID: {
+    uint8_t nfceeDiscReqType = parseNfceeDiscReqNtf(pData);
+    if (nfceeDiscReqType != NFCEE_DISC_REQ_ADD &&
+        nfceeDiscReqType != NFCEE_DISC_REQ_REMOVE) {
+      NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN,
+                     "%s: NFCEE_DISC_REQ_NTF is not for ESE, Ignoring",
+                     __func__);
+      return MPOS_STATE_UNKNOWN;
+    }
     switch (mState) {
     case MPOS_STATE_START_IN_PROGRESS:
-      return MPOS_STATE_REQUEST_HAL_CONTROL;
+      if (nfceeDiscReqType == NFCEE_DISC_REQ_ADD) {
+        return MPOS_STATE_REQUEST_HAL_CONTROL;
+      } else {
+        return MPOS_STATE_UNKNOWN;
+      }
     case MPOS_STATE_WAIT_FOR_INTERFACE_ACTIVATION:
     case MPOS_STATE_RF_DISCOVERY_REQUEST_REMOVE:
-      return MPOS_STATE_NOTIFY_STOP_RF_DISCOVERY;
+      if (nfceeDiscReqType == NFCEE_DISC_REQ_REMOVE) {
+        return MPOS_STATE_NOTIFY_STOP_RF_DISCOVERY;
+      } else {
+        return MPOS_STATE_UNKNOWN;
+      }
     case MPOS_STATE_RECOVERY_ON_EXT_FIELD_DETECT:
       // Mpos stop called while recovery is ongoing
       // Discovery stop is already called by recovery hence move to
       // MPOS_STATE_SE_READER_STOPPED.
-      return MPOS_STATE_SE_READER_STOPPED;
+      if (nfceeDiscReqType == NFCEE_DISC_REQ_REMOVE) {
+        return MPOS_STATE_SE_READER_STOPPED;
+      } else {
+        return MPOS_STATE_UNKNOWN;
+      }
     case MPOS_STATE_SE_READER_STOPPED:
     case MPOS_STATE_IDLE:
     case MPOS_STATE_GENERIC_NTF:
@@ -242,7 +300,7 @@ ScrState_t Mpos::getScrState(const std::vector<uint8_t> &pData) {
       break;
     }
     break;
-
+  }
   case NCI_SET_CONFIG_RSP_GID_OID:
     switch (mState) {
     case MPOS_STATE_WAIT_FOR_PROFILE_SELECT_RESPONSE:
@@ -306,11 +364,27 @@ ScrState_t Mpos::getScrState(const std::vector<uint8_t> &pData) {
     break;
   }
   case NCI_DATA_PKT_RSP_GID_OID: {
-    if (!isActivatedNfcRcv && (isSeReaderRestarted(pData) == true) &&
-        (mState != MPOS_STATE_IDLE)) {
-      return MPOS_STATE_DISCOVERY_RESTARTED;
-    } else {
+    if (!isSeReaderRestarted(pData)) {
       return MPOS_STATE_UNKNOWN;
+    }
+    switch (mState) {
+    case MPOS_STATE_START_IN_PROGRESS:
+      // Case: mpos start -> nfc reset -> mpos start
+      // Need to go through all stages of mpos
+      return MPOS_STATE_REQUEST_HAL_CONTROL;
+      break;
+    case MPOS_STATE_IDLE:
+      // Case: mpos not active, Ignore
+      return MPOS_STATE_UNKNOWN;
+      break;
+    default:
+      // Case: mpos start -> mpos start
+      // No need to start mpos again, Just change the state
+      if (!isActivatedNfcRcv) {
+        return MPOS_STATE_DISCOVERY_RESTARTED;
+      } else {
+        return MPOS_STATE_UNKNOWN;
+      }
     }
     break;
   }

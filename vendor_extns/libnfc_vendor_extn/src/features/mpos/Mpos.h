@@ -2,7 +2,7 @@
  *
  *  The original Work has been changed by NXP.
  *
- *  Copyright 2024-2025 NXP
+ *  Copyright 2024-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -268,6 +268,14 @@ private:
   bool isProcessRdrReq(ScrState_t state);
   std::string scrStateToString(ScrState_t state);
   ScrState_t mState;
+  /**
+   * @brief Parse NFCEE DISC REQ NTF and see if this has valid
+   *        notification for ESE.
+   * @param pData the data buffer
+   * @return disc request type if it found valid ntf
+             Unknown otherwise.
+   */
+  uint8_t parseNfceeDiscReqNtf(const std::vector<uint8_t> &pData);
   /**
    * @brief Checks if external field is detected during Mpos poll
    * @param pData the data buffer
