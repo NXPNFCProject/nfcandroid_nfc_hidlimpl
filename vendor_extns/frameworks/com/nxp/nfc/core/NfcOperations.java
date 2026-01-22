@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -248,6 +248,10 @@ public class NfcOperations {
                 conditionallyRegisterOemCallback(true);
                 if (isStart && mIsDiscoveryStarted) {
                     NxpNfcLogger.d(TAG, " discovery already started");
+                    conditionallyRegisterOemCallback(false);
+                    return;
+                } else if (!isStart && !mIsDiscoveryStarted) {
+                    NxpNfcLogger.d(TAG, " discovery already stopped");
                     conditionallyRegisterOemCallback(false);
                     return;
                 }
