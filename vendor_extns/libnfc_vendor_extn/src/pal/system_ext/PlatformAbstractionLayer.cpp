@@ -282,6 +282,12 @@ void PlatformAbstractionLayer::updateHalConfig(
   mConfigHandler->updateConfig(pConfigMap);
 }
 
+NFCSTATUS PlatformAbstractionLayer::palNfcTmlWrite(uint8_t *pBuffer,
+                                                   uint16_t wLength) {
+  return NFCSTATUS_FAILED;
+}
+bool PlatformAbstractionLayer::palIsHciPipeRequireToCreate() { return false; }
+
 std::vector<uint8_t> PlatformAbstractionLayer::palGetDiscoveryCommand() {
   return {};
 }

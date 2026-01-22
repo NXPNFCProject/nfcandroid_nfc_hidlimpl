@@ -405,6 +405,8 @@ NFCSTATUS phNxpExtn_OnHandleHalEvent(uint8_t event, uint8_t event_status) {
     break;
   case HANDLE_NFC_PRE_DISCOVER:
     event = EXT_NFC_PRE_DISCOVER;
+    if (PlatformAbstractionLayer::getInstance()->palIsHciPipeRequireToCreate())
+      AutoCard::getInstance()->phNxpNciHal_checkAndCreateApduPipe();
     break;
   default:
     break;

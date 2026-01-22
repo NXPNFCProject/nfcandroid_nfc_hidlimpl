@@ -18,6 +18,7 @@
 #ifndef NFC_AUTOCARD_H
 #define NFC_AUTOCARD_H
 
+#include <condition_variable>
 #include "NciDef.h"
 #include "NfcExtensionConstants.h"
 #include "PlatformAbstractionLayer.h"
@@ -25,7 +26,19 @@
 #include "phNfcTypes.h"
 #include "phNxpLog.h"
 #include <cstdint>
+#include <mutex>
 #include <vector>
+
+typedef struct {
+  uint8_t pipeId;
+  uint8_t status;
+  std::vector<uint8_t> data;
+} HciRspPkt;
+typedef struct {
+  uint8_t pipeId;
+  uint8_t event;
+  std::vector<uint8_t> data;
+} HciEvtPkt;
 
 /**
  * @brief Manager class to handle the AutoCard operations.
@@ -56,7 +69,51 @@ public:
    */
   NFCSTATUS handleVendorNciRspNtf(uint16_t dataLen, uint8_t *pData);
 
+  /**
+   * @brief get autocard configurations from config and enable/disable the
+   * feature .
+   */
   void phNxpNciHal_getAutoCardConfig();
+
+  /**
+   * @brief Create APDU pipe if wiredSE is enabled.
+   */
+  void phNxpNciHal_checkAndCreateApduPipe();
+  /**
+   * @brief handle HCI response.
+   * @param rspLen Length of the hci response
+   * @param rsp Pointer to the response data
+   * @return returns NFCSTATUS_SUCCESS,
+   */
+  NFCSTATUS phNxpNciHal_handleHciAutoCardRsp(uint8_t *rsp, uint16_t rspLen);
+  /**
+   * @brief send HCI cpmmand.
+   * @param data HCI command
+   * @param rsp hci response will be update
+   * @return returns NFCSTATUS_SUCCESS,
+   */
+  NFCSTATUS sendHciCmd(std::vector<uint8_t> &data, HciRspPkt &rsp);
+  /**
+   * @brief validated the recived response is HCI credit notification.
+   * @param rspLen Length of the hci response
+   * @param rsp Pointer to the response data
+   * @return returns true if HCI credit ntf, else false,
+   */
+  bool isCreditNtfForHci(uint8_t *rsp, uint16_t rspLen);
+  /**
+   * @brief validated the recived response is HCI packet.
+   * @param rspLen Length of the hci response
+   * @param rsp Pointer to the response data
+   * @return returns true if HCI rsp, else false,
+   */
+  bool isValidHciPacket(uint8_t *rsp, uint16_t rspLen);
+  /**
+   * @brief process the recived HCI packet.
+   * @param rspLen Length of the hci response
+   * @param rsp Pointer to the response data
+   * @return returns NFCSTATUS_SUCCESS,
+   */
+  NFCSTATUS processHciPacket(uint8_t *rsp, uint16_t rspLen);
 
   /**
    * @brief Releases all the resources
@@ -74,6 +131,18 @@ private:
   static AutoCard *sAutoCard;
   /* Auto card command type GET/SET*/
   uint8_t autoCardCmdType;
+  bool isHciCmdSent;
+  bool isPipeTobeCreated;
+  bool mFirstFragment;
+  bool mWTX;
+  std::mutex mRspMutex;
+  HciRspPkt mResponse;
+  bool mWaitForResponse;
+  unsigned long mMaxWtxCount;
+  uint32_t mWtxCount;
+  std::vector<uint8_t> mLastSentCmd;
+  std::condition_variable mRspCond;
+  std::chrono::milliseconds mResponseTimeout;
   /**
    * @brief maintains autocard enabled status.
    * Bit-0 1b for enable and 0b for Disable.

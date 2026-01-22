@@ -18,13 +18,55 @@
 
 #include "phNxpAutoCard.h"
 
+#define HCI_TRANSCEIVE_TIMEOUT 2000
+#define NCI_GID_IDX 0
+#define NCI_OID_IDX 1
+#define NCI_LEN_IDX 2
+#define HCI_PKT_HDR_IDX 3
+#define HCI_MSG_HDR_IDX 4
+#define MIN_NCI_PAYLOAD 2
+#define CREDIT_NTF_CONN_ID_IDX 4
+#define CREDIT_NTF_CREDITS_IDX 5
+#define NCI_CORE_CREDIT_NTF 0x06
+#define HCI_APDU_PIPE_ID 0x19
+#define DEFAULT_MAX_WTX_COUNT 30
+#define HCI_CHAIN_MASK 0x80
+#define HCI_PIPE_ID_MASK 0x7F
+#define HCI_MSG_TYPE_MASK 0xC0
+#define HCI_MSG_INS_MASK 0x3F
+#define INST_EVT_WTX 0x11
+#define HCI_MSG_TYPE_EVT 1
+#define HCI_MSG_TYPE_RSP 2
+#define HCI_MSG_TYPE_INVALID 3
+#define STATUS_MAX_WTX_REACHED 0xE0
+#define NCI_GID(NciPkt) ((NciPkt[NCI_GID_IDX] & NCI_GID_MASK))
+#define NCI_OID(NciPkt) ((NciPkt[NCI_OID_IDX] & NCI_OID_MASK))
+#define HCI_UNCHAINED(NciPkt) ((NciPkt[HCI_PKT_HDR_IDX] & HCI_CHAIN_MASK) >> 7)
+#define HCI_CHAINED(NciPkt) !HCI_UNCHAINED(NciPkt)
+#define HCI_PIPE_ID(NciPkt) (NciPkt[HCI_PKT_HDR_IDX] & HCI_PIPE_ID_MASK)
+#define HCI_MSG_TYPE(NciPkt)                                                   \
+  ((NciPkt[HCI_MSG_HDR_IDX] & HCI_MSG_TYPE_MASK) >> 6)
+#define HCI_MSG_INS(NciPkt) (NciPkt[HCI_MSG_HDR_IDX] & HCI_MSG_INS_MASK)
+#define FRAME_HCI_MSG_HEADER(MsgType, Ins) ((MsgType << 6) | Ins)
+#define CREDITS_AVAILABLE(NciPkt) (NciPkt[CREDIT_NTF_CREDITS_IDX])
+#define INST_EVT_UNKNOWN 0x00
+
 AutoCard *AutoCard::sAutoCard = nullptr;
 
 AutoCard::AutoCard() {
   NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "AutoCard::%s Enter ", __func__);
   autoCardCmdType = 0;
+  isPipeTobeCreated = false;
+  isHciCmdSent = false;
+  mFirstFragment = true;
+  mWTX = false;
+  mWtxCount = 0;
+  mMaxWtxCount = DEFAULT_MAX_WTX_COUNT;
   mAutoCardEnableStatus = 0;
   mAutoCardCounters.clear();
+  mLastSentCmd.clear();
+  mResponseTimeout = std::chrono::milliseconds(0);
+  mWaitForResponse = false;
 }
 
 AutoCard::~AutoCard() {
@@ -36,6 +78,257 @@ AutoCard *AutoCard::getInstance() {
     sAutoCard = new AutoCard();
   }
   return sAutoCard;
+}
+
+NFCSTATUS AutoCard::phNxpNciHal_handleHciAutoCardRsp(uint8_t *rsp,
+                                                     uint16_t rspLen) {
+  uint8_t autocard_selection_mode = 0x00;
+
+  if (PlatformAbstractionLayer::getInstance()->palGetChipType() != sn220u ||
+      !mWaitForResponse)
+    return NFCSTATUS_FAILED;
+
+  if (!GetNxpNumValue(NAME_NXP_AUTOCARD_SELECTION_PHONE_OFF,
+                      &autocard_selection_mode,
+                      sizeof(autocard_selection_mode))) {
+    return NFCSTATUS_FAILED;
+  }
+  if (autocard_selection_mode != AUTOCARD_FEATURE_ENABLED)
+    return NFCSTATUS_FAILED;
+
+  if (isCreditNtfForHci(rsp, rspLen)) {
+    return NFCSTATUS_SUCCESS;
+  } else if (isValidHciPacket(rsp, rspLen)) {
+    return processHciPacket(rsp, rspLen);
+  }
+
+  return NFCSTATUS_FAILED;
+}
+
+bool AutoCard::isCreditNtfForHci(uint8_t *rsp, uint16_t rspLen) {
+  (void)rspLen;
+  if (rsp[NCI_GID_IDX] == 0x60 && rsp[NCI_OID_IDX] == NCI_CORE_CREDIT_NTF &&
+      rsp[NCI_LEN_IDX] == 0x03 && rsp[CREDIT_NTF_CONN_ID_IDX] == 0x01 &&
+      rsp[CREDIT_NTF_CREDITS_IDX] == 0x01) {
+    return true;
+  }
+  return false;
+}
+
+bool AutoCard::isValidHciPacket(uint8_t *rsp, uint16_t rspLen) {
+  // Expect at least 3 bytes NCI Header & 2 bytes HCI Header.
+  if (rspLen < (NCI_HEADER_LEN + MIN_NCI_PAYLOAD)) {
+    NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN, "is Not valid HCI Pkt");
+    return false;
+  }
+  // Check if it is valid Event for apdu pipe
+  if (NCI_GID(rsp) == 0x01 && NCI_OID(rsp) == 0x00 &&
+      HCI_PIPE_ID(rsp) == HCI_APDU_PIPE_ID) {
+    return true;
+  }
+  // Check if it is valid response for last sent packet.
+  if (mLastSentCmd.size() > 0) {
+    if (NCI_GID(mLastSentCmd) == NCI_GID(rsp) &&
+        NCI_OID(mLastSentCmd) == NCI_OID(rsp) &&
+        HCI_PIPE_ID(mLastSentCmd) == HCI_PIPE_ID(rsp)) {
+      return true;
+    }
+  }
+  // It is neither APDU PIPE EVT nor RESPONSE to LastSentCommand.
+  // Treat it not a WiredSe Pkt
+  return false;
+}
+
+NFCSTATUS AutoCard::processHciPacket(uint8_t *rsp, uint16_t rspLen) {
+  if (!rsp || rspLen == 0) {
+    return NFCSTATUS_FAILED;
+  }
+
+  uint8_t pipeId = HCI_PIPE_ID(rsp);
+  bool isChained = HCI_CHAINED(rsp);
+  int dataIdx = HCI_MSG_HDR_IDX;
+  uint8_t msgType = HCI_MSG_TYPE(rsp);
+  uint8_t inst = HCI_MSG_INS(rsp);
+
+  std::unique_lock lk(mRspMutex);
+
+  switch (msgType) {
+  case HCI_MSG_TYPE_RSP:
+    if (mFirstFragment) {
+      mResponse.pipeId = pipeId;
+      mResponse.status = inst;
+    }
+    break;
+
+  case HCI_MSG_TYPE_EVT:
+    if (inst == INST_EVT_WTX) {
+      mWtxCount++;
+      NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN,
+                     "%s EVT_WTX received, WtxCount=%u", __func__, mWtxCount);
+      mWTX = true;
+      mRspCond.notify_one(); // Wake up waiting thread
+      return NFCSTATUS_SUCCESS;
+    }
+    break;
+
+  default:
+    return NFCSTATUS_FAILED;
+  }
+  // Common data handling for RSP and EVT
+  mResponse.data.insert(mResponse.data.end(), rsp + dataIdx, rsp + rspLen);
+  if (!isChained) {
+    mWaitForResponse = false;
+    mRspCond.notify_one();
+    mFirstFragment = true;
+  } else {
+    mFirstFragment = false;
+  }
+
+  return NFCSTATUS_SUCCESS;
+}
+
+NFCSTATUS AutoCard::sendHciCmd(std::vector<uint8_t> &data, HciRspPkt &rsp) {
+  std::vector<uint8_t> endOfApduCmd = {0x01, 0x00, 0x02, 0x99, 0x61};
+  if (data.empty()) {
+    return NFCSTATUS_FAILED;
+  }
+
+  NFCSTATUS status = NFCSTATUS_FAILED;
+  bool isChained = HCI_CHAINED(data.data());
+  mResponseTimeout = std::chrono::milliseconds(HCI_TRANSCEIVE_TIMEOUT);
+
+  // Cache last command for potential retransmission
+  mLastSentCmd.insert(mLastSentCmd.end(), data.begin(), data.end());
+  mWaitForResponse = true;
+
+  status = PlatformAbstractionLayer::getInstance()->palNfcTmlWrite(
+      data.data(), (uint16_t)data.size());
+  if (status != NFCSTATUS_SUCCESS) {
+    usleep(1000 * 10);
+    status = PlatformAbstractionLayer::getInstance()->palNfcTmlWrite(
+        data.data(), (uint16_t)data.size());
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN, "Failed to write, status = %x",
+                     status);
+    }
+  }
+
+  if (status != NFCSTATUS_SUCCESS) {
+    NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN, "Failed to write, status = %x",
+                   status);
+    mLastSentCmd.clear();
+    return status;
+  }
+
+  if (data == endOfApduCmd) {
+    // No response for End of APDU cmd.
+    mLastSentCmd.clear();
+    return NFCSTATUS_SUCCESS;
+  }
+
+  if (!isChained) {
+    std::unique_lock lock(mRspMutex);
+    mWtxCount = 0;
+
+    // Wait for response or WTX events
+    while (true) {
+      mWTX = false; // Reset before wait
+      if (!mRspCond.wait_for(lock, mResponseTimeout,
+                             [this] { return !mWaitForResponse || mWTX; })) {
+        ALOGE("Response timeout");
+        mLastSentCmd.clear();
+        return NFCSTATUS_FAILED;
+      }
+
+      if (!mWTX) {
+        break; // Got response
+      }
+
+      mWtxCount++;
+      if (mWtxCount >= mMaxWtxCount) {
+        mLastSentCmd.clear();
+        mWtxCount = 0;
+        return STATUS_MAX_WTX_REACHED;
+      }
+    }
+
+    // Copy response and cleanup
+    rsp = mResponse;
+    mResponse.pipeId = 0;
+    mResponse.status = 0;
+    mResponse.data.clear();
+    mLastSentCmd.clear();
+  }
+
+  return NFCSTATUS_SUCCESS;
+}
+
+void AutoCard::phNxpNciHal_checkAndCreateApduPipe() {
+  std::vector<uint8_t> powerLinkOnCmd = {0x22, 0x03, 0x02, 0xC0, 0x03};
+  std::vector<uint8_t> modeSetCmd = {0x22, 0x01, 0x02, 0xC0, 0x01};
+  std::vector<uint8_t> apduPipeStatusCmd = {0x20, 0x03, 0x03, 0x01, 0xA0, 0x23};
+  std::vector<uint8_t> createPipeCmd = {0x01, 0x00, 0x05, 0x81,
+                                        0x10, 0x11, 0xC0, 0x30};
+  std::vector<uint8_t> openPipeCmd = {0x01, 0x00, 0x02, 0x99, 0x03};
+  std::vector<uint8_t> hciEvtAbort = {0x01, 0x00, 0x02, 0x99, 0x51};
+  std::vector<uint8_t> endOfApduCmd = {0x01, 0x00, 0x02, 0x99, 0x61};
+  uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+  uint16_t rsp_len = 0;
+  bool isPipeOpenCmdSent = false;
+
+  uint8_t autocard_selection_mode = 0x00;
+  HciRspPkt hciRsp;
+
+  if (PlatformAbstractionLayer::getInstance()->palGetChipType() != sn220u ||
+      !isPipeTobeCreated)
+    return;
+
+  isPipeTobeCreated = false;
+
+  NFCSTATUS status = PlatformAbstractionLayer::getInstance()->palNfcSendExtCmd(
+      powerLinkOnCmd.size(), powerLinkOnCmd.data(), &rsp_len, rsp);
+  if (status != NFCSTATUS_SUCCESS || rsp_len != 4 || rsp[3] != 0x00)
+    return;
+
+  status = PlatformAbstractionLayer::getInstance()->palNfcSendExtCmd(
+      modeSetCmd.size(), modeSetCmd.data(), &rsp_len, rsp);
+  if (status != NFCSTATUS_SUCCESS || rsp_len != 4 || rsp[3] != 0x00)
+    goto disable_pwr_link;
+
+  status = PlatformAbstractionLayer::getInstance()->palNfcSendExtCmd(
+      apduPipeStatusCmd.size(), apduPipeStatusCmd.data(), &rsp_len, rsp);
+  if (status == NFCSTATUS_SUCCESS && rsp_len == 9 && rsp[8] == 0x00) {
+    status = AutoCard::getInstance()->sendHciCmd(createPipeCmd, hciRsp);
+    if (status != NFCSTATUS_SUCCESS || hciRsp.status != 0x00)
+      goto disable_pwr_link;
+
+    isPipeOpenCmdSent = true;
+    status = AutoCard::getInstance()->sendHciCmd(openPipeCmd, hciRsp);
+    if (status != NFCSTATUS_SUCCESS || hciRsp.status != 0x00)
+      goto disable_pwr_link;
+
+    status = AutoCard::getInstance()->sendHciCmd(hciEvtAbort, hciRsp);
+    if (status != NFCSTATUS_SUCCESS || hciRsp.status != 0x00)
+      goto disable_pwr_link;
+  }
+// Deactivate link
+disable_pwr_link:
+  powerLinkOnCmd[4] = 0x01;
+  status = PlatformAbstractionLayer::getInstance()->palNfcSendExtCmd(
+      powerLinkOnCmd.size(), powerLinkOnCmd.data(), &rsp_len, rsp);
+  if (status != NFCSTATUS_SUCCESS)
+    NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN,
+                   "%s Deactivate powr link failed.: %d", __func__, status);
+
+  if (!isPipeOpenCmdSent)
+    return;
+
+  status = AutoCard::getInstance()->sendHciCmd(endOfApduCmd, hciRsp);
+  if (status != NFCSTATUS_SUCCESS)
+    NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN,
+                   "%s Failed to send End of APDU: %d", __func__, status);
+
+  mWaitForResponse = false;
 }
 
 void AutoCard::phNxpNciHal_getAutoCardConfig() {
@@ -55,8 +348,6 @@ void AutoCard::phNxpNciHal_getAutoCardConfig() {
       (PlatformAbstractionLayer::getInstance()->palGetChipType() != sn300u))
     return;
 
-  // if (IS_CHIP_TYPE_NE(sn220u) && IS_CHIP_TYPE_NE(sn300u)) return;
-
   uint8_t autocard_selection_mode = 0x00;
   if (!PlatformAbstractionLayer::getInstance()->palGetNxpNumValue(
           NAME_NXP_AUTOCARD_SELECTION_PHONE_OFF, &autocard_selection_mode,
@@ -66,6 +357,8 @@ void AutoCard::phNxpNciHal_getAutoCardConfig() {
 
   if (autocard_selection_mode != AUTOCARD_FEATURE_ENABLED)
     return;
+
+  isPipeTobeCreated = true;
 
   std::vector<uint8_t> getAutoCardCounters = {0x2F, 0x43, 0x01, 0x02};
   NFCSTATUS status = PlatformAbstractionLayer::getInstance()->palNfcSendExtCmd(
@@ -141,6 +434,13 @@ void AutoCard::phNxpNciHal_getAutoCardConfig() {
 
 NFCSTATUS AutoCard::handleVendorNciRspNtf(uint16_t dataLen, uint8_t *pData) {
   NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "AutoCard:: %s Enter ", __func__);
+
+  if (AutoCard::getInstance()->phNxpNciHal_handleHciAutoCardRsp(
+          pData, dataLen) == NFCSTATUS_SUCCESS) {
+    NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s => %d, HCI Autocard Packet",
+                   __func__, __LINE__);
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+  }
 
   if ((pData[NCI_GID_INDEX] != (NCI_MT_RSP | NCI_GID_PROP) &&
        (pData[NCI_GID_INDEX] != (NCI_MT_NTF | NCI_GID_PROP))) ||

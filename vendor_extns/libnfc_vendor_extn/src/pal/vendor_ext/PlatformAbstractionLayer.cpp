@@ -128,6 +128,13 @@ unsigned PlatformAbstractionLayer::palGetLibNciConfig(const char* key, bool& fou
   return 0;
 }
 
+NFCSTATUS PlatformAbstractionLayer::palNfcTmlWrite(uint8_t *pBuffer,
+                                                   uint16_t wLength) {
+  return phNxpHal_NfcTmlWrite(pBuffer, wLength);
+}
+bool PlatformAbstractionLayer::palIsHciPipeRequireToCreate() {
+  return phNxpNciHal_IsHciPipeRequireToCreate();
+}
 std::vector<uint8_t> PlatformAbstractionLayer::palGetDiscoveryCommand() {
   return phNxpNciHal_GetDiscoveryCommand();
 }

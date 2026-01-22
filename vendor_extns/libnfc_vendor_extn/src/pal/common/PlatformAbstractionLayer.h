@@ -178,6 +178,23 @@ public:
   uint32_t palGetLibNciConfig(const char* key, bool& found);
 
   /**
+   * @brief It will write the data/cmd synchronously to i2c channel.
+   *        Notifies upper layer using callback mechanism.
+   * @param  data to be sent
+   * @param  length of data buffer
+   * @return Returns NFCSTATUS_SUCCESS if sending cmd is successful and
+   *         response is received.
+   *
+   */
+  NFCSTATUS palNfcTmlWrite(uint8_t *pBuffer, uint16_t wLength);
+
+  /**
+   * @brief Returns the status to create HCI pipe.
+   * @return True or False.
+   */
+  bool palIsHciPipeRequireToCreate();
+
+  /**
    * @brief Retrieves the default NFCC discovery command.
    *
    * This function constructs and returns the discovery command that is sent to
