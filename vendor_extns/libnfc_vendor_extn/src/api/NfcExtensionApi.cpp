@@ -293,6 +293,22 @@ NFCSTATUS phNxpExtn_HandleVendorNciMsg(uint16_t dataLen,
                    __func__);
     return status;
   }
+
+  if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
+      AutoCard::getInstance()->handleVendorNciMessage(
+          dataLen, const_cast<uint8_t *>(pData)))
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+
+  if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
+      DualAntenna::getInstance()->handleVendorNciMessage(
+          dataLen, const_cast<uint8_t *>(pData)))
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+
+  if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
+      NxpNTag::getInstance()->handleVendorNciMessage(
+          dataLen, const_cast<uint8_t *>(pData)))
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+
   if (isVendorSpecificCmd(dataLen, pData)) {
     status =
         ProprietaryExtn::getInstance()->handleVendorNciMsg(dataLen, pData);

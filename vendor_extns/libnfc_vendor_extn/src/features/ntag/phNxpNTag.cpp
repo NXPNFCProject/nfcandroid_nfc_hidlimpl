@@ -92,8 +92,8 @@ void NxpNTag::phNxpNciHal_disableNtagNtfConfig() {
   // LPCD without poll off cmd to reset the lpcd setting
   std::vector<uint8_t> mFwRsp = NciStateMonitor::getInstance()->getFwVersion();
   if (mFwRsp.size() > 2)
-    mFwVer = (((uint32_t)mFwRsp[2]) << 16U) | (((uint32_t)mFwRsp[1]) << 8U) |
-             mFwRsp[0];
+    mFwVer = (((uint32_t)mFwRsp[0]) << 16U) | (((uint32_t)mFwRsp[1]) << 8U) |
+             mFwRsp[2];
   if (mFwVer >= DEFAULT_LPCD_WITHOUT_POLL_SUPPORT_MIN_FW_VER) {
     static uint8_t LPCD_WOUT_POLL_SET_OFF[] = {
         (NCI_MT_CMD | NCI_GID_PROP), NTAG_LPCD_PROP_VAL, PAYLOAD_TWO_LEN,
@@ -343,8 +343,8 @@ NFCSTATUS NxpNTag::sendLpcdWoPoll(bool flag) {
 
   std::vector<uint8_t> mFwRsp = NciStateMonitor::getInstance()->getFwVersion();
   if (mFwRsp.size() > 2)
-    mFwVer = (((uint32_t)mFwRsp[2]) << 16U) | (((uint32_t)mFwRsp[1]) << 8U) |
-             mFwRsp[0];
+    mFwVer = (((uint32_t)mFwRsp[0]) << 16U) | (((uint32_t)mFwRsp[1]) << 8U) |
+             mFwRsp[2];
 
   if (mFwVer < DEFAULT_LPCD_WITHOUT_POLL_SUPPORT_MIN_FW_VER)
     return status;

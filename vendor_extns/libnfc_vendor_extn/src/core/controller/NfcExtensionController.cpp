@@ -114,21 +114,6 @@ NFCSTATUS NfcExtensionController::handleVendorNciMessage(uint16_t dataLen,
   NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s subGid:%d subOid:%d", __func__,
                  static_cast<int>(subGid), subOid);
 
-  if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
-      AutoCard::getInstance()->handleVendorNciMessage(
-          dataLen, const_cast<uint8_t *>(pData)))
-    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
-
-  if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
-      DualAntenna::getInstance()->handleVendorNciMessage(
-          dataLen, const_cast<uint8_t *>(pData)))
-    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
-
-  if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
-      NxpNTag::getInstance()->handleVendorNciMessage(
-          dataLen, const_cast<uint8_t *>(pData)))
-    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
-
   auto it = mHandlers.find(subGid);
   if (it != mHandlers.end()) {
     const std::shared_ptr<IEventHandler> eventHandler = it->second;
