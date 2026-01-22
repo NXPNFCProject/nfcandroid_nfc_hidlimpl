@@ -22,6 +22,7 @@
 #include <phNxpNciHal.h>
 #include "NfcWriter.h"
 #include "ObserveMode.h"
+#include "phNxpNciHal_WiredSeIface.h"
 #include "phNxpNciHal_WriterThread.h"
 #include "phNxpNciHal_ext.h"
 
@@ -58,6 +59,7 @@ std::string mLibPathName = "/system/vendor/lib/" + mLibName;
 #endif
 
 extern phNxpNciHal_WriterThread& g_writerThread;
+extern WiredSeHandle* gWiredSeHandle;
 
 void phNxpExtn_LibSetup() {
   NXPLOG_NCIHAL_D("%s Enter", __func__);
@@ -295,6 +297,16 @@ void phNxpHal_NfcDataCallback(uint16_t dataLen, const uint8_t* pData) {
   }
 }
 
+NFCSTATUS phNxpHal_NfcTmlWrite(uint8_t* pBuffer, uint16_t wLength) {
+  return phTmlNfc_Write(pBuffer, wLength);
+}
+
+bool phNxpNciHal_IsHciPipeRequireToCreate() {
+  if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE || gWiredSeHandle != NULL)
+    return false;
+
+  return true;
+}
 NFCSTATUS phNxpHal_NfcSendExtCmd(uint16_t cmd_len, uint8_t* p_cmd,
                                  uint16_t* rsp_len, uint8_t* p_rsp) {
   return phNxpNciHal_send_ext_cmd(cmd_len, p_cmd, rsp_len, p_rsp);

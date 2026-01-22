@@ -16,11 +16,10 @@
 
 #ifndef NFC_EXTENSION_H
 #define NFC_EXTENSION_H
-#include <phTmlNfc.h>
 #include <cstdint>
 #include <vector>
-
 #include "phNfcStatus.h"
+#include "phTmlNfc.h"
 
 struct VendorExtnCb {
   /* dummy struct to maintain
@@ -247,6 +246,45 @@ void phNxpHal_ReleaseControl();
  *
  */
 void phNxpHal_NfcDataCallback(uint16_t dataLen, const uint8_t* pData);
+
+/*******************************************************************************
+**
+** Function         phTmlNfc_Write
+**
+** Description      It will write the data/cmd synchronously to i2c channel.
+**                  Notifies upper layer using callback mechanism.
+**
+**
+** Parameters       pBuffer - data to be sent
+**                  wLength - length of data buffer
+** Returns          NFC status:
+**                  NFCSTATUS_SUCCESS - if command is processed successfully
+**                  NFCSTATUS_INVALID_PARAMETER - at least one parameter is
+**                                                invalid
+**                  NFCSTATUS_BUSY - write request is already in progress
+**
+*******************************************************************************/
+/**
+ * @brief It will write the data/cmd synchronously to i2c channel.
+ *        Notifies upper layer using callback mechanism.
+ * @param  data to be sent
+ * @param  length of data buffer
+ * @return Returns NFCSTATUS_SUCCESS if sending cmd is successful and
+ *         response is received.
+ *
+ */
+NFCSTATUS phNxpHal_NfcTmlWrite(uint8_t* pBuffer, uint16_t wLength);
+
+/*****************************************************************************
+ *
+ * Function         phNxpNciHal_IsHciPipeRequireToCreate
+ *
+ * Description      It returns the statu to create hci pipe
+ *
+ * Returns          return true/false
+ *
+ ****************************************************************************/
+bool phNxpNciHal_IsHciPipeRequireToCreate();
 
 /******************************************************************************
  * Function         phNxpHal_NfcSendExtCmd
