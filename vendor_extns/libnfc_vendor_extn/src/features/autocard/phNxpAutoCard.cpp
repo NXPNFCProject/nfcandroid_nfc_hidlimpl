@@ -503,7 +503,8 @@ NFCSTATUS AutoCard::handleVendorNciMessage(uint16_t dataLen, uint8_t *pData) {
   uint8_t autocardStatus = NFCSTATUS_SUCCESS;
   AutoCard::getInstance()->autoCardCmdType = pData[AUTOCARD_SUB_OID_IDEX];
 
-  if (PlatformAbstractionLayer::getInstance()->palGetChipType() != sn220u) {
+  if ((PlatformAbstractionLayer::getInstance()->palGetChipType() != sn220u) &&
+      (PlatformAbstractionLayer::getInstance()->palGetChipType() != sn300u)) {
     autocardStatus = AUTOCARD_STATUS_FEATURE_NOT_SUPPORTED;
     NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN,
                    "%s:AutoCard selection is not supported.", __func__);
