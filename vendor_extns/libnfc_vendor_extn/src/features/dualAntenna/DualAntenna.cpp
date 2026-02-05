@@ -49,8 +49,9 @@ NFCSTATUS DualAntenna::handleVendorNciMessage(uint16_t dataLen,
   NFCSTATUS status = NFCSTATUS_EXTN_FEATURE_FAILURE;
 
   if ((mDualAntennaContext.mDualAntennaFeature == true) &&
-      ((dataLen == CON_DISC_PARAM_LENGTH) &&
-       (pData[NCI_GID_INDEX] == 0x20 && pData[NCI_OID_INDEX] == 0x02))) {
+      ((dataLen == CON_DISC_PARAM_LENGTH) && pData[NCI_GID_INDEX] == 0x20 &&
+       pData[NCI_OID_INDEX] == 0x02 && pData[NCI_MSG_LEN_INDEX] == 0x04 &&
+       pData[NCI_MSG_INDEX_FEATURE_VALUE] == 0x02)) {
     if (pData[READER_MODE_CONFIG_INDEX] == 0x01) {
       return sendConDiscParamCmd();
     }
