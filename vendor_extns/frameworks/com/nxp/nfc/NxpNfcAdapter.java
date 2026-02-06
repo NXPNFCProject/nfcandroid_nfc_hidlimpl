@@ -296,6 +296,25 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     }
 
     /**
+     * @brief To be called to set str reader profile's
+     * @return {@link INxpNfcAdapter.setStrReaderProfiles} instance
+     */
+    @Override
+    public @AutoCardStatus int setStrReaderProfiles(byte[] strProfileData)
+        throws IOException {
+      return mAutoCardHandler.setStrReaderProfiles(strProfileData);
+    }
+    /**
+     * @brief To be called to set str activated AID to NFCC
+     * @return {@link INxpNfcAdapter.setStrReaderProfiles} instance
+     */
+    @Override
+    public @AutoCardStatus int setStrActivatedAID(byte[] aid)
+        throws IOException {
+      return mAutoCardHandler.setStrActivatedAID(aid);
+    }
+
+    /**
      * @brief To be called to start or stop the mPOS reader mode
      * @return {@link INxpNfcAdapter.mPOSSetReaderMode} instance
      */

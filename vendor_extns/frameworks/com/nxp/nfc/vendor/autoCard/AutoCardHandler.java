@@ -48,6 +48,9 @@ public class AutoCardHandler implements INxpNfcNtfHandler {
   private static int AUTO_CARD_STATUS_RSP_INDEX = 0x03;
   private static int AUTO_CARD_CONFIG_INDEX = 0x01;
   private static int AUTO_CARD_ENABLE_INDEX = 0x02;
+  private static int AID_LENGTH_INDEX = 0x02;
+  private static int STR_AID_MIN_LENGTH = 4;
+  private static int STR_AID_MAX_LENGTH = 16;
 
   public static Object autoCardSync = new Object();
   private static final String TAG = "AutoCardHandler";
@@ -67,7 +70,9 @@ public class AutoCardHandler implements INxpNfcNtfHandler {
     Enable(0x07),
     Disable(0x08),
     SetRfParams(0x0A),
-    GetRfParams(0x0B);
+    GetRfParams(0x0B),
+    SetStrProfile(0x22),
+    SetStrActivateAid(0x24);
     public int value;
     AutoCardSubOid(int value) { this.value = (int)value; }
   }
@@ -129,11 +134,7 @@ public class AutoCardHandler implements INxpNfcNtfHandler {
         NxpNfcLogger.e(TAG, "enableAutoCard response: Null");
         return NfcAdapter.SEND_VENDOR_NCI_STATUS_FAILED;
       }
-      NxpNfcLogger.e(TAG, "sendVendorNciCmd  Set response length:" +
-                              vendorRsp.length);
       if (vendorRsp.length > AUTO_CARD_STATUS_RSP_INDEX) {
-        NxpNfcLogger.e(TAG, "sendVendorNciCmd response" +
-                                vendorRsp[AUTO_CARD_STATUS_RSP_INDEX]);
         return vendorRsp[AUTO_CARD_STATUS_RSP_INDEX];
       } else {
         mNxpNciPacketHandler.unregisterNtfCallback(this);
@@ -169,11 +170,7 @@ public class AutoCardHandler implements INxpNfcNtfHandler {
         NxpNfcLogger.e(TAG, "disableAutoCard response: Null");
         return NfcAdapter.SEND_VENDOR_NCI_STATUS_FAILED;
       }
-      NxpNfcLogger.e(TAG, "sendVendorNciCmd  Set response length:" +
-                              vendorRsp.length);
       if (vendorRsp.length > AUTO_CARD_STATUS_RSP_INDEX) {
-        NxpNfcLogger.e(TAG, "sendVendorNciCmd response" +
-                                vendorRsp[AUTO_CARD_STATUS_RSP_INDEX]);
         return vendorRsp[AUTO_CARD_STATUS_RSP_INDEX];
       } else {
         NxpNfcLogger.e(TAG, "sendVendorNciCmd failed");
@@ -219,7 +216,6 @@ public class AutoCardHandler implements INxpNfcNtfHandler {
         } else {
           byte[] rspAid =
               new byte[vendorRsp.length - AUTO_CARD_AID_PAYLOAD_OFFSET];
-          NxpNfcLogger.e(TAG, "Get Autocard Success!!");
           System.arraycopy(vendorRsp, AUTO_CARD_AID_PAYLOAD_OFFSET, rspAid, 0,
                            vendorRsp.length - AUTO_CARD_AID_PAYLOAD_OFFSET);
           return rspAid;
@@ -260,11 +256,7 @@ public class AutoCardHandler implements INxpNfcNtfHandler {
         NxpNfcLogger.e(TAG, "setAutoCardAID response: Null");
         return NfcAdapter.SEND_VENDOR_NCI_STATUS_FAILED;
       }
-      NxpNfcLogger.e(TAG, "sendVendorNciCmd  Set response length:" +
-                              vendorRsp.length);
       if (vendorRsp.length > AUTO_CARD_STATUS_RSP_INDEX) {
-        NxpNfcLogger.e(TAG, "sendVendorNciCmd response" +
-                                vendorRsp[AUTO_CARD_STATUS_RSP_INDEX]);
         return vendorRsp[AUTO_CARD_STATUS_RSP_INDEX];
       } else {
         NxpNfcLogger.e(TAG, "sendVendorNciCmd failed");
@@ -303,7 +295,6 @@ public class AutoCardHandler implements INxpNfcNtfHandler {
         } else {
           byte[] rspAid =
               new byte[vendorRsp.length - AUTO_CARD_AID_PAYLOAD_OFFSET];
-          NxpNfcLogger.e(TAG, "Get Autocard RfParams Success!!");
           System.arraycopy(vendorRsp, AUTO_CARD_AID_PAYLOAD_OFFSET, rspAid, 0,
                            vendorRsp.length - AUTO_CARD_AID_PAYLOAD_OFFSET);
           return rspAid;
@@ -342,11 +333,7 @@ public class AutoCardHandler implements INxpNfcNtfHandler {
         NxpNfcLogger.e(TAG, "setAutoCardRfParams response: Null");
         return NfcAdapter.SEND_VENDOR_NCI_STATUS_FAILED;
       }
-      NxpNfcLogger.e(TAG, "sendVendorNciCmd  setRfParams response length:" +
-                              vendorRsp.length);
       if (vendorRsp.length > AUTO_CARD_STATUS_RSP_INDEX) {
-        NxpNfcLogger.e(TAG, "sendVendorNciCmd response" +
-                                vendorRsp[AUTO_CARD_STATUS_RSP_INDEX]);
         return vendorRsp[AUTO_CARD_STATUS_RSP_INDEX];
       } else {
         NxpNfcLogger.e(TAG, "sendVendorNciCmd failed");
@@ -384,11 +371,7 @@ public class AutoCardHandler implements INxpNfcNtfHandler {
         NxpNfcLogger.e(TAG, "setAutoCardAppletStatus response: Null");
         return NfcAdapter.SEND_VENDOR_NCI_STATUS_FAILED;
       }
-      NxpNfcLogger.e(TAG, "sendVendorNciCmd  Set response length:" +
-                              vendorRsp.length);
       if (vendorRsp.length > AUTO_CARD_STATUS_RSP_INDEX) {
-        NxpNfcLogger.e(TAG, "sendVendorNciCmd response" +
-                                vendorRsp[AUTO_CARD_STATUS_RSP_INDEX]);
         return vendorRsp[AUTO_CARD_STATUS_RSP_INDEX];
       } else {
         NxpNfcLogger.e(TAG, "sendVendorNciCmd failed");
@@ -420,14 +403,77 @@ public class AutoCardHandler implements INxpNfcNtfHandler {
         NxpNfcLogger.e(TAG, "suspendAutoCard response: Null");
         return NfcAdapter.SEND_VENDOR_NCI_STATUS_FAILED;
       }
-      NxpNfcLogger.e(TAG, "sendVendorNciCmd  Set response length:" +
-                              vendorRsp.length);
       if (vendorRsp.length > AUTO_CARD_STATUS_RSP_INDEX) {
-        NxpNfcLogger.e(TAG, "sendVendorNciCmd response" +
-                                vendorRsp[AUTO_CARD_STATUS_RSP_INDEX]);
         return vendorRsp[AUTO_CARD_STATUS_RSP_INDEX];
       } else {
         NxpNfcLogger.e(TAG, "sendVendorNciCmd failed");
+        return NfcAdapter.SEND_VENDOR_NCI_STATUS_FAILED;
+      }
+    } catch (Exception e) {
+      NxpNfcLogger.e(TAG, "Exception in sendVendorNciMessage");
+      throw new IOException("Error sending VendorNciMessage", e);
+    }
+  }
+
+  public @AutoCardStatus int setStrReaderProfiles(byte[] strProfileData)
+      throws IOException {
+    if (strProfileData == null)
+      return INxpNfcAdapter.EACSTATUS_ERROR_INVALID_PARAM;
+    if (mNfcAdapter.getAdapterState() == NfcAdapter.STATE_OFF) {
+      NxpNfcLogger.e(TAG, "NFC is disabled");
+      return INxpNfcAdapter.EACSTATUS_ERROR_NFC_IS_OFF;
+    }
+    byte[] payload = new byte[strProfileData.length + AUTO_CARD_PAYLOAD_OFFSET];
+    payload[NXP_NFC_AUTO_CARD_SUB_OID_INDEX] = (byte)NXP_NFC_AUTO_CARD_SUB_GID;
+    payload[AUTO_CARD_CONFIG_INDEX] = (byte)AutoCardSubOid.SetStrProfile.value;
+    try {
+      System.arraycopy(strProfileData, 0, payload, AUTO_CARD_PAYLOAD_OFFSET,
+                       strProfileData.length);
+      byte[] vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(
+          NxpNfcConstants.NFC_NCI_PROP_GID, NxpNfcConstants.NXP_NFC_PROP_OID,
+          payload);
+      if (vendorRsp == null) {
+        NxpNfcLogger.e(TAG, "setStrReaderProfiles response: Null");
+        return NfcAdapter.SEND_VENDOR_NCI_STATUS_FAILED;
+      }
+      if (vendorRsp.length > AUTO_CARD_STATUS_RSP_INDEX) {
+        return vendorRsp[AUTO_CARD_STATUS_RSP_INDEX];
+      } else {
+        NxpNfcLogger.e(TAG, "sendVendorNcicmd failed");
+        return NfcAdapter.SEND_VENDOR_NCI_STATUS_FAILED;
+      }
+    } catch (Exception e) {
+      NxpNfcLogger.e(TAG, "Exception in sendVendorNciMessage");
+      throw new IOException("Error sending VendorNciMessage", e);
+    }
+  }
+  public @AutoCardStatus int setStrActivatedAID(byte[] aid) throws IOException {
+    if (aid == null || aid.length > STR_AID_MAX_LENGTH ||
+        aid.length < STR_AID_MIN_LENGTH)
+      return INxpNfcAdapter.EACSTATUS_ERROR_INVALID_PARAM;
+    if (mNfcAdapter.getAdapterState() == NfcAdapter.STATE_OFF) {
+      NxpNfcLogger.e(TAG, "NFC is disabled");
+      return INxpNfcAdapter.EACSTATUS_ERROR_NFC_IS_OFF;
+    }
+    byte[] payload = new byte[aid.length + AUTO_CARD_PAYLOAD_OFFSET + 1];
+    payload[NXP_NFC_AUTO_CARD_SUB_OID_INDEX] = (byte)NXP_NFC_AUTO_CARD_SUB_GID;
+    payload[AUTO_CARD_CONFIG_INDEX] =
+        (byte)AutoCardSubOid.SetStrActivateAid.value;
+    payload[AID_LENGTH_INDEX] = (byte)aid.length;
+    try {
+      System.arraycopy(aid, 0, payload, (AUTO_CARD_PAYLOAD_OFFSET + 1),
+                       aid.length);
+      byte[] vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(
+          NxpNfcConstants.NFC_NCI_PROP_GID, NxpNfcConstants.NXP_NFC_PROP_OID,
+          payload);
+      if (vendorRsp == null) {
+        NxpNfcLogger.e(TAG, "setStrActivatedAID response: Null");
+        return NfcAdapter.SEND_VENDOR_NCI_STATUS_FAILED;
+      }
+      if (vendorRsp.length > AUTO_CARD_STATUS_RSP_INDEX) {
+        return vendorRsp[AUTO_CARD_STATUS_RSP_INDEX];
+      } else {
+        NxpNfcLogger.e(TAG, "sendVendorNcicmd failed");
         return NfcAdapter.SEND_VENDOR_NCI_STATUS_FAILED;
       }
     } catch (Exception e) {
