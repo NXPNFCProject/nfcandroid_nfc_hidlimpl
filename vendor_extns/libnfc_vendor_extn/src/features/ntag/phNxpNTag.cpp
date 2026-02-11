@@ -469,7 +469,7 @@ NFCSTATUS NxpNTag::handleNTagPropNtf(uint16_t dataLen, uint8_t *pData) {
   if (dataLen == NTAG_LOAD_CHANGE_NTF_LEN &&
       pData[NTAG_LOAD_CHANGE_NTF_INDEX] == NTAG_LOAD_CHANGE_VAL) {
     if (!mNtagControl.isScreenOff) {
-      // Recieved load change ntf in Screen on state
+      // Received load change ntf in Screen on state
       if (!mNtagControl.mNtagUid.empty()) {
         uint32_t time_ms =
             NXP_TIMER_DEFAULT_MS * 1000U; // convert seconds to milliseconds

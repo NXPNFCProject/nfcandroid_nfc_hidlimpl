@@ -97,21 +97,21 @@ public:
    */
   NFCSTATUS sendHciCmd(std::vector<uint8_t> &data, HciRspPkt &rsp);
   /**
-   * @brief validated the recived response is HCI credit notification.
+   * @brief validated the received response is HCI credit notification.
    * @param rspLen Length of the hci response
    * @param rsp Pointer to the response data
    * @return returns true if HCI credit ntf, else false,
    */
   bool isCreditNtfForHci(uint8_t *rsp, uint16_t rspLen);
   /**
-   * @brief validated the recived response is HCI packet.
+   * @brief validated the received response is HCI packet.
    * @param rspLen Length of the hci response
    * @param rsp Pointer to the response data
    * @return returns true if HCI rsp, else false,
    */
   bool isValidHciPacket(uint8_t *rsp, uint16_t rspLen);
   /**
-   * @brief process the recived HCI packet.
+   * @brief process the received HCI packet.
    * @param rspLen Length of the hci response
    * @param rsp Pointer to the response data
    * @return returns NFCSTATUS_SUCCESS,

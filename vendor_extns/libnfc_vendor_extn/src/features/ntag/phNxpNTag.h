@@ -112,7 +112,7 @@ struct NtagControl {
   bool isNTagNtfEnabled;
   /* Screen state status flag*/
   bool isScreenOff;
-  /*falg to indicate the CE mode start*/
+  /*flag to indicate the CE mode start*/
   bool isCeStarted;
   /* Timer used for tracking Detect/Removal Ntag status. */
   PalIntervalTimer mNTagTimer;
@@ -124,7 +124,7 @@ struct NtagControl {
   bool mRfDeactDisc;
   /* state flag indicating to remain in lpcd during poll enabled */
   bool mLpcdWoutPoll;
-  /*falg to indicate RF_DEACTIVATE_NTF sent*/
+  /*flag to indicate RF_DEACTIVATE_NTF sent*/
   bool isRfNtfSent;
 };
 

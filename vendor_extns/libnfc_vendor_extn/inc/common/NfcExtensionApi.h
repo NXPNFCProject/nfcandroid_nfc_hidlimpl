@@ -54,7 +54,7 @@ bool vendor_nfc_de_init();
  */
 bool configure_vendor_feature();
 /**
- * @brief get nfc vendor extention control block
+ * @brief get nfc vendor extension control block
  * @return void
  *
  */

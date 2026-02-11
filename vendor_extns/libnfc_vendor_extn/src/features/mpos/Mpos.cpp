@@ -229,7 +229,7 @@ uint8_t Mpos::parseNfceeDiscReqNtf(const std::vector<uint8_t> &pData) {
   uint8_t numOfInfoEntry = pData[index++];
   while (numOfInfoEntry > 0) {
     if ((index + 1) > pData.size()) {
-      // Expect atleast tag and len field
+      // Expect at least tag and len field
       NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN, "%s: Invalid packet", __func__);
       return NFCEE_DISC_REQ_UNKNOWN;
     }

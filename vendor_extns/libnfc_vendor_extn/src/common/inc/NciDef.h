@@ -24,7 +24,7 @@
 // #define NCI_MT_RSP 0x40
 // #define NCI_MT_NTF 0x60
 
-/* GID: Group Identifier (byte 0) */
+/* GID: Group Identifier (in byte 0) */
 #define NCI_GID_MASK 0x0F
 // #define NCI_GID_CORE 0x00      /* 0000b NCI Core group */
 // #define NCI_GID_RF_MANAGE 0x01 /* 0001b RF Management group */
@@ -32,20 +32,20 @@
 #define NCI_GID_PROP 0x0F /* 1111b Proprietary */
 /* 0111b - 1110b RFU */
 
-/* OID: Opcode Identifier (byte 1) */
+/* OID: Opcode Identifier (in byte 1) */
 // #define NCI_OID_MASK 0x3F
 #define NCI_OID_SHIFT 0
 // #define SUB_GID_MASK 0xF0
 // #define SUB_OID_MASK 0x0F
 
-/* builds byte0 of NCI Command and Notification packet */
+/* Builds byte0 of NCI Command and Notification packet */
 #define NCI_MSG_BLD_HDR0(p, mt, gid)                                           \
   *(p)++ = (uint8_t)(((mt) << NCI_MT_SHIFT) | (gid));
 
-/* builds byte1 of NCI Command and Notification packet */
+/* Builds byte1 of NCI Command and Notification packet */
 #define NCI_MSG_BLD_HDR1(p, oid) *(p)++ = (uint8_t)(((oid) << NCI_OID_SHIFT));
 
-/* parse byte0 of NCI packet */
+/* Parses byte0 of NCI packet */
 #define NCI_MSG_PRS_HDR0(p, mt, pbf, gid)                                      \
   (mt) = (*(p) & NCI_MT_MASK) >> NCI_MT_SHIFT;                                 \
   (pbf) = (*(p) & NCI_PBF_MASK) >> NCI_PBF_SHIFT;                              \
@@ -57,7 +57,7 @@
   (p)++;
 
 /**********************************************
- * NCI Core Group Opcode        - 0
+ * NCI Core Group Opcodes        - 0
  **********************************************/
 // #define NCI_MSG_CORE_RESET 0
 // #define NCI_MSG_CORE_INIT 1
