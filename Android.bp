@@ -33,5 +33,7 @@ license {
 }
 
 subdirs = [
-    "snxxx","intf", "power-tracker",
+    "snxxx",
+    "intf",
+    "power-tracker",
 ]
