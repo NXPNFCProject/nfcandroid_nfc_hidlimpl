@@ -67,6 +67,7 @@ AutoCard::AutoCard() {
   mLastSentCmd.clear();
   mResponseTimeout = std::chrono::milliseconds(0);
   mWaitForResponse = false;
+  mIsStrPhoneOffEnabled = false;
 }
 
 AutoCard::~AutoCard() {
@@ -88,9 +89,9 @@ NFCSTATUS AutoCard::phNxpNciHal_handleHciAutoCardRsp(uint8_t *rsp,
       !mWaitForResponse)
     return NFCSTATUS_FAILED;
 
-  if (!GetNxpNumValue(NAME_NXP_AUTOCARD_SELECTION_PHONE_OFF,
-                      &autocard_selection_mode,
-                      sizeof(autocard_selection_mode))) {
+  if (!PlatformAbstractionLayer::getInstance()->palGetNxpNumValue(
+          NAME_NXP_AUTOCARD_SELECTION_PHONE_OFF, &autocard_selection_mode,
+          sizeof(autocard_selection_mode))) {
     return NFCSTATUS_FAILED;
   }
   if (autocard_selection_mode != AUTOCARD_FEATURE_ENABLED)
@@ -340,6 +341,9 @@ void AutoCard::phNxpNciHal_getAutoCardConfig() {
   constexpr uint8_t NO_OF_CNT_TO_UPDATE = 6;
   constexpr uint8_t AUTOCARD_TIMER_GET_INDEX = 0x05;
   constexpr uint8_t AUTOCARD_TIMER_GET_STATUS_INDEX = 0x04;
+  constexpr uint8_t STR_PHONE_OFF_ENABLE_RSP_LEN = 5;
+  constexpr uint8_t STR_MAX_TIME_OUT = 50;
+  constexpr uint8_t STR_MAX_DEFAULT_VALUE = 30;
 
   uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
   uint16_t rsp_len = 0;
@@ -357,6 +361,63 @@ void AutoCard::phNxpNciHal_getAutoCardConfig() {
 
   if (autocard_selection_mode != AUTOCARD_FEATURE_ENABLED)
     return;
+
+  uint32_t mFwVer = 0;
+  std::vector<uint8_t> mFwRsp = NciStateMonitor::getInstance()->getFwVersion();
+  if (mFwRsp.size() > 2)
+    mFwVer = (((uint32_t)mFwRsp[0]) << 16U) | (((uint32_t)mFwRsp[1]) << 8U) |
+             mFwRsp[2];
+
+  if ((PlatformAbstractionLayer::getInstance()->palGetChipType() == sn300u) &&
+      (mFwVer > DEFAULT_STR_PHONEOFF_SUPPORT_MIN_FW_VER)) {
+    uint8_t strPhoneOff = 0x00;
+    uint8_t strMaxNoOfEvents = STR_MAX_DEFAULT_VALUE;
+    uint8_t strReaderSelectionTimeOut = STR_MAX_DEFAULT_VALUE;
+    mIsStrPhoneOffEnabled = false;
+    if (PlatformAbstractionLayer::getInstance()->palGetNxpNumValue(
+            NAME_NXP_STR_ENABLE_PHONE_OFF, &strPhoneOff, sizeof(strPhoneOff))) {
+      if (strPhoneOff == 0x01) {
+        mIsStrPhoneOffEnabled = true;
+        if (PlatformAbstractionLayer::getInstance()->palGetNxpNumValue(
+                NAME_NXP_MAX_NO_RF_EVENTS, &strMaxNoOfEvents,
+                sizeof(strMaxNoOfEvents))) {
+          if (strMaxNoOfEvents > STR_MAX_DEFAULT_VALUE)
+            strMaxNoOfEvents = STR_MAX_DEFAULT_VALUE;
+        }
+        if (PlatformAbstractionLayer::getInstance()->palGetNxpNumValue(
+                NAME_NXP_STR_READER_SELECTION_TIMEOUT, &strReaderSelectionTimeOut,
+                sizeof(strReaderSelectionTimeOut))) {
+          if (strReaderSelectionTimeOut > STR_MAX_TIME_OUT)
+            strReaderSelectionTimeOut = STR_MAX_TIME_OUT;
+        }
+      }
+    }
+    std::vector<uint8_t> setStrAutoSelection = {0x2F,
+                                                0x43,
+                                                0x04,
+                                                0x20,
+                                                strPhoneOff,
+                                                strReaderSelectionTimeOut,
+                                                strMaxNoOfEvents};
+    NFCSTATUS status =
+        PlatformAbstractionLayer::getInstance()->palNfcSendExtCmd(
+            setStrAutoSelection.size(), setStrAutoSelection.data(), &rsp_len,
+            rsp);
+    bool validResponse =
+        (status == NFCSTATUS_SUCCESS) &&
+        (rsp_len == STR_PHONE_OFF_ENABLE_RSP_LEN) &&
+        (rsp[NCI_MSG_INDEX_FOR_FEATURE] == STR_ACS_FEATURE_ENABLE_SUB_OID);
+    if (!validResponse) {
+      mIsStrPhoneOffEnabled = false;
+      NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN,
+                     "%s: Failed to enable STR Phone Off detection feature",
+                     __func__);
+    }
+  } else {
+    NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN,
+                   "%s: FW not supported for STR Phone Off detection feature",
+                   __func__);
+  }
 
   isPipeTobeCreated = true;
 
@@ -404,7 +465,7 @@ void AutoCard::phNxpNciHal_getAutoCardConfig() {
 
   uint8_t autocard_timer_val = 0x00;
   if (!PlatformAbstractionLayer::getInstance()->palGetNxpNumValue(
-          NAME_NXP_AUTOCARD_TIMER_VALUE, &autocard_timer_val,
+          NAME_NXP_AUTOCARD_AID_SWITCH_TIME, &autocard_timer_val,
           sizeof(autocard_timer_val)) ||
       !autocard_timer_val) {
     return;
@@ -446,7 +507,7 @@ NFCSTATUS AutoCard::handleVendorNciRspNtf(uint16_t dataLen, uint8_t *pData) {
        (pData[NCI_GID_INDEX] != (NCI_MT_NTF | NCI_GID_PROP))) ||
       (pData[NCI_OID_INDEX] != AUTOCARD_FW_API_OID) ||
       ((dataLen > AUTOCARD_STATUS_INDEX) &&
-       (pData[3] > AUTOCARD_GET_RF_PARAM))) {
+       (pData[3] > STR_SET_ACTIVATE_AID))) {
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
   }
 
@@ -495,7 +556,7 @@ NFCSTATUS AutoCard::handleVendorNciMessage(uint16_t dataLen, uint8_t *pData) {
   if ((pData[NCI_GID_INDEX] != (NCI_MT_CMD | NCI_GID_PROP)) ||
       (pData[NCI_OID_INDEX] != NCI_ROW_PROP_OID_VAL) ||
       (pData[NCI_MSG_INDEX_FOR_FEATURE] != AUTOCARD_FEATURE_SUB_GID) ||
-      (pData[AUTOCARD_SUB_OID_IDEX] > AUTOCARD_GET_RF_PARAM)) {
+      (pData[AUTOCARD_SUB_OID_IDEX] > STR_SET_ACTIVATE_AID)) {
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
   }
 
@@ -503,21 +564,29 @@ NFCSTATUS AutoCard::handleVendorNciMessage(uint16_t dataLen, uint8_t *pData) {
   uint8_t autocardStatus = NFCSTATUS_SUCCESS;
   AutoCard::getInstance()->autoCardCmdType = pData[AUTOCARD_SUB_OID_IDEX];
 
-  if ((PlatformAbstractionLayer::getInstance()->palGetChipType() != sn220u) &&
-      (PlatformAbstractionLayer::getInstance()->palGetChipType() != sn300u)) {
+  if (((PlatformAbstractionLayer::getInstance()->palGetChipType() != sn220u) &&
+       (PlatformAbstractionLayer::getInstance()->palGetChipType() != sn300u)) ||
+      ((PlatformAbstractionLayer::getInstance()->palGetChipType() == sn300u) &&
+       !mIsStrPhoneOffEnabled &&
+       pData[AUTOCARD_SUB_OID_IDEX] > AUTOCARD_GET_RF_PARAM)) {
     autocardStatus = AUTOCARD_STATUS_FEATURE_NOT_SUPPORTED;
     NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN,
                    "%s:AutoCard selection is not supported.", __func__);
+    if (PlatformAbstractionLayer::getInstance()->palGetChipType() == sn300u)
+      NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN,
+                     "%s: STR Reader profile will not support.", __func__);
   } else if (!PlatformAbstractionLayer::getInstance()->palGetNxpNumValue(
                  NAME_NXP_AUTOCARD_SELECTION_PHONE_OFF,
                  &autocard_selection_mode, sizeof(autocard_selection_mode))) {
     autocardStatus = AUTOCARD_STATUS_NOT_CONFIGURED;
     NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN,
                    "%s:AutoCard selection is not configured.", __func__);
-  } else if (autocard_selection_mode != AUTOCARD_FEATURE_ENABLED ||
-             (mAutoCardEnableStatus != AUTOCARD_FEATURE_ENABLED &&
-              pData[AUTOCARD_SUB_OID_IDEX] !=
-                  AUTOCARD_FEATURE_ENABLE_SUB_OID)) {
+  } else if ((!mIsStrPhoneOffEnabled &&
+              pData[AUTOCARD_SUB_OID_IDEX] <= AUTOCARD_GET_RF_PARAM) &&
+             (autocard_selection_mode != AUTOCARD_FEATURE_ENABLED ||
+              (mAutoCardEnableStatus != AUTOCARD_FEATURE_ENABLED &&
+               pData[AUTOCARD_SUB_OID_IDEX] !=
+                   AUTOCARD_FEATURE_ENABLE_SUB_OID))) {
     autocardStatus = AUTOCARD_STATUS_DISABLED;
     NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN,
                    "%s:AutoCard selection is Disabled.", __func__);

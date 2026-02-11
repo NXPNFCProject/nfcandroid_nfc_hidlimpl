@@ -20,6 +20,7 @@
 
 #include <condition_variable>
 #include "NciDef.h"
+#include "NciStateMonitor.h"
 #include "NfcExtensionConstants.h"
 #include "PlatformAbstractionLayer.h"
 #include "phNfcStatus.h"
@@ -28,6 +29,8 @@
 #include <cstdint>
 #include <mutex>
 #include <vector>
+
+#define DEFAULT_STR_PHONEOFF_SUPPORT_MIN_FW_VER 0x022052
 
 typedef struct {
   uint8_t pipeId;
@@ -138,6 +141,7 @@ private:
   std::mutex mRspMutex;
   HciRspPkt mResponse;
   bool mWaitForResponse;
+  bool mIsStrPhoneOffEnabled;
   unsigned long mMaxWtxCount;
   uint32_t mWtxCount;
   std::vector<uint8_t> mLastSentCmd;
@@ -166,6 +170,9 @@ private:
   constexpr static uint8_t AUTOCARD_GET_TIMER_SUB_OID = 0x08;
   constexpr static uint8_t AUTOCARD_SET_RF_PARAM = 0x0A;
   constexpr static uint8_t AUTOCARD_GET_RF_PARAM = 0x0B;
+  constexpr static uint8_t STR_ACS_FEATURE_ENABLE_SUB_OID = 0x20;
+  constexpr static uint8_t STR_SET_READER_PROFILE = 0x22;
+  constexpr static uint8_t STR_SET_ACTIVATE_AID = 0x24;
   constexpr static uint8_t AUTOCARD_FEATURE_ENABLE_SUB_OID = 0x07;
   constexpr static uint8_t AUTOCARD_FEATURE_DISABLE_SUB_OID = 0x08;
   constexpr static uint8_t AUTOCARD_STATUS_INDEX = 0x04;
