@@ -36,8 +36,8 @@ void NxpNTag::clearNTagFlags() {
   mNtagControl.isNTagNtfEnabled = false;
   mNtagControl.isScreenOff = false;
   mNtagControl.isCeStarted = false;
-  mNtagControl.ntagTimerId = 0;
   mNtagControl.mNTagTimer.kill(&mNtagControl.ntagTimerId);
+  mNtagControl.ntagTimerId = 0;
   mWaitingforDiscRsp = false;
   mNtagControl.mLpcdWoutPoll = false;
   mNtagControl.isRfNtfSent = false;
