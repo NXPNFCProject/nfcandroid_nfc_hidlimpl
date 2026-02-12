@@ -57,6 +57,14 @@ NFCSTATUS DualAntenna::handleVendorNciMessage(uint16_t dataLen,
     }
   }
 
+  if ((mDualAntennaContext.mDualAntennaFeature == true) &&
+    (pData[NCI_GID_INDEX] == 0x21 && pData[NCI_OID_INDEX] == 0x03)) {
+      if (NFCSTATUS_SUCCESS == sendRfDiscCmd())
+        return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+      else
+        return NFCSTATUS_EXTN_FEATURE_FAILURE;
+  }
+
   if ((dataLen < CMD_MIN_DATA_LENGTH) ||
       (pData[NCI_OID_INDEX] != NCI_ROW_PROP_OID_VAL) ||
       ((pData[NCI_MSG_INDEX_FOR_FEATURE] & DUAL_ANTENNA_SUB_GID_OID) !=
