@@ -152,6 +152,7 @@ private:
    * Bit-0 1b for enable and 0b for Disable.
    */
   uint8_t mAutoCardEnableStatus;
+  bool mIsPutAppletStatusBackEnabled;
   /* Autocard counters */
   std::vector<uint8_t> mAutoCardCounters;
   constexpr static uint8_t AUTOCARD_STATUS_SUCCESS = 0x00;

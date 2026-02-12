@@ -68,6 +68,7 @@ AutoCard::AutoCard() {
   mResponseTimeout = std::chrono::milliseconds(0);
   mWaitForResponse = false;
   mIsStrPhoneOffEnabled = false;
+  mIsPutAppletStatusBackEnabled = false;
 }
 
 AutoCard::~AutoCard() {
@@ -334,7 +335,6 @@ disable_pwr_link:
 
 void AutoCard::phNxpNciHal_getAutoCardConfig() {
   constexpr uint8_t AUTOCARD_FEATURE_CONFIG_GET_INDEX = 0x05;
-  constexpr uint8_t AUTOCARD_FEATURE_CONFIG_SET_INDEX = 0x04;
   constexpr uint8_t AUTOCARD_GET_CNT_RSP_LEN = 12;
   constexpr uint8_t AUTOCARD_GET_TIMER_RSP_LEN = 6;
   constexpr uint8_t COUNTER_START_INDEX = 6;
@@ -361,6 +361,14 @@ void AutoCard::phNxpNciHal_getAutoCardConfig() {
 
   if (autocard_selection_mode != AUTOCARD_FEATURE_ENABLED)
     return;
+
+  uint8_t value = 0x00;
+  mIsPutAppletStatusBackEnabled = false;
+  if (PlatformAbstractionLayer::getInstance()->palGetNxpNumValue(
+          NAME_NXP_AUTOCARD_PUT_APPLET_STATUS_BACK, &value, sizeof(value))) {
+    if (value == AUTOCARD_FEATURE_ENABLED)
+      mIsPutAppletStatusBackEnabled = true;
+  }
 
   uint32_t mFwVer = 0;
   std::vector<uint8_t> mFwRsp = NciStateMonitor::getInstance()->getFwVersion();
@@ -452,8 +460,12 @@ void AutoCard::phNxpNciHal_getAutoCardConfig() {
       std::vector<uint8_t> setAutoCardCounters = {0x2F, 0x43, 0x08, 0x01, 0x00};
       setAutoCardCounters.insert(setAutoCardCounters.end(), readConfCnt.begin(),
                                  readConfCnt.end());
-      setAutoCardCounters[AUTOCARD_FEATURE_CONFIG_SET_INDEX] =
-          mAutoCardEnableStatus;
+      if (mIsPutAppletStatusBackEnabled)
+        mAutoCardEnableStatus |= 0x02;
+      else
+        mAutoCardEnableStatus &= ~0x02;
+
+      setAutoCardCounters[NCI_MSG_INDEX_FEATURE_VALUE] = mAutoCardEnableStatus;
 
       status = PlatformAbstractionLayer::getInstance()->palNfcSendExtCmd(
           setAutoCardCounters.size(), setAutoCardCounters.data(), &rsp_len,
@@ -553,7 +565,8 @@ NFCSTATUS AutoCard::handleVendorNciRspNtf(uint16_t dataLen, uint8_t *pData) {
 NFCSTATUS AutoCard::handleVendorNciMessage(uint16_t dataLen, uint8_t *pData) {
   NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "AutoCard::%s Enter", __func__);
 
-  if ((pData[NCI_GID_INDEX] != (NCI_MT_CMD | NCI_GID_PROP)) ||
+  if ((dataLen <= NCI_MSG_INDEX_FEATURE_VALUE) ||
+      (pData[NCI_GID_INDEX] != (NCI_MT_CMD | NCI_GID_PROP)) ||
       (pData[NCI_OID_INDEX] != NCI_ROW_PROP_OID_VAL) ||
       (pData[NCI_MSG_INDEX_FOR_FEATURE] != AUTOCARD_FEATURE_SUB_GID) ||
       (pData[AUTOCARD_SUB_OID_IDEX] > STR_SET_ACTIVATE_AID)) {
@@ -584,7 +597,8 @@ NFCSTATUS AutoCard::handleVendorNciMessage(uint16_t dataLen, uint8_t *pData) {
   } else if ((!mIsStrPhoneOffEnabled &&
               pData[AUTOCARD_SUB_OID_IDEX] <= AUTOCARD_GET_RF_PARAM) &&
              (autocard_selection_mode != AUTOCARD_FEATURE_ENABLED ||
-              (mAutoCardEnableStatus != AUTOCARD_FEATURE_ENABLED &&
+              ((mAutoCardEnableStatus & AUTOCARD_FEATURE_ENABLED) !=
+                   AUTOCARD_FEATURE_ENABLED &&
                pData[AUTOCARD_SUB_OID_IDEX] !=
                    AUTOCARD_FEATURE_ENABLE_SUB_OID))) {
     autocardStatus = AUTOCARD_STATUS_DISABLED;
@@ -599,7 +613,8 @@ NFCSTATUS AutoCard::handleVendorNciMessage(uint16_t dataLen, uint8_t *pData) {
     if (pData[AUTOCARD_SUB_OID_IDEX] == AUTOCARD_FEATURE_ENABLE_SUB_OID ||
         pData[AUTOCARD_SUB_OID_IDEX] == AUTOCARD_FEATURE_DISABLE_SUB_OID) {
       if (pData[AUTOCARD_SUB_OID_IDEX] == AUTOCARD_FEATURE_ENABLE_SUB_OID &&
-          mAutoCardEnableStatus == AUTOCARD_FEATURE_ENABLED) {
+          ((mAutoCardEnableStatus & AUTOCARD_FEATURE_ENABLED) ==
+           AUTOCARD_FEATURE_ENABLED)) {
         std::vector<uint8_t> autocardRsp = {
             (NCI_MT_RSP | NCI_GID_PROP), NCI_ROW_MAINLINE_OID,
             AUTOCARD_PAYLOAD_LEN,        AUTOCARD_FEATURE_SUB_GID,
@@ -617,6 +632,13 @@ NFCSTATUS AutoCard::handleVendorNciMessage(uint16_t dataLen, uint8_t *pData) {
       autocardCmd[NCI_MSG_INDEX_FOR_FEATURE] = AUTOCARD_SET_COUNTERS_SUB_OID;
       autocardCmd[NCI_MSG_LEN_INDEX] += CNT_CONFIG_BUFF_MAX_SIZE;
       mAutoCardEnableStatus = pData[dataLen - 1];
+      if (mIsPutAppletStatusBackEnabled)
+        mAutoCardEnableStatus |= 0x02;
+      else
+        mAutoCardEnableStatus &= ~0x02;
+
+      autocardCmd[NCI_MSG_INDEX_FEATURE_VALUE] = mAutoCardEnableStatus;
+
       autocardCmd.insert(autocardCmd.end(), mAutoCardCounters.begin(),
                          mAutoCardCounters.end());
     }
