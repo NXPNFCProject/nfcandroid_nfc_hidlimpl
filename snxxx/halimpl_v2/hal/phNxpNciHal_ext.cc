@@ -1855,7 +1855,7 @@ static NFCSTATUS phNxpNciHal_ext_check_rf_queue_full_error(uint8_t* p_ntf,
   uint8_t numOfParams = p_ntf[index++];
   while (numOfParams > 0) {
     if ((index + 1) >= *p_len) {
-      // Expect atleast tag and len field
+      // Expect at least tag and len field
       NXPLOG_NCIHAL_E("%s: Invalid packet", __func__);
       return NFCSTATUS_SUCCESS;
     }

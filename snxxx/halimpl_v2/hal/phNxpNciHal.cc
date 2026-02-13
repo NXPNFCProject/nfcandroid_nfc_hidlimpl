@@ -2397,7 +2397,7 @@ void phNxpNciHal_clean_resources() {
 /******************************************************************************
  * Function         phNxpNciHal_configDiscIdle
  *
- * Description      Enable to send RF idle on nfc service death recipent when
+ * Description      Enable to send RF idle on nfc service death recipient when
  *                  power tracker feature is enabled.
  *
  * Returns          none.
