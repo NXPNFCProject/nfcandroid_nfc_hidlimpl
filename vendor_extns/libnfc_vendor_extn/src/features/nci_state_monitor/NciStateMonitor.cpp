@@ -1,0 +1,284 @@
+/**
+ *
+ *  Copyright 2025 NXP
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ **/
+
+#include "NciStateMonitor.h"
+#include "NfceeStateMonitor.h"
+#include "NfcExtensionConstants.h"
+#include "RfStateMonitor.h"
+#include "phNxpConfig.h"
+#include <phNxpLog.h>
+#include <stdio.h>
+
+using std::vector;
+std::unique_ptr<NciStateMonitor> NciStateMonitor::instance = nullptr;
+static bool sSendSramConfigToFlash = false;
+
+NciStateMonitor::NciStateMonitor() {
+  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter", __func__);
+  mSramCmdRspBuffer.push_back(DEFAULT_RESP);
+}
+
+NciStateMonitor::~NciStateMonitor() {
+  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter", __func__);
+  NfceeStateMonitor::finalize();
+}
+
+NciStateMonitor *NciStateMonitor::getInstance() {
+  if (!instance) {
+    instance = std::unique_ptr<NciStateMonitor>(new NciStateMonitor());
+  }
+  return instance.get();
+}
+
+vector<uint8_t> NciStateMonitor::getFwVersion() { return firmwareVersion; }
+vector<uint8_t> NciStateMonitor::getDefaultRFDiscMapCmd() {
+  return mDefaultDiscMapCmd;
+}
+
+NFCSTATUS NciStateMonitor::handleVendorNciMessage(uint16_t dataLen,
+                                               const uint8_t *pData) {
+  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "NciStateMonitor %s Enter dataLen:%d",
+                 __func__, dataLen);
+  return NFCSTATUS_EXTN_FEATURE_FAILURE;
+}
+
+NFCSTATUS NciStateMonitor::processCoreGenericErrorNtf(
+    vector<uint8_t> &coreGenericErrorNtf) {
+  vector<uint8_t> propNtf = {0x6F, 0x0C, 0x01, 0x07};
+
+  if ((coreGenericErrorNtf.size() == propNtf.size()) &&
+      (coreGenericErrorNtf[3] == NCI_STATUS_PMU_TXLDO_OVERCURRENT ||
+       coreGenericErrorNtf[3] == NCI_STATUS_GPADC_ERROR)) {
+    coreGenericErrorNtf.assign(propNtf.begin(), propNtf.end());
+    NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN,
+                   "NciStateMonitor %s CORE_GENERIC_ERROR_NTF updated with "
+                   "proprietary NTF",
+                   __func__);
+  }
+  return NFCSTATUS_EXTN_FEATURE_FAILURE;
+}
+
+NFCSTATUS
+NciStateMonitor::processCoreResetNtfReceived(vector<uint8_t> coreResetNtf) {
+  constexpr uint16_t NCI_MIN_CORE_RESET_NTF_LEN = 0x0C;
+  if (coreResetNtf.size() >= NCI_MIN_CORE_RESET_NTF_LEN) {
+    firmwareVersion.clear();
+    firmwareVersion.assign(coreResetNtf.end() - 3, coreResetNtf.end());
+  } else {
+    NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Invalid Ntf pkt length %zu",
+                   __func__, coreResetNtf.size());
+  }
+  return NFCSTATUS_EXTN_FEATURE_FAILURE;
+}
+
+NFCSTATUS NciStateMonitor::handleVendorNciRspNtf(uint16_t dataLen,
+                                              uint8_t *pData) {
+  vector<uint8_t> nciRspNtf(pData, pData + dataLen);
+  const uint16_t mGidOid = ((nciRspNtf[0] << 8) | nciRspNtf[1]);
+  NFCSTATUS status = NFCSTATUS_EXTN_FEATURE_FAILURE;
+  constexpr uint16_t NCI_EE_STATUS_NTF =
+      (((NCI_MT_NTF | NCI_GID_EE_MANAGE) << 8) | NCI_EE_STATUS_OID);
+  constexpr uint16_t NCI_EE_MODE_SET_NTF =
+      (((NCI_MT_NTF | NCI_GID_EE_MANAGE) << 8) | NCI_EE_MODE_SET_OID);
+  constexpr uint16_t NCI_RF_DISCOVERY_NTF =
+      (((NCI_MT_NTF | NCI_GID_RF_MANAGE) << 8) | NCI_RF_DISCOVERY_OID);
+  constexpr uint16_t NCI_RF_INTF_ACT_NTF =
+      (((NCI_MT_NTF | NCI_GID_RF_MANAGE) << 8) | NCI_RF_INTF_ACT_OID);
+  constexpr uint16_t NCI_CORE_RESET_NTF_GID_OID =
+      (((NCI_MT_NTF | NCI_GID_CORE) << 8) | NCI_CORE_RESET_OID);
+  constexpr uint16_t NCI_CORE_GENERIC_ERROR_NTF =
+      (((NCI_MT_NTF | NCI_GID_CORE) << 8) | NCI_CORE_GENERIC_ERROR_OID);
+
+  if (nciRspNtf[NCI_OID_INDEX] == NXP_FLUSH_SRAM_AO_TO_FLASH_OID) {
+    mSramCmdRspBuffer.clear();
+    mSramCmdRspBuffer.assign(nciRspNtf.begin(), nciRspNtf.end());
+    mSramCmdRspCondVar.signal();
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+  }
+
+  switch (mGidOid) {
+  case NCI_EE_MODE_SET_NTF: {
+    status = NfceeStateMonitor::getInstance()->processNfceeModeSetNtf(nciRspNtf);
+    break;
+  }
+  case NCI_RF_DISCOVERY_NTF: {
+    status = RfStateMonitor::getInstance()->processRfDiscNtf(nciRspNtf);
+    break;
+  }
+  case NCI_RF_INTF_ACT_NTF: {
+    status = RfStateMonitor::getInstance()->processRfIntfActdNtf(nciRspNtf);
+    break;
+  }
+  case NCI_CORE_GENERIC_ERROR_NTF: {
+    status = processCoreGenericErrorNtf(nciRspNtf);
+    break;
+  }
+  case NCI_CORE_RESET_NTF_GID_OID: {
+    status = processCoreResetNtfReceived(nciRspNtf);
+    break;
+  }
+  case NCI_RF_DEACTD_NTF_GID_OID:
+  case NCI_RF_DEACTD_RSP_GID_OID:
+  case NCI_RF_DISC_RSP_GID_OID:
+    status = RfStateMonitor::getInstance()->processRfDiscRspNtf(nciRspNtf);
+    if (mIsNfcOn == 0) mIsNfcOn = 1;
+    break;
+  default: {
+    return status;
+  }
+  }
+
+  if (nciRspNtf.size() == dataLen) {
+    copy(nciRspNtf.begin(), nciRspNtf.end(), pData);
+  } else {
+    NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN,
+                   "NciStateMonitor %s dataLen mismatch", __func__);
+  }
+  return status;
+}
+
+NFCSTATUS NciStateMonitor::processNciCmd(uint16_t dataLen,
+                                         const uint8_t *pData) {
+  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "NciStateMonitor %s Enter", __func__);
+  if (pData[0] == NCI_MT_DATA_UNCHAINED || pData[0] == NCI_MT_DATA_CHAINED) {
+    NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN,
+                   "NciStateMonitor %s, data packet received, skip processing",
+                   __func__);
+    return NFCSTATUS_EXTN_FEATURE_FAILURE;
+  }
+  constexpr uint16_t NCI_EE_MODE_SET_CMD_GID_OID =
+      (((NCI_MT_CMD | NCI_GID_EE_MANAGE) << 8) | NCI_EE_MODE_SET_OID);
+  nciCmd.clear();
+  nciCmd.assign(pData, pData + (dataLen));
+  const uint16_t mGidOid = ((nciCmd[0] << 8) | nciCmd[1]);
+  if (mGidOid == NCI_RF_DISC_MAP_CMD_GID_OID) {
+    mDefaultDiscMapCmd.clear();
+    for (size_t i = 0; i < dataLen; i++) {
+      mDefaultDiscMapCmd.push_back(pData[i]);
+    }
+  }
+
+  if ((mGidOid == NCI_EE_MODE_SET_CMD_GID_OID) &&
+      (nciCmd.size() > NCI_MODE_SET_CMD_EE_INDEX)) {
+    NfceeStateMonitor::getInstance()->setCurrentEE(
+        nciCmd[NCI_MODE_SET_CMD_EE_INDEX]);
+  }
+
+  if (isNciRspTimeoutHandlingNeeded(
+          dataLen, pData, NCI_MT_CMD)) {  // check if packet resending required.
+    NfcExtensionWriter::getInstance()->write(
+        pData, dataLen, NXP_EXTNS_HAL_REQUEST_CTRL_TIMEOUT_IN_MS);
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+  }
+  return NFCSTATUS_EXTN_FEATURE_FAILURE;
+}
+
+bool NciStateMonitor::isNciRspTimeoutHandlingNeeded(uint16_t dataLen,
+                                                    const uint8_t *pData,
+                                                    uint8_t type) {
+  if ((dataLen > 1 && pData[0] == (type | NCI_GID_RF_MANAGE) &&
+       pData[1] == NCI_RF_DEACTIVATE_OID) ||
+      ((dataLen > 4 && pData[0] == (NCI_MT_CMD | NCI_GID_EE_MANAGE) &&
+        pData[1] == NCI_EE_MODE_SET_OID &&
+        pData[4] == NCI_EE_MODE_SET_DEACTIVATE_VAL) ||
+       ((nciCmd.size() > 4 && nciCmd[0] == (NCI_MT_CMD | NCI_GID_EE_MANAGE) &&
+         nciCmd[1] == NCI_EE_MODE_SET_OID &&
+         nciCmd[4] == NCI_EE_MODE_SET_DEACTIVATE_VAL) &&
+        (dataLen > 3 && pData[0] == (NCI_MT_RSP | NCI_GID_EE_MANAGE) &&
+         pData[1] == NCI_EE_MODE_SET_OID))) ||
+      (dataLen > 1 && pData[0] == (type | NCI_GID_CORE) &&
+       pData[1] == NCI_CORE_SET_POWER_SUB_STATE_OID) ||
+      (dataLen > 3 && pData[0] == (type | NCI_GID_RF_MANAGE) &&
+       pData[1] == NCI_RF_DISCOVERY_OID) ||
+      ((dataLen > 4 && pData[0] == (type | NCI_GID_CORE) &&
+        pData[1] == NCI_CORE_SET_CFG_OID_VAL &&
+        pData[4] == NCI_CORE_SET_CONF_CON_DISCOVERY_PARAM) ||
+       ((nciCmd.size() > 4 && nciCmd[0] == (NCI_MT_CMD | NCI_GID_CORE) &&
+         nciCmd[1] == NCI_CORE_SET_CFG_OID_VAL &&
+         nciCmd[4] == NCI_CORE_SET_CONF_CON_DISCOVERY_PARAM) &&
+        (dataLen > 4 && pData[0] == (NCI_MT_RSP | NCI_GID_CORE) &&
+         pData[1] == NCI_CORE_SET_CFG_OID_VAL))) ||
+       (dataLen > 3 && pData[0] == (type | NCI_GID_EE_MANAGE) &&
+        pData[1] == NCI_POWER_LINK_OID)) {
+    NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s, timeout handling required",
+                   __func__);
+    return true;
+  }
+  return false;
+}
+
+void NciStateMonitor::sendSramConfigFlashCmd() {
+  NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN, "NciStateMonitor %s Enter",
+    __func__);
+  if (sSendSramConfigToFlash) {
+    // Flush SRAM content to flash
+    vector<uint8_t> sendSramFlashCmd = {NCI_PROP_CMD_VAL,
+                                        NXP_FLUSH_SRAM_AO_TO_FLASH_OID, 0x00};
+    mSramCmdRspCondVar.lock();
+    PlatformAbstractionLayer::getInstance()->palenQueueWrite(
+        sendSramFlashCmd.data(), sendSramFlashCmd.size());
+    mSramCmdRspBuffer.clear();
+    mSramCmdRspCondVar.timedWait(SEND_SRAM_CMD_TIMEOUT_SEC);
+    mSramCmdRspCondVar.unlock();
+    if (mSramCmdRspBuffer.size() <= EXT_NFC_STATUS_INDEX ||
+        mSramCmdRspBuffer[EXT_NFC_STATUS_INDEX] != EXT_NFC_STATUS_OK) {
+      NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN,
+                     "sendSramConfigFlashCmd Failed!");
+    }
+    // Clear the flag so that subsequent pre-discover will not send
+    // sram config to flash.
+    sSendSramConfigToFlash = false;
+  } else {
+    NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN, "sendSramConfigFlashCmd Not Required!");
+  }
+}
+
+NFCSTATUS NciStateMonitor::handleHalEvent(uint8_t event) {
+  NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN, "NciStateMonitor %s Enter",
+                 __func__);
+  if (event == EXT_NFC_PRE_DISCOVER) {
+    tNFC_chipType chipType =
+        PlatformAbstractionLayer::getInstance()->palGetChipType();
+    if (chipType >= sn100u)
+      sendSramConfigFlashCmd();
+    else
+      NXPLOG_EXTNS_I(
+          NXPLOG_ITEM_NXP_GEN_EXTN,
+          "NciStateMonitor %s sendSramConfigFlashCmd is not supported.",
+          __func__);
+    return NFCSTATUS_EXTN_FEATURE_FAILURE;
+  }
+  NFCSTATUS status = NFCSTATUS_EXTN_FEATURE_FAILURE;
+  switch (event) {
+    case EXT_HAL_NFC_OPEN_CPLT_EVT:
+      sSendSramConfigToFlash = true;
+      break;
+    case EXT_HAL_NFC_CLOSE_CPLT_EVT:
+      if (mIsNfcOn == 1) mIsNfcOn = 0;
+      break;
+    default:
+      break;
+  }
+  return status;
+}
+
+bool NciStateMonitor::isNfcOn() {
+  NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                 "%s Nfc state:%d", __func__, mIsNfcOn);
+  return mIsNfcOn;
+}
