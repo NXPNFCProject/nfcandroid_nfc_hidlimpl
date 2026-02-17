@@ -58,7 +58,9 @@ enum DualAntennaSubOid : uint8_t {
   DUAL_ANTENNA_ENABLE = 0x41,
   DUAL_ANTENNA_IS_SUPPORTED = 0x42,
   DUAL_ANTENNA_SET_DISCOVERY = 0x43,
-  DUAL_ANTENNA_SET_READER_MODE = 0x44
+  DUAL_ANTENNA_SET_READER_MODE = 0x44,
+  DUAL_ANTENNA_GET_DISCOVERY_TECH = 0x45,
+  DUAL_ANTENNA_GET_READER_MODE = 0x46
 };
 
 class DualAntenna {
@@ -164,6 +166,7 @@ private:
   constexpr static uint8_t DUAL_ANTENNA_FEATURE_SUPPORTED = 0x01;
   constexpr static uint8_t NCI_PROP_RSP_VAL = 0x4F;
   constexpr static uint8_t DUAL_ANTENNA_PAYLOAD_TWO_LEN = 0x02;
+  constexpr static uint8_t DUAL_ANTENNA_GET_DISC_PAYLOAD_TWO_LEN = 0x03;
   constexpr static uint8_t DUAL_ANTENNA_FOLDABLE = 0X03;
   constexpr static uint8_t RESPONSE_STATUS_OK = 0x00;
   constexpr static uint8_t RESPONSE_STATUS_FAILED = 0x01;

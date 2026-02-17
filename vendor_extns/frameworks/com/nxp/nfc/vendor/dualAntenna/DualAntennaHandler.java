@@ -46,8 +46,6 @@ public class DualAntennaHandler implements INxpNfcNtfHandler {
   public static final byte DUAL_ANTENNA_SUB_GID_OID = 0x40;
   public static final byte QTAG_SUB_GID_OID = 0x31;
   public static boolean sIsQPollEnabled = false;
-  static int antennaOneConfiguration = 0x00;
-  static int antennaTwoConfiguration = 0x00;
   static int antennaPolling = 0x00;
 
   public static final int STATUS_SUCCESS = 0x00;
@@ -102,7 +100,9 @@ public class DualAntennaHandler implements INxpNfcNtfHandler {
     Enable(0x01),
     isSupported(0x02),
     setDiscoveryTechnology(0x03),
-    enableReaderMode(0x04);
+    enableReaderMode(0x04),
+    getDiscoveryTechnology(0x05),
+    getReaderMode(0x06);
     public int value;
     DualAntennaSubOid(int value) { this.value = (int)value; }
     public int getValue() { return value; }
@@ -227,8 +227,6 @@ public class DualAntennaHandler implements INxpNfcNtfHandler {
       if (setDiscoveryTechnology != null && setDiscoveryTechnology.length > 0 &&
           setDiscoveryTechnology[1] ==
               NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
-        antennaOneConfiguration = antennaOneTech;
-        antennaTwoConfiguration = antennaTwoTech;
         if ((antennaOneTech == RfPollingStatus.passive_ABFQK.value) ||
             (antennaTwoTech == RfPollingStatus.passive_ABF.value)) {
           pollTech = RfPollingStatus.passive_ABFQK.value;
@@ -314,19 +312,49 @@ public class DualAntennaHandler implements INxpNfcNtfHandler {
     }
   }
 
-  public @DualAntennaStatus int[] getDiscoveryTechnology_DualAntenna()
+  public int[] getDiscoveryTechnology_DualAntenna()
       throws IOException {
     NxpNfcLogger.d(TAG,
-                   "getDiscoveryTechnology_DualAntenna framework Enter new");
-    int[] antennaConf = new int[2];
-    antennaConf[0] = antennaOneConfiguration;
-    antennaConf[1] = antennaTwoConfiguration;
-    return antennaConf;
+                   "getDiscoveryTechnology_DualAntenna framework Enter");
+    byte[] payload = {
+        (byte)(DUAL_ANTENNA_SUB_GID_OID | DualAntennaSubOid.getDiscoveryTechnology.value)};
+    try {
+      int[] rsp = new int[2];
+      byte[] getDiscoveryTechnology = mNxpNciPacketHandler.sendVendorNciMessage(
+          NxpNfcConstants.NFC_NCI_PROP_GID, NxpNfcConstants.NXP_NFC_PROP_OID,
+          payload);
+
+      if (getDiscoveryTechnology != null && getDiscoveryTechnology.length > 0 ) {
+            rsp[0] = getDiscoveryTechnology[1];
+            rsp[1] = getDiscoveryTechnology[2];
+      } else {
+        rsp[0] = DualAntennaStatusCode.Failed.value;
+      }
+      return rsp;
+    } catch (Exception e) {
+      throw new IOException("Error sending VendorNciMessage", e);
+    }
   }
 
-  public @DualAntennaStatus int getPollingMode_DualAntenna()
+  public int getPollingMode_DualAntenna()
       throws IOException {
     NxpNfcLogger.d(TAG, "getPollingMode_DualAntenna framework Enter new");
-    return antennaPolling;
+    byte[] payload = {
+        (byte)(DUAL_ANTENNA_SUB_GID_OID | DualAntennaSubOid.getReaderMode.value)};
+    try {
+      int rsp = 0;
+      byte[] getReaderMode = mNxpNciPacketHandler.sendVendorNciMessage(
+          NxpNfcConstants.NFC_NCI_PROP_GID, NxpNfcConstants.NXP_NFC_PROP_OID,
+          payload);
+
+      if (getReaderMode != null && getReaderMode.length > 0 ) {
+            rsp = (int)getReaderMode[1] & 0xff; // unsigned conversion
+            return rsp;
+      } else {
+        return 0xff;
+      }
+    } catch (Exception e) {
+      throw new IOException("Error sending VendorNciMessage", e);
+    }
   }
 }

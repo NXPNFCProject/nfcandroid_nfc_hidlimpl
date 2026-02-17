@@ -697,18 +697,18 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
      *     instance
      */
     @Override
-    public @DualAntennaStatus int[] getDiscoveryTechnology_DualAntenna()
+    public int[] getDiscoveryTechnology_DualAntenna()
         throws IOException {
       return mDualAntennaHandler.getDiscoveryTechnology_DualAntenna();
     }
 
     /**
      * @brief To be called to get the polling mode of both antennas.
-     * @return {@link INxpNfcDualAntenna.getDiscoveryTechnology_DualAntenna}
+     * @return {@link INxpNfcDualAntenna.getPollingMode_DualAntenna}
      *     instance
      */
     @Override
-    public @DualAntennaStatus int getPollingMode_DualAntenna()
+    public int getPollingMode_DualAntenna()
         throws IOException {
       return mDualAntennaHandler.getPollingMode_DualAntenna();
     }

@@ -119,6 +119,30 @@ NFCSTATUS DualAntenna::handleVendorNciMessage(uint16_t dataLen,
     break;
   }
 
+  case DUAL_ANTENNA_GET_DISCOVERY_TECH: {
+
+    uint8_t GET_DISCOVERY_TECH_STATUS_RSP[] = {
+    (NCI_MT_RSP | NCI_GID_PROP), NCI_ROW_PROP_OID_VAL,
+    DUAL_ANTENNA_GET_DISC_PAYLOAD_TWO_LEN, pData[DUAL_ANTENNA_SUB_GID_OID_INDEX],
+     mDualAntennaContext.mAntOneConfig, mDualAntennaContext.mAntTwoConfig};
+
+    PlatformAbstractionLayer::getInstance()->palSendNfcDataCallback(
+      sizeof(GET_DISCOVERY_TECH_STATUS_RSP), GET_DISCOVERY_TECH_STATUS_RSP);
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+  }
+
+  case DUAL_ANTENNA_GET_READER_MODE: {
+
+    uint8_t GET_READER_MODE_STATUS_RSP[] = {
+    (NCI_MT_RSP | NCI_GID_PROP), NCI_ROW_PROP_OID_VAL,
+    DUAL_ANTENNA_PAYLOAD_TWO_LEN, pData[DUAL_ANTENNA_SUB_GID_OID_INDEX],
+     mDualAntennaContext.mConfigReaderMode};
+
+    PlatformAbstractionLayer::getInstance()->palSendNfcDataCallback(
+      sizeof(GET_READER_MODE_STATUS_RSP), GET_READER_MODE_STATUS_RSP);
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+  }
+
   default: {
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
   }

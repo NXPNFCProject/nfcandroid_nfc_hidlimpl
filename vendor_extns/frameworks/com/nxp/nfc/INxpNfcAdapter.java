@@ -580,7 +580,7 @@ public interface INxpNfcAdapter {
      * </ul>
      * @throws IOException If a failure occurred
      */
-    public @DualAntennaStatus int[] getDiscoveryTechnology_DualAntenna()
+    public int[] getDiscoveryTechnology_DualAntenna()
         throws IOException;
 
     /**
@@ -590,7 +590,7 @@ public interface INxpNfcAdapter {
      * </ul>
      * @throws IOException If a failure occurred
      */
-    public @DualAntennaStatus int getPollingMode_DualAntenna()
+    public int getPollingMode_DualAntenna()
         throws IOException;
 
     /**
