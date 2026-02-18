@@ -17,6 +17,7 @@ sysprop_library {
 cc_library_shared {
     name: "power_tracker_v2",
     proprietary: true,
+    enabled: false,
     cflags: [
         "-Wall",
         "-Werror",
