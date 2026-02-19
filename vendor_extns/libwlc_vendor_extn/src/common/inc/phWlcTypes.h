@@ -1,0 +1,64 @@
+/*
+ * Copyright 2010-2020, 2023-2026 NXP
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#ifndef PHWLCTYPES_H
+#define PHWLCTYPES_H
+
+#include "WlcExtensionConstants.h"
+#include <stdint.h>
+
+#define UNUSED_PROP(X) (void)(X);
+
+typedef uint16_t WLCSTATUS; /* Return values */
+
+/*
+ * WLC Message structure contains message specific details like
+ * message type, message specific data block details, etc.
+ */
+typedef struct phLibWlc_Message {
+  uint32_t eMsgType; /* Type of the message to be posted*/
+  uint8_t data[NCI_MAX_DATA_LEN]; /* Message data maintained with MAX*/
+  uint32_t Size;     /* Size of the datablock*/
+} phLibWlc_Message_t, *pphLibWlc_Message_t;
+
+/*
+ * Deferred call declaration.
+ * This type of API is called from ClientApplication ( main thread) to notify
+ * specific callback.
+ */
+typedef void (*pphLibWlc_DeferredCallback_t)(void *);
+
+/*
+ * Deferred parameter declaration.
+ * This type of data is passed as parameter from ClientApplication (main thread)
+ * to the
+ * callback.
+ */
+typedef void *pphLibWlc_DeferredParameter_t;
+
+/*
+ * Deferred message specific info declaration.
+ * This type of information is packed as message data when
+ * PH_LIBNFC_DEFERREDCALL_MSG
+ * type message is posted to message handler thread.
+ */
+typedef struct phLibWlc_DeferredCall {
+  pphLibWlc_DeferredCallback_t pCallback;   /* pointer to Deferred callback */
+  pphLibWlc_DeferredParameter_t pParameter; /* pointer to Deferred parameter */
+} phLibWlc_DeferredCall_t;
+
+/* PHWLCTYPES_H */
+#endif
