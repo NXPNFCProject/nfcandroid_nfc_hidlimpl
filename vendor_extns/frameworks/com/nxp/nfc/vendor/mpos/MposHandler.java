@@ -2,7 +2,7 @@
  *
  *  The original Work has been changed by NXP.
  *
- *  Copyright 2024-2025 NXP
+ *  Copyright 2024-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -93,7 +93,7 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
   private final Object lock = new Object();
   private final Object mposStateSync = new Object();
   private boolean isCardActivated = false;
-  private boolean isNfcReset = false;
+  private boolean isNfcResetDuringTagActivated = false;
   private static final ExecutorService MPOS_CALLBACK_EXECUTOR =
                         Executors.newSingleThreadExecutor();
 
@@ -272,12 +272,11 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
           }
         }
 
-        if(isNfcReset) {
+        if(isNfcResetDuringTagActivated) {
           NxpNfcLogger.e(TAG, "Boot finish event, api is unblocked and returnig failure");
-          isNfcReset = false;
+          isNfcResetDuringTagActivated = false;
           return MPOS_STATUS_FAILED;
         }
-        isNfcReset = false;
       }
     }
 
@@ -307,6 +306,7 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
             mposState = MposState.MPOS_STOP_INPROGRESS;
           }
         }
+        isNfcResetDuringTagActivated = false;
         return MPOS_STATUS_SUCCESS;
       } else {
         return MPOS_STATUS_FAILED;
@@ -340,6 +340,13 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
   public boolean onDisableRequested() {
       NxpNfcLogger.d(TAG, "onDisableRequested: ");
       resetMPOS();
+      synchronized (lock) {
+        if(isCardActivated) {
+          isCardActivated = false;
+          isNfcResetDuringTagActivated = true;
+          lock.notify();
+        }
+      }
       return true;
   }
 
@@ -354,9 +361,11 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
       NxpNfcLogger.d(TAG, "onBootFinished: ");
       resetMPOS();
       synchronized (lock) {
-        isCardActivated = false;
-        isNfcReset = true;
-        lock.notify();
+        if(isCardActivated) {
+          isCardActivated = false;
+          isNfcResetDuringTagActivated = true;
+          lock.notify();
+        }
       }
   }
 }
