@@ -203,8 +203,13 @@ NFCSTATUS phNxpExtn_HandleNciRspNtf(uint16_t* dataLen, const uint8_t* pData) {
   NciData_t nci_data;
   nci_data.data_len = *dataLen;
   nci_data.p_data = const_cast<uint8_t*>(pData);
-  ;
+
   nfc_ext_event_data.nci_rsp_ntf = nci_data;
+
+  if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
+      handleObserveModeRfStateRspNtf(*dataLen, const_cast<uint8_t*>(pData))) {
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+  }
 
   if (fp_extn_handle_nfc_event != NULL) {
     if (NFCSTATUS_EXTN_FEATURE_SUCCESS !=
