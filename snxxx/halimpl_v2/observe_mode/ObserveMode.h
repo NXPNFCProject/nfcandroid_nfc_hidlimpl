@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2026 NXP
+ * Copyright 2024-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -119,19 +119,6 @@ int handleGetObserveModeStatus(uint16_t data_len, const uint8_t* p_data);
  *
  ******************************************************************************/
 void resetDiscovery();
-
-/*******************************************************************************
- *
- * Function         sendDiscoveryCommandOnTagRemoval()
- *
- * Description      It resends the discovery command
- *
- * Parameters       None
- *
- * Returns          None
- *
- ******************************************************************************/
-void sendDiscoveryCommandOnTagRemoval();
 
 /*******************************************************************************
  *

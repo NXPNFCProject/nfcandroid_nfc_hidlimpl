@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2026 NXP
+ * Copyright 2024-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,6 @@ using std::vector;
 
 bool gWaitingForDiscRsp;
 bool gWaitingForRfDeActivateRsp;
-bool gWaitingForObserveModeCommandRsp;
-bool gObserveModeSetRequired;
-vector<uint8_t> gObserveModeCommand;
 bool bIsObserveModeEnabled;
 bool bIsObserveChangeInProgress;
 
@@ -175,26 +172,6 @@ void resetDiscovery() {
 
 /*******************************************************************************
  *
- * Function         sendDiscoveryCommandOnTagRemoval()
- *
- * Description      It sends discovery command based on the ObserveMode status
- *
- * Parameters       None
- *
- * Returns          None
- *
- ******************************************************************************/
-void sendDiscoveryCommandOnTagRemoval() {
-  gWaitingForDiscRsp = true;
-  vector<uint8_t> discoveryCommand =
-      isObserveModeEnabled()
-          ? NciDiscoveryCommandBuilderInstance.reConfigRFDiscCmd()
-          : NciDiscoveryCommandBuilderInstance.getDiscoveryCommand();
-  phNxpHal_EnqueueWrite(&discoveryCommand[0], discoveryCommand.size());
-}
-
-/*******************************************************************************
- *
  * Function         handleObserveModeRfStateRspNtf()
  *
  * Description      Handles RF state response and notification messages for
@@ -213,24 +190,13 @@ NFCSTATUS handleObserveModeRfStateRspNtf(uint16_t dataLen, uint8_t* pData) {
       pData[NCI_GID_INDEX] == NCI_RF_DISC_RSP_GID &&
       pData[NCI_OID_INDEX] == NCI_RF_DEACTIVATE_OID) {
     gWaitingForRfDeActivateRsp = false;
+    gWaitingForDiscRsp = true;
+    vector<uint8_t> discoveryCommand =
+        isObserveModeEnabled()
+            ? NciDiscoveryCommandBuilderInstance.reConfigRFDiscCmd()
+            : NciDiscoveryCommandBuilderInstance.getDiscoveryCommand();
+    phNxpHal_EnqueueWrite(&discoveryCommand[0], discoveryCommand.size());
 
-    if (gObserveModeSetRequired && !gObserveModeCommand.empty()) {
-      gObserveModeSetRequired = false;
-      gWaitingForObserveModeCommandRsp = true;
-      phNxpHal_EnqueueWrite(&gObserveModeCommand[0],
-                            gObserveModeCommand.size());
-    } else {
-      sendDiscoveryCommandOnTagRemoval();
-    }
-    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
-  }
-
-  if (gWaitingForObserveModeCommandRsp && dataLen >= 2 &&
-      pData[NCI_GID_INDEX] == (NCI_MT_RSP | NCI_GID_PROP) &&
-      pData[NCI_OID_INDEX] == NCI_PROP_NTF_ANDROID_OID) {
-    gWaitingForObserveModeCommandRsp = false;
-    gObserveModeCommand = std::vector<uint8_t>();
-    sendDiscoveryCommandOnTagRemoval();
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
   }
   if (gWaitingForDiscRsp && dataLen >= 2 &&
@@ -275,15 +241,10 @@ int handleObserveModeTechCommand(uint16_t data_len, const uint8_t* p_data) {
         // send Observe Mode Tech command
         NciDiscoveryCommandBuilderInstance.setObserveModePerTech(techValue);
 
-        if (NciDiscoveryCommandBuilderInstance.isRfDiscoveryCommandReceived()) {
-          nciStatus = phNxpNciHal_send_ext_cmd(
-              data_len, const_cast<uint8_t*>(p_data), &rsp_len, rsp);
-          if (nciStatus != NFCSTATUS_SUCCESS) {
-            NXPLOG_NCIHAL_E("%s ObserveMode tech command failed", __func__);
-          }
-        } else {
-          gObserveModeCommand = std::vector<uint8_t>(p_data, p_data + data_len);
-          gObserveModeSetRequired = true;
+        nciStatus = phNxpNciHal_send_ext_cmd(
+            data_len, const_cast<uint8_t*>(p_data), &rsp_len, rsp);
+        if (nciStatus != NFCSTATUS_SUCCESS) {
+          NXPLOG_NCIHAL_E("%s ObserveMode tech command failed", __func__);
         }
       }
 
