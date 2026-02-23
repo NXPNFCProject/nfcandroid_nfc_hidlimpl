@@ -3862,8 +3862,8 @@ void phNxpNciHal_configureLxDebugMode() {
   unsigned long config_val = 0;
   bool prop_found = false;
   bool config_found = false;
-  static uint8_t cmd_lxdebug[] = {0x20, 0x02, 0x06, 0x01, 0xA0,
-                                  0x1D, 0x02, 0x00, 0x00};
+  uint8_t cmd_lxdebug[] = {0x20, 0x02, 0x06, 0x01, 0xA0,
+                                 0x1D, 0x02, 0x00, 0x00};
   uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
   uint16_t rsp_len = 0;
 
@@ -4002,8 +4002,14 @@ void phNxpNciHal_deinitializeRegRfFwDnld() {
 
 void phNxpNciHal_setVerboseLogging(bool enable) {
   nfc_debug_enabled = enable;
-  property_set("persist.vendor.nfc.nxp.lx_debug_mask",
-               enable ? "0x2017" : "0x0");
+  unsigned long config_val = 0;
+  bool config_found = false;
+  config_found = GetNxpNumValue(NAME_NXP_CORE_PROP_SYSTEM_DEBUG, &config_val,
+                                sizeof(config_val));
+  if (config_found && config_val) {
+    property_set("persist.vendor.nfc.nxp.lx_debug_mask",
+                 enable ? "0x2017" : "0x0");
+  }
 }
 
 /******************************************************************************
