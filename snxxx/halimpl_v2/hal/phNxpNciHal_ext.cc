@@ -606,7 +606,7 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
       }
       NXPLOG_NCIHAL_D("CORE_RESET_NTF NCI2.0 reason CORE_RESET_CMD received !");
       nxpncihal_ctrl.nci_info.nci_version = p_ntf[5];
-      if (!nxpncihal_ctrl.halStatus)
+      if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE)
         phNxpNciHal_configFeatureList(p_ntf, *p_len);
       const int len = p_ntf[2] + 2; /*include 2 byte header*/
       if (len != *p_len - 1) {
