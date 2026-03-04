@@ -23,6 +23,7 @@ import android.nfc.NfcAdapter;
 import android.nfc.NfcAdapter.ControllerAlwaysOnListener;
 import android.nfc.NfcOemExtension;
 import android.nfc.OemLogItems;
+import android.nfc.RfDiscoverConfig;
 import android.nfc.Tag;
 import android.nfc.cardemulation.ApduServiceInfo;
 import android.os.AsyncTask;
@@ -56,6 +57,15 @@ public class NfcOperations {
 
     private int PAUSE_POLLING_INDEFINITELY = 0;
 
+    private static final int NCI_TYPE_POLL_A = 0x00;
+    private static final int NCI_TYPE_POLL_B = 0x01;
+    private static final int NCI_TYPE_POLL_F = 0x02;
+    private static final int NCI_TYPE_POLL_V = 0x06;
+    private static final int NFC_TYPE_POLL_KOVIO = 0x70;
+    private static final int NCI_TYPE_LISTEN_A = 0x80;
+    private static final int NCI_TYPE_LISTEN_B = 0x81;
+    private static final int NCI_TYPE_LISTEN_F = 0x82;
+    private static final int NCI_TYPE_LISTEN_ISO15693 = 0x86;
     private static final int FLAG_USE_ALL_TECH = 0xff;
 
     private boolean mIsPollingPaused = false;
@@ -119,6 +129,13 @@ public class NfcOperations {
     private boolean mIsTagConnected = false;
 
     Map<String, Boolean> mOemCallbackMap = new HashMap<>();
+
+    /**
+     * @brief Map storing NCI RF technology types as keys and the corresponding
+     * NFCAdapter configuration flags as values.
+     */
+    Map<Integer, Integer> mNciServiceRfConfigMap = new HashMap<>();
+
     /**
      * @brief private constructor to create singleton object
      * @param nfcAdapter
@@ -128,6 +145,7 @@ public class NfcOperations {
         mNfcOemExtension = mNfcAdapter.getNfcOemExtension();
         mNfcAdapter.registerControllerAlwaysOnListener(Executors.newSingleThreadExecutor(),
                             mControllerAlwaysOnListener);
+        initializeNciServiceRfConfig(nfcAdapter);
     }
 
     /**
@@ -141,6 +159,23 @@ public class NfcOperations {
             sNfcOperations = new NfcOperations(nfcAdapter);
         }
         return sNfcOperations;
+    }
+
+    /**
+     * @brief Initializes the mapping between NCI RF interface types and their corresponding
+     * Android NFCAdapter reader/listen flags.
+     * @param nfcAdapter
+     * @return None
+     */
+    private void initializeNciServiceRfConfig(NfcAdapter nfcAdapter) {
+        mNciServiceRfConfigMap.put(NCI_TYPE_POLL_A, nfcAdapter.FLAG_READER_NFC_A);
+        mNciServiceRfConfigMap.put(NCI_TYPE_POLL_B, nfcAdapter.FLAG_READER_NFC_B);
+        mNciServiceRfConfigMap.put(NCI_TYPE_POLL_F, nfcAdapter.FLAG_READER_NFC_F);
+        mNciServiceRfConfigMap.put(NCI_TYPE_POLL_V, nfcAdapter.FLAG_READER_NFC_V);
+        mNciServiceRfConfigMap.put(NFC_TYPE_POLL_KOVIO, nfcAdapter.FLAG_READER_NFC_BARCODE);
+        mNciServiceRfConfigMap.put(NCI_TYPE_LISTEN_A, nfcAdapter.FLAG_LISTEN_NFC_PASSIVE_A);
+        mNciServiceRfConfigMap.put(NCI_TYPE_LISTEN_B, nfcAdapter.FLAG_LISTEN_NFC_PASSIVE_B);
+        mNciServiceRfConfigMap.put(NCI_TYPE_LISTEN_F, nfcAdapter.FLAG_LISTEN_NFC_PASSIVE_F);
     }
 
     /**
@@ -182,9 +217,31 @@ public class NfcOperations {
      * @return None
      */
     public void enableDiscovery() {
-        NxpNfcLogger.d(TAG, "enableDiscovery With Keep READER|LISTEN");
-        setDiscoveryTech(NfcAdapter.FLAG_READER_KEEP | FLAG_USE_ALL_TECH,
-                NfcAdapter.FLAG_LISTEN_KEEP | FLAG_USE_ALL_TECH);
+        NxpNfcLogger.d(TAG, "enableDiscovery");
+        List<RfDiscoverConfig> rfDiscoverConfigList =
+                                mNfcOemExtension.getRfDiscoverConfigurations();
+        int pollTech = 0;
+        int listenTech = 0;
+        for (RfDiscoverConfig rfConfig : rfDiscoverConfigList) {
+            int techMask = rfConfig.getTechnologyMode() & FLAG_USE_ALL_TECH;
+            if (!mNciServiceRfConfigMap.containsKey(techMask)) {
+                NxpNfcLogger.d(TAG, techMask + " RF config is not present, "
+                                    + "enabling all poll & listen techs");
+                pollTech = FLAG_USE_ALL_TECH;
+                listenTech = FLAG_USE_ALL_TECH;
+                break;
+            }
+            int rfConfigVal = mNciServiceRfConfigMap.get(techMask);
+            if (rfConfig.getTechnologyMode() < 0) {
+                listenTech |= rfConfigVal;
+            } else {
+                pollTech |= rfConfigVal;
+            }
+        }
+        NxpNfcLogger.d(TAG, "enableDiscovery With poll_tech: " + Integer.toHexString(pollTech)
+                            + " listen_tech: " + Integer.toHexString(listenTech));
+        setDiscoveryTech(NfcAdapter.FLAG_SET_DEFAULT_TECH | pollTech,
+                NfcAdapter.FLAG_SET_DEFAULT_TECH | listenTech);
     }
 
     /**
