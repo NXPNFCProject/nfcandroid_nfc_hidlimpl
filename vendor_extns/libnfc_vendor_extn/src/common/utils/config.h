@@ -29,7 +29,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  Copyright 2025 NXP
+ *  Copyright 2025-2026 NXP
  *
  ******************************************************************************/
 #pragma once
@@ -41,7 +41,7 @@
 
 class ConfigValue {
  public:
-  enum Type : uint8_t { UNSIGNED, STRING, BYTES };
+  enum Type { UNSIGNED, STRING, BYTES };
 
   ConfigValue();
   explicit ConfigValue(std::string);
