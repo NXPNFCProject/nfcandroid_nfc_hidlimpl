@@ -109,6 +109,8 @@ extern NFCSTATUS phNxpNciHal_enableDefaultUICC2SWPline(uint8_t uicc2_sel);
 extern void phNxpNciHal_conf_nfc_forum_mode();
 extern void phNxpNciHal_prop_conf_lpcd(bool enableLPCD);
 extern void phNxpNciHal_prop_conf_rssi();
+extern void phNxpNciHal_ext_check_unrecoverable_errors(uint8_t* p_ntf,
+                                                       uint16_t p_len);
 
 nfc_stack_callback_t* p_nfc_stack_cback_backup;
 phNxpNci_getCfg_info_t* mGetCfg_info = NULL;
@@ -1166,6 +1168,8 @@ static void phNxpNciHal_read_complete(void* pContext,
       // Send the response to upper layer, if it is not handled by Nfc
       // extension library
       if (NFCSTATUS_EXTN_FEATURE_SUCCESS != extStatus) {
+        phNxpNciHal_ext_check_unrecoverable_errors(pInfo->pBuff,
+                                                   pInfo->wLength);
         phNxpNciHal_client_data_callback(pInfo->wLength, pInfo->pBuff);
       }
     }
