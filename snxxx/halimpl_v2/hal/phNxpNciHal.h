@@ -86,6 +86,7 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 
 #define ENABLE_T4T_CE 0x03
 #define NXP_PHONE_OFF_NFC_OFF_CE_NOT_SUPPORTED 0x00
+#define NXP_PHONE_OFF_NFC_OFF_CE_SUPPORTED 0x01
 #define NXP_PHONE_OFF_NFC_OFF_T4T_CE_SUPPORTED 0x03
 
 #define CORE_RESET_NTF_RECOVERY_REQ_COUNT 0x03

@@ -2175,6 +2175,7 @@ int phNxpNciHal_close(bool bShutdown) {
          (GetNxpNumValue(NAME_NXP_CE_SUPPORT_IN_NFC_OFF_PHONE_OFF, &num,
                          sizeof(num))) &&
          ((num == NXP_PHONE_OFF_NFC_OFF_CE_NOT_SUPPORTED) ||
+          (num == NXP_PHONE_OFF_NFC_OFF_CE_SUPPORTED) ||
           (num == NXP_PHONE_OFF_NFC_OFF_T4T_CE_SUPPORTED)))) {
       if (num == NXP_PHONE_OFF_NFC_OFF_CE_NOT_SUPPORTED) {
         status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ce_in_phone_off),
