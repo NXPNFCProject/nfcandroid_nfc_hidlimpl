@@ -1425,6 +1425,29 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
     // initialize recovery FW variables
     gRecFWDwnld = 0;
     gRecFwRetryCount = 0;
+
+    config_access = true;
+    setConfigAlways = false;
+    isfound = GetNxpNumValue(NAME_NXP_SET_CONFIG_ALWAYS, &num, sizeof(num));
+    if (isfound > 0) {
+      setConfigAlways = static_cast<bool>(num);
+    }
+    NXPLOG_NCIHAL_D("SetConfigAlways flag : 0x%02x", static_cast<uint8_t>(setConfigAlways));
+    if (setConfigAlways || isNxpConfigModified()) {
+      NXPLOG_NCIHAL_D("Performing NAME_NXP_CORE_CONF Settings");
+      retlen = 0;
+      isfound = GetNxpByteArrayValue(
+          NAME_NXP_CORE_CONF, reinterpret_cast<char*>(buffer), bufflen, &retlen);
+      if (isfound > 0 && retlen > 0) {
+        /* NXP ACT Proprietary Ext */
+        status = phNxpNciHal_send_ext_cmd(retlen, buffer, &rsp_len, rsp);
+        if (status != NFCSTATUS_SUCCESS) {
+          NXPLOG_NCIHAL_E("Core Set Config failed");
+          retry_core_init_cnt++;
+          goto retry_core_init;
+        }
+      }
+    }
     if (buffer) {
       free(buffer);
       buffer = NULL;
