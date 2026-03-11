@@ -790,6 +790,11 @@ int phNxpNciHal_MinOpen() {
         /* fw dnld for SN400 */
         uint8_t dummy_rsp[] = {0, 0, 0};
         phNxpNciHal_configFeatureList(dummy_rsp, sizeof(dummy_rsp));
+        if (sIsHalOpenErrorRecovery && IS_CHIP_TYPE_EQ(ctn820)) {
+          NXPLOG_NCIHAL_E("Re-Loading extn lib after detecting the chip");
+          /* In recovery scenario Re-Load Extn Library after detecting the chip */
+          phNxpExtn_LibSetup();
+        }
         setNxpFwConfigPath();
         phDnldNfc_InitImgInfo();
         phNxpNciHal_CheckValidFwVersion();
