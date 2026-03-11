@@ -2,7 +2,7 @@
  *
  *  The original Work has been changed by NXP.
  *
- *  Copyright 2025 NXP
+ *  Copyright 2025-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -51,6 +51,8 @@ public class WlcEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
     private static final byte NCI_WLC_SEND_RAW_CMD_SUB_OID      = 0x00;
     private static final byte NCI_WLC_STATUS_NTF_SUB_OID        = 0x01;
     private static final byte NCI_WLC_OBS_DATA_PKT_CMD_SUB_OID  = 0x02;
+    private static final byte NCI_WLC_RF_INTF_ACT_NTF_SUB_OID   = 0x03;
+    private static final byte NCI_WLC_RF_INTF_DEACT_NTF_SUB_OID = 0x04;
 
     private static final byte WLC_SUB_OID_INDEX   = 0x01;
     private static final byte WLC_DATA_PKT_INDEX  = 0x05;
@@ -109,6 +111,12 @@ public class WlcEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
                 if(mWlcCallbacks != null)
                     mWlcCallbacks.onWlcDataReceived(wlcData);
                 break;
+            case NCI_WLC_RF_INTF_ACT_NTF_SUB_OID:
+                if(mWlcCallbacks != null)
+                    mWlcCallbacks.onWlcListnerDetected();
+            case NCI_WLC_RF_INTF_DEACT_NTF_SUB_OID:
+                if(mWlcCallbacks != null)
+                    mWlcCallbacks.onWlcListnerRemoved();
             default:
                 NxpNfcLogger.d(TAG, "Unknown Notification");
                 break;

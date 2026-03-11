@@ -88,12 +88,31 @@ WLCSTATUS WlcStateMonitor::handleWlcNciRspNtf(uint16_t dataLen, const uint8_t *p
 
   switch (mGidOid) {
     case NCI_RF_DEACTD_NTF_GID_OID:
-      [[fallthrough]];
+      if (mIsWlcRfActivated) {
+        mIsWlcRfActivated = false;
+        status = WLCSTATUS_EXTN_FEATURE_SUCCESS;
+        wlcNtf.push_back(static_cast<uint8_t>(NCI_WLC_RF_INTF_DEACT_NTF_SUB_OID));
+          wlcNtf.insert(wlcNtf.end(), pData, pData + dataLen);
+          PlatformAbstractionLayer::getInstance()->palSendWlcDataCallback(
+                    wlcNtf.size(), wlcNtf.data());
+      } else {
+        NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Ignored RF DEACT NTF", __func__);
+      }
+      break;
     case NCI_CORE_INTERFACE_ERROR_NTF_GID_OID:
       [[fallthrough]];
     case NCI_RF_INTF_ACTD_NTF_GID_OID:
-        status = WLCSTATUS_EXTN_FEATURE_SUCCESS;
-      break;
+        if (nciRspNtf[NCI_RF_INTF_VAL_INDEX] == NCI_RF_INTF_WLC_AUTON_VAL) {
+          mIsWlcRfActivated = true;
+          status = WLCSTATUS_EXTN_FEATURE_SUCCESS;
+          wlcNtf.push_back(static_cast<uint8_t>(NCI_WLC_RF_INTF_ACT_NTF_SUB_OID));
+          wlcNtf.insert(wlcNtf.end(), pData, pData + dataLen);
+          PlatformAbstractionLayer::getInstance()->palSendWlcDataCallback(
+                    wlcNtf.size(), wlcNtf.data());
+          break;
+        } else {
+          NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Ignored RF ACT NTF", __func__);
+        }
     case NCI_WLC_STATUS_NTF_GID_OID: {
         status = WLCSTATUS_EXTN_FEATURE_SUCCESS;
         wlcNtf.push_back(static_cast<uint8_t>(NCI_WLC_STATUS_NTF_SUB_OID));

@@ -121,6 +121,8 @@ constexpr uint8_t NCI_WLC_PROP_SUB_GID_VAL          = 0x02;
 constexpr uint8_t NCI_WLC_SEND_RAW_CMD_SUB_OID      = 0x00;
 constexpr uint8_t NCI_WLC_STATUS_NTF_SUB_OID        = 0x01;
 constexpr uint8_t NCI_WLC_OBS_DATA_PKT_CMD_SUB_OID  = 0x02;
+constexpr uint8_t NCI_WLC_RF_INTF_ACT_NTF_SUB_OID   = 0x03;
+constexpr uint8_t NCI_WLC_RF_INTF_DEACT_NTF_SUB_OID = 0x04;
 
 constexpr uint8_t NCI_PAYLOAD_LEN_INDEX = 2;
 constexpr uint8_t MIN_PCK_MSG_LEN = 0x03;
@@ -134,6 +136,8 @@ constexpr uint8_t NCI_HEADER_LEN = 0x03;
 constexpr uint8_t NCI_SHIFT_BY_8 = 8;
 constexpr uint8_t NCI_MSG_TYPE_CMD = 0x01;
 constexpr uint8_t NCI_MSG_TYPE_DATA = 0x00;
+constexpr uint8_t NCI_RF_INTF_VAL_INDEX = 0x04;
+constexpr uint8_t NCI_RF_INTF_WLC_AUTON_VAL = 0x07;
 
 constexpr uint8_t NCI_CORE_SET_CFG_OID_VAL = 0x02;
 

@@ -2,7 +2,7 @@
  *
  *  The original Work has been changed by NXP.
  *
- *  Copyright 2025 NXP
+ *  Copyright 2025-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -37,4 +37,14 @@ public interface IWlcEventCallbacks {
      * @param wlcData : Data packet received from NFCC
      */
     void onWlcDataReceived(byte[] wlcData);
+
+    /**
+     * This callback triggers once Wlc RF interface is Activated.
+     */
+    void onWlcListnerDetected();
+
+    /**
+     * This callback triggers once Wlc RF interface is DeActivated.
+     */
+    void onWlcListnerRemoved();
 }

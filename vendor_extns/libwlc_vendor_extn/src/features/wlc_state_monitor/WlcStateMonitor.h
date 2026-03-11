@@ -85,6 +85,7 @@ public:
 private:
   static std::unique_ptr<WlcStateMonitor> instance;
   bool mIsAutonomousModeEn = false;
+  bool mIsWlcRfActivated = false;
   WlcStateMonitor();
   ~WlcStateMonitor();
   friend struct std::default_delete<WlcStateMonitor>;
