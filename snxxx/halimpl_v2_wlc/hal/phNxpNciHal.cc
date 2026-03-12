@@ -151,7 +151,6 @@ static NFCSTATUS phNxpNciHal_get_mw_eeprom(void);
 static NFCSTATUS phNxpNciHal_set_mw_eeprom(void);
 static void phNxpNciHal_onePoint_calibration(void);
 static void phNxpNciHal_wlc_lpcd_configure(void);
-static void phNxpNciHal_wlc_bfod_configure(void);
 static void phNxpNciHal_configureLxDebugMode();
 static void phNxpNciHal_gpio_restore(phNxpNciHal_GpioInfoState state);
 static void phNxpNciHal_initialize_debug_enabled_flag();
@@ -1426,7 +1425,6 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
 
     phNxpNciHal_wlc_lpcd_configure();
     phNxpNciHal_onePoint_calibration();
-    phNxpNciHal_wlc_bfod_configure();
     // initialize recovery FW variables
     gRecFWDwnld = 0;
     gRecFwRetryCount = 0;
@@ -3020,73 +3018,6 @@ static void phNxpNciHal_wlc_lpcd_configure() {
         NXPLOG_NCIHAL_E("Failed to set the LPCD_EN_DIS_CFG");
         return;
       }
-  }
-}
-
-/******************************************************************************
- * Function         phNxpNciHal_wlc_bfod_configure
- *
- * Description      This function is called to disbale
- *                  BFOD (Background Foreign Object Detection)
- *
- * Returns          void.
- *
- ******************************************************************************/
-static void phNxpNciHal_wlc_bfod_configure() {
-  uint8_t bfodConfig = 0;
-  NFCSTATUS status = NFCSTATUS_SUCCESS;
-  uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
-  uint16_t rsp_len = 0;
-  const int GET_CONFIG_STATUS_INDEX = 3;
-  const int GET_CONFIG_RSP_VAL_BEGIN_INDEX = 8;
-  const int SET_CONFIG_CMD_VAL_INDEX = 7;
-  const int BFOD_BIT_MASK = 2;
-  const int GET_CONFIG_BFOD_TAG_NUM_OF_BYTES = 17;
-  const int BFOD_BIT_INDEX = 1;
-
-  std::vector<uint8_t> getbFOD_ConfigCmd = {0x20, 0x03, 0x03, 0x01, 0xA1, 0x20};
-  std::vector<uint8_t> setbFOD_ConfigCmd = {0x20, 0x02, 0x15, 0x01,
-                                            0xA1, 0x20, 0x11};
-  if (!GetNxpNumValue(NAME_NXP_WLC_BFOD_ENABLED, &bfodConfig,
-                      sizeof(bfodConfig)) ||
-      (bfodConfig > 1)) {
-    NXPLOG_NCIHAL_E(
-        "NAME_NXP_WLC_BFOD_DIS_CFG config not found or invalid value found!");
-    return;
-  }
-
-  status = phNxpNciHal_send_ext_cmd(getbFOD_ConfigCmd.size(),
-                                    getbFOD_ConfigCmd.data(), &rsp_len, rsp);
-  if (status != NFCSTATUS_SUCCESS) {
-    NXPLOG_NCIHAL_E("Failed to get the FOD Config!");
-    return;
-  }
-
-  if (rsp[GET_CONFIG_STATUS_INDEX] == NFCSTATUS_SUCCESS) {
-    setbFOD_ConfigCmd.insert(
-        setbFOD_ConfigCmd.end(),
-        rsp + GET_CONFIG_RSP_VAL_BEGIN_INDEX,
-        rsp + GET_CONFIG_RSP_VAL_BEGIN_INDEX +
-            GET_CONFIG_BFOD_TAG_NUM_OF_BYTES);
-    uint8_t currentBfodConfig = (setbFOD_ConfigCmd[SET_CONFIG_CMD_VAL_INDEX] &
-                              (1 << BFOD_BIT_INDEX));
-    if (bfodConfig == currentBfodConfig) {
-      NXPLOG_NCIHAL_D("BFOD Config is same as Config file! Update Not required!");
-      return;
-    }
-    if (bfodConfig == 1) {
-      setbFOD_ConfigCmd[SET_CONFIG_CMD_VAL_INDEX] |= (1 << BFOD_BIT_INDEX);
-    } else {
-      setbFOD_ConfigCmd[SET_CONFIG_CMD_VAL_INDEX] &= ~(1 << BFOD_BIT_INDEX);
-    }
-    status = phNxpNciHal_send_ext_cmd(setbFOD_ConfigCmd.size(),
-                                      setbFOD_ConfigCmd.data(), &rsp_len, rsp);
-    if (status != NFCSTATUS_SUCCESS) {
-      NXPLOG_NCIHAL_E("Failed to set the BFOD Config!");
-      return;
-    }
-  } else {
-    NXPLOG_NCIHAL_D("FOD Get Config RSP Invalid Status(%d)!", rsp[GET_CONFIG_STATUS_INDEX]);
   }
 }
 
