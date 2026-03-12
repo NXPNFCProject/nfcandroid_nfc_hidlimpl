@@ -23,6 +23,7 @@
 #define NCI_MT_NTF 0x60
 #define NCI_MSG_CORE_RESET 0x00
 #define NCI_MSG_CORE_INIT 0x01
+#define NCI_CORE_GENERIC_ERROR_NTF 0x07
 
 /* libnfc_nci -> AIDL Mapping Support */
 #define HAL_NFC_REQUEST_CONTROL_EVT 0x04

@@ -579,7 +579,9 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
       goto core_reset_err;
     }
   } else if (p_ntf[0] == NCI_MT_NTF &&
-             ((p_ntf[1] & NCI_OID_MASK) == NCI_MSG_CORE_RESET)) {
+             (((p_ntf[1] & NCI_OID_MASK) == NCI_MSG_CORE_RESET)
+                || (IS_CHIP_TYPE_EQ(ctn820) &&
+                    (p_ntf[1] & NCI_OID_MASK) == NCI_CORE_GENERIC_ERROR_NTF))) {
     if (*p_len < 4) {
       android_errorWriteLog(0x534e4554, "169258455");
       NXPLOG_NCIHAL_E("%s invalid CORE_RESET_NTF len", __func__);
@@ -620,7 +622,10 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
            p_ntf[3] == CORE_RESET_TRIGGER_TYPE_FW_ASSERT) ||
           ((p_ntf[3] == CORE_RESET_TRIGGER_TYPE_UNRECOVERABLE_ERROR) &&
            (p_ntf[4] == CORE_RESET_TRIGGER_TYPE_WATCHDOG_RESET ||
-            p_ntf[4] == CORE_RESET_TRIGGER_TYPE_FW_ASSERT))) {
+            p_ntf[4] == CORE_RESET_TRIGGER_TYPE_FW_ASSERT)) ||
+            ((IS_CHIP_TYPE_EQ(ctn820) &&
+            (p_ntf[3] == CORE_GENRIC_ERROR_NTF_STATUS_GPDAC_ERROR ||
+              p_ntf[3] == CORE_GENRIC_ERROR_NTF_STATUS_WDOG_SETTINGS_CORRUPTED)))) {
         /* WA : In some cases for Watchdog reset FW sends reset reason code as
          * unrecoverable error and config status as WATCHDOG_RESET */
         is_abort_req = phNxpNciHal_update_core_reset_ntf_prop();

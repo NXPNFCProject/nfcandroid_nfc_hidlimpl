@@ -62,6 +62,8 @@ typedef void(phNxpNciHal_control_granted_callback_t)();
 #define CORE_RESET_TRIGGER_TYPE_FW_ASSERT ((uint8_t)0xA0)
 #define CORE_RESET_TRIGGER_TYPE_WATCHDOG_RESET ((uint8_t)0xA3)
 #define CORE_RESET_TRIGGER_TYPE_INPUT_CLOCK_LOST ((uint8_t)0xA4)
+#define CORE_GENRIC_ERROR_NTF_STATUS_GPDAC_ERROR ((uint8_t)0xE7)
+#define CORE_GENRIC_ERROR_NTF_STATUS_WDOG_SETTINGS_CORRUPTED ((uint8_t)0xEA)
 // #define NCI_MSG_CORE_RESET           0x00
 // #define NCI_MSG_CORE_INIT            0x01
 #define NCI_MT_MASK 0xE0
