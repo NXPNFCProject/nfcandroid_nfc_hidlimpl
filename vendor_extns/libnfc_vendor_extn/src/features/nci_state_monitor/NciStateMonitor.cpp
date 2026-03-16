@@ -75,12 +75,44 @@ NFCSTATUS NciStateMonitor::processCoreGenericErrorNtf(
 
 NFCSTATUS
 NciStateMonitor::processCoreResetNtfReceived(vector<uint8_t> coreResetNtf) {
-  constexpr uint16_t NCI_MIN_CORE_RESET_NTF_LEN = 0x0C;
-  if (coreResetNtf.size() >= NCI_MIN_CORE_RESET_NTF_LEN) {
+  constexpr uint16_t NCI_MIN_CORE_RESET_NTF_LEN = 0x0B;
+  char vendorName = 'N';
+  uint8_t fwMajorVer, fwMinorVer, fwPatchVer = 0x00;
+  uint8_t rfFileVer[2] = {0x00};
+  long retlen = 0;
+  char result[15];
+  uint8_t coreResetNtfOffset = coreResetNtf.size() - 1;
+
+  if (coreResetNtfOffset >= NCI_MIN_CORE_RESET_NTF_LEN) {
     firmwareVersion.clear();
     firmwareVersion.assign(coreResetNtf.end() - 3, coreResetNtf.end());
+    fwPatchVer = coreResetNtf[coreResetNtfOffset--];  // Extract FW Patch
+                                                      // version from last Index
+    fwMinorVer =
+        coreResetNtf[coreResetNtfOffset--];  // Extract FW Minor version
+                                             // from Second last Index
+    fwMajorVer =
+        coreResetNtf[coreResetNtfOffset--];  // Extract FW Major version
+                                             // from Third last Index
+
+    bool isfound =
+        PlatformAbstractionLayer::getInstance()->palGetNxpByteArrayValue(
+            NAME_NXP_RF_FILE_VERSION_INFO, (char*)rfFileVer, sizeof(rfFileVer),
+            &retlen);
+    if ((!isfound) || (retlen != 0x02)) {
+      NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN,
+                     "NXP_RF_FILE_VERSION_INFO not found. retlen %ld", retlen);
+    }
+
+    // Formatting the string
+    snprintf(result, sizeof(result), "%c%02X.%02X.%02X.%02X", vendorName,
+             fwMajorVer, fwMinorVer, fwPatchVer, rfFileVer[1]);
+    NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN, "nfc.fw.ver [ %s ]", result);
+    PlatformAbstractionLayer::getInstance()->palPropertySet("nfc.fw.ver",
+                                                            result);
   } else {
-    NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Invalid Ntf pkt length %zu",
+    NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN,
+                   "%s Invalid Ntf pkt length %zu. Unable to set nfc.fw.ver",
                    __func__, coreResetNtf.size());
   }
   return NFCSTATUS_EXTN_FEATURE_FAILURE;
