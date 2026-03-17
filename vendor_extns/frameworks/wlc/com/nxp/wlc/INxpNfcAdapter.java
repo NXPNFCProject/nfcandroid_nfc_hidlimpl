@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,6 +78,15 @@ public interface INxpNfcAdapter {
    * @param callbacks : callback object to be register.
    */
   public void registerWlcCallbacks(IWlcEventCallbacks callbacks);
+
+  /**
+   * This API sends command to get the observables data.
+   * Command is accepted if at least one set of observables is available,
+   * it will be rejected otherwise.
+   *
+   * @retuns byte array of Response in a TLV format
+   */
+  public byte[] getObservables();
 
   /**
    * This API unregisters the Application callbacks to be called

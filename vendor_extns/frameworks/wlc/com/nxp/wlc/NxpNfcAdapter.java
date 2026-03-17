@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -194,7 +194,6 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
         mLxDebugEventHandler.unregisterLxDebugCallbacks();
     }
 
-
     /**
      * This API registers the callback to get WLC_STATUS_NTF & WPT DATA Events.
      * @param callbacks : callback object to be register.
@@ -202,6 +201,18 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     @Override
     public void registerWlcCallbacks(IWlcEventCallbacks callbacks) {
         mWlcEventHandler.registerWlcCallbacks(callbacks);
+    }
+
+    /**
+     * @brief This API sends command to get the observables data.
+     * Command is accepted if at least one set of observables is available,
+     * it will be rejected otherwise.
+     *
+     * @retuns byte array of Response in a TLV format
+     */
+    @Override
+    public byte[] getObservables() {
+        return mWlcEventHandler.getObservables();
     }
 
     /**

@@ -27,8 +27,10 @@ import java.util.concurrent.Executors;
 import java.util.Arrays;
 import android.util.Log;
 
+import com.nxp.wlc.INxpNfcAdapter;
 import com.nxp.wlc.INxpNfcNtfHandler;
 import com.nxp.wlc.INxpOEMCallbacks;
+import com.nxp.wlc.NxpNfcConstants;
 import com.nxp.wlc.NxpNfcLogger;
 import com.nxp.wlc.core.NfcOperations;
 import com.nxp.wlc.core.NxpNciPacketHandler;
@@ -57,6 +59,7 @@ public class WlcEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
     private static final byte WLC_SUB_OID_INDEX   = 0x01;
     private static final byte WLC_DATA_PKT_INDEX  = 0x05;
 
+    private static final byte WLC_GET_OBSERVABLES_OID = 0x3F;
 
     public WlcEventHandler(NfcAdapter nfcAdapter, Context context) {
         this.mContext = context;
@@ -84,6 +87,27 @@ public class WlcEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
         NxpNfcLogger.d(TAG, "Entry unregisterWlcCallbacks");
         mWlcCallbacks = null;
         mNxpNciPacketHandler.unregisterNtfCallback(this);
+    }
+
+    /**
+     * @brief This API sends command to get the observables data.
+     * Command is accepted if at least one set of observables is available,
+     * it will be rejected otherwise.
+     *
+     * @retuns byte array of Response in a TLV format
+     */
+    public byte[] getObservables() {
+        byte WLC_STATUS_FAILED = 0x01;
+        byte[] getObservablesRsp = { WLC_STATUS_FAILED };
+        byte[] payload = { (byte) 0xA8 }; // ASK_OBSERVABLES
+        try {
+            getObservablesRsp = mNxpNciPacketHandler.sendVendorNciMessage(
+                    NxpNfcConstants.NFC_NCI_PROP_GID,
+                    WLC_GET_OBSERVABLES_OID, payload);
+        } catch (Exception e) {
+            Log.d(TAG, "error in fetching observables:" + e.toString());
+        }
+        return getObservablesRsp;
     }
 
     @Override
