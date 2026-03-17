@@ -136,13 +136,15 @@ public class WlcEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
                     mWlcCallbacks.onWlcDataReceived(wlcData);
                 break;
             case NCI_WLC_RF_INTF_ACT_NTF_SUB_OID:
-                if(mWlcCallbacks != null)
+                if (mWlcCallbacks != null)
                     mWlcCallbacks.onWlcListnerDetected();
+                break;
             case NCI_WLC_RF_INTF_DEACT_NTF_SUB_OID:
-                if(mWlcCallbacks != null)
+                if (mWlcCallbacks != null)
                     mWlcCallbacks.onWlcListnerRemoved();
+                break;
             default:
-                NxpNfcLogger.d(TAG, "Unknown Notification");
+                NxpNfcLogger.d(TAG, "Unknown Notification id: " + subOid);
                 break;
         }
     }
