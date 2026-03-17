@@ -117,6 +117,17 @@ public class QTagHandler implements INxpNfcNtfHandler {
                             pollTech + " delay_value:" + delay_value);
     final Bundle options = new Bundle();
     options.putInt(NfcAdapter.EXTRA_READER_PRESENCE_CHECK_DELAY, delay_value);
+
+    return enableQTag(activity, qMode, mQTagCallback, pollTech, options);
+
+  }
+
+  public int enableQTag(Activity activity, int qMode,
+                        NxpReaderCallback mQTagCallback, int pollTech,
+                        Bundle options) throws IOException {
+    NxpNfcLogger.d(TAG, "enableQTag Enter mode: " + qMode + " pollTech:" +
+                            pollTech + " Bundle:" + options);
+
     int status = QTagStatus.Failed.value;
 
     if (mNfcAdapter.getAdapterState() == NfcAdapter.STATE_OFF) {

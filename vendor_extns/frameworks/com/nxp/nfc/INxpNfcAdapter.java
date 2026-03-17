@@ -27,6 +27,7 @@ import com.nxp.nfc.vendor.lxdebug.ILxDebugCallbacks;
 import com.nxp.nfc.vendor.ntag.NTagHandler.NTagMode;
 import com.nxp.nfc.vendor.ntag.NTagHandler.NTagStatus;
 import com.nxp.nfc.vendor.srd.ISrdCallbacks;
+import android.os.Bundle;
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -296,7 +297,7 @@ public interface INxpNfcAdapter {
    * <li>Limit the NFC controller to reader mode while this Activity is in the
    * foreground.
    * </ul>
-   * @param  activity activity the Activity that requests the adapter to be in
+   * @param  activity the Activity that requests the adapter to be in
    *     reader mode.
    * @param mQTagCallback the callback to be called when a tag is discovered
    * @param  mode to ENABLE_QTAG_ONLY_MODE.
@@ -311,6 +312,33 @@ public interface INxpNfcAdapter {
    */
   public int enableQTag(Activity activity, NxpReaderCallback mQTagCallback,
                         int mode, int pollTech, int delay_value)
+      throws IOException;
+
+  /**
+   * This is the API to be called to enable or disable QTag RF mode.
+   * <ul>
+   * <li>This api shall be called only when NfcService is enabled.
+   * <li>This api shall be called only when there are no NFC transactions
+   * ongoing.
+   * <li>Limit the NFC controller to reader mode while this Activity is in the
+   * foreground.
+   * </ul>
+   * @param  activity the Activity that requests the adapter to be in
+   *     reader mode.
+   * @param mQTagCallback the callback to be called when a tag is discovered
+   * @param  mode to ENABLE_QTAG_ONLY_MODE.
+   *                 APPEND_QTAG_MODE with input pollTech.
+   *                 DISABLE_QTAG_MODE & reset to default discovery.
+   * @param pollTech to append QPoll in reader mode.
+   * @param Bundle options - Please use this bundle set delay_value and
+   *        Readermode annotations
+   * @return whether the update of state is
+   *          QTag_STATUS_SUCCESS,
+   *          QTag_STATUS_FAILED,
+   * @throws IOException If a failure occurred during QTag RF mode set or reset
+   */
+  public int enableQTag(Activity activity, NxpReaderCallback mQTagCallback,
+                        int mode, int pollTech, Bundle options)
       throws IOException;
 
   /**

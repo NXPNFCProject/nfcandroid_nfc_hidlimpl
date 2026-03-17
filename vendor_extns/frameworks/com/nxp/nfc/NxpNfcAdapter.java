@@ -44,6 +44,8 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import android.os.Bundle;
+
 /**
  * @class NxpNfcAdapter
  * @brief Concrete implementation of NFC Extension features
@@ -333,9 +335,11 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     }
 
     /**
+     * @deprecated Please use enableQTag API with Bundle argument
      * @brief To be called to enable QTag
      * @return {@link INxpNfcAdapter.enableQTag} instance
      */
+    @Deprecated
     @Override
     public int enableQTag(Activity activity, NxpReaderCallback mQTagCallback,
                           int mode, int pollTech, int delay_value)
@@ -343,6 +347,18 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
       return mQTagHandler.enableQTag(activity, mode, mQTagCallback, pollTech,
                                      delay_value);
     }
+
+    /**
+     * @brief To be called to enable QTag
+     * @return {@link INxpNfcAdapter.enableQTag} instance
+     */
+    @Override
+    public int enableQTag(Activity activity, NxpReaderCallback mQTagCallback,
+                          int mode, int pollTech, Bundle options)
+        throws IOException {
+      return mQTagHandler.enableQTag(activity, mode, mQTagCallback, pollTech,
+                                     options);
+	}
 
     /**
      * @brief To be called to set NCI configuration
