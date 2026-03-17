@@ -329,6 +329,8 @@ public class NfcOperations {
             }
         } catch (InterruptedException e) {
             NxpNfcLogger.e(TAG, "Error while changing discovery " +isStart);
+        } catch (IllegalArgumentException e) {
+            NxpNfcLogger.e(TAG, "Oem Callback already unregistered");
         }
     }
 
