@@ -50,6 +50,9 @@ public class WlcEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
     private static final byte NCI_PROP_NTF_VAL = (byte) 0x6F;
     private static final byte NCI_WLC_PROP_OID_VAL = (byte) 0x71;
 
+    public static final short NCI_WLC_RF_NTF_GID_OID_VAL = 0x6113;
+    public static final short NCI_WLC_PROP_NTF_GID_OID_VAL = 0x6127;
+
     private static final byte NCI_WLC_SEND_RAW_CMD_SUB_OID      = 0x00;
     private static final byte NCI_WLC_STATUS_NTF_SUB_OID        = 0x01;
     private static final byte NCI_WLC_OBS_DATA_PKT_CMD_SUB_OID  = 0x02;
@@ -57,6 +60,8 @@ public class WlcEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
     private static final byte NCI_WLC_RF_INTF_DEACT_NTF_SUB_OID = 0x04;
 
     private static final byte WLC_SUB_OID_INDEX   = 0x01;
+    private static final byte NCI_WLC_OID_INDEX = 0x02;
+    private static final byte NCI_WLC_GID_INDEX = 0x03;
     private static final byte WLC_DATA_PKT_INDEX  = 0x05;
 
     private static final byte WLC_GET_OBSERVABLES_OID = 0x3F;
@@ -90,7 +95,7 @@ public class WlcEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
     }
 
     /**
-     * @brief This API sends command to get the observables data.
+     * This API sends command to get the observables data.
      * Command is accepted if at least one set of observables is available,
      * it will be rejected otherwise.
      *
@@ -125,11 +130,16 @@ public class WlcEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
 
         byte subOid = payload[WLC_SUB_OID_INDEX];
         byte[] wlcData = Arrays.copyOfRange(payload, WLC_DATA_PKT_INDEX, payload.length);
-
+        short nciWLcGidOid = (short) ((payload[NCI_WLC_GID_INDEX] << 8) | payload[NCI_WLC_OID_INDEX]);
         switch(subOid){
             case NCI_WLC_STATUS_NTF_SUB_OID:
-                if(mWlcCallbacks != null)
-                    mWlcCallbacks.onWlcStatusNtf(wlcData);
+                if(mWlcCallbacks != null) {
+                    if (nciWLcGidOid == NCI_WLC_RF_NTF_GID_OID_VAL) {
+                        mWlcCallbacks.onRfWlcStatusNtf(wlcData);
+                    } else if (nciWLcGidOid == NCI_WLC_PROP_NTF_GID_OID_VAL) {
+                        mWlcCallbacks.onPropWlcStatusNtf(wlcData);
+                    }
+                }
                 break;
             case NCI_WLC_OBS_DATA_PKT_CMD_SUB_OID:
                 if(mWlcCallbacks != null)

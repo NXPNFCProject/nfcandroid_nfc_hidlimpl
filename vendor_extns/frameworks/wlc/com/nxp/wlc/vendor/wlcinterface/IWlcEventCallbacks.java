@@ -21,16 +21,25 @@
 package com.nxp.wlc.vendor.wlcinterface;
 
 /**
- * @interface IWlcEventCallbacks
- * @brief Interface to perform WLC releated callbacks to apps.
+ * Interface to perform WLC releated callbacks to apps.
  *
  */
 public interface IWlcEventCallbacks {
     /**
-     * This callback triggers once WLC_STATUS_NTF arrived in autonomous mode.
+     * This callback triggers once proprietary
+     * WLC_STATUS_NTF arrived in autonomous mode
+     * with {@link WlcEventHandler#NCI_WLC_PROP_NTF_GID_OID_VAL}
      * @param wlcStatusNfc : WLC_STATUS_NTF
      */
-    void onWlcStatusNtf(byte[] wlcStatusNfc);
+    void onPropWlcStatusNtf(byte[] wlcStatusNfc);
+
+    /**
+     * This callback triggers WLC status notifications
+     * based on NCI.23 specification
+     * with {@link WlcEventHandler#NCI_WLC_RF_NTF_GID_OID_VAL}
+     * @param wlcStatusNfc : WLC_STATUS_NTF
+     */
+    void onRfWlcStatusNtf(byte[] wlcStatusNfc);
 
     /**
      * This callback triggers on receiving Data.
