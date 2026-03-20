@@ -166,7 +166,8 @@ constexpr uint16_t NCI_EE_PWR_LINK_RSP_GID_OID = 0x4203;
 constexpr uint16_t NCI_RF_PLL_UNLOCK_NTF_GID_OID = 0x6121;
 constexpr uint16_t NCI_RF_DISC_NTF_GID_OID = 0x6103;
 constexpr uint16_t NCI_CORE_RESET_NTF_GID_OID = 0x6000;
-constexpr uint16_t NCI_WLC_STATUS_NTF_GID_OID = 0x6127;
+constexpr uint16_t NCI_PROP_WLC_STATUS_NTF_GID_OID = 0x6127;
+constexpr uint16_t NCI_ROW_WLC_STATUS_NTF_GID_OID = 0x6113;
 constexpr uint16_t NCI_CORE_INTERFACE_ERROR_NTF_GID_OID = 0x6008;
 constexpr uint16_t NCI_DATA_PKT_GID_OID = 0x0000;
 

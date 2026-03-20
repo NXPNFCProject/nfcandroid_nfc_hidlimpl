@@ -60,8 +60,8 @@ public class WlcEventHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
     private static final byte NCI_WLC_RF_INTF_DEACT_NTF_SUB_OID = 0x04;
 
     private static final byte WLC_SUB_OID_INDEX   = 0x01;
-    private static final byte NCI_WLC_OID_INDEX = 0x02;
-    private static final byte NCI_WLC_GID_INDEX = 0x03;
+    private static final byte NCI_WLC_GID_INDEX = 0x02;
+    private static final byte NCI_WLC_OID_INDEX = 0x03;
     private static final byte WLC_DATA_PKT_INDEX  = 0x05;
 
     private static final byte WLC_GET_OBSERVABLES_OID = 0x3F;
