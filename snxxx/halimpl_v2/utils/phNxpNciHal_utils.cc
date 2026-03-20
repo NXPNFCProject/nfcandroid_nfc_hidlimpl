@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2013-2025 NXP
+ *  Copyright 2013-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -634,15 +634,6 @@ void phNxpNciHal_emergency_recovery(uint8_t status) {
       phNxpNciHal_decodeGpioStatus();
       NXPLOG_NCIHAL_E("abort()");
       abort();
-    } break;
-    case CORE_RESET_TRIGGER_TYPE_POWERED_ON: {
-      if (nxpncihal_ctrl.halStatus != HAL_STATUS_CLOSE &&
-          nxpncihal_ctrl.power_reset_triggered == false) {
-        phNxpNciHal_decodeGpioStatus();
-        NXPLOG_NCIHAL_E("abort()");
-        phNxpExtn_HandleHalEvent(NFCC_HAL_FATAL_ERR_CODE);
-        abort();
-      }
     } break;
     default:
       NXPLOG_NCIHAL_E("%s: Core reset with Invalid status : %d ", __func__,
