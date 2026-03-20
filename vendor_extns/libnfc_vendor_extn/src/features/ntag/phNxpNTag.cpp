@@ -21,6 +21,7 @@ NxpNTag *NxpNTag::sNxpNTag = nullptr;
 
 NxpNTag::NxpNTag() {
   NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "NxpNTag::%s Enter ", __func__);
+  mNtagControl.ntagTimerId = 0;
   clearNTagFlags();
 }
 
@@ -36,8 +37,10 @@ void NxpNTag::clearNTagFlags() {
   mNtagControl.isNTagNtfEnabled = false;
   mNtagControl.isScreenOff = false;
   mNtagControl.isCeStarted = false;
-  mNtagControl.mNTagTimer.kill(&mNtagControl.ntagTimerId);
-  mNtagControl.ntagTimerId = 0;
+  if (mNtagControl.ntagTimerId != 0) {
+    mNtagControl.mNTagTimer.kill(&mNtagControl.ntagTimerId);
+    mNtagControl.ntagTimerId = 0;
+  }
   mWaitingforDiscRsp = false;
   mNtagControl.mLpcdWoutPoll = false;
   mNtagControl.isRfNtfSent = false;
