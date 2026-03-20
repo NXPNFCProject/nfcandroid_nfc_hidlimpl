@@ -1,7 +1,7 @@
 
 /******************************************************************************
  *
- *  Copyright 2022-2024 NXP
+ *  Copyright 2022-2024, 2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -43,6 +43,8 @@ using ::aidl::android::hardware::nfc::NfcStatus;
 using NfcConfig = aidl::android::hardware::nfc::NfcConfig;
 using ::aidl::android::hardware::nfc::NfcEvent;
 
+static pthread_mutex_t sCallbackLock = PTHREAD_MUTEX_INITIALIZER;
+
 // Default implementation that reports no support NFC.
 struct Nfc : public BnNfc {
  public:
@@ -81,9 +83,13 @@ struct Nfc : public BnNfc {
   }
 
   static void eventCallback(uint8_t event, uint8_t status) {
-    if (mCallback != nullptr) {
+    std::shared_ptr<INfcClientCallback> localCallback;
+    pthread_mutex_lock(&sCallbackLock);
+    localCallback = mCallback;
+    pthread_mutex_unlock(&sCallbackLock);
+    if (localCallback != nullptr) {
       event = mapToAidlIfRequired(event);
-      auto ret = mCallback->sendEvent((NfcEvent)event, (NfcStatus)status);
+      auto ret = localCallback->sendEvent((NfcEvent)event, (NfcStatus)status);
       if (!ret.isOk()) {
         LOG(ERROR) << "Failed to send event!";
       }
@@ -91,9 +97,13 @@ struct Nfc : public BnNfc {
   }
 
   static void dataCallback(uint16_t data_len, uint8_t* p_data) {
+    std::shared_ptr<INfcClientCallback> localCallback;
+    pthread_mutex_lock(&sCallbackLock);
+    localCallback = mCallback;
+    pthread_mutex_unlock(&sCallbackLock);
     std::vector<uint8_t> data(p_data, p_data + data_len);
-    if (mCallback != nullptr) {
-      auto ret = mCallback->sendData(data);
+    if (localCallback != nullptr) {
+      auto ret = localCallback->sendData(data);
       if (!ret.isOk()) {
         LOG(ERROR) << "Failed to send data!";
       }

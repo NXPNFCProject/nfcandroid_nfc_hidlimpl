@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2022-2024 NXP
+ *  Copyright 2022-2024, 2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -42,6 +42,9 @@ void OnDeath(void* cookie) {
     LOG(INFO) << __func__ << " Nfc service has died";
     Nfc* nfc = static_cast<Nfc*>(cookie);
     nfc->close(NfcCloseType::DISABLE);
+    pthread_mutex_lock(&sCallbackLock);
+    Nfc::mCallback = NULL;
+    pthread_mutex_unlock(&sCallbackLock);
     LOG(INFO) << __func__ << " death NTF completed";
   }
 }
