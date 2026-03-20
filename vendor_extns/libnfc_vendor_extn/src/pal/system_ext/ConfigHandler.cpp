@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2025 NXP
+ *  Copyright 2025-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -54,10 +54,7 @@ map<string, ConfigValue> ConfigHandler::parseFromString(const std::string& input
     return configs;
   }
   std::stringstream ss(input);
-  const std::locale localeWithCType(std::locale::classic(), new std::ctype<char>);
-  const std::locale localeWithNumGet(localeWithCType, new std::num_get<char>);
-  const std::locale customLocale(localeWithNumGet, new std::num_put<char>);
-  ss.imbue(customLocale);
+  ss.imbue(std::locale::classic());
   std::string line;
   while (std::getline(ss, line)) {
     line = Trim(line);
