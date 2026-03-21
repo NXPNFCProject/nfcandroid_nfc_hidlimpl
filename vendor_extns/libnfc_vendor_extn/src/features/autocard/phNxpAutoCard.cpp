@@ -76,10 +76,9 @@ AutoCard::~AutoCard() {
 }
 
 AutoCard *AutoCard::getInstance() {
-  if (sAutoCard == nullptr) {
-    sAutoCard = new AutoCard();
-  }
-  return sAutoCard;
+  static AutoCard instance;
+  sAutoCard = &instance;
+  return &instance;
 }
 
 NFCSTATUS AutoCard::phNxpNciHal_handleHciAutoCardRsp(uint8_t *rsp,

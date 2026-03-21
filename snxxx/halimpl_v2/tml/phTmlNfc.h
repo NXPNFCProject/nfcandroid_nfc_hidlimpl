@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2025 NXP
+ * Copyright 2010-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,18 +114,18 @@ typedef void (*pphTmlNfc_DeferFuncPointer_t)(uint32_t dwMsgPostedThread,
 enum phTmlNfc_ControlCode_t : uint16_t {
   phTmlNfc_e_Invalid = 0,
   phTmlNfc_e_PowerReset = 5,
-  phTmlNfc_e_setFragmentSize,
-  phTmlNfc_e_SetNfcState,
-  phTmlNfc_e_ResetNfcState,
-  phTmlNfc_e_PullVenLow,
-  phTmlNfc_e_PullVenHigh,
+  phTmlNfc_e_setFragmentSize = 6,
+  phTmlNfc_e_SetNfcState = 7,
+  phTmlNfc_e_ResetNfcState = 8,
+  phTmlNfc_e_PullVenLow = 9,
+  phTmlNfc_e_PullVenHigh = 10,
   phTmlNfc_e_ResetDevice = PH_TMLNFC_RESETDEVICE, /* Reset the device */
-  phTmlNfc_e_EnableDownloadMode, /* Do the hardware setting to enter into
-                                    download mode */
-  phTmlNfc_e_EnableNormalMode, /* Hardware setting for normal mode of operation
-                                */
-  phTmlNfc_e_EnableDownloadModeWithVenRst,
-  phTmlNfc_e_EnableVen, /* Enable Ven for PN557 chip*/
+  phTmlNfc_e_EnableDownloadMode = 32770, /* Do the hardware setting to enter into
+                                            download mode */
+  phTmlNfc_e_EnableNormalMode = 32771, /* Hardware setting for normal mode of operation
+                                        */
+  phTmlNfc_e_EnableDownloadModeWithVenRst = 32772,
+  phTmlNfc_e_EnableVen = 32773, /* Enable Ven for PN557 chip*/
 }; /* Control code for IOCTL call */
 
 /*

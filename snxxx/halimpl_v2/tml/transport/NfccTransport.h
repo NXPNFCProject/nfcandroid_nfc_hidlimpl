@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020-2022, 2025 NXP
+ *  Copyright 2020-2022, 2025-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -42,12 +42,12 @@ enum NfcReadPending : uint8_t {
 
 enum EseResetType : uint8_t {
   MODE_ESE_POWER_ON = 0,
-  MODE_ESE_POWER_OFF,
-  MODE_ESE_POWER_STATE,
+  MODE_ESE_POWER_OFF = 1,
+  MODE_ESE_POWER_STATE = 2,
   /*Request from eSE HAL/Service*/
-  MODE_ESE_COLD_RESET,
-  MODE_ESE_RESET_PROTECTION_ENABLE,
-  MODE_ESE_RESET_PROTECTION_DISABLE,
+  MODE_ESE_COLD_RESET = 3,
+  MODE_ESE_RESET_PROTECTION_ENABLE = 4,
+  MODE_ESE_RESET_PROTECTION_DISABLE = 5,
   /*Request from NFC HAL/Service*/
   MODE_ESE_COLD_RESET_NFC = MODE_ESE_COLD_RESET | SRC_NFC,
   MODE_ESE_RESET_PROTECTION_ENABLE_NFC =

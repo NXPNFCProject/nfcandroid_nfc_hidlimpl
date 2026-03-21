@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2025 NXP
+ * Copyright 2021-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -160,6 +160,7 @@ static NFCSTATUS phNxpNciHal_writeCmd(uint16_t data_len, const uint8_t* p_data,
                                       long timeout) {
   NFCSTATUS status = NFCSTATUS_FAILED;
   const char context[] = "RecoveryWrite";
+  UNUSED_PROP(timeout);
 
   if (p_data == NULL) {
     NXPLOG_NCIHAL_E("Invalid Command Buffer");

@@ -32,7 +32,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  Copyright 2013-2021, 2023-2025 NXP
+ *  Copyright 2013-2021, 2023-2026 NXP
  *
  ******************************************************************************/
 
@@ -482,12 +482,10 @@ bool CNfcConfig::readConfig(const char* name, bool bResetContent) {
             }
           }
           if (strValue.length() > 0) {
-            pParam = new CNfcParam(token.c_str(), strValue);
+            add(new CNfcParam(token.c_str(), strValue));
           } else {
-            pParam = new CNfcParam(token.c_str(), numValue);
+            add(new CNfcParam(token.c_str(), numValue));
           }
-          add(pParam);
-          pParam = NULL;
           strValue.clear();
           numValue = 0;
           Reset(IsStringValue);
@@ -497,9 +495,7 @@ bool CNfcConfig::readConfig(const char* name, bool bResetContent) {
         if (c == '"') {
           strValue.push_back('\0');
           state = END_LINE;
-          pParam = new CNfcParam(token.c_str(), strValue);
-          add(pParam);
-          pParam = NULL;
+          add(new CNfcParam(token.c_str(), strValue));
         } else if (isPrintable(c)) {
           strValue.push_back(c);
         }

@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2013-2018, 2021-2022,2024-2025 NXP
+ *  Copyright 2013-2018, 2021-2022,2024-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -54,8 +54,8 @@ typedef struct phNxpNciHal_Sem {
 enum NFC_printType : uint8_t {
   PRINT_UNKNOWN = 0x00,
   PRINT_SEND = 0x01,
-  PRINT_RECV,
-  PRINT_DEBUG
+  PRINT_RECV = 0x02,
+  PRINT_DEBUG = 0x03
 };
 
 using tNFC_printType = NFC_printType;

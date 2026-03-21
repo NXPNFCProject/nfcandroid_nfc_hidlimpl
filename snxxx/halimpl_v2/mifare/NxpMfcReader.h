@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2019-2020, 2022-2023, 2025 NXP
+ *  Copyright 2019-2020, 2022-2023, 2025-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -77,10 +77,10 @@ enum MfcCmdReqId : uint8_t {
   eMfRawDataXchgHdr = 0x10,   /* MF Raw Data Request from DH */
   eMfPlusProxCheckReq = 0x28, /* MF + Prox check request for NFCC from DH */
   eMfWriteNReq = 0x31,        /* MF N bytes write request from DH */
-  eMfReadNReq,                /* MF N bytes read request from DH */
-  eMfSectorSelReq,            /* MF Block select request from DH */
+  eMfReadNReq = 0x32,         /* MF N bytes read request from DH */
+  eMfSectorSelReq = 0x33,     /* MF Block select request from DH */
   eMfcAuthReq = 0x40,         /* MFC Authentication request for NFCC from DH */
-  eInvalidReq                 /* Invalid ReqId */
+  eInvalidReq = 0x41          /* Invalid ReqId */
 };
 
 /*
@@ -90,10 +90,10 @@ enum MfcRespId : uint8_t {
   eMfXchgDataRsp = 0x10,      /* DH gets Raw data from MF on successful req */
   eMfPlusProxCheckRsp = 0x29, /* DH gets the MF+ Prox Check cmd status */
   eMfWriteNRsp = 0x31,        /* DH gets write status */
-  eMfReadNRsp,                /* DH gets N Bytes read from MF, if successful */
-  eMfSectorSelRsp,            /* DH gets the Sector Select cmd status */
+  eMfReadNRsp = 0x32,         /* DH gets N Bytes read from MF, if successful */
+  eMfSectorSelRsp = 0x33,     /* DH gets the Sector Select cmd status */
   eMfcAuthRsp = 0x40,         /* DH gets the authenticate cmd status */
-  eInvalidRsp                 /* Invalid RspId */
+  eInvalidRsp = 0x41          /* Invalid RspId */
 };
 
 using MfcCmdReqId_t = MfcCmdReqId;
