@@ -22,13 +22,25 @@
 #include <android-base/strings.h>
 #include <phNxpLog.h>
 #include <stdio.h>
-#include <locale>
 
 using std::map;
 using std::string;
 using std::vector;
 using namespace ::android::base;
 std::unique_ptr<ConfigHandler> ConfigHandler::sConfigHandler = nullptr;
+
+static bool GetNextLine(const std::string& input, size_t& cursor, std::string& out) {
+  if (cursor >= input.size()) return false;
+  const size_t end = input.find('\n', cursor);
+  if (end == std::string::npos) {
+    out = input.substr(cursor);
+    cursor = input.size();
+  } else {
+    out = input.substr(cursor, end - cursor);
+    cursor = end + 1;
+  }
+  return true;
+}
 
 ConfigHandler::ConfigHandler(): mpConfigMap(nullptr) {
   NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter", __func__);
@@ -54,9 +66,9 @@ map<string, ConfigValue> ConfigHandler::parseFromString(const std::string& input
     return configs;
   }
   std::stringstream ss(input);
-  ss.imbue(std::locale::classic());
   std::string line;
-  while (std::getline(ss, line)) {
+  size_t cursor = 0;
+  while (GetNextLine(input, cursor, line)) {
     line = Trim(line);
     // Skip empty lines and comments
     if (line.empty() || line[0] == '#' || line[0] == '\0') {
