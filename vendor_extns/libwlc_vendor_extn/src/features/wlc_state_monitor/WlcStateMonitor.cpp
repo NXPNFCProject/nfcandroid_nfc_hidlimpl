@@ -66,7 +66,12 @@ WLCSTATUS WlcStateMonitor::processDiscMapCmd(uint16_t dataLen,
 WLCSTATUS WlcStateMonitor::processRfDiscCmd(uint16_t dataLen,
                                          const uint8_t *pData) {
 
-  uint8_t wlcRfDiscCmd[] = {0x21, 0x03, 0x03, 0x01, 0x00, 0x01};
+  uint8_t wlcRfDiscCmd[] = {0x21, 0x03, 0x09, 0x04,
+    0x00, 0x01, // A Type
+    0x01, 0x01, // B Type
+    0x02, 0x01, // F Type
+    0x06, 0x01  // V Type
+    };
   WlcExtensionWriter::getInstance()->write(wlcRfDiscCmd, sizeof(wlcRfDiscCmd));
   return WLCSTATUS_EXTN_FEATURE_SUCCESS;
 }
