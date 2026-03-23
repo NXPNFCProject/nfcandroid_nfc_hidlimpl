@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024, 2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,10 @@ public class NxpNfcLogger {
     }
 
     public static void log(int priority, String tag, String message) {
+        if (tag == null || message == null) {
+            Log.e(TAG, "log: tag or message is null");
+            return;
+        }
         if (priority >= sLogLevel) {
             Log.println(priority, TAG, tag + ":" + message);
         }

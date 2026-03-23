@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,6 +69,9 @@ public class NxpNciPacketHandler {
       if (sNxpNciPacketHandler == null) {
         sNxpNciPacketHandler = new NxpNciPacketHandler(nfcAdapter);
       }
+      if (sNxpNciPacketHandler == null) {
+        NxpNfcLogger.e(TAG, "getInstance: sNxpNciPacketHandler is null");
+      }
       return sNxpNciPacketHandler;
     }
 
@@ -129,6 +132,10 @@ public class NxpNciPacketHandler {
      * @return response byte array
      */
     public synchronized byte[] sendVendorNciMessage(int gid, int oid, byte[] payload) {
+        if (payload == null) {
+            NxpNfcLogger.e(TAG, "sendVendorNciMessage: payload is null");
+            return new byte[] { (byte) NfcAdapter.SEND_VENDOR_NCI_STATUS_FAILED };
+        }
         NxpNfcLogger.d(TAG,
                     "sendVendorNciMessage API  gid: " + gid
                         + ", oid: " + oid + ", " + NxpNfcUtils.toHexString(payload));
