@@ -2116,6 +2116,7 @@ int phNxpNciHal_close(bool bShutdown) {
   uint8_t cmd_ce_in_phone_off_pn557[] = {0x20, 0x02, 0x05, 0x01,
                                          0xA0, 0x07, 0x01, 0x02};
   uint8_t cmd_system_set_service_status[] = {0x2F, 0x01, 0x01, 0x00};
+  uint8_t cmd_ese_nfcee_power_on[] = {0x22, 0x03, 0x02, 0xC0, 0x01};
   uint8_t length = 0;
   uint8_t numPrms = 0;
   uint8_t ptr = 4;
@@ -2159,6 +2160,13 @@ int phNxpNciHal_close(bool bShutdown) {
   sem_getvalue(&(nxpncihal_ctrl.syncSpiNfc), &sem_val);
   if (sem_val == 0) {
     sem_post(&(nxpncihal_ctrl.syncSpiNfc));
+  }
+  if ((IS_CHIP_TYPE_GE(sn100u)) && (IS_CHIP_TYPE_NE(pn560))) {
+    status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ese_nfcee_power_on),
+                                      cmd_ese_nfcee_power_on, &rsp_len, rsp);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("CMD_ESE_NFCEEE_POWER_ON: Failed");
+    }
   }
   /**
    * @brief In case of chipset greater than or equal to SN110,
