@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2025 NXP
+ * Copyright 2010-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -432,6 +432,7 @@ NFCSTATUS phTmlNfc_Write(uint8_t* pBuffer, uint16_t wLength) {
     if ((NULL != gpphTmlNfc_Context->pDevHandle) && (NULL != pBuffer) &&
         (PH_TMLNFC_RESET_VALUE != wLength)) {
       NXPLOG_TML_D("NFCC - Write requested.....\n");
+      phNxpNciHal_print_packet("SEND", pBuffer, wLength);
       do {
         /* Write the data in the buffer onto the file */
         NXPLOG_TML_D("NFCC - Invoking Write.....\n");
@@ -455,7 +456,6 @@ NFCSTATUS phTmlNfc_Write(uint8_t* pBuffer, uint16_t wLength) {
             break;
           }
         } else {
-          phNxpNciHal_print_packet("SEND", pBuffer, wLength);
           retry_cnt = 0;
           NXPLOG_TML_I("NFCC - Write successful.....\n");
           break;
