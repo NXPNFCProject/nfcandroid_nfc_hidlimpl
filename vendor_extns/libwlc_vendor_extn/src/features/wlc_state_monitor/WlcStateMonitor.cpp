@@ -114,7 +114,7 @@ WLCSTATUS WlcStateMonitor::handleWlcNciRspNtf(uint16_t dataLen, const uint8_t *p
           NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Ignored RF ACT NTF", __func__);
         }
     case NCI_PROP_WLC_STATUS_NTF_GID_OID:
-    case NCI_WLC_STATUS_NTF_GID_OID: {
+    case NCI_ROW_WLC_STATUS_NTF_GID_OID: {
         status = WLCSTATUS_EXTN_FEATURE_SUCCESS;
         wlcNtf.push_back(static_cast<uint8_t>(NCI_WLC_STATUS_NTF_SUB_OID));
         wlcNtf.insert(wlcNtf.end(), pData, pData + dataLen);
