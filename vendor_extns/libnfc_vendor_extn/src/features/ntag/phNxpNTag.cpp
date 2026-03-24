@@ -17,7 +17,7 @@
  ******************************************************************************/
 #include "phNxpNTag.h"
 
-NxpNTag *NxpNTag::sNxpNTag = nullptr;
+std::unique_ptr<NxpNTag> NxpNTag::sNxpNTag = nullptr;
 
 NxpNTag::NxpNTag() {
   NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "NxpNTag::%s Enter ", __func__);
@@ -55,10 +55,10 @@ NxpNTag::~NxpNTag() {
 }
 
 NxpNTag *NxpNTag::getInstance() {
-  if (sNxpNTag == nullptr) {
-    sNxpNTag = new NxpNTag();
+  if (!sNxpNTag) {
+    sNxpNTag = std::unique_ptr<NxpNTag>(new NxpNTag());
   }
-  return sNxpNTag;
+  return sNxpNTag.get();
 }
 
 bool NxpNTag::isNtagSupported() {

@@ -125,13 +125,13 @@ public:
    */
   static inline void finalize() {
     if (sAutoCard != nullptr) {
-      delete (sAutoCard);
-      sAutoCard = nullptr;
+      sAutoCard.reset();
     }
   }
 
 private:
-  static AutoCard *sAutoCard;
+  static std::unique_ptr<AutoCard>
+      sAutoCard; /* Singleton instance of AutoCard */
   /* Auto card command type GET/SET*/
   uint8_t autoCardCmdType;
   bool isHciCmdSent;
@@ -185,6 +185,7 @@ private:
   constexpr static uint8_t AUTOCARD_STATUS_FEATURE_NOT_SUPPORTED = 0x0D;
   AutoCard();
   ~AutoCard();
+  friend struct std::default_delete<AutoCard>;
 };
 
 #endif // NFC_AUTOCARD_H

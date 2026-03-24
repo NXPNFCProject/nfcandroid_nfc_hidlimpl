@@ -51,7 +51,7 @@
 #define CREDITS_AVAILABLE(NciPkt) (NciPkt[CREDIT_NTF_CREDITS_IDX])
 #define INST_EVT_UNKNOWN 0x00
 
-AutoCard *AutoCard::sAutoCard = nullptr;
+std::unique_ptr<AutoCard> AutoCard::sAutoCard = nullptr;
 
 AutoCard::AutoCard() {
   NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "AutoCard::%s Enter ", __func__);
@@ -76,9 +76,10 @@ AutoCard::~AutoCard() {
 }
 
 AutoCard *AutoCard::getInstance() {
-  static AutoCard instance;
-  sAutoCard = &instance;
-  return &instance;
+  if (!sAutoCard) {
+    sAutoCard = std::unique_ptr<AutoCard>(new AutoCard());
+  }
+  return sAutoCard.get();
 }
 
 NFCSTATUS AutoCard::phNxpNciHal_handleHciAutoCardRsp(uint8_t *rsp,

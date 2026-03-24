@@ -145,8 +145,7 @@ public:
    */
   static inline void finalize() {
     if (sNxpNTag != nullptr) {
-      delete (sNxpNTag);
-      sNxpNTag = nullptr;
+      sNxpNTag.reset();
     }
   }
 
@@ -176,7 +175,8 @@ public:
   static void phNxpNciHal_disableNtagNtfConfig();
 
 private:
-  static NxpNTag *sNxpNTag;
+  static std::unique_ptr<NxpNTag>
+      sNxpNTag; /* Singleton instance of Ntag */
   NtagControl mNtagControl;
   NTagState mNTagState;
   NTagSetSubState mNTagSetSubState;
@@ -398,4 +398,5 @@ private:
   void clearNTagFlags();
   NxpNTag();
   ~NxpNTag();
+  friend struct std::default_delete<NxpNTag>;
 };
