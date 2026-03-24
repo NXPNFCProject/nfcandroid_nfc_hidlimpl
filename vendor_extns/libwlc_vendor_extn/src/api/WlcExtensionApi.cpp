@@ -33,7 +33,7 @@ VendorExtnCb *mVendorExtnCb;
 
 #define NXP_EN_CTN820 1
 #define WLC_NXP_MW_ANDROID_VER (17U)  /* Android version used by WLC MW */
-#define WLC_NXP_MW_VERSION_MAJ (0x50) /* MW Major Version */
+#define WLC_NXP_MW_VERSION_MAJ (0x51) /* MW Major Version */
 #define WLC_NXP_MW_VERSION_MIN (0x00) /* MW Minor Version */
 #define WLC_NXP_MW_CUSTOMER_ID (0x00) /* MW Customer Id */
 #define WLC_NXP_MW_RC_VERSION (0x00)  /* MW RC Version */
