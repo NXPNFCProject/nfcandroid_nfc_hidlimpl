@@ -254,10 +254,6 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
                                   mposState);
         return MPOS_STATUS_FAILED;
       }
-      if (enable == isMposModeEnabled()) {
-          NxpNfcLogger.e(TAG, "Mpos is already in requested state : " + mposState);
-          return MPOS_STATUS_SUCCESS;
-      }
     }
 
     if (enable == false) {
