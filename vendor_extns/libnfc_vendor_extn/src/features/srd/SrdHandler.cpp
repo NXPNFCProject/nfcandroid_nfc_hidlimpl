@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2025 NXP
+ *  Copyright 2025-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -24,10 +24,9 @@
 #include "Srd.h"
 #include <phNxpLog.h>
 
-Srd *mSrdMngr = Srd::getInstance();
-
 SrdHandler::SrdHandler() {
   NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter", __func__);
+  mSrdMngr = Srd::getInstance();
 }
 
 SrdHandler::~SrdHandler() {

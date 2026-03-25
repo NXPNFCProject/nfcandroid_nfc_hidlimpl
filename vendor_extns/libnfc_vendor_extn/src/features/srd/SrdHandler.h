@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2025 NXP
+ *  Copyright 2025-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -28,6 +28,9 @@
  **********************************************************************************/
 #define SRD_MODE_DISABLE 0x00
 #define SRD_MODE_ENABLE 0x01
+
+// Forward declaration
+class Srd;
 
 /** \addtogroup SRD_EVENT_HANDLER_API_INTERFACE
  *  @brief  interface to perform the Mpos feature functionality.
@@ -107,6 +110,7 @@ private:
   static constexpr uint8_t SRD_INIT_MODE = 0x20;
   static constexpr uint8_t ACTIVE_SE = 0x21;
   static constexpr uint8_t DEACTIVE_SE = 0x22;
+  Srd* mSrdMngr = nullptr;
 };
 /** @}*/
 #endif // MPOS_HANDLER_H
