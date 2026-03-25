@@ -147,7 +147,10 @@ NFCSTATUS phNxpNciHal_setGuardTimer() {
 static int8_t get_system_property_se_type(uint8_t se_type) {
   int8_t retVal = -1;
   char valueStr[PROPERTY_VALUE_MAX] = {0};
-  if (se_type >= NUM_SE_TYPES) return retVal;
+  if (se_type >= NUM_SE_TYPES) {
+    NXPLOG_NCIHAL_E("unexpected se_type received");
+    return retVal;
+  }
   int len = 0;
   switch (se_type) {
     case SE_TYPE_ESE:
@@ -161,9 +164,6 @@ static int8_t get_system_property_se_type(uint8_t se_type) {
       break;
     case SE_TYPE_UICC2:
       len = property_get("nfc.product.support.uicc2", valueStr, "");
-      break;
-    default :
-      NXPLOG_NCIHAL_E("unexpected se_type received");
       break;
   }
   if (strlen(valueStr) == 0 || len <= 0) {
@@ -224,9 +224,6 @@ void phNxpNciHal_read_and_update_se_state() {
           num_se++;
         }
         NXPLOG_NCIHAL_D("Get property : SUPPORT_UICC2 %d", val);
-        break;
-      default :
-        NXPLOG_NCIHAL_E("unexpected se_type received");
         break;
     }
   }
