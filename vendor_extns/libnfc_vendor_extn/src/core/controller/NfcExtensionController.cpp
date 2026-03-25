@@ -40,7 +40,6 @@ NfcExtensionController::~NfcExtensionController() {
   mHandlers.clear();
   mIEventHandler = nullptr;
   mDefaultEventHandler = nullptr;
-  NciStateMonitor::finalize();
 }
 
 NfcExtensionController *NfcExtensionController::getInstance() {

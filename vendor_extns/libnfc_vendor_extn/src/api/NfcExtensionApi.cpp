@@ -207,6 +207,7 @@ bool vendor_nfc_de_init() {
   NfcExtensionController::getInstance()->switchEventHandler(
       HandlerType::DEFAULT);
   NfcExtensionController::finalize();
+  NciStateMonitor::finalize();
   NciCommandBuilder::finalize();
   NfcExtensionWriter::finalize();
   PlatformAbstractionLayer::finalize();
