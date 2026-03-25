@@ -248,6 +248,18 @@ public class MposHandler implements INxpNfcNtfHandler, INxpOEMCallbacks {
     }
 
     synchronized (mposStateSync) {
+      // If mPOS is already stopped and user requested stop
+      if ((MposState.MPOS_STOP_COMPLETED == mposState) && !enable) {
+        NxpNfcLogger.d(TAG, "mPOS already stopped");
+        return MPOS_STATUS_SUCCESS;
+      }
+
+      // If mPOS is already started and user requested start
+      if ((MposState.MPOS_START_COMPLETED == mposState) && enable) {
+        NxpNfcLogger.d(TAG, "mPOS alredy started");
+        return MPOS_STATUS_SUCCESS;
+      }
+
       if(mposState == MposState.MPOS_START_INPROGRESS ||
           mposState == MposState.MPOS_STOP_INPROGRESS) {
           NxpNfcLogger.e(TAG, "Mpos Start/Stop is in-progress. Wait to complete : " +
