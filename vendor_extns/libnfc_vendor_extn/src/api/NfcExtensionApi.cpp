@@ -184,7 +184,7 @@ static void printGenExtnLibVersion() {
   validation |= (NXP_EN_PN557 << 11);
 
   NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
-                 "NXP_GEN_EXT Version: NXP_AR_%02X_%05X_%02d.%02x.%02x_TC5",
+                 "NXP_GEN_EXT Version: NXP_AR_%02X_%05X_%02d.%02x.%02x",
                  NFC_NXP_MW_CUSTOMER_ID, validation, NFC_NXP_MW_ANDROID_VER,
                  NFC_NXP_MW_VERSION_MAJ, NFC_NXP_MW_VERSION_MIN);
 }
