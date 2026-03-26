@@ -277,9 +277,6 @@ void phNxpNciHal_read_and_update_se_state() {
           *index++ = values[SE_TYPE_UICC2];
         }
         break;
-      default :
-        NXPLOG_NCIHAL_E("unexpected se_type received");
-        break;
     }
   }
 
