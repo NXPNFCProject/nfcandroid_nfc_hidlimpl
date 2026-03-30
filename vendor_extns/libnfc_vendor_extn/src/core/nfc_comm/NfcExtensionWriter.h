@@ -24,6 +24,7 @@
 #include <cstdint>
 #include <phNxpLog.h>
 #include <vector>
+#include <memory>
 
 /** \addtogroup NFC_EXTENSION_WRITER_API_INTERFACE
  *  @brief  interface to perform the exclusive and non exclusive write to

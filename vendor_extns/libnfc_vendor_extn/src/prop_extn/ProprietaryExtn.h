@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <string>
 #include <phNfcStatus.h>
+#include <memory>
 class ProprietaryExtn {
 public:
   ProprietaryExtn(const ProprietaryExtn &) = delete;
