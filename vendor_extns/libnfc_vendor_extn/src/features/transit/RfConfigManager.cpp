@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2025 NXP
+ *  Copyright 2025-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -265,7 +265,10 @@ bool RfConfigManager::checkUpdateRfRegisterConfig(
 
     string key(Trim(single_key_value.substr(0, search)));
     string value(Trim(single_key_value.substr(search + 1, string::npos)));
-    ParseUint(value.c_str(), &new_value);
+    if (!ParseUint(value.c_str(), &new_value)) {
+      NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN,
+                     "%s: Failed to parse value: %s", __func__, value.c_str());
+    }
     update_mode = BITWISE;
     NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN,
                    "RfConfigManager::%s: Update Key = %s Value: %02x", __func__,
