@@ -71,7 +71,6 @@ PlatformAbstractionLayer::PlatformAbstractionLayer() {
 
 PlatformAbstractionLayer::~PlatformAbstractionLayer() {
   NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s: enter", __func__);
-  ConfigHandler::finalize();
   mConfigHandler = nullptr;
   mNxpNfcHal.halNxpNfc = nullptr;
   mNxpNfcHal.aidlHalNxpNfc = nullptr;

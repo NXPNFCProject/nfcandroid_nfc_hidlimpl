@@ -27,6 +27,7 @@
 #include "NfcExtensionConstants.h"
 #include "NfcExtensionController.h"
 #include "NfcFirmwareInfo.h"
+#include "ConfigHandler.h"
 #include "PlatformAbstractionLayer.h"
 #include "ProprietaryExtn.h"
 #include "QTagHandler.h"
@@ -210,6 +211,7 @@ bool vendor_nfc_de_init() {
   NciStateMonitor::finalize();
   NciCommandBuilder::finalize();
   NfcExtensionWriter::finalize();
+  ConfigHandler::finalize();
   PlatformAbstractionLayer::finalize();
   ProprietaryExtn::finalize();
   AutoCard::finalize();
