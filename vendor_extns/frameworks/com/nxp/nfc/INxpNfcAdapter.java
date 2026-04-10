@@ -18,7 +18,9 @@ package com.nxp.nfc;
 
 import android.annotation.IntDef;
 import android.app.Activity;
+import android.os.Bundle;
 import com.nxp.nfc.NxpNfcAdapter.AutoCardStatusCallback;
+import com.nxp.nfc.NxpNfcAdapter.DualAntennaCallback;
 import com.nxp.nfc.NxpNfcAdapter.NxpNTagStatusCallback;
 import com.nxp.nfc.NxpNfcAdapter.NxpReaderCallback;
 import com.nxp.nfc.vendor.dualAntenna.DualAntennaHandler.DualAntennaStatus;
@@ -27,7 +29,6 @@ import com.nxp.nfc.vendor.lxdebug.ILxDebugCallbacks;
 import com.nxp.nfc.vendor.ntag.NTagHandler.NTagMode;
 import com.nxp.nfc.vendor.ntag.NTagHandler.NTagStatus;
 import com.nxp.nfc.vendor.srd.ISrdCallbacks;
-import android.os.Bundle;
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -582,6 +583,24 @@ public interface INxpNfcAdapter {
     public @DualAntennaStatus int setDiscoveryTechnology_DualAntenna(int tech1,
                                                                      int tech2)
         throws IOException;
+
+    /**
+     * This is the API to be called to configure the antenna's.
+     * <li>This api shall be called only when Nfcservice is enabled.
+     * <li>This api shall be called only when there are no NFC transactions
+     * ongoing.
+     * </ul>
+     * @param  tech1 , To configure antenna 1 with given polling configuration
+     * @param  tech2 , To configure antenna 2 with given polling configuration
+     * @param  mDualAntennaCallback , To send callback with antenna selected
+     * @return whether the update of state is
+     *          ENABLE_DISABLE_STATUS_SUCCESS,
+     *          ENABLE_DISABLE_STATUS_FAILED,
+     * @throws IOException If a failure occurred during enable/disable the
+     *     feature
+     */
+    public @DualAntennaStatus int setDiscoveryTechnology_DualAntenna(
+        int tech1, int tech2, DualAntennaCallback mDualAntennaCallback) throws IOException;
 
     /**
      * This is the API to be called to enable reader mode on either antenna's.

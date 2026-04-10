@@ -20,6 +20,7 @@ import android.annotation.IntDef;
 import android.nfc.NfcAdapter;
 import com.nxp.nfc.INxpNfcNtfHandler;
 import com.nxp.nfc.NxpNfcAdapter;
+import com.nxp.nfc.NxpNfcAdapter.DualAntennaCallback;
 import com.nxp.nfc.NxpNfcAdapter.NxpReaderCallback;
 import com.nxp.nfc.NxpNfcConstants;
 import com.nxp.nfc.NxpNfcLogger;
@@ -29,6 +30,8 @@ import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * This class is responsible to enable/disable the dual antenna
@@ -38,6 +41,11 @@ public class DualAntennaHandler implements INxpNfcNtfHandler {
 
   private static final String TAG = "DualAntenna";
   private final NxpNciPacketHandler mNxpNciPacketHandler;
+  private DualAntennaCallback mDualAntennaCallback;
+  private static final ExecutorService DUAL_ANTENNA_CALLBACK_EXECUTOR =
+      Executors.newSingleThreadExecutor();
+  public static Object dualAntennaSync = new Object();
+  private static int antennaSelected = 0x00;
   private final NfcOperations mNfcOperations;
   private static int APPEND_Q_POLL = 0X02;
   private static int ONLY_Q_POLL = 0X01;
@@ -102,7 +110,8 @@ public class DualAntennaHandler implements INxpNfcNtfHandler {
     setDiscoveryTechnology(0x03),
     enableReaderMode(0x04),
     getDiscoveryTechnology(0x05),
-    getReaderMode(0x06);
+    getReaderMode(0x06),
+    setDiscoveryTechnologyCallback(0x07);
     public int value;
     DualAntennaSubOid(int value) { this.value = (int)value; }
     public int getValue() { return value; }
@@ -146,6 +155,11 @@ public class DualAntennaHandler implements INxpNfcNtfHandler {
     if (payload == null || payload.length < 2) {
       NxpNfcLogger.d(TAG, "Invalid payload");
       return;
+    }
+    synchronized (dualAntennaSync) {
+      if (mDualAntennaCallback != null && payload.length > 3) {
+        mDualAntennaCallback.onAntennaSelected(payload);
+      }
     }
   }
 
@@ -217,6 +231,9 @@ public class DualAntennaHandler implements INxpNfcNtfHandler {
         NxpNfcLogger.e(TAG, "Invalid parameters");
         return DualAntennaStatusCode.Failed.value;
       }
+      synchronized (dualAntennaSync) {
+        antennaSelected = 0x00;
+      }
       byte[] payload = {(byte)(DUAL_ANTENNA_SUB_GID_OID |
                                DualAntennaSubOid.setDiscoveryTechnology.value),
                         (byte)antennaOneTech, (byte)antennaTwoTech};
@@ -269,6 +286,24 @@ public class DualAntennaHandler implements INxpNfcNtfHandler {
       } else {
         return DualAntennaStatusCode.Failed.value;
       }
+    } catch (Exception e) {
+      NxpNfcLogger.e(TAG, "Exception in sendVendorNciMessage");
+      throw new IOException("Error sending VendorNciMessage", e);
+    }
+  }
+
+  public @DualAntennaStatus int setDiscoveryTechnology_DualAntenna(int antennaOneTech,
+      int antennaTwoTech, DualAntennaCallback mDualAntennaCallback) throws IOException {
+    int pollTech;
+    int status = DualAntennaStatusCode.Failed.value;
+    if (mDualAntennaCallback == null)
+      return DualAntennaStatusCode.Failed.value;
+    try {
+      this.mDualAntennaCallback = mDualAntennaCallback;
+      status = setDiscoveryTechnology_DualAntenna(antennaOneTech, antennaTwoTech);
+      if (DualAntennaStatusCode.Success.value == status)
+        mNxpNciPacketHandler.registerNtfCallback(DUAL_ANTENNA_CALLBACK_EXECUTOR, this);
+      return status;
     } catch (Exception e) {
       NxpNfcLogger.e(TAG, "Exception in sendVendorNciMessage");
       throw new IOException("Error sending VendorNciMessage", e);

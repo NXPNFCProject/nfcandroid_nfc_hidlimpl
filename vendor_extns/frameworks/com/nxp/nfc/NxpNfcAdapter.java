@@ -674,6 +674,14 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     }
 
     /**
+     * Callback interface used to notify the application layer about
+     * the antenna selected by the NFC controller when operating in
+     * Dual Antenna mode.
+     */
+    public interface DualAntennaCallback {
+      void onAntennaSelected(byte[] antenna);
+    }
+    /**
      * @brief To be called to check feature is supported or not
      * @return {@link INxpNfcDualAntenna.isDualAnetannaSupported} instance
      */
@@ -693,6 +701,18 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
         throws IOException {
       return mDualAntennaHandler.setDiscoveryTechnology_DualAntenna(tech1,
                                                                     tech2);
+    }
+
+    /**
+     * @brief To be called to configure the antenna's with different polling
+     * @return {@link
+     *     INxpNfcDualAntenna.setDiscoveryTechnology_DualAntenna} instance
+     */
+    @Override
+    public @DualAntennaStatus int setDiscoveryTechnology_DualAntenna(
+        int tech1, int tech2, DualAntennaCallback mDualAntennaCallback) throws IOException {
+      return mDualAntennaHandler.setDiscoveryTechnology_DualAntenna(
+          tech1, tech2, mDualAntennaCallback);
     }
 
     /**

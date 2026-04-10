@@ -161,13 +161,56 @@ NFCSTATUS DualAntenna::handleVendorNciMessage(uint16_t dataLen,
   return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 }
 
+bool DualAntenna::isValidDualAntennaNtf(uint16_t dataLen, uint8_t* pData) {
+  if (pData == nullptr) {
+    return false;
+  }
+
+  constexpr uint8_t NCI_GENERIC_INFO_NTF_GID = 0x6F;
+  constexpr uint8_t NCI_GENERIC_INFO_NTF_OID = 0x0F;
+  constexpr uint8_t NCI_GENERIC_INFO_NTF_MSG_LEN = 0x04;
+  constexpr uint8_t NCI_GENERIC_INFO_NTF_FEATURE_ID = 0x01;
+  constexpr uint8_t NCI_GENERIC_INFO_NTF_FEATURE_VALUE = 0x90;
+  constexpr uint8_t NCI_GENERIC_INFO_NTF_LEN = 0x07;
+
+  if ((mDualAntennaContext.mDualAntennaFeature != true) ||
+      (dataLen != NCI_GENERIC_INFO_NTF_LEN) ||
+      (pData[NCI_GID_INDEX] != NCI_GENERIC_INFO_NTF_GID) ||
+      (pData[NCI_OID_INDEX] != NCI_GENERIC_INFO_NTF_OID) ||
+      (pData[NCI_MSG_LEN_INDEX] != NCI_GENERIC_INFO_NTF_MSG_LEN) ||
+      (pData[NCI_MSG_INDEX_FOR_FEATURE] != NCI_GENERIC_INFO_NTF_FEATURE_ID) ||
+      (pData[NCI_MSG_INDEX_FEATURE_VALUE] !=
+       NCI_GENERIC_INFO_NTF_FEATURE_VALUE))
+    return false;
+
+  std::vector<uint8_t> NCI_GENERIC_INFO_NTF;
+  NCI_GENERIC_INFO_NTF.insert(NCI_GENERIC_INFO_NTF.end(), pData,
+                              pData + dataLen);
+  std::vector<uint8_t> antennaDetectNtf;
+  antennaDetectNtf.push_back(NCI_MT_RSP | NCI_GID_PROP);
+  antennaDetectNtf.push_back(NCI_ROW_PROP_OID_VAL);
+  antennaDetectNtf.push_back(DUAL_ANTENNA_PAYLOAD_TWO_LEN);
+  antennaDetectNtf.push_back(DUAL_ANTENNA_SET_DISCOVERY);
+  antennaDetectNtf.insert(antennaDetectNtf.end(), NCI_GENERIC_INFO_NTF.begin(),
+                          NCI_GENERIC_INFO_NTF.end());
+  PlatformAbstractionLayer::getInstance()->palSendNfcDataCallback(
+      antennaDetectNtf.size(), antennaDetectNtf.data());
+  return true;
+}
+
 NFCSTATUS DualAntenna::handleVendorNciRspNtf(uint16_t dataLen, uint8_t *pData) {
   NFCSTATUS status = NFCSTATUS_FAILED;
+
+  if (isValidDualAntennaNtf(dataLen, pData)) {
+    return NFCSTATUS_EXTN_FEATURE_FAILURE;
+  }
+
   if ((dataLen < CMD_MIN_DATA_LENGTH) ||
       (mDualAntennaContext.mDualAntennaRequest != true) ||
       ((pData[NCI_GID_INDEX] & NCI_MT_MASK) != NCI_MT_RSP)) {
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
   }
+
   switch (pData[NCI_OID_INDEX] & NCI_OID_MASK) {
   case NCI_MSG_RF_DEACTIVATE: {
     switch (mDualAntennaContext.mAntennaFeature) {
