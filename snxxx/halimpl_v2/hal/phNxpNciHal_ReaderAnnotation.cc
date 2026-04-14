@@ -90,7 +90,7 @@ static void updateControlMessage(vector<uint8_t>& nciFmtReaderAnnoByte,
 
   // Extract transmit position from upper nibble
   uint8_t transmit_position = (entry.position_type >> 4) & 0x0F;
-  bool has_transmit_position = (transmit_position > 0);
+  bool has_transmit_position = (transmit_position >= 2);
 
   // Bit 7: Set if proprietary field exists (even if length is 0)
   if (entry.has_proprietary_field) {
@@ -166,7 +166,7 @@ static void updateTransmitPosition(vector<uint8_t>& nciFmtReaderAnnoByte,
   // Google Format => NCI Format: Extract and add transmit position
   uint8_t transmit_position = (entry.position_type >> 4) & 0x0F;
 
-  if (transmit_position > 0) {
+  if (transmit_position >= 2) {
     nciFmtReaderAnnoByte.push_back(
         0x01);  // Transmit Position length (always 1 byte)
     nciFmtReaderAnnoByte.push_back(transmit_position);
@@ -237,7 +237,7 @@ static uint8_t calculateParamLength(const ReaderAnnotationData& entry) {
 
   // Add transmit position length
   uint8_t transmit_position = (entry.position_type >> 4) & 0x0F;
-  if (transmit_position > 0) {
+  if (transmit_position >= 2) {
     param_len += 1 + 1;  // transmit_position_len + transmit_position_value
   }
 
