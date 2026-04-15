@@ -377,7 +377,7 @@ void AutoCard::phNxpNciHal_getAutoCardConfig() {
              mFwRsp[2];
 
   if ((PlatformAbstractionLayer::getInstance()->palGetChipType() == sn300u) &&
-      (mFwVer > DEFAULT_STR_PHONEOFF_SUPPORT_MIN_FW_VER)) {
+      (mFwVer >= DEFAULT_STR_PHONEOFF_SUPPORT_MIN_FW_VER)) {
     uint8_t strPhoneOff = 0x00;
     uint8_t strMaxNoOfEvents = STR_MAX_DEFAULT_VALUE;
     uint8_t strReaderSelectionTimeOut = STR_MAX_DEFAULT_VALUE;

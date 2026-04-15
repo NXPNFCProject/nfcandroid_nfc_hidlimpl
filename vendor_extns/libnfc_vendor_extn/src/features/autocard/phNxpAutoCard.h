@@ -30,7 +30,7 @@
 #include <mutex>
 #include <vector>
 
-#define DEFAULT_STR_PHONEOFF_SUPPORT_MIN_FW_VER 0x022052
+#define DEFAULT_STR_PHONEOFF_SUPPORT_MIN_FW_VER 0x022054
 
 typedef struct {
   uint8_t pipeId;
