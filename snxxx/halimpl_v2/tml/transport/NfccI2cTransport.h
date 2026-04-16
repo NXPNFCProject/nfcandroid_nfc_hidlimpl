@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020-2023, 2025 NXP
+ *  Copyright 2020-2023, 2025-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -71,7 +71,6 @@ class NfccI2cTransport : public NfccTransport {
   sem_t mTxRxSemaphore;
 
  public:
-  pthread_mutex_t mMutex = PTHREAD_MUTEX_INITIALIZER;
   int mHandle = 0;
   /*****************************************************************************
   **
