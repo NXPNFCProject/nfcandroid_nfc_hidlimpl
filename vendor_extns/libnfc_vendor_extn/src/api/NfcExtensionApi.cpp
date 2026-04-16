@@ -49,7 +49,7 @@ VendorExtnCb *mVendorExtnCb;
 #define NXP_EN_SN300U 1
 #define NXP_EN_SN330U 1
 #define NFC_NXP_MW_ANDROID_VER (17U)  /* Android version used by NFC MW */
-#define NFC_NXP_MW_VERSION_MAJ (0x05) /* MW Major Version */
+#define NFC_NXP_MW_VERSION_MAJ (0x06) /* MW Major Version */
 #define NFC_NXP_MW_VERSION_MIN (0x00) /* MW Minor Version */
 #define NFC_NXP_MW_CUSTOMER_ID (0x00) /* MW Customer Id */
 #define NFC_NXP_MW_RC_VERSION (0x00)  /* MW RC Version */
@@ -184,7 +184,7 @@ static void printGenExtnLibVersion() {
   validation |= (NXP_EN_PN557 << 11);
 
   NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
-                 "NXP_GEN_EXT Version: NXP_AR_%02X_%05X_%02d.%02x.%02x",
+                 "NXP_GEN_EXT Version: NXP_AR_%02X_%05X_%02d.%02x.%02x_TC1",
                  NFC_NXP_MW_CUSTOMER_ID, validation, NFC_NXP_MW_ANDROID_VER,
                  NFC_NXP_MW_VERSION_MAJ, NFC_NXP_MW_VERSION_MIN);
 }
