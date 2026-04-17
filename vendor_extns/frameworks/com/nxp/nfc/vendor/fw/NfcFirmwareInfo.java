@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NXP
+ * Copyright 2025-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import com.nxp.nfc.NxpNfcConstants;
 import com.nxp.nfc.NxpNfcLogger;
 import com.nxp.nfc.core.NfcOperations;
 import com.nxp.nfc.core.NxpNciPacketHandler;
+import android.os.SystemProperties;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -38,36 +39,44 @@ public class NfcFirmwareInfo {
       this.mNxpNciPacketHandler = NxpNciPacketHandler.getInstance(nfcAdapter);
   }
 
+  public byte[] fwStringToBytes(String fwVerStr) {
+    //String fw = "N02.20.51.00";
+    fwVerStr = fwVerStr.substring(1).replace(".", ""); // "02205100"
+
+    byte[] byteValues = new byte[] {
+        (byte) Integer.parseInt(fwVerStr.substring(0, 2), 16),
+        (byte) Integer.parseInt(fwVerStr.substring(2, 4), 16),
+        (byte) Integer.parseInt(fwVerStr.substring(4, 6), 16)
+    };
+    return byteValues;
+  }
+
+
+  /**
+   * Returns the NFC firmware version provided by the vendor NFC HAL.
+   *
+   * <p>The value is read from a system property initialized during NFC HAL
+   * startup and is available irrespective of the current NFC ON/OFF state.</p>
+   *
+   * @return NFC firmware version as a byte array.
+   * @throws IOException if the firmware ver prop is missing or not set.
+   */
   public byte[] getFwVersion() throws IOException {
-    NxpNfcLogger.d(TAG, "getFwVersion Enter:");
+    NxpNfcLogger.d(TAG, "getFwVersion Enter");
 
     byte[] fwVersion =  new byte[3];
     Arrays.fill(fwVersion, (byte)0);
-    byte[] getFwVerPayload = {(byte)GET_FW_VERSION, 0x00};
 
-    try {
-      NxpNfcLogger.d(TAG, "Sending VendorNciMessage");
-      byte[] vendorRsp = mNxpNciPacketHandler.sendVendorNciMessage(
-          NxpNfcConstants.NFC_NCI_PROP_GID, NxpNfcConstants.NXP_NFC_PROP_OID,
-          getFwVerPayload);
-      if (vendorRsp != null && vendorRsp.length > 0 &&
-          vendorRsp[1] == NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
-          if (vendorRsp.length >= 5) {
-            fwVersion = new byte[3];
-            fwVersion =  Arrays.copyOfRange(vendorRsp, 2, 5);
-            NxpNfcLogger.d(TAG, "Current FW version is : " + String.format("%02X", vendorRsp[2]) +
-                            "." + String.format("%02X", vendorRsp[3]) + "." +
-                            String.format("%02X", vendorRsp[4]));
-          } else {
-            NxpNfcLogger.e(TAG, "Invalid response!!");
-          }
-      } else {
-          NxpNfcLogger.e(TAG, "getFwVersion failed!!");
-      }
-    } catch (Exception e) {
-      NxpNfcLogger.e(TAG, "Exception in sendVendorNciMessage");
-      throw new IOException("Error sending VendorNciMessage", e);
+    String propVal = SystemProperties.get("nfc.fw.ver", "");
+    NxpNfcLogger.d(TAG, "FW version:" + propVal);
+
+    if (!propVal.equals("")) {
+      fwVersion = fwStringToBytes(propVal);
+    } else {
+      NxpNfcLogger.d(TAG, "The nfc.fw.ver prop is not set");
+      throw new IOException("nfc.fw.ver is not set");
     }
     return fwVersion;
+
   }
 }
