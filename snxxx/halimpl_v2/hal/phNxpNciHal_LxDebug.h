@@ -1,5 +1,5 @@
 /*
- * Copyright 2023, 2025 NXP
+ * Copyright 2023, 2025-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,5 +31,8 @@
 #define LX_DEBUG_CFG_ENABLE_MOD_DETECTED_EVENT 0x0020
 #define LX_DEBUG_CFG_ENABLE_CMA_EVENTS 0x2000
 #define LX_DEBUG_CFG_MASK 0xFFFF
+#define LX_DEBUG_FELICA_MODEL_FLAG 0x40
+#define LX_DEBUG_FELICA_SYS_CODE_FLAG 0x04
+#define LX_DEBUG_FELICA_RF_FLAG 0x02
 
 #endif /* _PHNXPNCIHAL_LXDEBUG_H_ */

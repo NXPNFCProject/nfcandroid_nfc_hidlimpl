@@ -163,6 +163,8 @@ extern tNfc_featureList nfcFL;
 #define GET_FW_ROM_VERSION_NCI_RESP(msg, msg_len) ((msg)[(msg_len) - 3])
 #define GET_FW_MAJOR_VERSION_NCI_RESP(msg, msg_len) ((msg)[(msg_len) - 2])
 #define GET_HW_VERSION_NCI_RESP(msg, msg_len) ((msg)[(msg_len) - 4])
+#define GET_MODEL_ID_NCI_RESP(msg, msg_len) ((msg)[(msg_len) - 5])
+
 #define IS_CHIP_TYPE_GE(cType) (nfcFL.chipType >= (cType))
 #define IS_CHIP_TYPE_EQ(cType) (nfcFL.chipType == (cType))
 #define IS_CHIP_TYPE_LE(cType) (nfcFL.chipType <= (cType))

@@ -94,6 +94,15 @@ tNFC_chipType capability::determineChipTypeFromNciRsp(uint8_t* msg,
   return chip_type;
 }
 
+uint8_t capability::getModelIdFromNciRsp(uint8_t* msg, uint16_t msg_len) {
+  if ((msg != NULL) && (msg_len > 4) && msg[0] == NCI_CMD_RSP_SUCCESS_SW1 &&
+      msg[1] == NCI_CMD_RSP_SUCCESS_SW2) {
+    return GET_MODEL_ID_NCI_RESP(msg, msg_len);
+  }
+
+  return 0x00;
+}
+
 tNFC_chipType capability::determineChipTypeFromDLRsp(uint8_t* msg,
                                                      uint16_t msg_len) {
   tNFC_chipType chip_type = pn81T;

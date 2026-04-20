@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2019, 2022-2025 NXP
+ * Copyright 2010-2019, 2022-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -295,6 +295,15 @@ static void phNxpLog_setLxLoggingEnabled() {
 bool_t phNxpLog_isLxLoggingEnabled() {
   return gLog_level.is_lx_logging_enabled;
 }
+
+/*******************************************************************************
+ * Function         phNxpLog_enableLxLogging
+ *
+ * Description      Enables lx loging
+ *
+ * Returns          void
+ ******************************************************************************/
+void phNxpLog_enableLxLogging() { gLog_level.is_lx_logging_enabled = true; }
 
 /******************************************************************************
  * Function         phNxpLog_InitializeLogLevel

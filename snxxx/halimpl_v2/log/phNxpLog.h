@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2014, 2022-2025 NXP
+ * Copyright 2010-2014, 2022-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -414,5 +414,7 @@ void phNxpLog_InitializeLogLevel(void);
 uint8_t phNxpLog_EnableDisableLogLevel(uint8_t enable);
 
 bool_t phNxpLog_isLxLoggingEnabled();
+
+void phNxpLog_enableLxLogging();
 
 #endif /* NXPLOG__H_INCLUDED */

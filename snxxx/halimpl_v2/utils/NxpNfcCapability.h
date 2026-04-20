@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2015-2018,2020-2023 NXP
+ *  Copyright 2015-2018,2020-2023, 2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -42,5 +42,6 @@ class capability {
   static capability* getInstance();
   tNFC_chipType processChipType(uint8_t* msg, uint16_t msg_len);
   uint32_t getFWVersionInfo(uint8_t* msg, uint16_t msg_len);
+  uint8_t getModelIdFromNciRsp(uint8_t* msg, uint16_t msg_len);
 };
 #endif
