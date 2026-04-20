@@ -1478,7 +1478,8 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
     num = 0;
     if ((GetNxpNumValue(NAME_NXP_CE_SUPPORT_IN_NFC_OFF_PHONE_OFF, &num,
                         sizeof(num))) &&
-        (IS_CHIP_TYPE_EQ(sn220u) || IS_CHIP_TYPE_EQ(sn300u))) {
+        (IS_CHIP_TYPE_EQ(sn220u) || IS_CHIP_TYPE_EQ(sn300u) ||
+         IS_CHIP_TYPE_EQ(pn560))) {
       if (num == ENABLE_T4T_CE) enable_ce_in_phone_off = num;
     }
     mEEPROM_info.buffer = &enable_ce_in_phone_off;
@@ -2182,8 +2183,9 @@ int phNxpNciHal_close(bool bShutdown) {
    */
   if (!bShutdown && phNxpNciHal_getULPDetFlag() == false) {
     if ((IS_CHIP_TYPE_GE(sn100u) && IS_CHIP_TYPE_L(sn300u) &&
-         !IS_CHIP_TYPE_EQ(sn220u)) ||
-        ((IS_CHIP_TYPE_EQ(sn220u) || IS_CHIP_TYPE_EQ(sn300u)) &&
+         !IS_CHIP_TYPE_EQ(sn220u) && !IS_CHIP_TYPE_EQ(pn560)) ||
+        ((IS_CHIP_TYPE_EQ(sn220u) || IS_CHIP_TYPE_EQ(sn300u) ||
+          IS_CHIP_TYPE_EQ(pn560)) &&
          (GetNxpNumValue(NAME_NXP_CE_SUPPORT_IN_NFC_OFF_PHONE_OFF, &num,
                          sizeof(num))) &&
          ((num == NXP_PHONE_OFF_NFC_OFF_CE_NOT_SUPPORTED) ||
