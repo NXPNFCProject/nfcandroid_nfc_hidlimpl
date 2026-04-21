@@ -57,6 +57,14 @@ private:
   NFCSTATUS processNfceeModeSetNtf(std::vector<uint8_t> &nfceeModeSetNtf);
 
   /**
+   * @brief This API map proprietary error NFCEE_STATUS_NTF with
+   * UNRECOVERABLE_ERROR NFCEE_STATUS_NTF for eSE & eUICC.
+   *
+   * @param NFCEE_STATUS_NTF
+   */
+  NFCSTATUS processNfceeStatusNtf(std::vector<uint8_t> &nfceeStatusNtf);
+
+  /**
    * @brief Set the currentEE on receiving ESE Mode set Cmd.
    *
    * @param flag
