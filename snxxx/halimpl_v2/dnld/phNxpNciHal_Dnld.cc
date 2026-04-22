@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 NXP
+ * Copyright 2012-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1757,9 +1757,6 @@ static NFCSTATUS phLibNfc_VerifyCrcStatus(uint8_t bCrcStatus) {
         case 6: {
           NXPLOG_FWDNLD_E("Function Table Crc is NOT OK!!");
           wStatus = NFCSTATUS_FAILED;
-          break;
-        }
-        default: {
           break;
         }
       }
