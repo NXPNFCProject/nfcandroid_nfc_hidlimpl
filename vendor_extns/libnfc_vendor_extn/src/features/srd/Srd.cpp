@@ -2,7 +2,7 @@
  *
  *  The original Work has been changed by NXP.
  *
- *  Copyright 2025 NXP
+ *  Copyright 2025-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -62,9 +62,6 @@ void Srd::Initialize() {
   const long bufflen = 260;
   std::unique_ptr<uint8_t[]> srd_config = std::make_unique<uint8_t[]>(bufflen);
   long retlen = 0;
-
-  if (!srd_config)
-    return;
 
   memset(srd_config.get(), 0x00, bufflen);
   isFound = GetNxpByteArrayValue(
