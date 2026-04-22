@@ -16,7 +16,7 @@
 
 /**
 *
-*  Copyright 2025 NXP
+*  Copyright 2025-2026 NXP
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -204,7 +204,9 @@ bool ConfigFile::hasKey(const std::string& key) {
 
 ConfigValue& ConfigFile::getValue(const std::string& key) {
   auto search = values_.find(key);
-  CHECK(search != values_.end());
+  if (search == values_.end()) {
+    CHECK(search != values_.end());
+  }
   return search->second;
 }
 

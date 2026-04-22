@@ -512,6 +512,7 @@ void phNxpNciHal_print_packet(const char* pString, const uint8_t* p_data,
   } else {
     NXPLOG_NCIX_E("\nphNxpNciHal_print_packet:Failed to Allocate memory\n");
   }
+  free(print_buffer);
   return;
 }
 
