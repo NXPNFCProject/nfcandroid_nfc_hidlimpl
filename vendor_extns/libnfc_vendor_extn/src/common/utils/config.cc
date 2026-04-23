@@ -69,7 +69,7 @@ ConfigValue::ConfigValue(std::string value) {
   // Don't allow empty strings
   CHECK(!(value.empty()));
   type_ = STRING;
-  value_string_ = value;
+  value_string_ = std::move(value);
   value_unsigned_ = 0;
 }
 
