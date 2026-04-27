@@ -2288,6 +2288,11 @@ close_and_return:
   }
   if (phNxpNciHal_getULPDetFlag() == false) {
     do {
+      if (IS_CHIP_TYPE_L(sn220u)) {
+        // For chiptype < sn220u CORE_RESET will be last command,
+        // For chiptype >= sn220u set service status will be last command
+        phTmlNfc_markLastCommand(cmd_reset_nci, sizeof(cmd_reset_nci));
+      }
       status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci), cmd_reset_nci,
                                         &rsp_len, rsp);
       if (status == NFCSTATUS_SUCCESS) {
@@ -2314,6 +2319,8 @@ close_and_return:
       if (phNxpNciHal_enableTmlRead() != NFCSTATUS_PENDING) {
         NXPLOG_NCIHAL_E("%s Failed to keep the read as pending", __FUNCTION__);
       }
+      phTmlNfc_markLastCommand(cmd_system_set_service_status,
+                               sizeof(cmd_system_set_service_status));
       status = phNxpNciHal_send_ext_cmd(sizeof(cmd_system_set_service_status),
                                         cmd_system_set_service_status, &rsp_len,
                                         rsp);

@@ -166,6 +166,7 @@ typedef struct phTmlNfc_Context {
                                      pushed to queue*/
   long nfc_service_pid; /*NFC Service PID to be used by driver to signal*/
   uint16_t fragment_len;
+  uint8_t* lastCommand; /* Marks last command for this session. */
 } phTmlNfc_Context_t;
 
 /*
@@ -213,6 +214,7 @@ enum phTmlNfc_i2cfragmentation_t : uint8_t {
 NFCSTATUS phTmlNfc_Init(pphTmlNfc_Config_t pConfig);
 NFCSTATUS phTmlNfc_Shutdown(void);
 NFCSTATUS phTmlNfc_Shutdown_CleanUp();
+void phTmlNfc_markLastCommand(uint8_t* pBuffer, uint16_t wLength);
 void phTmlNfc_CleanUp(void);
 NFCSTATUS phTmlNfc_Write(uint8_t* pBuffer, uint16_t wLength);
 NFCSTATUS phTmlNfc_Read(uint8_t* pBuffer, uint16_t wLength,
