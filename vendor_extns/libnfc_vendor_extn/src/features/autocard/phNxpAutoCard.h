@@ -124,14 +124,17 @@ public:
    *
    */
   static inline void finalize() {
+    std::lock_guard<std::mutex> lock(sAutoCardMutex);
     if (sAutoCard != nullptr) {
       sAutoCard.reset();
+      sAutoCard = nullptr;
     }
   }
 
 private:
   static std::unique_ptr<AutoCard>
-      sAutoCard; /* Singleton instance of AutoCard */
+    sAutoCard; /* Singleton instance of AutoCard */
+  static std::mutex sAutoCardMutex;
   /* Auto card command type GET/SET*/
   uint8_t autoCardCmdType;
   bool isHciCmdSent;

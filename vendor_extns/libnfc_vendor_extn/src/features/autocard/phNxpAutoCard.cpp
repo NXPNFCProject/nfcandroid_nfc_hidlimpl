@@ -52,6 +52,7 @@
 #define INST_EVT_UNKNOWN 0x00
 
 std::unique_ptr<AutoCard> AutoCard::sAutoCard = nullptr;
+std::mutex AutoCard::sAutoCardMutex;
 
 AutoCard::AutoCard() {
   NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "AutoCard::%s Enter ", __func__);
@@ -76,6 +77,7 @@ AutoCard::~AutoCard() {
 }
 
 AutoCard *AutoCard::getInstance() {
+  std::lock_guard<std::mutex> lock(sAutoCardMutex);
   if (!sAutoCard) {
     sAutoCard = std::unique_ptr<AutoCard>(new AutoCard());
   }
