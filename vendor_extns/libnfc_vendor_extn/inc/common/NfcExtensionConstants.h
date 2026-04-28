@@ -247,7 +247,7 @@ constexpr uint8_t EXT_HAL_NFC_OPEN_CPLT_EVT = 0;
 constexpr uint8_t EXT_HAL_NFC_CLOSE_CPLT_EVT = 1;
 constexpr uint8_t EXT_HAL_DEF_EVT_STATUS = 0;
 constexpr uint8_t HAL_NFC_FW_UPDATE_STATUS_EVT = 0x0A;
-constexpr uint8_t HAL_EVT_STATUS_INVALID = 0xFF;
+constexpr uint8_t HAL_EVT_STATUS_ERR = 0xFF;
 constexpr uint8_t STATUS_FW_DL_REQUEST = 0x04;
 
 extern uint8_t EXT_NFC_ADAPTATION_INIT;

@@ -422,7 +422,7 @@ void Mpos::cardRemovalTimeoutHandler(union sigval val) {
       NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN, "%s:DISC_NTF_TIMEOUT", __func__);
       NfcExtEventData_t eventData;
       eventData.hal_event = NFCC_HAL_FATAL_ERR_CODE;
-      eventData.hal_event_status = HAL_EVT_STATUS_INVALID;
+      eventData.hal_event_status = HAL_EVT_STATUS_ERR;
       vendor_nfc_handle_event(HANDLE_HAL_EVENT, eventData);
       abort();
     }
