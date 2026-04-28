@@ -81,6 +81,12 @@ NciStateMonitor::processCoreResetNtfReceived(vector<uint8_t> coreResetNtf) {
   uint8_t rfFileVer[2] = {0x00};
   long retlen = 0;
   char result[15];
+
+  if (coreResetNtf.empty()) {
+    NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN,
+                     "%s: Empty coreResetNtf received", __func__);
+    return NFCSTATUS_EXTN_FEATURE_FAILURE;
+  }
   uint8_t coreResetNtfOffset = coreResetNtf.size() - 1;
 
   if (coreResetNtfOffset >= NCI_MIN_CORE_RESET_NTF_LEN) {
