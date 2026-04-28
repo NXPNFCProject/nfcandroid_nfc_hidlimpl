@@ -178,8 +178,8 @@ private:
   DualAntennaContext mDualAntennaContext;
   constexpr static uint8_t DUAL_ANTENNA_FEATURE_SUPPORTED = 0x01;
   constexpr static uint8_t NCI_PROP_RSP_VAL = 0x4F;
-  constexpr static uint8_t DUAL_ANTENNA_PAYLOAD_TWO_LEN = 0x02;
-  constexpr static uint8_t DUAL_ANTENNA_GET_DISC_PAYLOAD_TWO_LEN = 0x03;
+  constexpr static uint8_t DUAL_ANTENNA_TWO_PAYLOAD_LEN = 0x02;
+  constexpr static uint8_t DUAL_ANTENNA_TWO_GET_DISC_PAYLOAD_LEN = 0x03;
   constexpr static uint8_t DUAL_ANTENNA_FOLDABLE = 0X03;
   constexpr static uint8_t RESPONSE_STATUS_OK = 0x00;
   constexpr static uint8_t RESPONSE_STATUS_FAILED = 0x01;

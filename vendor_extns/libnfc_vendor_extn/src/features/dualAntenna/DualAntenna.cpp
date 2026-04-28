@@ -123,7 +123,7 @@ NFCSTATUS DualAntenna::handleVendorNciMessage(uint16_t dataLen,
 
     uint8_t GET_DISCOVERY_TECH_STATUS_RSP[] = {
     (NCI_MT_RSP | NCI_GID_PROP), NCI_ROW_PROP_OID_VAL,
-    DUAL_ANTENNA_GET_DISC_PAYLOAD_TWO_LEN, pData[DUAL_ANTENNA_SUB_GID_OID_INDEX],
+    DUAL_ANTENNA_TWO_GET_DISC_PAYLOAD_LEN, pData[DUAL_ANTENNA_SUB_GID_OID_INDEX],
      mDualAntennaContext.mAntOneConfig, mDualAntennaContext.mAntTwoConfig};
 
     PlatformAbstractionLayer::getInstance()->palSendNfcDataCallback(
@@ -135,7 +135,7 @@ NFCSTATUS DualAntenna::handleVendorNciMessage(uint16_t dataLen,
 
     uint8_t GET_READER_MODE_STATUS_RSP[] = {
     (NCI_MT_RSP | NCI_GID_PROP), NCI_ROW_PROP_OID_VAL,
-    DUAL_ANTENNA_PAYLOAD_TWO_LEN, pData[DUAL_ANTENNA_SUB_GID_OID_INDEX],
+    DUAL_ANTENNA_TWO_PAYLOAD_LEN, pData[DUAL_ANTENNA_SUB_GID_OID_INDEX],
      mDualAntennaContext.mConfigReaderMode};
 
     PlatformAbstractionLayer::getInstance()->palSendNfcDataCallback(
@@ -149,7 +149,7 @@ NFCSTATUS DualAntenna::handleVendorNciMessage(uint16_t dataLen,
   }
   uint8_t DUAL_ANTENNA_STATUS_RSP[] = {
       (NCI_MT_RSP | NCI_GID_PROP), NCI_ROW_PROP_OID_VAL,
-      DUAL_ANTENNA_PAYLOAD_TWO_LEN, pData[DUAL_ANTENNA_SUB_GID_OID_INDEX],
+      DUAL_ANTENNA_TWO_PAYLOAD_LEN, pData[DUAL_ANTENNA_SUB_GID_OID_INDEX],
       (status == NFCSTATUS_SUCCESS) ? RESPONSE_STATUS_OK
                                     : RESPONSE_STATUS_FAILED};
 
@@ -189,7 +189,7 @@ bool DualAntenna::isValidDualAntennaNtf(uint16_t dataLen, uint8_t* pData) {
   std::vector<uint8_t> antennaDetectNtf;
   antennaDetectNtf.push_back(NCI_MT_RSP | NCI_GID_PROP);
   antennaDetectNtf.push_back(NCI_ROW_PROP_OID_VAL);
-  antennaDetectNtf.push_back(DUAL_ANTENNA_PAYLOAD_TWO_LEN);
+  antennaDetectNtf.push_back(DUAL_ANTENNA_TWO_PAYLOAD_LEN);
   antennaDetectNtf.push_back(DUAL_ANTENNA_SET_DISCOVERY);
   antennaDetectNtf.insert(antennaDetectNtf.end(), NCI_GENERIC_INFO_NTF.begin(),
                           NCI_GENERIC_INFO_NTF.end());
