@@ -34,6 +34,7 @@
 #include "RfStateMonitor.h"
 #include "SrdHandler.h"
 #include "phNxpAutoCard.h"
+#include "AutoObserveModeSuspendHandler.h"
 #include "phNxpNTag.h"
 #include "DualAntenna.h"
 #include "TransitConfigHandler.h"
@@ -279,6 +280,9 @@ bool configure_vendor_feature() {
   AutoCard::getInstance()->phNxpNciHal_getAutoCardConfig();
   BroadcastFrameHandler::getInstance()
       ->phNxpNciHal_configureBroadcastFrameHandler();
+  AutoObserveModeSuspendHandler::getInstance()
+      ->phNxpNciHal_configureAutoObserveModeSuspendHandler();
+  AutoObserveModeSuspendHandler::finalize();
 
   return true;
 }

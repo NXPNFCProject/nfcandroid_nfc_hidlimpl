@@ -54,6 +54,7 @@ cc_defaults {
         "src/features/dualAntenna/DualAntenna.cpp",
         "src/features/ntag/phNxpNTag.cpp",
         "src/features/broadcast_frame/BroadcastFrameHandler.cpp",
+        "src/features/auto_obs_mode/AutoObserveModeSuspendHandler.cpp",
     ],
     export_include_dirs: [
         "inc/common",
@@ -78,6 +79,7 @@ cc_defaults {
         "src/features/dualAntenna",
         "src/features/ntag",
         "src/features/broadcast_frame",
+        "src/features/auto_obs_mode",
     ],
     shared_libs: [
         "libbase",
