@@ -136,7 +136,7 @@ NFCSTATUS NciStateMonitor::handleVendorNciRspNtf(uint16_t dataLen,
   constexpr uint16_t NCI_CORE_GENERIC_ERROR_NTF =
       (((NCI_MT_NTF | NCI_GID_CORE) << 8) | NCI_CORE_GENERIC_ERROR_OID);
 
-  if (nciRspNtf[NCI_OID_INDEX] == NXP_FLUSH_SRAM_AO_TO_FLASH_OID) {
+  if (nciRspNtf[NCI_OID_INDEX] == NXP_FLUSH_SRAM_AO_TO_FLASH_OID && sSendSramConfigToFlash) {
     mSramCmdRspBuffer.clear();
     mSramCmdRspBuffer.assign(nciRspNtf.begin(), nciRspNtf.end());
     mSramCmdRspCondVar.signal();
