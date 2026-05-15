@@ -17,14 +17,16 @@
  **/
 
 #include "NfcExtensionController.h"
+#include <NciStateMonitor.h>
+#include <phNxpLog.h>
+#include "BroadcastFrameHandler.h"
 #include "DualAntenna.h"
 #include "NfcExtensionConstants.h"
 #include "PlatformAbstractionLayer.h"
 #include "Srd.h"
 #include "phNxpAutoCard.h"
 #include "phNxpNTag.h"
-#include <NciStateMonitor.h>
-#include <phNxpLog.h>
+
 std::unique_ptr<NfcExtensionController>
     NfcExtensionController::sNfcExtensionController = nullptr;
 
@@ -132,6 +134,11 @@ NFCSTATUS NfcExtensionController::handleVendorNciRspNtf(uint16_t dataLen,
   if (status == NFCSTATUS_EXTN_FEATURE_SUCCESS) {
     return status;
   }
+
+  if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
+      BroadcastFrameHandler::getInstance()->handleVendorNciRspNtf(
+          dataLen, const_cast<uint8_t*>(pData)))
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 
   if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
       AutoCard::getInstance()->handleVendorNciRspNtf(dataLen, pData))

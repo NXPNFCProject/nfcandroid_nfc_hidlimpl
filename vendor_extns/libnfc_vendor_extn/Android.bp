@@ -53,6 +53,7 @@ cc_defaults {
         "src/features/autocard/phNxpAutoCard.cpp",
         "src/features/dualAntenna/DualAntenna.cpp",
         "src/features/ntag/phNxpNTag.cpp",
+        "src/features/broadcast_frame/BroadcastFrameHandler.cpp",
     ],
     export_include_dirs: [
         "inc/common",
@@ -76,6 +77,7 @@ cc_defaults {
         "src/features/autocard",
         "src/features/dualAntenna",
         "src/features/ntag",
+        "src/features/broadcast_frame",
     ],
     shared_libs: [
         "libbase",

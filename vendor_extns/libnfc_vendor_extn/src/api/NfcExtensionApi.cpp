@@ -39,6 +39,7 @@
 #include "TransitConfigHandler.h"
 #include <phNxpLog.h>
 #include <stdint.h>
+#include "BroadcastFrameHandler.h"
 
 VendorExtnCb *mVendorExtnCb;
 
@@ -217,6 +218,7 @@ bool vendor_nfc_de_init() {
   AutoCard::finalize();
   NxpNTag::finalize();
   DualAntenna::finalize();
+  BroadcastFrameHandler::finalize();
   resetNxpConfig();
   return true;
 }
@@ -275,12 +277,14 @@ bool configure_vendor_feature() {
   DualAntenna::getInstance()->isDualAntennaSupported();
   NxpNTag::getInstance()->phNxpNciHal_disableNtagNtfConfig();
   AutoCard::getInstance()->phNxpNciHal_getAutoCardConfig();
+  BroadcastFrameHandler::getInstance()
+      ->phNxpNciHal_configureBroadcastFrameHandler();
 
   return true;
 }
 
 bool isVendorSpecificCmd(uint16_t dataLen, const uint8_t *pData) {
-  if (dataLen > MIN_HED_LEN && (pData[NCI_GID_INDEX] == NCI_PROP_CMD_VAL) &&
+  if (dataLen > MIN_HEADER_LEN && (pData[NCI_GID_INDEX] == NCI_PROP_CMD_VAL) &&
       (pData[NCI_OID_INDEX] == NCI_ROW_PROP_OID_VAL ||
        pData[NCI_OID_INDEX] == NCI_OEM_PROP_OID_VAL)) {
     return true;

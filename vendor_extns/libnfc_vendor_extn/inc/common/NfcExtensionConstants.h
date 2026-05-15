@@ -80,7 +80,7 @@ constexpr uint8_t NCI_MSG_CORE_RESET = 0x00;
 constexpr uint8_t MT_CMD = 0x00;
 constexpr uint8_t MT_RSP = 0x01;
 constexpr uint8_t MT_NTF = 0x02;
-constexpr uint8_t MIN_HED_LEN = 0x03;
+constexpr uint8_t MIN_HEADER_LEN = 0x03;
 constexpr uint16_t NCI_MAX_DATA_LEN = 300;
 
 constexpr uint8_t NCI_GID_CORE = 0x00;
