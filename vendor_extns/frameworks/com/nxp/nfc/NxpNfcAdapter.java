@@ -39,6 +39,8 @@ import com.nxp.nfc.vendor.qtag.QTagHandler;
 import com.nxp.nfc.vendor.srd.ISrdCallbacks;
 import com.nxp.nfc.vendor.srd.SrdHandler;
 import com.nxp.nfc.vendor.transit.TransitConfigHandler;
+import com.nxp.nfc.vendor.broadcastframe.BroadcastFrameHandler;
+import com.nxp.nfc.vendor.broadcastframe.IBroadcastFrameNotificationCallbacks;
 import com.nxp.nfc.vendor.utils.UtilsHandler;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -70,6 +72,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     private MposHandler mMposHandler;
     private QTagHandler mQTagHandler;
     private LxDebugEventHandler mLxDebugEventHandler;
+    private BroadcastFrameHandler mBroadcastFrameHandler;
     private TransitConfigHandler mTransitHandler;
     private NfcFirmwareInfo mFwHandler;
     private SrdHandler mSrdHandler;
@@ -127,6 +130,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
         mMposHandler = new MposHandler(nfcAdapter, context);
         mQTagHandler = new QTagHandler(nfcAdapter);
         mLxDebugEventHandler = new LxDebugEventHandler(nfcAdapter, context);
+        mBroadcastFrameHandler = new BroadcastFrameHandler(nfcAdapter, context);
         mTransitHandler = new TransitConfigHandler(nfcAdapter);
         mFwHandler = new NfcFirmwareInfo(nfcAdapter);
         mSrdHandler = new SrdHandler(nfcAdapter, context);
@@ -394,6 +398,25 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     @Override
     public void unregisterLxDebugCallbacks() {
         mLxDebugEventHandler.unregisterLxDebugCallbacks();
+    }
+
+    /**
+     * This API registers the callback to get Brodcast frame notifications.
+     * @param callbacks : callback object to be register.
+     */
+    @Override
+    public void registerBroadcastFrameNotificationCallbacks(
+                IBroadcastFrameNotificationCallbacks callbacks) {
+        mBroadcastFrameHandler.registerBroadcastFrameNotificationCallbacks(callbacks);
+    }
+
+    /**
+     * This API unregisters the Application callbacks to be called
+     * for Brodcast frame notifications.
+     */
+    @Override
+    public void unregisterBroadcastFrameNotificationCallbacks() {
+        mBroadcastFrameHandler.unregisterBroadcastFrameNotificationCallbacks();
     }
 
     /**

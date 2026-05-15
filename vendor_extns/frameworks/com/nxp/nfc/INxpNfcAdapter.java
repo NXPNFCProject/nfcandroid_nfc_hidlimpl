@@ -32,6 +32,7 @@ import com.nxp.nfc.vendor.srd.ISrdCallbacks;
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import com.nxp.nfc.vendor.broadcastframe.IBroadcastFrameNotificationCallbacks;
 
 /**
  * @class INxpNfcAdapter
@@ -385,6 +386,19 @@ public interface INxpNfcAdapter {
    * for LxDebug notifications.
    */
   void unregisterLxDebugCallbacks();
+
+    /**
+     * This API registers the callback to get Brodcast frame notifications.
+     * @param callbacks : callback object to be register.
+     */
+    void registerBroadcastFrameNotificationCallbacks(
+        IBroadcastFrameNotificationCallbacks callbacks);
+
+    /**
+     * This API unregisters the Application callbacks to be called
+     * for Brodcast frame notifications.
+     */
+    void unregisterBroadcastFrameNotificationCallbacks();
 
   /**
    * This API starts extended field detect mode.
