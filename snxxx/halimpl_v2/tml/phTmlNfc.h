@@ -167,6 +167,7 @@ typedef struct phTmlNfc_Context {
   long nfc_service_pid; /*NFC Service PID to be used by driver to signal*/
   uint16_t fragment_len;
   uint8_t* lastCommand; /* Marks last command for this session. */
+  uint16_t lastCmdLen;  /* Last command length */
 } phTmlNfc_Context_t;
 
 /*

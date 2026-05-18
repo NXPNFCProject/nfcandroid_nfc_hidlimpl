@@ -406,6 +406,8 @@ NFCSTATUS phNxpNciHal_fw_download(uint8_t seq_handler_offset,
     nxpncihal_ctrl.isCoreRstForFwDnld = true;
     /*NCI_RESET_CMD*/
     static uint8_t cmd_reset_nci_dwnld[] = {0x20, 0x00, 0x01, 0x80};
+    // Read pending should not be invoked after this
+    phTmlNfc_markLastCommand(cmd_reset_nci_dwnld, sizeof(cmd_reset_nci_dwnld));
     status = phNxpNciHal_send_ext_cmd(sizeof(cmd_reset_nci_dwnld),
                                       cmd_reset_nci_dwnld, &rsp_len, rsp);
     if (status != NFCSTATUS_SUCCESS) {

@@ -124,6 +124,7 @@ NFCSTATUS phTmlNfc_Init(pphTmlNfc_Config_t pConfig) {
         gpphTmlNfc_Context->tReadInfo.bEnable = 0;
         gpphTmlNfc_Context->tReadInfo.bThreadBusy = false;
         gpphTmlNfc_Context->lastCommand = NULL;
+        gpphTmlNfc_Context->lastCmdLen = 0;
         if (pConfig->fragment_len == 0x00)
           pConfig->fragment_len = PH_TMLNFC_FRGMENT_SIZE_PN557;
         gpphTmlNfc_Context->fragment_len = pConfig->fragment_len;
@@ -402,6 +403,7 @@ NFCSTATUS phTmlNfc_Shutdown(void) {
     if (gpphTmlNfc_Context->lastCommand) {
       free(gpphTmlNfc_Context->lastCommand);
       gpphTmlNfc_Context->lastCommand = NULL;
+      gpphTmlNfc_Context->lastCmdLen = 0;
     }
   } else {
     wShutdownStatus = PHNFCSTVAL(CID_NFC_TML, NFCSTATUS_NOT_INITIALISED);
@@ -905,6 +907,7 @@ void phTmlNfc_markLastCommand(uint8_t* pBuffer, uint16_t wLength) {
     if (gpphTmlNfc_Context->lastCommand) {
       free(gpphTmlNfc_Context->lastCommand);
       gpphTmlNfc_Context->lastCommand = NULL;
+      gpphTmlNfc_Context->lastCmdLen = 0;
     }
     gpphTmlNfc_Context->lastCommand = (uint8_t*)calloc(1, wLength);
     if (!gpphTmlNfc_Context->lastCommand) {
@@ -912,6 +915,7 @@ void phTmlNfc_markLastCommand(uint8_t* pBuffer, uint16_t wLength) {
       return;
     }
     memcpy(gpphTmlNfc_Context->lastCommand, pBuffer, wLength);
+    gpphTmlNfc_Context->lastCmdLen = wLength;
     NXPLOG_TML_D("%s: Marking last command for this session", __func__);
     phNxpNciHal_print_packet("DEBUG", gpphTmlNfc_Context->lastCommand, wLength);
   } else {
@@ -939,7 +943,7 @@ bool phTmlNfc_isResponseForLastCommand(uint8_t* pBuffer, uint16_t wLength) {
     NXPLOG_TML_E("%s: Invalid response", __func__);
     return false;
   }
-  if (!gpphTmlNfc_Context->lastCommand) {
+  if (!gpphTmlNfc_Context->lastCommand || gpphTmlNfc_Context->lastCmdLen < 3) {
     // Last command is not set
     return false;
   }
@@ -950,10 +954,15 @@ bool phTmlNfc_isResponseForLastCommand(uint8_t* pBuffer, uint16_t wLength) {
     // Response matched for lastCommand. Check is ntf is expected
     if (pBuffer[0] == 0x40 && pBuffer[1] == 0x00 && pBuffer[2] == 0x01 &&
         pBuffer[3] == 0x00) {
-      NXPLOG_TML_I(
-          "%s: Response received for last command, waiting for notification",
-          __func__);
-      return false;
+      if (gpphTmlNfc_Context->lastCmdLen > 3 &&
+          gpphTmlNfc_Context->lastCommand[0x03] != 0x80) {
+        NXPLOG_TML_I(
+            "%s: Response received for last command, waiting for notification",
+            __func__);
+        return false;
+      } else {
+        // CORE_RESET for FW DOWNLOAD. No Ntf is expected
+      }
     }
     if (pBuffer[0] == 0x42 && pBuffer[1] == 0x01 && pBuffer[2] == 0x01 &&
         pBuffer[3] == 0x00 && IS_CHIP_TYPE_GE(sn100u)) {
@@ -965,6 +974,10 @@ bool phTmlNfc_isResponseForLastCommand(uint8_t* pBuffer, uint16_t wLength) {
     // All remaining commands no ntfs are expected.
     NXPLOG_TML_I("%s: Response received for last command, Skip enable read",
                  __func__);
+    if (gpphTmlNfc_Context->lastCommand) {
+      free(gpphTmlNfc_Context->lastCommand);
+      gpphTmlNfc_Context->lastCommand = NULL;
+    }
     return true;
   } else {
     return false;
