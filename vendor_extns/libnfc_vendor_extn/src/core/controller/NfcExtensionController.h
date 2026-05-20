@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2024-2025 NXP
+ *  Copyright 2024-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -219,6 +219,16 @@ public:
    * NFCSTATUS_EXTN_FEATURE_FAILURE.
    */
   NFCSTATUS processExtnWrite(uint16_t *dataLen, uint8_t *pData);
+
+  /**
+   * @brief process RF_NFCEE_DISCOVERY_REQ_NTF and send mifare support ntf to
+   * nfc service.
+   * @param dataLen length RF_NFCEE_DISCOVERY_REQ_NTF
+   * @param pData
+   * @return returns NFCSTATUS_EXTN_FEATURE_SUCCESS, if it is EE removed ntf
+   * otherwise NFCSTATUS_EXTN_FEATURE_FAILURE.
+   */
+  NFCSTATUS processSeNtfToUpdateMifareSupport(uint16_t dataLen, uint8_t* pData);
   /**
    * @brief Release all resources.
    * @return None
@@ -269,6 +279,39 @@ private:
    *
    */
   std::shared_ptr<IEventHandler> getEventHandler();
+
+  constexpr bool isValidSeDiscNtf(uint16_t dataLen, const uint8_t* pData) {
+    return (pData[NCI_GID_INDEX] == NFCC_EE_DIS_NTF_GID &&
+            pData[NCI_OID_INDEX] == NFCC_EE_DIS_NTF_OID &&
+            pData[NCI_MSG_LEN_INDEX] == NFCC_EE_DIS_NTF_MSG_LEN);
+  }
+
+  constexpr bool isSupportedSeId(uint8_t seId) {
+    return (seId == NCI_ROUTE_ESE_ID || seId == NCI_ROUTE_UICC1_ID);
+  }
+
+  constexpr bool isValidGetCfgRsp(uint16_t dataLen, const uint8_t* pData) {
+    return (dataLen == NFCC_EE_GET_CMD_RSP_LEN &&
+            pData[NCI_GID_INDEX] == NCI_CORE_SET_CFG_RSP_GID_VAL &&
+            pData[NCI_OID_INDEX] == NCI_RF_DISCOVERY_OID &&
+            pData[NCI_MSG_LEN_INDEX] == NFCC_EE_GET_CMD_MSG_LEN &&
+            pData[NCI_GET_CMD_TLV_INDEX] == CONFIG_PARAM_A0);
+  }
+
+  constexpr static uint8_t NCI_SE_ID_INDEX = 6;
+  constexpr static uint8_t NCI_GET_CMD_TLV_INDEX = 5;
+  constexpr static uint8_t NFCC_EE_DIS_NTF_LEN = 0x09;
+  constexpr static uint8_t NFCC_EE_DIS_NTF_GID = 0x61;
+  constexpr static uint8_t NFCC_EE_DIS_NTF_OID = 0x0A;
+  constexpr static uint8_t NFCC_EE_DIS_NTF_MSG_LEN = 0x06;
+  constexpr static uint8_t NFCC_EE_ISO_DEP_PROTO = 0x04;
+  constexpr static uint8_t NFCC_EE_TECH_INDEX = 0x07;
+  constexpr static uint8_t NFCC_EE_PROTOCOL_INDEX = 0x08;
+  constexpr static uint8_t NFCC_EE_GET_CMD_RSP_LEN = 77;
+  constexpr static uint8_t NFCC_EE_GET_CMD_MSG_LEN = 0x4A;
+  static const uint8_t CONFIG_PARAM_A0 = 0xA0;
+  static const uint8_t CONFIG_PARAM_ESE_VAL = 0xF0;
+  static const uint8_t CONFIG_PARAM_UICC1_VAL = 0xEF;
 };
 /** @}*/
 #endif // NFC_EXTENSION_CONTROLLER_H

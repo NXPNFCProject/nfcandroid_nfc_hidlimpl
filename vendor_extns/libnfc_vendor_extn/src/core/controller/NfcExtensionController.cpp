@@ -154,6 +154,10 @@ NFCSTATUS NfcExtensionController::handleVendorNciRspNtf(uint16_t dataLen,
           dataLen, const_cast<uint8_t *>(pData)))
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 
+  if (NFCSTATUS_EXTN_FEATURE_SUCCESS ==
+      processSeNtfToUpdateMifareSupport(dataLen, const_cast<uint8_t*>(pData)))
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+
   return mIEventHandler->handleVendorNciRspNtf(dataLen, pData);
 }
 
@@ -210,4 +214,64 @@ NFCSTATUS NfcExtensionController::processExtnWrite(uint16_t *dataLen,
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
   }
   return NciStateMonitor::getInstance()->processNciCmd(*dataLen, pData);
+}
+
+NFCSTATUS NfcExtensionController::processSeNtfToUpdateMifareSupport(
+    uint16_t dataLen, uint8_t* pData) {
+  if (pData == nullptr || dataLen < NFCC_EE_DIS_NTF_LEN)
+    return NFCSTATUS_EXTN_FEATURE_FAILURE;
+
+  if (isValidSeDiscNtf(dataLen, pData) &&
+      isSupportedSeId(pData[NCI_SE_ID_INDEX]) &&
+      pData[NFCC_EE_TECH_INDEX] == NCI_TYPE_A_LISTEN &&
+      pData[NFCC_EE_PROTOCOL_INDEX] == NFCC_EE_ISO_DEP_PROTO) {
+    constexpr uint8_t NFCEE_ADD_REMOVE_INDEX = 4;
+
+    if (pData[NFCEE_ADD_REMOVE_INDEX] == 0x00) {
+      std::vector<uint8_t> getSeSakStatus = {0x20, 0x03, 0x03,
+                                             0x01, 0xA0, 0xF0};
+      if (pData[NCI_SE_ID_INDEX] == NCI_ROUTE_UICC1_ID)
+        getSeSakStatus[5] = CONFIG_PARAM_UICC1_VAL;
+
+      PlatformAbstractionLayer::getInstance()->palenQueueWrite(
+          getSeSakStatus.data(), getSeSakStatus.size());
+
+      return NFCSTATUS_EXTN_FEATURE_FAILURE;
+    }
+    std::vector<uint8_t> nfcEeMifareRemoveNtf = {0x61, 0x0A, 0x06, 0x01, 0x00,
+                                                 0x03, 0xC0, 0x80, 0x80};
+
+    nfcEeMifareRemoveNtf[NFCEE_ADD_REMOVE_INDEX] =
+        pData[NFCEE_ADD_REMOVE_INDEX];
+
+    PlatformAbstractionLayer::getInstance()->palSendNfcDataCallback(dataLen,
+                                                                    pData);
+    PlatformAbstractionLayer::getInstance()->palSendNfcDataCallback(
+        nfcEeMifareRemoveNtf.size(), nfcEeMifareRemoveNtf.data());
+
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+  }
+
+  if (isValidGetCfgRsp(dataLen, pData) &&
+      (pData[NCI_SE_ID_INDEX] == CONFIG_PARAM_ESE_VAL ||
+       pData[NCI_SE_ID_INDEX] == CONFIG_PARAM_UICC1_VAL)) {
+    constexpr uint8_t MIFARE_SUPPORT_STATUS_INDEX = 21;
+    constexpr uint8_t NFCC_EE_MIFARE_PROTOCOL_SUPPORT = 0x08;
+
+    std::vector<uint8_t> nfcEeMifareAddNtf = {0x61, 0x0A, 0x06, 0x01, 0x00,
+                                              0x03, 0xC0, 0x80, 0x80};
+
+    if (pData[NCI_SE_ID_INDEX] == CONFIG_PARAM_UICC1_VAL)
+      nfcEeMifareAddNtf[NCI_SE_ID_INDEX] = NCI_ROUTE_UICC1_ID;
+
+    if (pData[MIFARE_SUPPORT_STATUS_INDEX] & NFCC_EE_MIFARE_PROTOCOL_SUPPORT) {
+      NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN,
+                     "%s Sending SE add ntf for Mifare", __func__);
+
+      PlatformAbstractionLayer::getInstance()->palSendNfcDataCallback(
+          nfcEeMifareAddNtf.size(), nfcEeMifareAddNtf.data());
+    }
+    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+  }
+  return NFCSTATUS_EXTN_FEATURE_FAILURE;
 }
