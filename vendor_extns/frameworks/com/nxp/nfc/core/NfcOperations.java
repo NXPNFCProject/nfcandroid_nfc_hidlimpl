@@ -386,6 +386,10 @@ public class NfcOperations {
      */
     public void registerNxpOemCallback(INxpOEMCallbacks nxpOEMCallback) {
         synchronized (mCallbackLock) {
+            if (nxpOEMCallback == null) {
+                NxpNfcLogger.e(TAG, "registerNxpOemCallback: nxpOEMCallback is null");
+                throw new IllegalArgumentException("nxpOEMCallback is null");
+            }
             if (mNxpOemCallbacks == null) {
                 resetOemCallbackMap();
                 mCallbackCountDownLatch = new CountDownLatch(mOemCallbackMap.size());

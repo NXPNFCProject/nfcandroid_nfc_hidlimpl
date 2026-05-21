@@ -24,6 +24,7 @@ import android.nfc.NfcAdapter;
 import android.util.Log;
 import com.nxp.nfc.NxpNfcAdapter.DualAntennaCallback;
 import com.nxp.nfc.vendor.dualAntenna.DualAntennaHandler;
+import java.io.IOException;
 
 public class DualAntennaBroadcastHandler extends BroadcastReceiver {
 
@@ -39,8 +40,8 @@ public class DualAntennaBroadcastHandler extends BroadcastReceiver {
       "EXTRA_READER_MODE_ANTENNA1_VALUE";
   public static final String EXTRA_READER_MODE_ANTENNA2_VALUE =
       "EXTRA_READER_MODE_ANTENNA2_VALUE";
-  public static int readerModeAntenna1Value = 0x00;
-  public static int readerModeAntenna2Value = 0x00;
+  private static int readerModeAntenna1Value = 0x00;
+  private static int readerModeAntenna2Value = 0x00;
   private static final String TAG = "DualAntenna";
   private NfcAdapter mNfcAdapter;
   private DualAntennaHandler mDualAntennaHandler;
@@ -125,7 +126,7 @@ public class DualAntennaBroadcastHandler extends BroadcastReceiver {
           mDualAntennaHandler.setPollingMode_DualAntenna(
               ModeSetting.Enable.value, ModeSetting.Disable.value);
         }
-      } catch (Exception e) {
+      } catch (IOException e) {
         NxpNfcLogger.e(TAG, "Exception in flip event: " + e.getMessage());
       }
     } else {
@@ -146,7 +147,7 @@ public class DualAntennaBroadcastHandler extends BroadcastReceiver {
       try {
         mDualAntennaHandler.setDiscoveryTechnology_DualAntenna(antennaOneValue,
                                                                antennaTwoValue);
-      } catch (Exception e) {
+      } catch (IOException e) {
         NxpNfcLogger.e(TAG,
                        "Exception in antenna configuration: " + e.getMessage());
       }
@@ -169,7 +170,7 @@ public class DualAntennaBroadcastHandler extends BroadcastReceiver {
         mDualAntennaHandler.setPollingMode_DualAntenna(readerModeAntenna1Value,
                                                        readerModeAntenna2Value);
         mIsReaderModeApplied = true;
-      } catch (Exception e) {
+      } catch (IOException e) {
         NxpNfcLogger.e(TAG, "Exception in reader mode configuration: " +
                                 e.getMessage());
       }
@@ -185,7 +186,7 @@ public class DualAntennaBroadcastHandler extends BroadcastReceiver {
       try {
         int[] antennaConf =
             mDualAntennaHandler.getDiscoveryTechnology_DualAntenna();
-      } catch (Exception e) {
+      } catch (IOException e) {
         NxpNfcLogger.e(TAG,
                        "Exception in get discovery tech " + e.getMessage());
       }
@@ -200,7 +201,7 @@ public class DualAntennaBroadcastHandler extends BroadcastReceiver {
     if (mDualAntennaHandler != null) {
       try {
         int antennaPolling = mDualAntennaHandler.getPollingMode_DualAntenna();
-      } catch (Exception e) {
+      } catch (IOException e) {
         NxpNfcLogger.e(TAG, "Exception in get polling mode " + e.getMessage());
       }
     } else {

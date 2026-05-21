@@ -31,6 +31,12 @@ public class NxpNfcLogger {
     private static int sLogLevel = Log.VERBOSE;
 
     public static void setLogLevel(int logLevel) {
+        if (logLevel < Log.VERBOSE || logLevel > Log.ASSERT) {
+            Log.e(TAG, "Invalid logLevel: " + logLevel
+                    + " must be between "
+                    + Log.VERBOSE + " and " + Log.ASSERT);
+            return;
+        }
         sLogLevel = logLevel;
     }
 

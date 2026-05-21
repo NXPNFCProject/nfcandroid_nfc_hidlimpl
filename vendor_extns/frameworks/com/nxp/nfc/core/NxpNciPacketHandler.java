@@ -54,6 +54,9 @@ public class NxpNciPacketHandler {
     private boolean mIsSubGidCheckReq = true;
     private CountDownLatch mResCountDownLatch;
     private boolean isCallbackRegistered = false;
+    private static final int NCI_GID_MIN = 0;
+    private static final int NCI_GID_MAX = 15;
+    private static final int NCI_OID_MIN = 0;
 
     /**
      * @brief hold NTF callback executor.
@@ -109,6 +112,10 @@ public class NxpNciPacketHandler {
 
     public void
     unregisterNtfCallback(@NonNull INxpNfcNtfHandler nxpNfcNtfHandler) {
+      if (nxpNfcNtfHandler == null) {
+        NxpNfcLogger.e(TAG, "unregisterNtfCallback: nxpNfcNtfHandler is null");
+        throw new IllegalArgumentException("nxpNfcNtfHandler is null");
+      }
       synchronized(NxpNciPacketHandler.this) {
         if (mCallbackMap.containsKey(nxpNfcNtfHandler))
           mCallbackMap.remove(nxpNfcNtfHandler);
@@ -124,6 +131,17 @@ public class NxpNciPacketHandler {
     }
 
     /**
+     * Validates gid and oid per NCI specification.
+     * @param gid Group ID - must be 0 to 15 (4 bits)
+     * @param oid Opcode ID - must be >= 0
+     * @return true if valid, false otherwise
+     */
+    private boolean isValidNciMessage(int gid, int oid) {
+        return ((oid >= NCI_OID_MIN) &&
+                (gid >= NCI_GID_MIN && gid <= NCI_GID_MAX));
+    }
+
+    /**
      * send vendor nci message with provided gid, oid & payload and wits until response
      * is received
      * @param gid
@@ -135,6 +153,14 @@ public class NxpNciPacketHandler {
         if (payload == null) {
             NxpNfcLogger.e(TAG, "sendVendorNciMessage: payload is null");
             return new byte[] { (byte) NfcAdapter.SEND_VENDOR_NCI_STATUS_FAILED };
+        }
+        if (!isValidNciMessage(gid, oid)) {
+            NxpNfcLogger.e(TAG, "Invalid NCI params gid: " + gid
+                            + " (must be 0-15) oid: " + oid
+                            + " (must be >= 0)");
+            return new byte[]{
+                (byte) NfcAdapter.SEND_VENDOR_NCI_STATUS_FAILED
+            };
         }
         NxpNfcLogger.d(TAG,
                     "sendVendorNciMessage API  gid: " + gid
@@ -174,11 +200,12 @@ public class NxpNciPacketHandler {
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             NxpNfcLogger.e(TAG, "Error while calling sendVendorNciMessage()");
             mVendorNciRsp = new byte[] { (byte) NfcAdapter.SEND_VENDOR_NCI_STATUS_FAILED };
         }
-        return mVendorNciRsp;
+        return mVendorNciRsp != null ? mVendorNciRsp.clone() : null;
     }
 
     /**
