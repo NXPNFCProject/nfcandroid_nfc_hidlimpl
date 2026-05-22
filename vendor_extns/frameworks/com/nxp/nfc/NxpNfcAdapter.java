@@ -321,6 +321,24 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     }
 
     /**
+     * @brief To be called to set str event weight to NFCC
+     * @return {@link INxpNfcAdapter.setStrReaderProfiles} instance
+     */
+    @Override
+    public @AutoCardStatus int setStrEvtWeight(int eventWeight) throws IOException {
+      return mAutoCardHandler.setStrEvtWeight(eventWeight);
+    }
+
+    /**
+     * @brief To be called to set str threshold factor to NFCC
+     * @return {@link INxpNfcAdapter.setStrReaderProfiles} instance
+     */
+    @Override
+    public @AutoCardStatus int setStrEvtThresholdFactor(int thresholdFactor) throws IOException {
+      return mAutoCardHandler.setStrEvtThresholdFactor(thresholdFactor);
+    }
+
+    /**
      * @brief To be called to start or stop the mPOS reader mode
      * @return {@link INxpNfcAdapter.mPOSSetReaderMode} instance
      */

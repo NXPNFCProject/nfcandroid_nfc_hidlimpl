@@ -177,6 +177,8 @@ private:
   constexpr static uint8_t STR_ACS_FEATURE_ENABLE_SUB_OID = 0x20;
   constexpr static uint8_t STR_SET_READER_PROFILE = 0x22;
   constexpr static uint8_t STR_SET_ACTIVATE_AID = 0x24;
+  constexpr static uint8_t STR_SET_EVT_WEIGHT_VAL = 0x25;
+  constexpr static uint8_t STR_SET_EVT_THRESHOLD_VAL = 0x27;
   constexpr static uint8_t AUTOCARD_FEATURE_ENABLE_SUB_OID = 0x07;
   constexpr static uint8_t AUTOCARD_FEATURE_DISABLE_SUB_OID = 0x08;
   constexpr static uint8_t AUTOCARD_STATUS_INDEX = 0x04;

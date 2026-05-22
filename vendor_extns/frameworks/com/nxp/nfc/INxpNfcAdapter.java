@@ -291,6 +291,44 @@ public interface INxpNfcAdapter {
   public @AutoCardStatus int setStrActivatedAID(byte[] aid) throws IOException;
 
   /**
+   * This API sets Str event weight value to NFCC using the vendor NCI message
+   * <ul>
+   * <li>This api shall be called only when Nfcservice is enabled and also
+   * <li>autocard feature should be enabled in NFCC.
+   * </ul>
+   * @param eventWeight Integer value.
+   * @return status     :-0x00 :SUCCESS
+   *                      0x01 - 0x06: NCI Status Codes
+   *                           : Refer NCI spec v2.3 Table 140
+   *                      0x07 : NFC off
+   *                      0x0B : Disabled
+   *                      0x0C : Config not defined
+   *                      0x0D : Feature not supported by platform
+   *                      0x0E : EACSTATUS_ERROR_MESSAGE_CORRUPTED
+   * <p>Requires {@link   android.Manifest.permission#NFC} permission.
+   */
+  public @AutoCardStatus int setStrEvtWeight(int eventWeight) throws IOException;
+
+  /**
+   * This API sets Str threshold value to NFCC using the vendor NCI message
+   * <ul>
+   * <li>This api shall be called only when Nfcservice is enabled and also
+   * <li>autocard feature should be enabled in NFCC.
+   * </ul>
+   * @param thresholdFactor Integer value.
+   * @return status     :-0x00 :SUCCESS
+   *                      0x01 - 0x06: NCI Status Codes
+   *                           : Refer NCI spec v2.3 Table 140
+   *                      0x07 : NFC off
+   *                      0x0B : Disabled
+   *                      0x0C : Config not defined
+   *                      0x0D : Feature not supported by platform
+   *                      0x0E : EACSTATUS_ERROR_MESSAGE_CORRUPTED
+   * <p>Requires {@link   android.Manifest.permission#NFC} permission.
+   */
+  public @AutoCardStatus int setStrEvtThresholdFactor(int thresholdFactor) throws IOException;
+
+  /**
    * This is the API to be called to enable or disable QTag RF mode.
    * <ul>
    * <li>This api shall be called only when NfcService is enabled.
