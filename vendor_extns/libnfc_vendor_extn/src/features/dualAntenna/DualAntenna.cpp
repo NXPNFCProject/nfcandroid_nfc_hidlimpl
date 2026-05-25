@@ -355,7 +355,38 @@ NFCSTATUS DualAntenna::sendRfDeactivate(const uint8_t *pData) {
       DISABLE_DISC_CMD.data(), DISABLE_DISC_CMD.size());
 }
 
+vector<uint8_t> removeListenModes(std::vector<uint8_t> RF_DISC_CMD) {
+
+  constexpr uint8_t NCI_RF_DISC_PAYLOAD_LEN_INDEX = 2;
+  constexpr uint8_t NCI_RF_DISC_NUM_OF_CONFIG_INDEX = 3;
+  constexpr uint8_t NCI_TYPE_A_LISTEN  = 0x80;
+  constexpr uint8_t NCI_TYPE_B_LISTEN  = 0x81;
+  constexpr uint8_t NCI_TYPE_F_LISTEN  = 0x82;
+
+  uint8_t removedConfigs = 0;
+  for (auto it = RF_DISC_CMD.begin(); it < RF_DISC_CMD.end() - 1;) {
+    uint8_t tech = *it;
+    bool isListenMode = (tech == NCI_TYPE_A_LISTEN ||
+                         tech == NCI_TYPE_B_LISTEN ||
+                         tech == NCI_TYPE_F_LISTEN);
+
+    if (isListenMode) {
+      it = RF_DISC_CMD.erase(it, it + 2);  // remove pair
+      removedConfigs++;
+    } else {
+      it += 2;  // move to next entry
+    }
+  }
+
+  // Update number of configurations
+  RF_DISC_CMD[NCI_RF_DISC_NUM_OF_CONFIG_INDEX] -= removedConfigs;
+  RF_DISC_CMD[NCI_RF_DISC_PAYLOAD_LEN_INDEX] = RF_DISC_CMD.size() - 3;
+
+  return RF_DISC_CMD;  // return modified vector
+}
+
 NFCSTATUS DualAntenna::sendRfDiscCmd() {
+  constexpr uint8_t NCI_RF_PAYLOAD_LEN = 2;
   constexpr uint8_t NCI_QTAG_PAYLOAD_LEN = 2;
   constexpr uint8_t NCI_RF_DISC_PAYLOAD_LEN_INDEX = 2;
   constexpr uint8_t NCI_RF_DISC_NUM_OF_CONFIG_INDEX = 3;
@@ -368,14 +399,14 @@ NFCSTATUS DualAntenna::sendRfDiscCmd() {
       mDualAntennaContext.mAntTwoConfig != 0x00) {
     if ((mDualAntennaContext.mAntOneConfig &
          mDualAntennaContext.mAntTwoConfig) == DUAL_ANTENNA_NFC_PASSIVE_Q) {
-      return PlatformAbstractionLayer::getInstance()->palenQueueWrite(
-          RF_DISC_CMD_ONLY_QTAG.data(), RF_DISC_CMD_ONLY_QTAG.size());
+      RF_DISC_CMD = RF_DISC_CMD_ONLY_QTAG;
+      goto send_command;
     }
   } else {
     if ((mDualAntennaContext.mAntOneConfig |
          mDualAntennaContext.mAntTwoConfig) == DUAL_ANTENNA_NFC_PASSIVE_Q) {
-      return PlatformAbstractionLayer::getInstance()->palenQueueWrite(
-          RF_DISC_CMD_ONLY_QTAG.data(), RF_DISC_CMD_ONLY_QTAG.size());
+      RF_DISC_CMD = RF_DISC_CMD_ONLY_QTAG;
+      goto send_command;
     }
   }
   if (mDualAntennaContext.mAppendQpoll) {
@@ -383,6 +414,15 @@ NFCSTATUS DualAntenna::sendRfDiscCmd() {
     RF_DISC_CMD[NCI_RF_DISC_PAYLOAD_LEN_INDEX] += NCI_QTAG_PAYLOAD_LEN;
     RF_DISC_CMD.push_back(NCI_TECH_Q_POLL_VAL);
     RF_DISC_CMD.push_back(QTAG_ENABLE_OID);
+  }
+
+send_command:
+  if (PlatformAbstractionLayer::getInstance()->palGetObserveModeStatus()) {
+    RF_DISC_CMD[NCI_RF_DISC_NUM_OF_CONFIG_INDEX]++;
+    RF_DISC_CMD[NCI_RF_DISC_PAYLOAD_LEN_INDEX] += NCI_RF_PAYLOAD_LEN;
+    RF_DISC_CMD.push_back(0xFF);
+    RF_DISC_CMD.push_back(0x01);
+    RF_DISC_CMD = removeListenModes(RF_DISC_CMD);
   }
   return PlatformAbstractionLayer::getInstance()->palenQueueWrite(
       RF_DISC_CMD.data(), RF_DISC_CMD.size());
