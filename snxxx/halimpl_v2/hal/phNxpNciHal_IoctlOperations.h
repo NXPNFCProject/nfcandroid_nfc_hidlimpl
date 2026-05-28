@@ -16,9 +16,7 @@
 
 #include <string>
 #include <vector>
-
 #include "phNfcStatus.h"
-#include "phNxpConfig.h"
 #include "phNxpLog.h"
 
 /******************************************************************************

@@ -26,7 +26,7 @@ cc_defaults {
     srcs: [
         "src/api/NfcExtensionApi.cpp",
         "src/common/log/phNxpLog.cc",
-        "src/common/utils/phNxpConfig.cc",
+        "src/common/utils/phNxpConfigExt.cc",
         "src/common/utils/config.cc",
         "src/core/controller/NfcExtensionController.cpp",
         "src/core/nci/NciCommandBuilder.cpp",

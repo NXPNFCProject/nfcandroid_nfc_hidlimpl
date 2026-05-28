@@ -19,12 +19,12 @@
 #ifndef PLATFORM_ABSTRACTION_LAYER_H
 #define PLATFORM_ABSTRACTION_LAYER_H
 
-#include "PlatformBase.h"
-#include "PlatformExtension.h"
-#include "phNxpConfig.h"
-#include "vector"
 #include <map>
 #include <string>
+#include "PlatformBase.h"
+#include "PlatformExtension.h"
+#include "phNxpConfigExt.h"
+#include "vector"
 
 class PlatformAbstractionLayer : public PlatformBase {
 public:

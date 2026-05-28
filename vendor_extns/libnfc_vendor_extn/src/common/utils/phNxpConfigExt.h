@@ -36,8 +36,8 @@
  *
  ******************************************************************************/
 
-#ifndef __CONFIG_H
-#define __CONFIG_H
+#ifndef __CONFIG_EXT_H
+#define __CONFIG_EXT_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -89,7 +89,7 @@ void setNxpFwConfigPath();
 #define NAME_OFFHOST_ROUTE_UICC "OFFHOST_ROUTE_UICC"
 #define NAME_NXP_EXTENDED_FIELD_DETECT_MODE "NXP_EXTENDED_FIELD_DETECT_MODE"
 #define NAME_MIFARE_READER_ENABLE "MIFARE_READER_ENABLE"
-#define NAME_NXP_AUTOCARD_PUT_APPLET_STATUS_BACK                               \
+#define NAME_NXP_AUTOCARD_PUT_APPLET_STATUS_BACK \
   "NXP_AUTOCARD_PUT_APPLET_STATUS_BACK"
 #define NAME_NXP_AUTOCARD_SELECTION_PHONE_OFF "NXP_AUTOCARD_SELECTION_PHONE_OFF"
 #define NAME_NXP_AUTOCARD_COUNTERS "NXP_AUTOCARD_COUNTERS"
@@ -106,4 +106,4 @@ void setNxpFwConfigPath();
 #define NAME_NXP_AUTO_OBSERVE_MODE_SUSPEND_CONFIG \
   "NXP_AUTO_OBSERVE_MODE_SUSPEND_CONFIG"
 
-#endif // __CONFIG_H
+#endif  // __CONFIG_EXT_H

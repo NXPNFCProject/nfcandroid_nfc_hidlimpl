@@ -17,12 +17,12 @@
  **/
 
 #include "NciStateMonitor.h"
-#include "NfceeStateMonitor.h"
-#include "NfcExtensionConstants.h"
-#include "RfStateMonitor.h"
-#include "phNxpConfig.h"
 #include <phNxpLog.h>
 #include <stdio.h>
+#include "NfcExtensionConstants.h"
+#include "NfceeStateMonitor.h"
+#include "RfStateMonitor.h"
+#include "phNxpConfigExt.h"
 
 using std::vector;
 std::unique_ptr<NciStateMonitor> NciStateMonitor::instance = nullptr;
