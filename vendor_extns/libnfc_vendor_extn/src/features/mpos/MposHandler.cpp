@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2024-2025 NXP
+ *  Copyright 2024-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@ void MposHandler::onFeatureEnd() {
 
 NFCSTATUS MposHandler::handleVendorNciMessage(uint16_t dataLen,
                                               const uint8_t *pData) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "MposHandler::%s Enter dataLen:%d",
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "MposHandler::%s Enter dataLen:%d",
                  __func__, dataLen);
   uint8_t resp[] = {NCI_PROP_RSP_VAL, NCI_ROW_PROP_OID_VAL, PAYLOAD_TWO_LEN,
                     MPOS_READER_SET_DMODE_SUB_GIDOID_VAL, RESPONSE_STATUS_FAILED};
@@ -100,6 +100,8 @@ NFCSTATUS MposHandler::handleVendorNciMessage(uint16_t dataLen,
     }
     PlatformAbstractionLayer::getInstance()->palSendNfcDataCallback(
         sizeof(resp), resp);
+    NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                   "MposHandler::%s handled Vendor Nci Message", __func__);
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
   } else if ((pData[SUB_GID_OID_INDEX] ==
               MPOS_READER_SET_DMODE_SUB_GIDOID_VAL) &&
@@ -118,6 +120,8 @@ NFCSTATUS MposHandler::handleVendorNciMessage(uint16_t dataLen,
     }
     PlatformAbstractionLayer::getInstance()->palSendNfcDataCallback(
         sizeof(resp), resp);
+    NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                   "MposHandler::%s handled Vendor Nci Message", __func__);
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
   } else {
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
@@ -125,7 +129,7 @@ NFCSTATUS MposHandler::handleVendorNciMessage(uint16_t dataLen,
 }
 
 NFCSTATUS MposHandler::handleVendorNciRspNtf(uint16_t dataLen, uint8_t *pData) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN,
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN,
                  "MposHandler::%s "
                  "Enter dataLen:%d",
                  __func__, dataLen);
@@ -136,7 +140,7 @@ NFCSTATUS MposHandler::handleVendorNciRspNtf(uint16_t dataLen, uint8_t *pData) {
 }
 
 void MposHandler::onWriteComplete(uint8_t status) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter status:%d", __func__,
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter status:%d", __func__,
                  status);
   NfcExtensionWriter::getInstance()->onWriteComplete(status);
 }

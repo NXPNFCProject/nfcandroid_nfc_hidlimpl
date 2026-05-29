@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2024-2025 NXP
+ *  Copyright 2024-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ public:
    *
    */
   virtual NFCSTATUS handleHalEvent(uint8_t errorCode) {
-    NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN,
+    NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN,
                    "IEventHandler::%s Enter errorCode:%d", __func__, errorCode);
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
   }
@@ -103,7 +103,7 @@ public:
    *
    */
   virtual void onWriteComplete(uint8_t status) {
-    NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN,
+    NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN,
                    "IEventHandler::%s Enter status:%d", __func__, status);
   }
 
@@ -135,7 +135,7 @@ public:
    *
    */
   virtual void onWriteRspTimeout() {
-    NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "IEventHandler::%s Enter",
+    NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN, "IEventHandler::%s Enter",
                    __func__);
   }
 
@@ -166,7 +166,7 @@ public:
    * NFCSTATUS_EXTN_FEATURE_FAILURE.
    */
   virtual NFCSTATUS processExtnWrite(uint16_t *dataLen, uint8_t *pData) {
-    NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "IEventHandler::%s Enter",
+    NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "IEventHandler::%s Enter",
                    __func__);
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
   }

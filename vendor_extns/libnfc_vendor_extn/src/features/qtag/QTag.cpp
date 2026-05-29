@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2024-2025 NXP
+ *  Copyright 2024-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -83,6 +83,8 @@ NFCSTATUS QTag::processIntActivatedNtf(vector<uint8_t> rfIntfNtf) {
       sizeof(QTAG_DETECTION_NTF_SUCCESS), QTAG_DETECTION_NTF_SUCCESS);
   PlatformAbstractionLayer::getInstance()->palSendNfcDataCallback(
       rfIntfNtf.size(), rfIntfNtf.data());
+  NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN, "QTag::%s handled NciRspNtf",
+                 __func__);
   return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 }
 

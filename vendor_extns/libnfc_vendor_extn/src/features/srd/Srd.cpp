@@ -162,12 +162,14 @@ bool Srd::notifySRDStopNtfEvt(const std::vector<uint8_t> &pRspHciEvtData) {
 }
 
 NFCSTATUS Srd::processSrdNciRspNtf(std::vector<uint8_t> &pRspBuffer) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s: enter mState = %d", __func__,
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "%s: enter mState = %d", __func__,
                  mState);
   NFCSTATUS handleRespStatus = NFCSTATUS_EXTN_FEATURE_FAILURE;
   /* need to support only T2T Protocol from multi-protocol tag in SRD Mode */
   if (checkAndHandleRfDiscNtf(pRspBuffer)) {
     /* skip sending ntf to upper layer */
+    NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN, "Srd::%s: handled NciRspNtf",
+                   __func__);
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
   }
   const bool status = false;
@@ -258,6 +260,10 @@ NFCSTATUS Srd::processSrdNciRspNtf(std::vector<uint8_t> &pRspBuffer) {
     NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN, "%s : Unknown SRD state %d",
                    __func__, mState);
     break;
+  }
+  if (handleRespStatus == NFCSTATUS_EXTN_FEATURE_SUCCESS) {
+    NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN, "Srd::%s: handled NciRspNtf",
+                   __func__);
   }
   return handleRespStatus;
 }

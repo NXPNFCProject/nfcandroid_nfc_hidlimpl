@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2024-2025 NXP
+ *  Copyright 2024-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@ NFCSTATUS ProprietaryExtn::handleVendorNciMsg(uint16_t dataLen,
 
 NFCSTATUS ProprietaryExtn::handleVendorNciRspNtf(uint16_t dataLen,
                                                  uint8_t *pData) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter dataLen:%d", __func__,
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter dataLen:%d", __func__,
                  dataLen);
   if (fp_prop_extn_snd_vnd_rsp_ntf != nullptr) {
     return fp_prop_extn_snd_vnd_rsp_ntf(dataLen, pData);
@@ -107,7 +107,7 @@ void ProprietaryExtn::mapGidOidToPropRspNtf(uint16_t dataLen, uint8_t *pData) {
 }
 
 void ProprietaryExtn::onExtWriteComplete(uint8_t status) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter status:%d", __func__,
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter status:%d", __func__,
                  status);
   if (fp_prop_extn_on_write_complete != nullptr) {
     return fp_prop_extn_on_write_complete(status);
@@ -115,7 +115,7 @@ void ProprietaryExtn::onExtWriteComplete(uint8_t status) {
 }
 
 NFCSTATUS ProprietaryExtn::handleHalEvent(uint8_t event) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter event:%d", __func__,
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter event:%d", __func__,
                  event);
   if (fp_prop_extn_handle_hal_event != nullptr) {
     return fp_prop_extn_handle_hal_event(event);
@@ -132,7 +132,7 @@ void ProprietaryExtn::updateFwDnldStatus(uint8_t status) {
 }
 
 NFCSTATUS ProprietaryExtn::processExtnWrite(uint16_t *dataLen, uint8_t *pData) {
-  NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter dataLen:%u", __func__,
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter dataLen:%u", __func__,
                  *dataLen);
   if (fp_prop_extn_process_extn_write != nullptr) {
     return fp_prop_extn_process_extn_write(dataLen, pData);

@@ -65,7 +65,7 @@ bool NxpNTag::isNtagSupported() {
   uint32_t mFwVer = 0;
 
   if (PlatformAbstractionLayer::getInstance()->palGetChipType() != sn300u) {
-    NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN,
+    NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN,
                    "NxpNTag::%s Chip will not support", __func__);
     return false;
   }
@@ -717,7 +717,7 @@ NFCSTATUS NxpNTag::handleNTagNciNtf(uint8_t *pData, uint16_t dataLen) {
 }
 
 NFCSTATUS NxpNTag::handleVendorNciRspNtf(uint16_t dataLen, uint8_t *pData) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "NxpNTag::%s Enter", __func__);
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "NxpNTag::%s Enter", __func__);
   constexpr uint8_t PWR_SUB_STATE_CMD_PAYLOAD_LEN = 0x01;
 
   if (!isNtagSupported())
@@ -730,7 +730,9 @@ NFCSTATUS NxpNTag::handleVendorNciRspNtf(uint16_t dataLen, uint8_t *pData) {
       (pData[NCI_MSG_LEN_INDEX] == PAYLOAD_TWO_LEN) &&
       (pData[3] == NCI_PROP_LPCD_WOUT_POLL_SET_CMD)) {
         mNtagControl.isLpcdCmdSent = false;
-    return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+        NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                       "NxpNTag::%s handled NciRspNtf", __func__);
+        return NFCSTATUS_EXTN_FEATURE_SUCCESS;
   }
 
   // sending LPCD cmd afetr receiving deactivate to idle/disc ntf during screen
@@ -808,11 +810,16 @@ NFCSTATUS NxpNTag::handleVendorNciRspNtf(uint16_t dataLen, uint8_t *pData) {
 
   NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "NxpNTag::%s Exit status:%d",
                  __func__, status);
+
+  if (status == NFCSTATUS_EXTN_FEATURE_SUCCESS) {
+    NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN, "NxpNTag::%s handled NciRspNtf",
+                   __func__);
+  }
   return status;
 }
 
 NFCSTATUS NxpNTag::handleVendorNciMessage(uint16_t dataLen, uint8_t *pData) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "NxpNTag::%s Enter", __func__);
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "NxpNTag::%s Enter", __func__);
 
   if (!isNtagSupported())
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
@@ -847,6 +854,8 @@ NFCSTATUS NxpNTag::handleVendorNciMessage(uint16_t dataLen, uint8_t *pData) {
         PlatformAbstractionLayer::getInstance()->palSendNfcDataCallback(
             sizeof(CONN_DISC_STATUS), CONN_DISC_STATUS);
         updateState(NTagState::NTAG_STATE_SCREEN_OFF);
+        NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                       "NxpNTag::%s handled Vendor Nci Message", __func__);
         return NFCSTATUS_EXTN_FEATURE_SUCCESS;
       } else {
         // Entering screen on state, and resetting LPCD by sending LPCD WoPoll
@@ -885,6 +894,9 @@ NFCSTATUS NxpNTag::handleVendorNciMessage(uint16_t dataLen, uint8_t *pData) {
               mNtagControl.mCurrentDiscCmd.size());
       if (status != NFCSTATUS_SUCCESS)
         return NFCSTATUS_EXTN_FEATURE_FAILURE;
+
+      NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                     "NxpNTag::%s handled Vendor Nci Message", __func__);
       return NFCSTATUS_EXTN_FEATURE_SUCCESS;
     }
   }
@@ -895,8 +907,11 @@ NFCSTATUS NxpNTag::handleVendorNciMessage(uint16_t dataLen, uint8_t *pData) {
       (pData[NCI_MSG_LEN_INDEX] == PAYLOAD_TWO_LEN) &&
       ((pData[NCI_MSG_INDEX_FOR_FEATURE] & SUB_GID_MASK) ==
        QTAG_FEATURE_SUB_GID)) {
-    if (setNTagMode(dataLen, pData) == NFCSTATUS_EXTN_FEATURE_SUCCESS)
+    if (setNTagMode(dataLen, pData) == NFCSTATUS_EXTN_FEATURE_SUCCESS) {
+      NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                     "NxpNTag::%s handled Vendor Nci Message", __func__);
       return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+    }
   }
 
   if (!mNtagControl.mNtagEnableRequest)
@@ -907,8 +922,11 @@ NFCSTATUS NxpNTag::handleVendorNciMessage(uint16_t dataLen, uint8_t *pData) {
       ((pData[NCI_OID_INDEX] == NCI_MSG_RF_DISCOVER) ||
        (pData[NCI_OID_INDEX] == NCI_MSG_RF_DEACTIVATE))) {
     std::vector<uint8_t> rfDiscCmd(pData, pData + dataLen);
-    if (NFCSTATUS_EXTN_FEATURE_SUCCESS == processRfDiscCmd(rfDiscCmd))
+    if (NFCSTATUS_EXTN_FEATURE_SUCCESS == processRfDiscCmd(rfDiscCmd)) {
+      NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                     "NxpNTag::%s handled Vendor Nci Message", __func__);
       return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+    }
   }
   return NFCSTATUS_EXTN_FEATURE_FAILURE;
 }

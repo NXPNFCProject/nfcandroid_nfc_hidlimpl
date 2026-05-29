@@ -215,7 +215,12 @@ NFCSTATUS Mpos::processMposNciRspNtf(const std::vector<uint8_t> &pData) {
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
   }
   updateState(state);
-  return processMposEvent(state);
+  NFCSTATUS status = processMposEvent(state);
+  if (status == NFCSTATUS_EXTN_FEATURE_SUCCESS) {
+    NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN, "Mpos::%s: handled NciRspNtf",
+                   __func__)
+  }
+  return status;
 }
 
 uint8_t Mpos::parseNfceeDiscReqNtf(const std::vector<uint8_t> &pData) {

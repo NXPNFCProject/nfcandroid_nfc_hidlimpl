@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2025 NXP
+ *  Copyright 2025-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -56,13 +56,15 @@ void NfcFirmwareInfo::fetchAndSendFwVersionNtf() {
 
 NFCSTATUS NfcFirmwareInfo::handleVendorNciMessage(uint16_t dataLen,
                                             const uint8_t *pData) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "NfcFirmwareInfo %s Enter dataLen:%d",
-                 __func__, dataLen);
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN,
+                 "NfcFirmwareInfo %s Enter dataLen:%d", __func__, dataLen);
   static constexpr uint8_t FW_VERSION_OID = 0x0F;
   const uint8_t subOid = pData[SUB_GID_OID_INDEX] & 0x0F;
 
   if (subOid == FW_VERSION_OID) {
     fetchAndSendFwVersionNtf();
+    NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                   "NfcFirmwareInfo::%s handled Vendor Nci Message", __func__);
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
   }
   return NFCSTATUS_EXTN_FEATURE_FAILURE;

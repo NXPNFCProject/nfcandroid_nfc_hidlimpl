@@ -60,10 +60,13 @@ NFCSTATUS DualAntenna::handleVendorNciMessage(uint16_t dataLen,
 
   if ((mDualAntennaContext.mDualAntennaFeature == true) &&
     (pData[NCI_GID_INDEX] == 0x21 && pData[NCI_OID_INDEX] == 0x03)) {
-      if (NFCSTATUS_SUCCESS == sendRfDiscCmd())
-        return NFCSTATUS_EXTN_FEATURE_SUCCESS;
-      else
-        return NFCSTATUS_EXTN_FEATURE_FAILURE;
+    if (NFCSTATUS_SUCCESS == sendRfDiscCmd()) {
+      NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                     "DualAntenna::%s handled Vendor Nci Message", __func__);
+      return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+    } else {
+      return NFCSTATUS_EXTN_FEATURE_FAILURE;
+    }
   }
 
   if ((dataLen < CMD_MIN_DATA_LENGTH) ||
@@ -128,6 +131,8 @@ NFCSTATUS DualAntenna::handleVendorNciMessage(uint16_t dataLen,
 
     PlatformAbstractionLayer::getInstance()->palSendNfcDataCallback(
       sizeof(GET_DISCOVERY_TECH_STATUS_RSP), GET_DISCOVERY_TECH_STATUS_RSP);
+    NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                   "DualAntenna::%s handled Vendor Nci Message", __func__);
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
   }
 
@@ -140,6 +145,8 @@ NFCSTATUS DualAntenna::handleVendorNciMessage(uint16_t dataLen,
 
     PlatformAbstractionLayer::getInstance()->palSendNfcDataCallback(
       sizeof(GET_READER_MODE_STATUS_RSP), GET_READER_MODE_STATUS_RSP);
+    NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                   "DualAntenna::%s handled Vendor Nci Message", __func__);
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
   }
 
@@ -158,6 +165,8 @@ NFCSTATUS DualAntenna::handleVendorNciMessage(uint16_t dataLen,
   if (status != NFCSTATUS_SUCCESS)
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
 
+  NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                 "DualAntenna::%s handled Vendor Nci Message", __func__);
   return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 }
 
@@ -240,6 +249,8 @@ NFCSTATUS DualAntenna::handleVendorNciRspNtf(uint16_t dataLen, uint8_t *pData) {
     mDualAntennaContext.mDualAntennaRequest = false;
     mDualAntennaContext.mDualAntennaSetting = false;
     mDualAntennaContext.mAntennaFeature = 0x00;
+    NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                   "DualAntenna::%s handled NciRspNtf", __func__);
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
   }
   case NCI_MSG_CORE_SET_CONFIG: {
@@ -253,6 +264,8 @@ NFCSTATUS DualAntenna::handleVendorNciRspNtf(uint16_t dataLen, uint8_t *pData) {
   }
   }
 
+  NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN, "DualAntenna::%s handled NciRspNtf",
+                 __func__);
   return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 }
 
@@ -438,5 +451,9 @@ NFCSTATUS DualAntenna::sendConDiscParamCmd() {
       cmd_con_disc_param.data(), cmd_con_disc_param.size());
   if (status != NFCSTATUS_SUCCESS)
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
+
+  NXPLOG_EXTNS_I(
+      NXPLOG_ITEM_NXP_GEN_EXTN,
+      "DualAntenna::handleVendorNciMessage handled Vendor Nci Message");
   return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 }

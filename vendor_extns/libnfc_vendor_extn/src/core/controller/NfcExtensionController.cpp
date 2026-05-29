@@ -107,7 +107,7 @@ void NfcExtensionController::init() {
 
 NFCSTATUS NfcExtensionController::handleVendorNciMessage(uint16_t dataLen,
                                                          const uint8_t *pData) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter dataLen:%d", __func__,
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter dataLen:%d", __func__,
                  dataLen);
   auto subGid =
       HandlerType((pData[SUB_GID_OID_INDEX] & SUB_GID_MASK) >> NCI_SHIFT_BY_4);
@@ -127,7 +127,7 @@ NFCSTATUS NfcExtensionController::handleVendorNciMessage(uint16_t dataLen,
 
 NFCSTATUS NfcExtensionController::handleVendorNciRspNtf(uint16_t dataLen,
                                                         uint8_t *pData) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN,
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN,
                  "NfcExtensionController::%s Enter dataLen:%d", __func__,
                  dataLen);
   NFCSTATUS status = NciStateMonitor::getInstance()->handleVendorNciRspNtf(dataLen, pData);
@@ -162,7 +162,7 @@ NFCSTATUS NfcExtensionController::handleVendorNciRspNtf(uint16_t dataLen,
 }
 
 NFCSTATUS NfcExtensionController::onHandleHalEvent(uint8_t event) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter event:%d", __func__,
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter event:%d", __func__,
                  event);
   NFCSTATUS status = NciStateMonitor::getInstance()->handleHalEvent(event);
   if (status == NFCSTATUS_EXTN_FEATURE_SUCCESS) {
@@ -172,7 +172,7 @@ NFCSTATUS NfcExtensionController::onHandleHalEvent(uint8_t event) {
 }
 
 void NfcExtensionController::onWriteCompletion(uint8_t status) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter status:%d", __func__,
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter status:%d", __func__,
                  status);
   mIEventHandler->onWriteComplete(status);
 }
@@ -208,7 +208,7 @@ void NfcExtensionController::writeRspTimedout() {
 
 NFCSTATUS NfcExtensionController::processExtnWrite(uint16_t *dataLen,
                                                    uint8_t *pData) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "NfcExtensionController %s Enter",
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "NfcExtensionController %s Enter",
                  __func__);
   if (mIEventHandler->processExtnWrite(dataLen, pData) == NFCSTATUS_EXTN_FEATURE_SUCCESS) {
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;

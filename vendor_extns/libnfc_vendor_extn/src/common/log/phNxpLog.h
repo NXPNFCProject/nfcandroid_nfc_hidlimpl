@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2014, 2022-2025 NXP
+ * Copyright 2010-2014, 2022-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ extern bool nfc_debug_enabled;
 #define NXPLOG_LOG_WARN_LOGLEVEL 0x02
 #define NXPLOG_LOG_INFO_LOGLEVEL 0x03
 #define NXPLOG_LOG_DEBUG_LOGLEVEL 0x04
+#define NXPLOG_LOG_VERBOSE_LOGLEVEL 0x05
 /* ####################### Set the default logging level for EVERY COMPONENT
  * here ########################## :END: */
 
@@ -76,6 +77,12 @@ static const char *NXPLOG_ITEM_NXP_GEN_EXTN = "NxpGenExtn";
  */
 /* Logging APIs used by NxpExtns module */
 #if (ENABLE_EXTNS_TRACES == TRUE)
+#define NXPLOG_EXTNS_V(COMP, ...)                                    \
+  {                                                                  \
+    if ((nfc_debug_enabled) ||                                       \
+        (gLog_level.extns_log_level >= NXPLOG_LOG_VERBOSE_LOGLEVEL)) \
+      LOG_PRI(ANDROID_LOG_VERBOSE, COMP, __VA_ARGS__);               \
+  }
 #define NXPLOG_EXTNS_D(COMP, ...)                                              \
   {                                                                            \
     if ((nfc_debug_enabled) ||                                                 \
@@ -104,6 +111,7 @@ static const char *NXPLOG_ITEM_NXP_GEN_EXTN = "NxpGenExtn";
 #define NXPLOG_EXTNS_W(...)
 #define NXPLOG_EXTNS_E(...)
 #define NXPLOG_EXTNS_I(...)
+#define NXPLOG_EXTNS_V(...)
 #endif /* Logging APIs used by NxpExtns module */
 
 #ifdef NXP_VRBS_REQ

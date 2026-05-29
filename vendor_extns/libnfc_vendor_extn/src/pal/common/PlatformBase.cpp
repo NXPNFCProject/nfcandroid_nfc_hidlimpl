@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2025 NXP
+ *  Copyright 2025-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ static tNFC_chipType determineChipType(uint8_t *msg,
 
 void PlatformBase::palMemCpy(void *pDest, size_t destSize, const void *pSrc,
                              size_t srcSize) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter srcSize:%zu, destSize:%zu",
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter srcSize:%zu, destSize:%zu",
                  __func__, srcSize, destSize);
   if (srcSize > destSize) {
     srcSize = destSize; // Truncate to avoid over flow

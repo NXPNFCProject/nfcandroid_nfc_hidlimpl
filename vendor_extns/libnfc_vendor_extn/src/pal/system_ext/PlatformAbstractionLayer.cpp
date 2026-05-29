@@ -115,7 +115,7 @@ void PlatformAbstractionLayer::getNxpNfcHal() {
 
 NFCSTATUS PlatformAbstractionLayer::palenQueueWrite(const uint8_t *pBuffer,
                                                     uint16_t wLength) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter wLength:%d", __func__,
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter wLength:%d", __func__,
                  wLength);
   if (!mWriterThread.Post(pBuffer, wLength)) {
     NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN,

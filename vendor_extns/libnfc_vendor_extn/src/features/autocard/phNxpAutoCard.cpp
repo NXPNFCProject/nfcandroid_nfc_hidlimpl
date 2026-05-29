@@ -508,7 +508,7 @@ void AutoCard::phNxpNciHal_getAutoCardConfig() {
 }
 
 NFCSTATUS AutoCard::handleVendorNciRspNtf(uint16_t dataLen, uint8_t *pData) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "AutoCard:: %s Enter ", __func__);
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "AutoCard:: %s Enter ", __func__);
 
   if (AutoCard::getInstance()->phNxpNciHal_handleHciAutoCardRsp(
           pData, dataLen) == NFCSTATUS_SUCCESS) {
@@ -535,6 +535,8 @@ NFCSTATUS AutoCard::handleVendorNciRspNtf(uint16_t dataLen, uint8_t *pData) {
                        pData + dataLen);
     PlatformAbstractionLayer::getInstance()->palSendNfcDataCallback(
         autocardNtf.size(), &autocardNtf[0]);
+    NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN, "AutoCard::%s handled NciRspNtf",
+                   __func__);
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
   }
   const uint8_t status = (dataLen > AUTOCARD_STATUS_INDEX)
@@ -561,11 +563,13 @@ NFCSTATUS AutoCard::handleVendorNciRspNtf(uint16_t dataLen, uint8_t *pData) {
   }
   PlatformAbstractionLayer::getInstance()->palSendNfcDataCallback(
       autocardRsp.size(), &autocardRsp[0]);
+  NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN, "AutoCard::%s handled NciRspNtf",
+                 __func__);
   return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 }
 
 NFCSTATUS AutoCard::handleVendorNciMessage(uint16_t dataLen, uint8_t *pData) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "AutoCard::%s Enter", __func__);
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "AutoCard::%s Enter", __func__);
 
   if ((dataLen <= NCI_MSG_INDEX_FEATURE_VALUE) ||
       (pData[NCI_GID_INDEX] != (NCI_MT_CMD | NCI_GID_PROP)) ||
@@ -630,6 +634,8 @@ NFCSTATUS AutoCard::handleVendorNciMessage(uint16_t dataLen, uint8_t *pData) {
             "%s: AutoCard is enabled in NFCC and skipping the set counters "
             "command.",
             __func__);
+        NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                       "AutoCard::%s handled Vendor Nci Message", __func__);
         return NFCSTATUS_EXTN_FEATURE_SUCCESS;
       }
       autocardCmd[NCI_MSG_INDEX_FOR_FEATURE] = AUTOCARD_SET_COUNTERS_SUB_OID;
@@ -668,5 +674,7 @@ NFCSTATUS AutoCard::handleVendorNciMessage(uint16_t dataLen, uint8_t *pData) {
         autocardRsp.size(), autocardRsp.data());
   }
 
+  NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                 "AutoCard::%s handled Vendor Nci Message", __func__);
   return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 }

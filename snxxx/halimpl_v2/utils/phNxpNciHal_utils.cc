@@ -665,8 +665,6 @@ void phNxpNciHal_emergency_recovery(uint8_t status) {
 *******************************************************************************/
 void phNxpNciHal_Memcpy(void* pDest, size_t destSize, const void* pSrc,
                         size_t srcSize) {
-  NXPLOG_NCIHAL_D("%s Enter srcSize:%zu, destSize:%zu", __func__, srcSize,
-                  destSize);
   if (srcSize > destSize) {
     srcSize = destSize;  // Truncate to avoid over flow
     NXPLOG_NCIHAL_E("%s Truncated length to avoid over flow ", __func__);

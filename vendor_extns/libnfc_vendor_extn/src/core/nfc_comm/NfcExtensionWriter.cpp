@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2024-2025 NXP
+ *  Copyright 2024-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -82,7 +82,7 @@ void NfcExtensionWriter::requestHalControl() {
 }
 
 void NfcExtensionWriter::writeRspTimeoutCbk(union sigval val) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter", __func__);
+  NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter", __func__);
   NfcExtensionWriter *writer = static_cast<NfcExtensionWriter *>(val.sival_ptr);
   if (writer) {
     writer->mWriteRspTimer.kill(&writer->mWriteRspTimerId);
@@ -123,7 +123,7 @@ NFCSTATUS NfcExtensionWriter::write(const uint8_t *pBuffer, uint16_t wLength,
 }
 
 void NfcExtensionWriter::onWriteComplete(uint8_t status) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter status = 0x%x", __func__,
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter status = 0x%x", __func__,
                  status);
 }
 
@@ -136,7 +136,7 @@ void NfcExtensionWriter::stopWriteRspTimer(const uint8_t *pRspBuffer,
     const uint8_t rspGid = (pRspBuffer[NCI_GID_INDEX] & EXT_NCI_GID_MASK);
     const uint8_t rspOid = (pRspBuffer[NCI_OID_INDEX] & EXT_NCI_OID_MASK);
 
-    NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN,
+    NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN,
                    "%s Enter cmdGid:%d, cmdOid:%d, rspGid:%d, rspOid:%d,",
                    __func__, cmdGid, cmdOid, rspGid, rspOid);
     if (cmdGid == rspGid && cmdOid == rspOid && mWriteRspTimerId != 0)

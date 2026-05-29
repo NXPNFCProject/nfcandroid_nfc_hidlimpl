@@ -44,7 +44,7 @@ RfConfigManager *RfConfigManager::getInstance() {
 }
 
 NFCSTATUS RfConfigManager::processRsp(vector<uint8_t> rfConfigRsp) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "RfConfigManager::%s: enter",
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "RfConfigManager::%s: enter",
                  __func__);
   NFCSTATUS rspStatus = NFCSTATUS_EXTN_FEATURE_FAILURE;
 
@@ -64,6 +64,8 @@ NFCSTATUS RfConfigManager::processRsp(vector<uint8_t> rfConfigRsp) {
                         rfConfigRsp.end());
       mCmdRspCv.signal();
       rspStatus = NFCSTATUS_EXTN_FEATURE_SUCCESS;
+      NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                     "RfConfigManager::%s: handled NciRspNtf", __func__);
     }
   }
   return rspStatus;

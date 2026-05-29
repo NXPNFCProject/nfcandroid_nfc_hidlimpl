@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2025 NXP
+ *  Copyright 2025-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ void LxDebugHandler::onFeatureEnd() {
 
 NFCSTATUS LxDebugHandler::handleVendorNciMessage(uint16_t dataLen,
                                                  const uint8_t *pData) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN,
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN,
                  "LxDebugHandler::%s Enter dataLen:%d", __func__, dataLen);
   HandlerType currentHandleType;
   NFCSTATUS status = NFCSTATUS_EXTN_FEATURE_FAILURE;
@@ -90,12 +90,16 @@ NFCSTATUS LxDebugHandler::handleVendorNciMessage(uint16_t dataLen,
     PlatformAbstractionLayer::getInstance()->palSendNfcDataCallback(
         response.size(), response.data());
   }
+  if (status == NFCSTATUS_EXTN_FEATURE_SUCCESS) {
+    NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                   "LxDebugHandler::%s handled Vendor Nci Message", __func__);
+  }
   return status;
 }
 
 NFCSTATUS LxDebugHandler::handleVendorNciRspNtf(uint16_t dataLen,
                                                 uint8_t *pData) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN,
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN,
                  "LxDebugHandler::%s "
                  "Enter dataLen:%d",
                  __func__, dataLen);
@@ -103,7 +107,7 @@ NFCSTATUS LxDebugHandler::handleVendorNciRspNtf(uint16_t dataLen,
 }
 
 NFCSTATUS LxDebugHandler::processExtnWrite(uint16_t *dataLen, uint8_t *pData) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "LxDebugHandler %s Enter ",
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "LxDebugHandler %s Enter ",
                  __func__);
 
   if (mLxDebugMngr->isEFDMStarted()) {

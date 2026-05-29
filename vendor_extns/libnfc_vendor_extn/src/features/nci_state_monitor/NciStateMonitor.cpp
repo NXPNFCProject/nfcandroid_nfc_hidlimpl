@@ -52,8 +52,8 @@ vector<uint8_t> NciStateMonitor::getDefaultRFDiscMapCmd() {
 
 NFCSTATUS NciStateMonitor::handleVendorNciMessage(uint16_t dataLen,
                                                const uint8_t *pData) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "NciStateMonitor %s Enter dataLen:%d",
-                 __func__, dataLen);
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN,
+                 "NciStateMonitor %s Enter dataLen:%d", __func__, dataLen);
   return NFCSTATUS_EXTN_FEATURE_FAILURE;
 }
 
@@ -152,6 +152,8 @@ NFCSTATUS NciStateMonitor::handleVendorNciRspNtf(uint16_t dataLen,
     mSramCmdRspBuffer.clear();
     mSramCmdRspBuffer.assign(nciRspNtf.begin(), nciRspNtf.end());
     mSramCmdRspCondVar.signal();
+    NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                   "NciStateMonitor %s handled NciRspNtf", __func__);
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
   }
 
@@ -197,12 +199,17 @@ NFCSTATUS NciStateMonitor::handleVendorNciRspNtf(uint16_t dataLen,
     NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN,
                    "NciStateMonitor %s dataLen mismatch", __func__);
   }
+  if (status == NFCSTATUS_EXTN_FEATURE_SUCCESS) {
+    NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                   "NciStateMonitor %s handled NciRspNtf", __func__);
+  }
   return status;
 }
 
 NFCSTATUS NciStateMonitor::processNciCmd(uint16_t dataLen,
                                          const uint8_t *pData) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "NciStateMonitor %s Enter", __func__);
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "NciStateMonitor %s Enter",
+                 __func__);
   if (pData[0] == NCI_MT_DATA_UNCHAINED || pData[0] == NCI_MT_DATA_CHAINED) {
     NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN,
                    "NciStateMonitor %s, data packet received, skip processing",
@@ -297,7 +304,7 @@ void NciStateMonitor::sendSramConfigFlashCmd() {
 }
 
 NFCSTATUS NciStateMonitor::handleHalEvent(uint8_t event) {
-  NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN, "NciStateMonitor %s Enter",
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "NciStateMonitor %s Enter",
                  __func__);
   if (event == EXT_NFC_PRE_DISCOVER) {
     tNFC_chipType chipType =

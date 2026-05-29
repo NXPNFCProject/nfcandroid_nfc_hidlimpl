@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2025 NXP
+ *  Copyright 2025-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -166,12 +166,15 @@ NFCSTATUS TransitConfigHandler::handleVendorNciMessage(uint16_t dataLen,
           RF_REGISTER_NCI_VENDOR_RSP_FAILURE);
     }
   }
+  NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                 "TransitConfigHandler::%s handled Vendor Nci Message",
+                 __func__);
   return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 }
 
 NFCSTATUS TransitConfigHandler::handleVendorNciRspNtf(uint16_t dataLen,
                                                       uint8_t *pData) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN,
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN,
                  "TransitConfigHandler::%s Enter dataLen:%d", __func__,
                  dataLen);
   const std::vector<uint8_t> pRspVec(pData, pData + dataLen);

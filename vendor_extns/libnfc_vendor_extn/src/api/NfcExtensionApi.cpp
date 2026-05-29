@@ -227,7 +227,7 @@ bool vendor_nfc_de_init() {
 NFCSTATUS vendor_nfc_handle_event(NfcExtEvent_t eventCode,
                                   NfcExtEventData_t eventData) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter eventCode:%d", __func__,
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter eventCode:%d", __func__,
                  eventCode);
   switch (eventCode) {
   case HANDLE_VENDOR_NCI_MSG: {
@@ -388,7 +388,7 @@ NFCSTATUS phNxpExtn_HandleVendorNciRspNtf(uint16_t dataLen, uint8_t *pData) {
 }
 
 void phNxpExtn_OnWriteComplete(uint8_t status) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter status:%d", __func__,
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter status:%d", __func__,
                  status);
   ProprietaryExtn::getInstance()->onExtWriteComplete(status);
   NfcExtensionController::getInstance()->onWriteCompletion(status);
@@ -413,7 +413,7 @@ void phNxpExtn_OnFwDnldStatusUpdate(uint8_t status) {
 }
 
 NFCSTATUS phNxpExtn_OnHandleHalEvent(uint8_t event, uint8_t event_status) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter event:%d", __func__,
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter event:%d", __func__,
                  event);
   NFCSTATUS status = NFCSTATUS_EXTN_FEATURE_FAILURE;
   switch (event) {
@@ -446,7 +446,7 @@ NFCSTATUS phNxpExtn_OnHandleHalEvent(uint8_t event, uint8_t event_status) {
 }
 
 NFCSTATUS phNxpExtn_Write(uint16_t dataLen, const uint8_t* pData) {
-  NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN, "%s NCI dataLen:%d", __func__,
+  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s NCI dataLen:%d", __func__,
                  dataLen);
   uint8_t *nciCmd = const_cast<uint8_t *>(pData);
   NFCSTATUS status =

@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2024-2025 NXP
+ *  Copyright 2024-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -74,22 +74,24 @@ void QTagHandler::onFeatureEnd() {
 
 NFCSTATUS QTagHandler::handleVendorNciMessage(uint16_t dataLen,
                                               const uint8_t *pData) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "QTagHandler %s Enter ", __func__);
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "QTagHandler %s Enter ", __func__);
   mQtagNciPkt.clear();
   mQtagNciPkt.assign(pData, pData + dataLen);
   NfcExtensionController::getInstance()->switchEventHandler(HandlerType::QTAG);
+  NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                 "QTagHandler::%s handled Vendor Nci Message ", __func__);
   return NFCSTATUS_EXTN_FEATURE_SUCCESS;
 }
 
 NFCSTATUS QTagHandler::handleVendorNciRspNtf(uint16_t dataLen, uint8_t *pData) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "QTagHandler::%s Enter dataLen:%d",
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "QTagHandler::%s Enter dataLen:%d",
                  __func__, dataLen);
   vector<uint8_t> rfIntfNtf(pData, pData + dataLen);
   return QTag::getInstance()->processIntActivatedNtf(std::move(rfIntfNtf));
 }
 
 NFCSTATUS QTagHandler::processExtnWrite(uint16_t *dataLen, uint8_t *pData) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "QTagHandler %s Enter", __func__);
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "QTagHandler %s Enter", __func__);
   vector<uint8_t> rfDiscCmd;
   uint8_t QTAG_RF_DISC_LEN = 6;
   rfDiscCmd.assign(pData, pData + (*dataLen));

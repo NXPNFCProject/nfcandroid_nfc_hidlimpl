@@ -45,7 +45,7 @@ void SrdHandler::onFeatureEnd() {
 
 NFCSTATUS SrdHandler::handleVendorNciMessage(uint16_t dataLen,
                                              const uint8_t *pData) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "SrdHandler::%s Enter dataLen:%d",
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "SrdHandler::%s Enter dataLen:%d",
                  __func__, dataLen);
   uint8_t resp[] = {NCI_PROP_RSP_VAL, NCI_ROW_PROP_OID_VAL, PAYLOAD_TWO_LEN,
                     SRD_INIT_MODE, RESPONSE_STATUS_OK};
@@ -63,11 +63,15 @@ NFCSTATUS SrdHandler::handleVendorNciMessage(uint16_t dataLen,
     }
     PlatformAbstractionLayer::getInstance()->palSendNfcDataCallback(
         sizeof(resp), resp);
+    NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                   "SrdHandler::%s handled Vendor Nci Message", __func__);
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
   } else if (pData[SUB_GID_OID_INDEX] == ACTIVE_SE) {
     NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN, "Srd ACTIVE_SE");
     mSrdMngr->activeSe();
     resp[3] = ACTIVE_SE;
+    NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                   "SrdHandler::%s handled Vendor Nci Message", __func__);
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
   } else if (pData[SUB_GID_OID_INDEX] == DEACTIVE_SE) {
     NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN, "Srd DEACTIVE_SE");
@@ -75,6 +79,8 @@ NFCSTATUS SrdHandler::handleVendorNciMessage(uint16_t dataLen,
     resp[3] = DEACTIVE_SE;
     PlatformAbstractionLayer::getInstance()->palSendNfcDataCallback(
         sizeof(resp), resp);
+    NXPLOG_EXTNS_I(NXPLOG_ITEM_NXP_GEN_EXTN,
+                   "SrdHandler::%s handled Vendor Nci Message", __func__);
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
   } else {
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
@@ -83,7 +89,7 @@ NFCSTATUS SrdHandler::handleVendorNciMessage(uint16_t dataLen,
 }
 
 NFCSTATUS SrdHandler::handleVendorNciRspNtf(uint16_t dataLen, uint8_t *pData) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN,
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN,
                  "SrdHandler::%s "
                  "Enter dataLen:%d",
                  __func__, dataLen);
@@ -94,7 +100,7 @@ NFCSTATUS SrdHandler::handleVendorNciRspNtf(uint16_t dataLen, uint8_t *pData) {
 }
 
 void SrdHandler::onWriteComplete(uint8_t status) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter status:%d", __func__,
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter status:%d", __func__,
                  status);
   NfcExtensionWriter::getInstance()->onWriteComplete(status);
 }
@@ -112,6 +118,6 @@ void SrdHandler::onWriteRspTimeout() {
 }
 
 NFCSTATUS SrdHandler::processExtnWrite(uint16_t *dataLen, uint8_t *pData) {
-  NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter ", __func__);
+  NXPLOG_EXTNS_V(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter ", __func__);
   return mSrdMngr->processExtnsWrite(dataLen, pData);
 }
