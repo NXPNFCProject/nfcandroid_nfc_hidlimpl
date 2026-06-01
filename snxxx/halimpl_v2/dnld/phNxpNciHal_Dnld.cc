@@ -36,7 +36,7 @@
 #define PHLIBNFC_IOCTL_DNLD_SN220U_GETVERLEN (0x0FU)
 #define PHLIBNFC_IOCTL_DNLD_SN300U_GETVERLEN MAX_GET_VER_RESP_LEN
 #define IS_EQUAL(ExpectedHwVer, HwVerFromChip) \
-  (ExpectedHwVer == (HwVerFromChip & PHDNLDNFC_UPPER_NIBBLE_MASK))
+  ((ExpectedHwVer) == ((HwVerFromChip) & PHDNLDNFC_UPPER_NIBBLE_MASK))
 #define CRC_SN300 (0xCFFC001F)
 /* External global variable to get FW version */
 extern uint16_t wFwVer;
@@ -665,8 +665,9 @@ static void phNxpNciHal_fw_dnld_get_sessn_state_cb(void* pContext,
         if (PHLIBNFC_FWDNLD_SESSNOPEN == pRespBuff->pBuff[0]) {
           NXPLOG_FWDNLD_E("Prev Fw Upgrade Session still Open..");
           (gphNxpNciHal_fw_IoctlCtx.bPrevSessnOpen) = true;
-          if (IS_CHIP_TYPE_EQ(sn100u))
+          if (IS_CHIP_TYPE_EQ(sn100u)) {
             gphNxpNciHal_fw_IoctlCtx.bVenReset = true;
+          }
           if ((gphNxpNciHal_fw_IoctlCtx.bDnldInitiated) == true) {
             NXPLOG_FWDNLD_D(
                 "Session still Open after Prev Fw Upgrade attempt!!");
@@ -1762,6 +1763,9 @@ static NFCSTATUS phLibNfc_VerifyCrcStatus(uint8_t bCrcStatus) {
           wStatus = NFCSTATUS_FAILED;
           break;
         }
+        default: {
+          break;
+        }
       }
     }
 
@@ -1794,8 +1798,9 @@ static NFCSTATUS phLibNfc_VerifySNxxxU_CrcStatus(uint8_t* bCrcStatus) {
   chkIntgRspBuf.data_len = chkIntgRspBuf.pBuff[0];
   chkIntgRspBuf.code_len = chkIntgRspBuf.pBuff[1];
   if (chkIntgRspBuf.data_len > DATAINFO_LEN ||
-      chkIntgRspBuf.code_len > CODEINFO_LEN)
+      chkIntgRspBuf.code_len > CODEINFO_LEN) {
     return NFCSTATUS_FAILED;
+  }
 
   /*Skip byte*/
   crc_info_buf = bCrcStatus + 3;
@@ -1826,7 +1831,7 @@ static NFCSTATUS phNxpNciHal_releasePendingRead() {
   NFCSTATUS status = NFCSTATUS_FAILED;
   phTmlNfc_Config_t tTmlConfig;
   const uint16_t max_len = 260;
-  unsigned long value = 0;
+  uint64_t value = 0;
   char nfc_dev_node[max_len] = {};
   if (!GetNxpStrValue(NAME_NXP_NFC_DEV_NODE, nfc_dev_node,
                       sizeof(nfc_dev_node))) {

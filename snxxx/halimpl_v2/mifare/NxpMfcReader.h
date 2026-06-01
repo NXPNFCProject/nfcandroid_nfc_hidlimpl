@@ -59,15 +59,15 @@ enum MifareCmdList : uint8_t {
   eMifareReadSector = 0x38U,  /* Read Sector.   */
   eMifareAuthentA = 0x60U,    /* This command performs an authentication with
                                        KEY A for a sector. */
-  eMifareAuthentB,            /* This command performs an authentication with
+  eMifareAuthentB = 0x61U,    /* This command performs an authentication with
                                                KEY B for a sector. */
   eMifareWrite16 = 0xA0U,     /* Write 16 Bytes to a Mifare Standard block */
   eMifareWrite4 = 0xA2U,      /* Write 4 bytes. */
   eMifareWriteSector = 0xA8U, /* Write Sector. */
   eMifareTransfer = 0xB0U,    /* Transfer */
   eMifareDec = 0xC0U,         /* Decrement */
-  eMifareInc,                 /* Increment */
-  eMifareRestore,             /* Restore.   */
+  eMifareInc = 0xC1U,         /* Increment */
+  eMifareRestore = 0xC2U,     /* Restore.   */
 };
 
 /*

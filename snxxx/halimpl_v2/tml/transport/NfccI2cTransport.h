@@ -69,9 +69,16 @@ class NfccI2cTransport : public NfccTransport {
  private:
   bool_t bFwDnldFlag = false;
   sem_t mTxRxSemaphore;
+  int mHandle = 0;
 
  public:
-  int mHandle = 0;
+  int getHandle() const { return mHandle; }
+  void setHandle(int h) {
+    pthread_mutex_lock(&mMutex);
+    mHandle = h;
+    pthread_mutex_unlock(&mMutex);
+  }
+  pthread_mutex_t mMutex = PTHREAD_MUTEX_INITIALIZER;
   /*****************************************************************************
   **
   ** Function         Close

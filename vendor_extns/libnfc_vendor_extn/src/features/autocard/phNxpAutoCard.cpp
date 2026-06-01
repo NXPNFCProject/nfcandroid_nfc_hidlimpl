@@ -448,8 +448,8 @@ void AutoCard::phNxpNciHal_getAutoCardConfig() {
                            rsp + COUNTER_START_INDEX + NO_OF_CNT_TO_UPDATE);
 
   uint8_t buffer[CNT_CONFIG_BUFF_MAX_SIZE] = {0};
-  const long bufflen = CNT_CONFIG_BUFF_MAX_SIZE;
-  long retlen = 0;
+  const int64_t bufflen = CNT_CONFIG_BUFF_MAX_SIZE;
+  int64_t retlen = 0;
 
   const int isFound =
       PlatformAbstractionLayer::getInstance()->palGetNxpByteArrayValue(

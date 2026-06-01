@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,10 +112,11 @@ int NfcWriter::write(uint16_t data_len, const uint8_t* p_data) {
     uint8_t* p_data_mutable = const_cast<uint8_t*>(p_data);
     copy(rfDiscCmd.begin(), rfDiscCmd.end(), p_data_mutable);
     const NFCSTATUS status = phNxpExtn_HandleNciMsg(&data_len, p_data);
-    if (status != NFCSTATUS_EXTN_FEATURE_SUCCESS)
+    if (status != NFCSTATUS_EXTN_FEATURE_SUCCESS) {
       return this->direct_write(data_len, p_data);
-    else
+    } else {
       return data_len;
+    }
   } else if (IS_HCI_PACKET(p_data)) {
     // Inform WiredSe service that HCI Pkt is sending from libnfc layer
     phNxpNciHal_WiredSeDispatchEvent(gWiredSeHandle, SENDING_HCI_PKT);
@@ -130,7 +131,7 @@ int NfcWriter::write(uint16_t data_len, const uint8_t* p_data) {
     NXPLOG_NCIHAL_D("Vendor specific status: %d", status);
     if (status == NFCSTATUS_EXTN_FEATURE_SUCCESS) return data_len;
   }
-  long value = 0;
+  int64_t value = 0;
   /* NXP Removal Detection timeout Config */
   if (GetNxpNumValue(NAME_NXP_REMOVAL_DETECTION_TIMEOUT,
                      static_cast<void*>(&value), sizeof(value))) {

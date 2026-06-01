@@ -18,11 +18,12 @@
 #ifndef __CAP_H__
 #define __CAP_H__
 #include "Nxp_Features.h"
+#include <memory>
 #define pConfigFL (capability::getInstance())
 
 class capability {
  private:
-  static capability* instance;
+  static std::unique_ptr<capability> instance;
   const uint16_t offsetDlRspChipType = 3;
   const uint16_t offsetFwRomCodeVersion = 4;
   const uint16_t offsetFwMinorVersion = 6;
@@ -31,18 +32,20 @@ class capability {
   capability();
   tNFC_chipType determineChipTypeFromNciRsp(uint8_t* msg, uint16_t msg_len);
   tNFC_chipType determineChipTypeFromDLRsp(uint8_t* msg, uint16_t msg_len);
+  const char* product[15] = {"UNKNOWN", "PN547C2", "PN65T", "PN548C2", "PN66T",
+                             "PN551",   "PN67T",   "PN553", "PN80T",   "PN557",
+                             "PN81T",   "sn100",   "SN220", "pn560",   "SN300"};
 
  public:
   /*product[] will be used to print product version and
   should be kept in accordance with tNFC_chipType*/
-  const char* product[16] = {"UNKNOWN", "PN547C2", "PN65T",    "PN548C2",
-                             "PN66T",   "PN551",   "PN67T",    "PN553",
-                             "PN80T",   "PN557",   "PN81T",    "sn100",
-                             "SN220",   "pn560",   "pn560_v2", "SN300"};
   static tNFC_chipType chipType;
   static capability* getInstance();
   tNFC_chipType processChipType(uint8_t* msg, uint16_t msg_len);
   uint32_t getFWVersionInfo(uint8_t* msg, uint16_t msg_len);
   uint8_t getModelIdFromNciRsp(uint8_t* msg, uint16_t msg_len);
+  const char* getProductName(tNFC_chipType chipType) const {
+    return product[chipType];
+  }
 };
 #endif

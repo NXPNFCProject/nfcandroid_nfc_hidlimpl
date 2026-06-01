@@ -64,9 +64,9 @@ const char alternative_config_path[] = "";
 #endif
 
 #if 1
-const char* transport_config_paths[] = {"/odm/etc/", "/vendor/etc/", "/etc/"};
+static const char* transport_config_paths[] = {"/odm/etc/", "/vendor/etc/", "/etc/"};
 #else
-const char* transport_config_paths[] = {"res/"};
+static const char* transport_config_paths[] = {"res/"};
 #endif
 const int transport_config_path_size =
     (sizeof(transport_config_paths) / sizeof(transport_config_paths[0]));
@@ -89,7 +89,7 @@ const char tr_config_timestamp_path[] =
 const char config_timestamp_path[] =
     "/data/vendor/nfc/libnfc-nxpConfigState.bin";
 
-char nxp_rf_config_path[256] = "/system/vendor/libnfc-nxp_RF.conf";
+static char nxp_rf_config_path[256] = "/system/vendor/libnfc-nxp_RF.conf";
 #if (defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64))
 char Fw_Lib_Path[256] = "/vendor/lib64/libsn100u_fw.so";
 #else
@@ -98,7 +98,7 @@ char Fw_Lib_Path[256] = "/vendor/lib/libsn100u_fw.so";
 
 const char nci_update_config_path[] = "/data/vendor/nfc/libnfc-nci-update.conf";
 
-void readOptionalConfig(const char* optional);
+static void readOptionalConfig(const char* optional);
 
 size_t readConfigFile(const char* fileName, uint8_t** p_data) {
   if (!fileName || !p_data) {
@@ -106,33 +106,27 @@ size_t readConfigFile(const char* fileName, uint8_t** p_data) {
     return 0;
   }
 
-  FILE* fd = fopen(fileName, "rb");
-  if (fd == nullptr) return 0;
+  std::unique_ptr<FILE, decltype(&fclose)> fd(fopen(fileName, "rb"), fclose);
+  if (!fd) return 0;
 
-  // RAII wrapper for automatic file closure
-  const struct FileGuard {
-    FILE* f;
-    FileGuard(FILE* file) : f(file) {}
-    ~FileGuard() {
-      if (f) fclose(f);
-    }
-  } guard(fd);
-
-  if (fseek(fd, 0L, SEEK_END) != 0) {
+  if (fseek(fd.get(), 0L, SEEK_END) != 0) {
     ALOGE("%s Failed to seek to end of file", __func__);
     return 0;
   }
 
-  const long file_size_long = ftell(fd);
+  const long file_size_long = ftell(fd.get());
   if (file_size_long < 0) {
     ALOGE("%s Invalid file size file_size = %ld", __func__, file_size_long);
     return 0;
   }
 
   const size_t file_size = static_cast<size_t>(file_size_long);
-  rewind(fd);
 
-  // Use smart pointer for automatic cleanup
+  if (fseek(fd.get(), 0L, SEEK_SET) != 0) {
+    ALOGE("%s Failed to seek to beginning of file", __func__);
+    return 0;
+  }
+
   std::unique_ptr<uint8_t[]> buffer =
       std::make_unique<uint8_t[]>(file_size + 1);
   if (!buffer) {
@@ -140,10 +134,10 @@ size_t readConfigFile(const char* fileName, uint8_t** p_data) {
     return 0;
   }
 
-  const size_t read = fread(buffer.get(), file_size, 1, fd);
+  size_t read = fread(buffer.get(), file_size, 1, fd.get());
   if (read == 1) {
     buffer[file_size] = '\n';
-    *p_data = buffer.release();  // Transfer ownership to caller
+    *p_data = buffer.release();
     return file_size + 1;
   }
 
@@ -237,7 +231,7 @@ std::atomic<bool> CNfcConfig::is_initialized{false};
 ** Returns:     1, if printable, otherwise 0
 **
 *******************************************************************************/
-inline bool isPrintable(char c) {
+static inline bool isPrintable(char c) {
   return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
          (c >= '0' && c <= '9') || c == '/' || c == '_' || c == '-' || c == '.';
 }
@@ -251,7 +245,7 @@ inline bool isPrintable(char c) {
 ** Returns:     true, if numerical digit
 **
 *******************************************************************************/
-inline bool isDigit(char c, int base) {
+static inline bool isDigit(char c, int base) {
   if ('0' <= c && c <= '9') return true;
   if (base == 16) {
     if (('A' <= c && c <= 'F') || ('a' <= c && c <= 'f')) return true;
@@ -268,13 +262,15 @@ inline bool isDigit(char c, int base) {
 ** Returns:     numerical value if decimal or hex char, otherwise 0
 **
 *******************************************************************************/
-inline int getDigitValue(char c, int base) {
+static inline int getDigitValue(char c, int base) {
   if ('0' <= c && c <= '9') return c - '0';
   if (base == 16) {
-    if ('A' <= c && c <= 'F')
+    if ('A' <= c && c <= 'F') {
       return c - 'A' + 10;
-    else if ('a' <= c && c <= 'f')
+    }
+    else if ('a' <= c && c <= 'f') {
       return c - 'a' + 10;
+    }
   }
   return 0;
 }
@@ -289,7 +285,7 @@ inline int getDigitValue(char c, int base) {
 ** Returns:     none
 **
 *******************************************************************************/
-bool findConfigFilePathFromTransportConfigPaths(const string& configName,
+static bool findConfigFilePathFromTransportConfigPaths(const string& configName,
                                                 string& filePath) {
   if (configName.empty()) {
     ALOGE("%s Config name is empty", __func__);
@@ -342,7 +338,9 @@ bool CNfcConfig::readConfig(const char* name, bool bResetContent) {
   const size_t config_size = readConfigFile(name, &p_config);
   if (p_config == nullptr) {
     ALOGE("%s Cannot open config file %s", __func__, name);
-    if (bResetContent) mValidFile = false;
+    if (bResetContent) {
+      mValidFile = false;
+    }
     return false;
   }
 
@@ -373,19 +371,20 @@ bool CNfcConfig::readConfig(const char* name, bool bResetContent) {
   mCurrentFile = name;
 
   if (size() > 0) {
-    if (bResetContent)
+    if (bResetContent) {
       clean();
-    else
+    } else {
       moveToList();
+    }
   }
 
   for (size_t offset = 0; offset != config_size; ++offset) {
     c = p_config[offset];
     switch (state & 0xff) {
       case BEGIN_LINE:
-        if (c == '#')
+        if (c == '#') {
           state = END_LINE;
-        else if (isPrintable(c)) {
+        } else if (isPrintable(c)) {
           i = 0;
           token.clear();
           strValue.clear();
@@ -929,11 +928,12 @@ void CNfcConfig::dump() {
   for (list<const CNfcParam*>::iterator it = m_list.begin(),
                                         itEnd = m_list.end();
        it != itEnd; ++it) {
-    if ((*it)->str_len() > 0)
+    if ((*it)->str_len() > 0) {
       ALOGD("%s %s \t= %s", __func__, (*it)->c_str(), (*it)->str_value());
-    else
+    } else {
       ALOGD("%s %s \t= (0x%0lX)\n", __func__, (*it)->c_str(),
             (*it)->numValue());
+    }
   }
 }
 /*******************************************************************************
@@ -1217,7 +1217,7 @@ void readOptionalConfig(const char* extra) {
 **
 *******************************************************************************/
 extern "C" int GetNxpStrValue(const char* name, char* pValue,
-                              unsigned long len) {
+                              uint64_t len) {
   const CNfcConfig& rConfig = CNfcConfig::GetInstance();
   const bool result = rConfig.getValue(name, pValue, static_cast<size_t>(len));
   return result ? 1 : 0;
@@ -1241,7 +1241,7 @@ extern "C" int GetNxpStrValue(const char* name, char* pValue,
 **
 *******************************************************************************/
 extern "C" int GetNxpByteArrayValue(const char* name, char* pValue,
-                                    long bufflen, long* len) {
+                                    int64_t bufflen, int64_t* len) {
   const CNfcConfig& rConfig = CNfcConfig::GetInstance();
   const bool result = rConfig.getValue(name, pValue, bufflen, len);
   return result ? 1 : 0;
@@ -1257,7 +1257,7 @@ extern "C" int GetNxpByteArrayValue(const char* name, char* pValue,
 **
 *******************************************************************************/
 extern "C" int GetNxpNumValue(const char* name, void* pValue,
-                              unsigned long len) {
+                              uint64_t len) {
   if (!name || !pValue) {
     ALOGE("%s Invalid parameters: name=%p, pValue=%p", __func__, name, pValue);
     return 0;
@@ -1338,7 +1338,7 @@ extern "C" void setNxpRfConfigPath(const char* name) {
 **
 *******************************************************************************/
 extern "C" void setNxpFwConfigPath() {
-  unsigned long fwType = FW_FORMAT_SO;
+  uint64_t fwType = FW_FORMAT_SO;
   if (GetNxpNumValue(NAME_NXP_FW_TYPE, &fwType, sizeof(fwType))) {
     ALOGD("firmware type from conf file: %lu", fwType);
   }

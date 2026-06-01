@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  *
- *  Copyright 2015-2019, 2021-2023, 2025 NXP
+ *  Copyright 2015-2019, 2021-2023, 2025-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -30,10 +30,12 @@ class EseAdaptation {
   void InitializeHalDeviceContext();
   virtual ~EseAdaptation();
   static EseAdaptation& GetInstance();
-  static int HalIoctl(long arg, void* p_data);
+  static int HalIoctl(int64_t arg, void* p_data);
   tHAL_ESE_ENTRY* GetHalEntryFuncs();
-  ese_nxp_IoctlInOutData_t* mCurrentIoctlData;
-  tHAL_ESE_ENTRY mSpiHalEntryFuncs;  // function pointers for HAL entry points
+  ese_nxp_IoctlInOutData_t* getCurrentIoctlData() const {
+    return mCurrentIoctlData;
+  }
+  tHAL_ESE_ENTRY& getSpiHalEntryFuncs() { return mSpiHalEntryFuncs; }
 
  private:
   EseAdaptation();
@@ -51,6 +53,8 @@ class EseAdaptation {
   static NfcHalThreadCondVar mHalCoreResetCompletedEvent;
   static NfcHalThreadCondVar mHalCoreInitCompletedEvent;
   static NfcHalThreadCondVar mHalInitCompletedEvent;
+  tHAL_ESE_ENTRY mSpiHalEntryFuncs;  // function pointers for HAL entry points
+  ese_nxp_IoctlInOutData_t* mCurrentIoctlData;
   static uint32_t Thread();
   static void HalDeviceContextDataCallback(uint16_t data_len, uint8_t* p_data);
 

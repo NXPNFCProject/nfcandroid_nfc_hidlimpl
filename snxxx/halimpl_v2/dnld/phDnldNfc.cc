@@ -1,5 +1,5 @@
 /*
- *  Copyright 2010-2025 NXP
+ *  Copyright 2010-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -768,7 +768,7 @@ NFCSTATUS phDnldNfc_InitImgInfo(bool bMinimalFw, bool degradedFwDnld) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   uint8_t* pImageInfo = NULL;
   uint32_t ImageInfoLen = 0;
-  unsigned long fwType = FW_FORMAT_SO;
+  uint64_t fwType = FW_FORMAT_SO;
 
   /* if memory is not allocated then allocate memory for download context
    * structure */
@@ -1067,7 +1067,7 @@ NFCSTATUS phDnldNfc_LoadFW(const char* pathName, uint8_t** pImgInfo,
     (*pImgInfoLen) = (*(static_cast<uint16_t*>(pImageInfoLen)));
   }
   NXPLOG_FWDNLD_D("FW image loaded for chipType %s",
-                  pConfigFL->product[nfcFL.chipType]);
+                  pConfigFL->getProductName(nfcFL.chipType));
   return NFCSTATUS_SUCCESS;
 }
 

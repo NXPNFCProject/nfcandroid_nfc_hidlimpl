@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2023 NXP
+ *  Copyright 2023, 2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -27,10 +27,10 @@ namespace hardware {
 namespace nfc {
 
 void NfcExtns::getConfig(NfcConfig& config) {
-  unsigned long num = 0;
+  uint64_t num = 0;
   std::array<uint8_t, NXP_MAX_CONFIG_STRING_LEN> buffer;
   buffer.fill(0);
-  long retlen = 0;
+  int64_t retlen = 0;
   memset(&config, 0x00, sizeof(NfcConfig));
 
   phNxpNciHal_getExtVendorConfig();

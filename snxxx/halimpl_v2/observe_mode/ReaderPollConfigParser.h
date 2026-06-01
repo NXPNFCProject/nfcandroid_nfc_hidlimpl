@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,14 @@ void setInterpolatedRssi8Am(uint16_t rssiAt8Am, uint8_t measuredFieldStrength);
  */
 class ReaderPollConfigParser {
  private:
+  bool readExtraBytesForUnknownEvent = false;
+  uint8_t extraByteLength = 0;
+  uint8_t notificationType = 0;
+  std::vector<uint8_t> unknownEventTimeStamp;
   reader_poll_info_callback_t* callback = nullptr;
   static uint8_t lastKnownGain;
   static uint8_t lastKnownModEvent;
-
+  std::vector<uint8_t> extraBytes = std::vector<uint8_t>();
   /*****************************************************************************
    *
    * Function         getWellKnownModEventData
@@ -138,11 +142,6 @@ class ReaderPollConfigParser {
 #endif
 
  public:
-  bool readExtraBytesForUnknownEvent = false;
-  uint8_t extraByteLength = 0;
-  uint8_t notificationType = 0;
-  std::vector<uint8_t> unknownEventTimeStamp;
-  std::vector<uint8_t> extraBytes = std::vector<uint8_t>();
   /*****************************************************************************
    *
    * Function         parseAndSendReaderPollInfo

@@ -39,7 +39,7 @@ int phNxpNciHal_configDiscShutdown(void);
 void phNxpNciHal_configDiscIdle(void);
 int phNxpNciHal_control_granted(void);
 int phNxpNciHal_power_cycle(void);
-int phNxpNciHal_ioctl(long arg, void* p_data);
+int phNxpNciHal_ioctl(int64_t arg, void* p_data);
 void phNxpNciHal_do_factory_reset(void);
 void phNxpNciHal_setVerboseLogging(bool enable);
 bool phNxpNciHal_getVerboseLogging();

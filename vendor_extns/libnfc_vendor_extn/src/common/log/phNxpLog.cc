@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2019, 2022-2025 NXP
+ * Copyright 2010-2019, 2022-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@ uint8_t phNxpExtLog_EnableDisableLogLevel(uint8_t enable) {
  *
  ******************************************************************************/
 void phNxpUpdate_logLevel() {
-  unsigned long debug_enabled = 0;
+  uint64_t debug_enabled = 0;
   if (!(GetNxpNumValue(NAME_NFC_DEBUG_ENABLED, &debug_enabled,
                        sizeof(debug_enabled)))) {
     NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN, "%s NFC_DEBUG_ENABLED failed",

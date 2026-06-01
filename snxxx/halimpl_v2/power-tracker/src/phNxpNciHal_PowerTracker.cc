@@ -16,6 +16,7 @@
 #include "phNxpNciHal_PowerTracker.h"
 
 #include <inttypes.h>
+#include <cinttypes>
 #include <phNxpNciHal_PowerStats.h>
 
 #include "IntervalTimer.h"
@@ -136,14 +137,14 @@ static void printPowerTrackerVersion() {
 ** Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS
 *******************************************************************************/
 
-NFCSTATUS phNxpNciHal_startPowerTracker(unsigned long pollDuration) {
+NFCSTATUS phNxpNciHal_startPowerTracker(uint64_t pollDuration) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
 
   phNxpNci_EEPROM_info_t mEEPROM_info = {.request_mode = 0};
   uint8_t power_tracker_enable = 0x01;
 
   printPowerTrackerVersion();
-  NXPLOG_NCIHAL_I("%s: Starting PowerTracker with poll duration %ld", __func__,
+  NXPLOG_NCIHAL_I("%s: Starting PowerTracker with poll duration %" PRIu64, __func__,
                   pollDuration);
   mEEPROM_info.request_mode = SET_EEPROM_DATA;
   mEEPROM_info.buffer = (uint8_t*)&power_tracker_enable;

@@ -16,21 +16,22 @@
  *
  ******************************************************************************/
 #define LOG_TAG "NxpHal"
+#include <memory>
 #include "NxpNfcCapability.h"
 
 #include <phNxpLog.h>
 
-capability* capability::instance = NULL;
+std::unique_ptr<capability> capability::instance = nullptr;
 tNFC_chipType capability::chipType = pn81T;
 tNfc_featureList nfcFL;
 
 capability::capability() {}
 
 capability* capability::getInstance() {
-  if (NULL == instance) {
-    instance = new capability();
+  if (instance == nullptr) {
+    instance = std::unique_ptr<capability>(new capability());
   }
-  return instance;
+  return instance.get();
 }
 
 tNFC_chipType capability::processChipType(uint8_t* msg, uint16_t msg_len) {
@@ -61,18 +62,21 @@ tNFC_chipType capability::determineChipTypeFromNciRsp(uint8_t* msg,
       (GET_FW_MAJOR_VERSION_NCI_RESP(msg, msg_len) ==
            FW_MOBILE_MAJOR_NUMBER_PN557 ||
        GET_FW_MAJOR_VERSION_NCI_RESP(msg, msg_len) ==
-           FW_MOBILE_MAJOR_NUMBER_PN557_V2))
+           FW_MOBILE_MAJOR_NUMBER_PN557_V2)) {
     chip_type = pn557;
+  }
   else if (GET_FW_ROM_VERSION_NCI_RESP(msg, msg_len) ==
                FW_MOBILE_ROM_VERSION_PN553 &&
            GET_FW_MAJOR_VERSION_NCI_RESP(msg, msg_len) ==
-               FW_MOBILE_MAJOR_NUMBER_PN553)
+               FW_MOBILE_MAJOR_NUMBER_PN553) {
     chip_type = pn553;
+  }
   else if (GET_FW_ROM_VERSION_NCI_RESP(msg, msg_len) ==
                FW_MOBILE_ROM_VERSION_SN100U &&
            GET_FW_MAJOR_VERSION_NCI_RESP(msg, msg_len) ==
-               FW_MOBILE_MAJOR_NUMBER_SN100U)
+               FW_MOBILE_MAJOR_NUMBER_SN100U) {
     chip_type = sn100u;
+  }
   /* PN560 & SN220 have same rom & fw major version but chip type is different*/
   else if (GET_FW_ROM_VERSION_NCI_RESP(msg, msg_len) ==
                FW_MOBILE_ROM_VERSION_SN220U &&
@@ -137,13 +141,13 @@ tNFC_chipType capability::determineChipTypeFromDLRsp(uint8_t* msg,
       chip_type = pn560_v2;
     }
   } else if (msg[offsetFwRomCodeVersion] == FW_MOBILE_ROM_VERSION_SN100U &&
-             msg[offsetFwMajorVersion] == FW_MOBILE_MAJOR_NUMBER_SN100U)
+             msg[offsetFwMajorVersion] == FW_MOBILE_MAJOR_NUMBER_SN100U) {
     chip_type = sn100u;
-  else if (msg[offsetFwRomCodeVersion] == FW_MOBILE_ROM_VERSION_PN557 &&
+  } else if (msg[offsetFwRomCodeVersion] == FW_MOBILE_ROM_VERSION_PN557 &&
            (msg[offsetFwMajorVersion_pn557] == FW_MOBILE_ROM_VERSION_PN557 ||
-            msg[offsetFwMajorVersion_pn557] == FW_MOBILE_MAJOR_NUMBER_PN557_V2))
+            msg[offsetFwMajorVersion_pn557] == FW_MOBILE_MAJOR_NUMBER_PN557_V2)) {
     chip_type = pn557;
-  else if (msg[offsetFwRomCodeVersion] == FW_MOBILE_ROM_VERSION_SN300U &&
+  } else if (msg[offsetFwRomCodeVersion] == FW_MOBILE_ROM_VERSION_SN300U &&
            (msg[offsetFwMajorVersion] == FW_MOBILE_MAJOR_NUMBER_SN300U ||
             msg[offsetDlRspChipType] == HW_SN300U)) {
     chip_type = sn300u;

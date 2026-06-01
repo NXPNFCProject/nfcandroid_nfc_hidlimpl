@@ -100,8 +100,9 @@ NFCSTATUS phTmlNfc_Init(pphTmlNfc_Config_t pConfig) {
     } else {
       /*Configure transport layer for communication*/
       if ((gpTransportObj == NULL) &&
-          (NFCSTATUS_SUCCESS != phTmlNfc_ConfigTransport()))
+          (NFCSTATUS_SUCCESS != phTmlNfc_ConfigTransport())) {
         return NFCSTATUS_FAILED;
+      }
 
       if (!gpTransportObj->Flushdata(pConfig)) {
         NXPLOG_NCIHAL_E("Flushdata Failed");
@@ -125,8 +126,9 @@ NFCSTATUS phTmlNfc_Init(pphTmlNfc_Config_t pConfig) {
         gpphTmlNfc_Context->tReadInfo.bThreadBusy = false;
         gpphTmlNfc_Context->lastCommand = NULL;
         gpphTmlNfc_Context->lastCmdLen = 0;
-        if (pConfig->fragment_len == 0x00)
+        if (pConfig->fragment_len == 0x00) {
           pConfig->fragment_len = PH_TMLNFC_FRGMENT_SIZE_PN557;
+        }
         gpphTmlNfc_Context->fragment_len = pConfig->fragment_len;
 
         if (0 != sem_init(&gpphTmlNfc_Context->rxSemaphore, 0, 0) ||
@@ -174,8 +176,8 @@ NFCSTATUS phTmlNfc_Init(pphTmlNfc_Config_t pConfig) {
 **
 *******************************************************************************/
 NFCSTATUS phTmlNfc_ConfigTransport() {
-  unsigned long transportType = UNKNOWN;
-  unsigned long value = 0;
+  uint64_t transportType = UNKNOWN;
+  uint64_t value = 0;
   const int isfound = GetNxpNumValue(NAME_NXP_TRANSPORT, &value, sizeof(value));
   if (isfound > 0) {
     transportType = value;
@@ -259,8 +261,8 @@ static void* phTmlNfc_TmlThread(void* pParam) {
       /* Read the data from the file onto the buffer */
       if (NULL != gpphTmlNfc_Context->pDevHandle) {
         NXPLOG_TML_D("NFCC - Invoking Read.....\n");
-        dwNoBytesWrRd = gpTransportObj->Read(gpphTmlNfc_Context->pDevHandle,
-                                             tMsg.data, PHNCI_MAX_DATA_LEN);
+        dwNoBytesWrRd = static_cast<int16_t>(gpTransportObj->Read(gpphTmlNfc_Context->pDevHandle,
+                                             tMsg.data, PHNCI_MAX_DATA_LEN));
 
         if (-1 == dwNoBytesWrRd) {
           NXPLOG_TML_E("NFCC - Error in Read.....\n");

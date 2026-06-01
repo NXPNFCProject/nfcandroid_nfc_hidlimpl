@@ -85,7 +85,7 @@ NciStateMonitor::processCoreResetNtfReceived(vector<uint8_t> coreResetNtf) {
   char vendorName = 'N';
   uint8_t fwMajorVer, fwMinorVer, fwPatchVer = 0x00;
   uint8_t rfFileVer[2] = {0x00};
-  long retlen = 0;
+  int64_t retlen = 0;
   char result[15];
 
   if (coreResetNtf.empty()) {

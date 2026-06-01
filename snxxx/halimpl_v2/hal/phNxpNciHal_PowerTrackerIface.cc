@@ -1,5 +1,5 @@
 /*
- * Copyright 2022, 2025 NXP
+ * Copyright 2022, 2025-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,8 @@
 ** Returns          true if supported
 **                  false otherwise
 *******************************************************************************/
-static bool phNxpNciHal_isPowerTrackerConfigured(unsigned long* pollDuration) {
-  unsigned long num = 0;
+static bool phNxpNciHal_isPowerTrackerConfigured(uint64_t* pollDuration) {
+  uint64_t num = 0;
 
   if ((GetNxpNumValue(NAME_NXP_SYSTEM_POWER_TRACE_POLL_DURATION, &num,
                       sizeof(num)))) {

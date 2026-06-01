@@ -29,18 +29,18 @@
 extern phNxpNciHal_Control_t nxpncihal_ctrl;
 extern phTmlNfc_Context_t* gpphTmlNfc_Context;
 extern tNfc_featureList nfcFL;
-fp_extn_init_t fp_extn_init = NULL;
-fp_extn_deinit_t fp_extn_deinit = NULL;
-fp_extn_handle_nfc_event_t fp_extn_handle_nfc_event = NULL;
-fp_extn_configure_vendor_feature_t fp_extn_handle_configure_vendor_feature =
+static fp_extn_init_t fp_extn_init = NULL;
+static fp_extn_deinit_t fp_extn_deinit = NULL;
+static fp_extn_handle_nfc_event_t fp_extn_handle_nfc_event = NULL;
+static fp_extn_configure_vendor_feature_t fp_extn_handle_configure_vendor_feature =
     NULL;
 const std::string vendor_nfc_init_name = "vendor_nfc_init";
 const std::string vendor_nfc_de_init_name = "vendor_nfc_de_init";
 const std::string vendor_nfc_handle_event_name = "vendor_nfc_handle_event";
 const std::string configure_vendor_feature_name = "configure_vendor_feature";
 
-void* p_oem_extn_handle = NULL;
-NfcExtEventData_t nfc_ext_event_data;
+static void* p_oem_extn_handle = NULL;
+static NfcExtEventData_t nfc_ext_event_data;
 
 
 /*crpto card handles*/
@@ -71,8 +71,8 @@ void* p_crypto_extn_handle = NULL;
 static void phNxpExtn_Init();
 static void phNxpCryptoExtn_Init();
 
-std::string mLibName = "libnfc_vendor_extn.so";
-std::string mCryptoLibName = "libnfc_crypto_extn.so";
+static std::string mLibName = "libnfc_vendor_extn.so";
+static std::string mCryptoLibName = "libnfc_crypto_extn.so";
 
 #if (defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64))
 std::string mLibPathName = "/system/vendor/lib64/" + mLibName;
@@ -433,9 +433,9 @@ NFCSTATUS phNxpHal_NfcTmlWrite(uint8_t* pBuffer, uint16_t wLength) {
 }
 
 bool phNxpNciHal_IsHciPipeRequireToCreate() {
-  if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE || gWiredSeHandle != NULL)
+  if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE || gWiredSeHandle != NULL) {
     return false;
-
+  }
   return true;
 }
 NFCSTATUS phNxpHal_NfcSendExtCmd(uint16_t cmd_len, uint8_t* p_cmd,
@@ -449,12 +449,12 @@ std::vector<uint8_t> phNxpNciHal_GetDiscoveryCommand() {
 
 bool phNxpNciHal_GetObserveModeStatus() { return isObserveModeEnabled(); }
 uint8_t phNxpHal_GetNxpByteArrayValue(const char* name, char* pValue,
-                                      long bufflen, long* len) {
+                                      int64_t bufflen, int64_t* len) {
   return GetNxpByteArrayValue(name, pValue, bufflen, len);
 }
 
 uint8_t phNxpHal_GetNxpNumValue(const char* name, void* pValue,
-                                unsigned long len) {
+                                uint64_t len) {
   return GetNxpNumValue(name, pValue, len);
 }
 

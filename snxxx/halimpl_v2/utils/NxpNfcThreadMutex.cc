@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2021-2025 NXP
+ *  Copyright 2021-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -37,10 +37,12 @@ NfcHalThreadMutex::NfcHalThreadMutex() {
   pthread_mutexattr_t mutexAttr;
 
   pthread_mutexattr_init(&mutexAttr);
-  if (!pthread_mutex_init(&mMutex, &mutexAttr))
+  if (!pthread_mutex_init(&mMutex, &mutexAttr)) {
     LOG(DEBUG) << StringPrintf("init mutex success");
-  else
+  }
+  else {
     LOG(ERROR) << StringPrintf("fail to init mutex");
+  }
   pthread_mutexattr_destroy(&mutexAttr);
 }
 
@@ -117,7 +119,7 @@ NfcHalThreadCondVar::~NfcHalThreadCondVar() { pthread_cond_destroy(&mCondVar); }
 **
 *******************************************************************************/
 void NfcHalThreadCondVar::timedWait(struct timespec* time) {
-  pthread_cond_timedwait(&mCondVar, *this, time);
+  pthread_cond_timedwait(&mCondVar, static_cast<pthread_mutex_t*>(*this), time);
 }
 
 /*******************************************************************************
@@ -135,7 +137,7 @@ void NfcHalThreadCondVar::timedWait(uint8_t sec) {
     LOG(ERROR) << StringPrintf("%s Fail to get time errno=0x%X", __func__, errno);
   }
   timeout_spec.tv_sec += sec;
-  pthread_cond_timedwait(&mCondVar, *this, &timeout_spec);
+  pthread_cond_timedwait(&mCondVar, static_cast<pthread_mutex_t*>(*this), &timeout_spec);
 }
 
 /*******************************************************************************

@@ -183,8 +183,8 @@ void PlatformAbstractionLayer::palSendNfcEventCallback(uint8_t evt, uint8_t evtS
 
 uint8_t PlatformAbstractionLayer::palGetNxpByteArrayValue(const char *name,
                                                           char *pValue,
-                                                          long bufflen,
-                                                          long *len) {
+                                                          int64_t  bufflen,
+                                                          int64_t  *len) {
   return GetNxpByteArrayValue(name, pValue, bufflen, len);
 }
 
@@ -208,7 +208,7 @@ uint32_t PlatformAbstractionLayer::palGetLibNciConfig(const char* key, bool& fou
 
 uint8_t PlatformAbstractionLayer::palGetNxpNumValue(const char *name,
                                                     void *pValue,
-                                                    unsigned long len) {
+                                                    uint64_t len) {
   bool foundInLegacy = false;
   const uint32_t legacyValue = palGetLibNciConfig(name, foundInLegacy);
 

@@ -149,10 +149,10 @@
    NCI_ANDROID_PASSIVE_OBSERVE_PARAM_ENABLE_V)
 
 #define IS_HCI_PACKET(nciPkt) \
-  (nciPkt[NCI_GID_INDEX] == 0x01) && (nciPkt[NCI_OID_INDEX] == 0x00)
+  ((nciPkt)[NCI_GID_INDEX] == 0x01) && ((nciPkt)[NCI_OID_INDEX] == 0x00)
 #define IS_NFCEE_DISABLE(nciPkt)                                     \
-  (nciPkt[NCI_GID_INDEX] == 0x22 && nciPkt[NCI_OID_INDEX] == 0x01 && \
-   nciPkt[NCI_MSG_LEN_INDEX] == 0x02 &&                              \
-   nciPkt[NFCEE_MODE_SET_CMD_MODE_INDEX] == 0x00)
+  ((nciPkt)[NCI_GID_INDEX] == 0x22 && (nciPkt)[NCI_OID_INDEX] == 0x01 && \
+   (nciPkt)[NCI_MSG_LEN_INDEX] == 0x02 &&                              \
+   (nciPkt)[NFCEE_MODE_SET_CMD_MODE_INDEX] == 0x00)
 
 #define CRYPTO1_TRANSPARENT_DEFAULT_TIMEOUT_VALUE 0x40

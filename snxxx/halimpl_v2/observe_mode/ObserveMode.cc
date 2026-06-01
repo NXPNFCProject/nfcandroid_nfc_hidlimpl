@@ -26,11 +26,11 @@
 
 using std::vector;
 
-bool gWaitingForDiscRsp;
-bool gWaitingForRfDeActivateRsp;
-bool bIsObserveModeEnabled;
-bool bIsObserveChangeInProgress;
-bool bIsObserveModeSuspended;
+static bool gWaitingForDiscRsp;
+static bool gWaitingForRfDeActivateRsp;
+static bool bIsObserveModeEnabled;
+static bool bIsObserveChangeInProgress;
+static bool bIsObserveModeSuspended;
 
 /*******************************************************************************
  *
@@ -107,7 +107,7 @@ int handleObserveMode(uint16_t data_len, const uint8_t* p_data) {
  * Returns          It returns Rf deactivate status
  *
  ******************************************************************************/
-NFCSTATUS deactivateRfDiscovery() {
+static NFCSTATUS deactivateRfDiscovery() {
   if (NciDiscoveryCommandBuilderInstance.isRfDiscoveryCommandReceived()) {
     uint8_t rf_deactivate_cmd[] = {0x21, 0x06, 0x01, 0x00};
     uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
@@ -134,7 +134,7 @@ NFCSTATUS deactivateRfDiscovery() {
  * Returns          It returns Rf deactivate status
  *
  ******************************************************************************/
-NFCSTATUS sendRfDiscoveryCommand(bool isObserveModeEnable) {
+static NFCSTATUS sendRfDiscoveryCommand(bool isObserveModeEnable) {
   if (NciDiscoveryCommandBuilderInstance.isRfDiscoveryCommandReceived()) {
     uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
     uint16_t rsp_len = 0;

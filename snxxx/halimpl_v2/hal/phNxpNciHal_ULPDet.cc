@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 NXP
+ * Copyright 2022-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ extern PowerTrackerHandle gPowerTrackerHandle;
 ** Returns          true or false
 *******************************************************************************/
 bool phNxpNciHal_isULPDetSupported() {
-  unsigned long num = 0;
+  uint64_t num = 0;
   if ((GetNxpNumValue(NAME_NXP_DEFAULT_ULPDET_MODE, &num, sizeof(num)))) {
     if (static_cast<uint8_t>(num) > 0) {
       NXPLOG_NCIHAL_E("%s: NxpNci isULPDetSupported true", __func__);

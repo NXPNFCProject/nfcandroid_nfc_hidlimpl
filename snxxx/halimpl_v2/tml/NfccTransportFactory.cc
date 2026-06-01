@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2020 NXP
+ *  Copyright 2020, 2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -66,8 +66,6 @@ spTransport NfccTransportFactory::getTransport(transportIntf transportType) {
   switch (transportType) {
     case I2C:
     case UNKNOWN:
-      mspTransportInterface = std::make_shared<NfccI2cTransport>();
-      break;
     default:
       mspTransportInterface = std::make_shared<NfccI2cTransport>();
       break;

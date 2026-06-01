@@ -92,6 +92,31 @@ NFCSTATUS NfccI2cTransport::OpenAndConfigure(pphTmlNfc_Config_t pConfig,
 
 /*******************************************************************************
 **
+** Function         FlushTimeoutHandler
+**
+** Description      Handler which will be invoked once FlushTimer expires
+**
+** Parameters       timerId  - Timer id
+**                  pContext - Context passed to Timer
+**
+** Returns          None
+**
+*******************************************************************************/
+void FlushTimeoutHandler(uint32_t timerId, void* pContext) {
+  NfccI2cTransport* transport = static_cast<NfccI2cTransport*>(pContext);
+  pthread_mutex_lock(&transport->mMutex);
+  NXPLOG_TML_D("%s: FlushTimer expired, Closing fd %d", __func__,
+               transport->getHandle());
+  if (transport->getHandle() != 0) {
+    close(transport->getHandle());
+    NXPLOG_TML_D("%s: fd closed", __func__);
+    transport->setHandle(0);
+  }
+  pthread_mutex_unlock(&transport->mMutex);
+}
+
+/*******************************************************************************
+**
 ** Function         Flushdata
 **
 ** Description      Reads payload of FW rsp from NFCC device into given buffer

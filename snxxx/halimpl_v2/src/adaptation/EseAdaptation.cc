@@ -1,7 +1,7 @@
 /******************************************************************************
  *
  *
- *  Copyright 2015-2023, 2025 NXP
+ *  Copyright 2015-2023, 2025-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -24,8 +24,6 @@
 
 using android::sp;
 using android::hardware::hidl_vec;
-using android::hardware::Return;
-using android::hardware::Void;
 
 using vendor::nxp::nxpese::V1_0::INxpEse;
 
@@ -207,7 +205,7 @@ void EseAdaptation::HalDeviceContextDataCallback(uint16_t data_len,
 ** Returns:     None.
 **
 *******************************************************************************/
-void IoctlCallback(hidl_vec<uint8_t> outputData) {
+static void IoctlCallback(hidl_vec<uint8_t> outputData) {
   const char* func = "IoctlCallback";
   ese_nxp_ExtnOutputData_t* pOutData =
       reinterpret_cast<ese_nxp_ExtnOutputData_t*>(&outputData[0]);
@@ -216,7 +214,7 @@ void IoctlCallback(hidl_vec<uint8_t> outputData) {
   EseAdaptation* pAdaptation = &EseAdaptation::GetInstance();
   /*Output Data from stub->Proxy is copied back to output data
    * This data will be sent back to libese*/
-  memcpy(&pAdaptation->mCurrentIoctlData->out, &outputData[0],
+  memcpy(&pAdaptation->getCurrentIoctlData()->out, &outputData[0],
          sizeof(ese_nxp_ExtnOutputData_t));
 }
 /*******************************************************************************
@@ -235,7 +233,7 @@ void IoctlCallback(hidl_vec<uint8_t> outputData) {
 ** Returns:     -1 or 0.
 **
 *******************************************************************************/
-int EseAdaptation::HalIoctl(long arg, void* p_data) {
+int EseAdaptation::HalIoctl(int64_t arg, void* p_data) {
   const char* func = "EseAdaptation::HalIoctl";
   hidl_vec<uint8_t> data;
   const NfcHalAutoThreadMutex a(sIoctlLock);
@@ -250,5 +248,5 @@ int EseAdaptation::HalIoctl(long arg, void* p_data) {
   if (mHalNxpEse != nullptr) mHalNxpEse->ioctl(arg, data, IoctlCallback);
   ALOGD_IF(nfc_debug_enabled, "%s Ioctl Completed for Type=%lu", func,
            (unsigned long)pInpOutData->out.ioctlType);
-  return (pInpOutData->out.result);
+  return static_cast<int>(pInpOutData->out.result);
 }

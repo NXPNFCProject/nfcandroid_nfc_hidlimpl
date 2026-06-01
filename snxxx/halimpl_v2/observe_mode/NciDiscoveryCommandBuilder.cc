@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,10 +94,10 @@ void NciDiscoveryCommandBuilder::removeListenParams() {
       mRfDiscoverConfiguration.begin();
 
   while (configIterator != mRfDiscoverConfiguration.end()) {
-    if (NFC_A_PASSIVE_LISTEN_MODE == configIterator->mRfTechMode ||
-        NFC_B_PASSIVE_LISTEN_MODE == configIterator->mRfTechMode ||
-        NFC_F_PASSIVE_LISTEN_MODE == configIterator->mRfTechMode ||
-        NFC_ACTIVE_LISTEN_MODE == configIterator->mRfTechMode) {
+    if (NFC_A_PASSIVE_LISTEN_MODE == configIterator->getRfTechMode() ||
+        NFC_B_PASSIVE_LISTEN_MODE == configIterator->getRfTechMode() ||
+        NFC_F_PASSIVE_LISTEN_MODE == configIterator->getRfTechMode() ||
+        NFC_ACTIVE_LISTEN_MODE == configIterator->getRfTechMode()) {
       configIterator = mRfDiscoverConfiguration.erase(configIterator);
     } else {
       ++configIterator;
@@ -137,8 +137,8 @@ vector<uint8_t> NciDiscoveryCommandBuilder::build() {
   discoveryCommand.push_back(discoveryLength);
   discoveryCommand.push_back(numberOfConfigurations);
   for (int i = 0; i < numberOfConfigurations; i++) {
-    discoveryCommand.push_back(mRfDiscoverConfiguration[i].mRfTechMode);
-    discoveryCommand.push_back(mRfDiscoverConfiguration[i].mDiscFrequency);
+    discoveryCommand.push_back(mRfDiscoverConfiguration[i].getRfTechMode());
+    discoveryCommand.push_back(mRfDiscoverConfiguration[i].getDiscFrequency());
   }
   return discoveryCommand;
 }

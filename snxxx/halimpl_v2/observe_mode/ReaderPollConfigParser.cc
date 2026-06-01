@@ -22,7 +22,7 @@
 
 using std::vector;
 
-double gpMeasuredFieldStrength_of_gpRssiAt8Am = -1;
+static double gpMeasuredFieldStrength_of_gpRssiAt8Am = -1;
 uint8_t ReaderPollConfigParser::lastKnownGain = 0x00;
 uint8_t ReaderPollConfigParser::lastKnownModEvent = 0x00;
 

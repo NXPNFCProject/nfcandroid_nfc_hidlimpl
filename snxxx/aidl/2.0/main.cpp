@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2022, 2024-2025 NXP
+ *  Copyright 2022, 2024-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ extern WiredSeHandle* gWiredSeHandle;
 
 void startNxpNfcAidlService() {
   ALOGI("NXP NFC Extn Service is starting.");
-  unsigned long dynamicHal = 0;
+  uint64_t dynamicHal = 0;
   if (!GetNxpNumValue("NFC_DYNAMIC_HAL", &dynamicHal, sizeof(dynamicHal))) {
     NXPLOG_NCIHAL_D("NFC_DYNAMIC_HAL not found in config. Using default value");
   }
@@ -74,7 +74,7 @@ int main() {
   if (gWiredSeHandle == NULL) {
     ALOGE("Wired Se HAL Disabled");
   }
-  unsigned long dynamicHal = 0;
+  uint64_t dynamicHal = 0;
   if (!GetNxpNumValue("NFC_DYNAMIC_HAL", &dynamicHal, sizeof(dynamicHal))) {
     NXPLOG_NCIHAL_D("NFC_DYNAMIC_HAL not found in config. Using default value");
   }

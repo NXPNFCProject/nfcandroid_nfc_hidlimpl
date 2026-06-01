@@ -72,7 +72,7 @@ int listDestroy(struct listHead* pList) {
     bListNotEmpty = listGetAndRemoveNext(pList, NULL);
   }
 
-  if (pthread_mutex_destroy(&pList->mutex) == -1) {
+  if (pthread_mutex_destroy(&pList->mutex) != 0) {
     NXPLOG_NCIHAL_E("Mutex destruction failed (errno=0x%08x)", errno);
     return 0;
   }

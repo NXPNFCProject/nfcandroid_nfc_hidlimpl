@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2010-2018, 2021-2022, 2024-2025 NXP
+ *  Copyright 2010-2018, 2021-2022, 2024-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -200,16 +200,16 @@ enum phOsalNfc_TimerStates_t : uint8_t {
  **Timer Handle structure containing details of a timer.
  */
 typedef struct phOsalNfc_TimerHandle {
-  uint32_t TimerId;     /* ID of the timer */
   timer_t hTimerHandle; /* Handle of the timer */
   /* Timer callback function to be invoked */
   pphOsalNfc_TimerCallbck_t Application_callback;
   void* pContext; /* Parameter to be passed to the callback function */
-  phOsalNfc_TimerStates_t eState; /* Timer states */
-  /* Osal Timer message posted on User Thread */
-  phLibNfc_Message_t tOsalMessage;
   /* Deferred Call structure to Invoke Callback function */
   phOsalNfc_DeferredCallInfo_t tDeferredCallInfo;
+  /* Osal Timer message posted on User Thread */
+  phLibNfc_Message_t tOsalMessage;
+  uint32_t TimerId;     /* ID of the timer */
+  phOsalNfc_TimerStates_t eState; /* Timer states */
   /* Variables for Structure Instance and Structure Ptr */
 } phOsalNfc_TimerHandle_t, *pphOsalNfc_TimerHandle_t;
 

@@ -164,7 +164,7 @@ typedef struct phTmlNfc_Context {
   pthread_mutex_t wait_busy_lock; /*Condition lock to wait reader thread*/
   volatile uint8_t gWriterCbflag; /* flag to indicate write callback message is
                                      pushed to queue*/
-  long nfc_service_pid; /*NFC Service PID to be used by driver to signal*/
+  int64_t nfc_service_pid; /*NFC Service PID to be used by driver to signal*/
   uint16_t fragment_len;
   uint8_t* lastCommand; /* Marks last command for this session. */
   uint16_t lastCmdLen;  /* Last command length */

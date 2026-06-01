@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright 2024-2025 NXP
+ *  Copyright 2024-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ typedef union WiredSeEvtData {
   // For typecasting from NfcState to WiredSeEvtData
   explicit WiredSeEvtData(NfcState inNfcState) { nfcState = inNfcState; }
   // For typecasting from NfcPkt to WiredSeEvtData
-  explicit WiredSeEvtData(std::shared_ptr<NfcPkt> inNfcPkt) : nfcPkt(inNfcPkt) {}
+  explicit WiredSeEvtData(std::shared_ptr<NfcPkt> inNfcPkt) : nfcPkt(std::move(inNfcPkt)) {}
   WiredSeEvtData(const WiredSeEvtData& evtData) : nfcPkt(evtData.nfcPkt) {
     nfcState = evtData.nfcState;
   }

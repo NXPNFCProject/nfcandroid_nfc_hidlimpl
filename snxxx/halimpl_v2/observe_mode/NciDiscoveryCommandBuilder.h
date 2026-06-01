@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,17 @@
  */
 class DiscoveryConfiguration {
  public:
-  uint8_t mRfTechMode;
-  uint8_t mDiscFrequency;
   DiscoveryConfiguration(uint8_t rfTechMode, uint8_t discFrequency) {
     mRfTechMode = rfTechMode;
     mDiscFrequency = discFrequency;
   };
+
+  uint8_t getRfTechMode() const { return mRfTechMode; }
+  uint8_t getDiscFrequency() const { return mDiscFrequency; }
+
+ private:
+  uint8_t mRfTechMode;
+  uint8_t mDiscFrequency;
 };
 
 /**

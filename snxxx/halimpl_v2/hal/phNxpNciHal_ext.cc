@@ -554,7 +554,7 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
                                                       uint16_t* p_len) {
   NFCSTATUS status = NFCSTATUS_SUCCESS;
   bool is_abort_req = false;
-  char vendorName = 'N';
+  const char vendorName = 'N';
   char result[15];
   uint8_t rfFileVer[2] = {0x00};
 
@@ -602,8 +602,9 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
       }
       NXPLOG_NCIHAL_D("CORE_RESET_NTF NCI2.0 reason CORE_RESET_CMD received !");
       nxpncihal_ctrl.nci_info.nci_version = p_ntf[5];
-      if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE)
+      if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE) {
         phNxpNciHal_configFeatureList(p_ntf, *p_len);
+      }
       const int len = p_ntf[2] + 2; /*include 2 byte header*/
       if (len != *p_len - 1) {
         android_errorWriteLog(0x534e4554, "121263487");
@@ -614,8 +615,8 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
                   ((static_cast<uint32_t>(p_ntf[len - 1])) << 8U) | p_ntf[len];
       NXPLOG_NCIHAL_D("NxpNci> FW Version: %x.%x.%x", p_ntf[len - 2],
                       p_ntf[len - 1], p_ntf[len]);
-      long retlen = 0;
-      bool isfound = GetNxpByteArrayValue(NAME_NXP_RF_FILE_VERSION_INFO,
+      int64_t retlen = 0;
+      const bool isfound = GetNxpByteArrayValue(NAME_NXP_RF_FILE_VERSION_INFO,
              reinterpret_cast<char*>(rfFileVer), sizeof(rfFileVer), &retlen);
       if ((!isfound) || (retlen != 0x02)) {
         NXPLOG_NCIHAL_E("%s NXP_RF_FILE_VERSION_INFO not found. retlen %ld", __func__, retlen);
@@ -1388,13 +1389,8 @@ NFCSTATUS request_EEPROM(phNxpNci_EEPROM_info_t* mEEPROM_info) {
   };
 
   set_cfg_cmd_len = sizeof(set_cfg_cmd_hdr) + fieldLen;
-  set_cfg_eeprom = static_cast<uint8_t*>(malloc(set_cfg_cmd_len));
-  if (set_cfg_eeprom == NULL) {
-    ALOGE("memory allocation failed");
-    return status;
-  }
-  base_addr = set_cfg_eeprom;
-  memset(set_cfg_eeprom, 0, set_cfg_cmd_len);
+  std::vector<uint8_t> set_cfg_eeprom_vec(set_cfg_cmd_len, 0);
+  set_cfg_eeprom = set_cfg_eeprom_vec.data();
   memcpy(set_cfg_eeprom, set_cfg_cmd_hdr, sizeof(set_cfg_cmd_hdr));
 
 retryget:
@@ -1462,11 +1458,6 @@ retryget:
     ALOGE("Get Cfg Retry cnt=%x", retry_cnt);
     goto retryget;
   }
-
-  if (base_addr != NULL) {
-    free(base_addr);
-    base_addr = NULL;
-  }
   return status;
 }
 
@@ -1505,8 +1496,9 @@ NFCSTATUS phNxpNciHal_enableDefaultUICC2SWPline(uint8_t uicc2_sel) {
     p_data[LEN_INDEX] += 4;
     p_data[PARAM_INDEX] += 1;
   }
-  if (p_data[PARAM_INDEX] > 0x00)
+  if (p_data[PARAM_INDEX] > 0x00) {
     status = phNxpNciHal_send_ext_cmd(p - p_data, p_data, &rsp_len, rsp);
+  }
   return status;
 }
 
@@ -1608,8 +1600,8 @@ void phNxpNciHal_prop_conf_rssi() {
 void phNxpNciHal_conf_nfc_forum_mode() {
   uint8_t cmd_get_emvcocfg[] = {0x20, 0x03, 0x03, 0x01, 0xA0, 0x44};
   uint8_t cmd_reset_emvcocfg[8];
-  const long cmdlen = 8;
-  long retlen = 0;
+  const int64_t cmdlen = 8;
+  int64_t retlen = 0;
   uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
   uint16_t rsp_len = 0;
 
@@ -1804,7 +1796,7 @@ static bool phNxpNciHal_update_core_reset_ntf_prop() {
 *******************************************************************************/
 void phNxpNciHal_ext_check_unrecoverable_errors(uint8_t* p_ntf,
                                                 uint16_t p_len) {
-  uint8_t reason_code = 0;
+  const uint8_t reason_code = 0;
   if (p_len == 5 && p_ntf[0] == 0x62 && p_ntf[1] == 0x02 && p_ntf[2] == 0x02 &&
       (p_ntf[3] == NCI_ROUTE_ESE_ID || p_ntf[3] == NCI_ROUTE_EUICC1_ID ||
        p_ntf[3] == NCI_ROUTE_EUICC2_ID) &&
@@ -1853,8 +1845,8 @@ static NFCSTATUS phNxpNciHal_ext_check_rf_queue_full_error(uint8_t* p_ntf,
       return NFCSTATUS_SUCCESS;
     }
     // Parse all TLVS
-    uint8_t tag = p_ntf[index++];
-    uint8_t len = p_ntf[index++];
+    const uint8_t tag = p_ntf[index++];
+    const uint8_t len = p_ntf[index++];
     uint8_t* value = p_ntf + index;
     if (index + len > *p_len) {
       // Make sure value length is valid
@@ -1871,7 +1863,7 @@ static NFCSTATUS phNxpNciHal_ext_check_rf_queue_full_error(uint8_t* p_ntf,
       // Rf queue full error detected, update ntf with prop ntf and return
       // failure
       memcpy(p_ntf, propNtf, sizeof(propNtf));
-      *p_len = (uint16_t)sizeof(propNtf);
+      *p_len = static_cast<uint16_t>(sizeof(propNtf));
       return NFCSTATUS_FAILED;
     }
   }

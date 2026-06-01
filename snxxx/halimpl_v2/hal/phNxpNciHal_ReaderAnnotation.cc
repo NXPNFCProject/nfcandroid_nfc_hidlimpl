@@ -90,7 +90,7 @@ static void updateControlMessage(vector<uint8_t>& nciFmtReaderAnnoByte,
 
   // Extract transmit position from upper nibble
   uint8_t transmit_position = (entry.position_type >> 4) & 0x0F;
-  bool has_transmit_position = (transmit_position >= 2);
+  const bool has_transmit_position = (transmit_position >= 2);
 
   // Bit 7: Set if proprietary field exists (even if length is 0)
   if (entry.has_proprietary_field) {
@@ -164,7 +164,7 @@ static void updateBroadcastPollPosition(vector<uint8_t>& nciFmtReaderAnnoByte,
 static void updateTransmitPosition(vector<uint8_t>& nciFmtReaderAnnoByte,
                                    const ReaderAnnotationData& entry) {
   // Google Format => NCI Format: Extract and add transmit position
-  uint8_t transmit_position = (entry.position_type >> 4) & 0x0F;
+  const uint8_t transmit_position = (entry.position_type >> 4) & 0x0F;
 
   if (transmit_position >= 2) {
     nciFmtReaderAnnoByte.push_back(
@@ -236,7 +236,7 @@ static uint8_t calculateParamLength(const ReaderAnnotationData& entry) {
   }
 
   // Add transmit position length
-  uint8_t transmit_position = (entry.position_type >> 4) & 0x0F;
+  const uint8_t transmit_position = (entry.position_type >> 4) & 0x0F;
   if (transmit_position >= 2) {
     param_len += 1 + 1;  // transmit_position_len + transmit_position_value
   }
@@ -420,7 +420,7 @@ vector<uint8_t> covertAnnotationToBrodcastPollCommand(uint16_t data_len,
     updateProtocolType(nciFmtReaderAnnoByte, readerAnnotationData);
 
     // 2. Calculate and add Parameter Length
-    uint8_t param_len = calculateParamLength(readerAnnotationData);
+    const uint8_t param_len = calculateParamLength(readerAnnotationData);
     nciFmtReaderAnnoByte.push_back(param_len);
 
     // 3. Update Control Message

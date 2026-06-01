@@ -366,7 +366,7 @@ bool phNxpNciHal_GetObserveModeStatus();
  *
  */
 uint8_t phNxpHal_GetNxpByteArrayValue(const char* name, char* pValue,
-                                      long bufflen, long* len);
+                                      int64_t bufflen, int64_t* len);
 
 /**
  * @brief API function for getting a numerical value of a setting
@@ -376,6 +376,6 @@ uint8_t phNxpHal_GetNxpByteArrayValue(const char* name, char* pValue,
  * @return 1 if config param name is found in the config file, else 0
  */
 uint8_t phNxpHal_GetNxpNumValue(const char* name, void* pValue,
-                                unsigned long len);
+                                uint64_t len);
 
 #endif  // NFC_EXTENSION_H
