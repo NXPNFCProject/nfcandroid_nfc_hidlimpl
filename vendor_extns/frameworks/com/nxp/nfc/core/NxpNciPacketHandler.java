@@ -44,7 +44,7 @@ public class NxpNciPacketHandler {
 
     private static final String TAG = "NxpNciPacketHandler";
 
-    private static NxpNciPacketHandler sNxpNciPacketHandler;
+    private static volatile NxpNciPacketHandler sNxpNciPacketHandler;
 
     private NfcAdapter mNfcAdapter;
     private final Map<INxpNfcNtfHandler, Executor> mCallbackMap =
@@ -70,7 +70,11 @@ public class NxpNciPacketHandler {
 
     public static NxpNciPacketHandler getInstance(NfcAdapter nfcAdapter) {
       if (sNxpNciPacketHandler == null) {
-        sNxpNciPacketHandler = new NxpNciPacketHandler(nfcAdapter);
+        synchronized (NxpNciPacketHandler.class) {
+          if (sNxpNciPacketHandler == null) {
+            sNxpNciPacketHandler = new NxpNciPacketHandler(nfcAdapter);
+          }
+        }
       }
       if (sNxpNciPacketHandler == null) {
         NxpNfcLogger.e(TAG, "getInstance: sNxpNciPacketHandler is null");

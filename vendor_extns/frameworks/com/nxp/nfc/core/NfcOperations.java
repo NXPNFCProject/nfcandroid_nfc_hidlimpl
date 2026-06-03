@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.nxp.nfc.core;
 
 import android.content.ComponentName;
@@ -75,7 +74,7 @@ public class NfcOperations {
 
     private NfcAdapter mNfcAdapter;
     private NfcOemExtension mNfcOemExtension;
-    private INxpOEMCallbacks mNxpOemCallbacks = null;
+    private volatile INxpOEMCallbacks mNxpOemCallbacks = null;
     private Object mCallbackLock = new Object();
 
     /**
@@ -277,7 +276,6 @@ public class NfcOperations {
             } else {
                 NxpNfcLogger.d(TAG, "Listen Enabled");
                 mListenTechDisabled = false;
-
             }
         }
     }
@@ -302,8 +300,9 @@ public class NfcOperations {
      * @brief Register/Unregister OEM callback based of isRegister, if not
      *        registered already
      * @param isRegister
+     * @return true if the register/unregister action was actually performed
      */
-    private void conditionallyRegisterOemCallback(boolean isRegister) {
+    private boolean conditionallyRegisterOemCallback(boolean isRegister) {
         synchronized (mCallbackLock) {
             if (mNxpOemCallbacks == null) {
                 if (isRegister) {
@@ -312,7 +311,9 @@ public class NfcOperations {
                 } else {
                     mNfcOemExtension.unregisterCallback(mOemExtensionCallback);
                 }
+                return true;
             }
+            return false;
         }
     }
     /**
@@ -325,29 +326,36 @@ public class NfcOperations {
         NxpNfcLogger.d(TAG, "startDiscovery isStart=" + isStart);
         try {
             synchronized (NfcOperations.this) {
-                conditionallyRegisterOemCallback(true);
-                if (isStart && mIsDiscoveryStarted) {
-                    NxpNfcLogger.d(TAG, " discovery already started");
-                    conditionallyRegisterOemCallback(false);
-                    return;
-                } else if (!isStart && !mIsDiscoveryStarted) {
-                    NxpNfcLogger.d(TAG, " discovery already stopped");
-                    conditionallyRegisterOemCallback(false);
-                    return;
-                }
-                mDisCountDownLatch = new CountDownLatch(1);
-                if (isStart)
-                    mNfcOemExtension.resumePolling();
-                else
-                    mNfcOemExtension.pausePolling(PAUSE_POLLING_INDEFINITELY);
+                boolean didRegister = conditionallyRegisterOemCallback(true);
+                try {
+                    if (isStart && mIsDiscoveryStarted) {
+                        NxpNfcLogger.d(TAG, " discovery already started");
+                        return;
+                    } else if (!isStart && !mIsDiscoveryStarted) {
+                        NxpNfcLogger.d(TAG, " discovery already stopped");
+                        return;
+                    }
 
-                mIsPollingPaused = !isStart;
-                mDisCountDownLatch.await(NxpNfcConstants.SEND_RAW_WAIT_TIME_OUT_VAL,
-                        TimeUnit.MILLISECONDS);
-                conditionallyRegisterOemCallback(false);
+                    mDisCountDownLatch = new CountDownLatch(1);
+                    if (isStart)
+                        mNfcOemExtension.resumePolling();
+                    else
+                        mNfcOemExtension.pausePolling(PAUSE_POLLING_INDEFINITELY);
+                    mIsPollingPaused = !isStart;
+                    mDisCountDownLatch.await(NxpNfcConstants.SEND_RAW_WAIT_TIME_OUT_VAL,
+                            TimeUnit.MILLISECONDS);
+                } finally {
+                    if (didRegister) {
+                        try {
+                            conditionallyRegisterOemCallback(false);
+                        } catch (IllegalArgumentException e) {
+                            NxpNfcLogger.e(TAG, "Oem Callback already unregistered");
+                        }
+                    }
+                }
             }
         } catch (InterruptedException e) {
-            NxpNfcLogger.e(TAG, "Error while changing discovery " +isStart);
+            NxpNfcLogger.e(TAG, "Error while changing discovery " + isStart);
         } catch (IllegalArgumentException e) {
             NxpNfcLogger.e(TAG, "Oem Callback already unregistered");
         }
@@ -385,6 +393,7 @@ public class NfcOperations {
      * @param nxpOEMCallback callback to be register
      */
     public void registerNxpOemCallback(INxpOEMCallbacks nxpOEMCallback) {
+        CountDownLatch latch = null;
         synchronized (mCallbackLock) {
             if (nxpOEMCallback == null) {
                 NxpNfcLogger.e(TAG, "registerNxpOemCallback: nxpOEMCallback is null");
@@ -393,22 +402,24 @@ public class NfcOperations {
             if (mNxpOemCallbacks == null) {
                 resetOemCallbackMap();
                 mCallbackCountDownLatch = new CountDownLatch(mOemCallbackMap.size());
+                latch = mCallbackCountDownLatch;
                 mNfcOemExtension.registerCallback(CALLBACK_EXECUTOR,
                                                     mOemExtensionCallback);
-                try {
-                    if (mCallbackCountDownLatch != null) {
-                        boolean callbackFlag  = mCallbackCountDownLatch.await(
-                                                    NxpNfcConstants.CALLBACK_TIME_OUT_VAL,
-                                                    TimeUnit.MILLISECONDS);
-                        if (!callbackFlag) {
-                            NxpNfcLogger.e(TAG, "All OEM callbacks are not received");
-                        }
-                    }
-                } catch (InterruptedException e) {
-                    NxpNfcLogger.e(TAG, "Error in registerCallback");
-                }
             }
             mNxpOemCallbacks = nxpOEMCallback;
+        }
+        // await OUTSIDE the lock so callback threads can acquire mCallbackLock
+        if (latch != null) {
+            try {
+                boolean callbackFlag = latch.await(
+                                            NxpNfcConstants.CALLBACK_TIME_OUT_VAL,
+                                            TimeUnit.MILLISECONDS);
+                if (!callbackFlag) {
+                    NxpNfcLogger.e(TAG, "All OEM callbacks are not received");
+                }
+            } catch (InterruptedException e) {
+                NxpNfcLogger.e(TAG, "Error in registerCallback");
+            }
         }
     }
 
@@ -428,14 +439,18 @@ public class NfcOperations {
         return mIsPollingPaused;
     }
 
-
     /**
      * @brief unregisters to OEM callbacks through NXP extensions
      */
     public void unregisterNxpOemCallback() {
         synchronized (mCallbackLock) {
             if (mNxpOemCallbacks != null) {
-                mNfcOemExtension.unregisterCallback(mOemExtensionCallback);
+                try {
+                    mNfcOemExtension.unregisterCallback(mOemExtensionCallback);
+                } catch (IllegalArgumentException e) {
+                    NxpNfcLogger.d(TAG,
+                            "Callback already unregistered, skipping");
+                }
             }
             mNxpOemCallbacks = null;
         }
@@ -484,8 +499,9 @@ public class NfcOperations {
         public void onDisableRequested(Consumer<Boolean> isAllowed) {
             NxpNfcLogger.d(TAG, "onDisableRequested :");
             boolean allowDisable = true;
-            if (mNxpOemCallbacks != null) {
-                allowDisable = mNxpOemCallbacks.onDisableRequested();
+            INxpOEMCallbacks callbacks = mNxpOemCallbacks;
+            if (callbacks != null) {
+                allowDisable = callbacks.onDisableRequested();
             }
             isAllowed.accept(allowDisable);
         }
@@ -550,8 +566,9 @@ public class NfcOperations {
         public void onRfFieldDetected(boolean isActive) {
             NfcOperations.this.mIsRfFieldDetected = isActive;
             NxpNfcLogger.d(TAG, "onRfFieldDetected: " + isActive);
-            if (mNxpOemCallbacks != null) {
-                mNxpOemCallbacks.onRfFieldDetected(isActive);
+            INxpOEMCallbacks callbacks = mNxpOemCallbacks;
+            if (callbacks != null) {
+                callbacks.onRfFieldDetected(isActive);
             }
             if (mCallbackCountDownLatch != null) updateOemCallbackMap("onRfFieldDetected");
         }
@@ -613,12 +630,10 @@ public class NfcOperations {
     };
 
     ControllerAlwaysOnListener mControllerAlwaysOnListener = new ControllerAlwaysOnListener() {
-
         @Override
         public void onControllerAlwaysOnChanged(boolean isEnabled) {
             NxpNfcLogger.d(TAG, "onControllerAlwaysOnChanged: " + isEnabled);
             if (mControllerAlwaysOnLatch != null) mControllerAlwaysOnLatch.countDown();
-
         }
     };
 
@@ -702,8 +717,9 @@ public class NfcOperations {
                 NxpNfcLogger.e(TAG, "doInBackground: params is null or empty");
                 return null;
             }
-            if (mNxpOemCallbacks != null) {
-                mNxpOemCallbacks.onEnableFinished(params[0]);
+            INxpOEMCallbacks callbacks = mNxpOemCallbacks;
+            if (callbacks != null) {
+                callbacks.onEnableFinished(params[0]);
             }
             return null;
         }
@@ -718,8 +734,9 @@ public class NfcOperations {
                 NxpNfcLogger.e(TAG, "doInBackground: params is null or empty");
                 return null;
             }
-            if (mNxpOemCallbacks != null) {
-                mNxpOemCallbacks.onBootFinished(params[0]);
+            INxpOEMCallbacks callbacks = mNxpOemCallbacks;
+            if (callbacks != null) {
+                callbacks.onBootFinished(params[0]);
             }
             return null;
         }
