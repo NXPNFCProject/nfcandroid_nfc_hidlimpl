@@ -43,6 +43,7 @@
 #define FW_MOBILE_MAJOR_NUMBER_PN557_V2 0x21
 #define FW_MOBILE_MAJOR_NUMBER_SN100U 0x010
 #define FW_MOBILE_MAJOR_NUMBER_SN220U 0x01
+#define FW_MOBILE_MAJOR_NUMBER_PN560_CRYPTO 0x02
 #define FW_MOBILE_MAJOR_NUMBER_SN300U 0x20
 
 #define NCI_CMD_RSP_SUCCESS_SW1 0x60
@@ -114,6 +115,7 @@ enum tNFC_chipType_enum : std::uint8_t {
   sn100u,
   sn220u,
   pn560,
+  pn560_v2,
   sn300u
 };
 
@@ -284,6 +286,15 @@ extern tNfc_featureList nfcFL;
         STRCPY_FW_BIN("sn220u")                                        \
         break;                                                         \
       case pn560:                                                      \
+        nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_NCI_CMD;       \
+        nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;          \
+        nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = false;                     \
+        nfcFL.nfccFL._NFCC_FORCE_FW_DOWNLOAD = true;                   \
+        nfcFL._FW_MOBILE_MAJOR_NUMBER = FW_MOBILE_MAJOR_NUMBER_SN220U; \
+        STRCPY_FW("libpn560_fw")                                       \
+        STRCPY_FW_BIN("pn560")                                         \
+        break;                                                         \
+      case pn560_v2:                                                   \
         nfcFL.nfccFL._NFCC_DWNLD_MODE = NFCC_DWNLD_WITH_NCI_CMD;       \
         nfcFL.nfccFL._NFCC_I2C_READ_WRITE_IMPROVEMENT = true;          \
         nfcFL.nfccFL._NFCC_MIFARE_TIANJIN = false;                     \

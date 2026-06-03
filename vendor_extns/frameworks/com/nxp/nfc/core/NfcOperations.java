@@ -305,11 +305,16 @@ public class NfcOperations {
     private boolean conditionallyRegisterOemCallback(boolean isRegister) {
         synchronized (mCallbackLock) {
             if (mNxpOemCallbacks == null) {
-                if (isRegister) {
-                    mNfcOemExtension.registerCallback(CALLBACK_EXECUTOR,
-                                                        mOemExtensionCallback);
-                } else {
-                    mNfcOemExtension.unregisterCallback(mOemExtensionCallback);
+                try {
+                    if (isRegister) {
+                        mNfcOemExtension.registerCallback(CALLBACK_EXECUTOR,
+                                                            mOemExtensionCallback);
+                    } else {
+                        mNfcOemExtension.unregisterCallback(mOemExtensionCallback);
+                    }
+                } catch (IllegalArgumentException e) {
+                    NxpNfcLogger.e(TAG, "Exception while register oem callback");
+                    return false;
                 }
                 return true;
             }

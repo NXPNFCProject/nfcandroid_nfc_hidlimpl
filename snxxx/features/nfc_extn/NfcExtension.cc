@@ -42,6 +42,25 @@ const std::string configure_vendor_feature_name = "configure_vendor_feature";
 void* p_oem_extn_handle = NULL;
 NfcExtEventData_t nfc_ext_event_data;
 
+
+/*crpto card handles*/
+fp_crypto_extn_init_t fp_crypto_extn_init = NULL;
+fp_crypto_extn_deinit_t fp_crypto_extn_deinit = NULL;
+fp_crypto_extn_handle_nfc_event_t fp_crypto_extn_handle_nfc_event = NULL;
+fp_crypto_extn_check_vc_info_and_take_backup_t
+    fp_crypto_extn_check_vc_info_and_take_backup = NULL;
+fp_crypto_extn_check_and_restore_vc_t fp_crypto_extn_check_and_restore_vc =
+    NULL;
+const std::string crypto_nfc_init_name = "crypto_nfc_init";
+const std::string crypto_nfc_de_init_name = "crypto_nfc_de_init";
+const std::string crypto_nfc_handle_event_name = "crypto_nfc_handle_event";
+const std::string crypto_check_vc_info_and_take_backup_name =
+    "crypto_check_vc_info_and_take_backup";
+const std::string crypto_check_and_restore_vc_name =
+    "crypto_check_and_restore_vc";
+
+void* p_crypto_extn_handle = NULL;
+
 /**************** local methods used in this file only ************************/
 /**
  * @brief Initialize and resets up the extension
@@ -50,12 +69,17 @@ NfcExtEventData_t nfc_ext_event_data;
  *
  */
 static void phNxpExtn_Init();
+static void phNxpCryptoExtn_Init();
 
 std::string mLibName = "libnfc_vendor_extn.so";
+std::string mCryptoLibName = "libnfc_crypto_extn.so";
+
 #if (defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64))
 std::string mLibPathName = "/system/vendor/lib64/" + mLibName;
+std::string mCryptoLibPathName = "/system/vendor/lib64/" + mCryptoLibName;
 #else
 std::string mLibPathName = "/system/vendor/lib/" + mLibName;
+std::string mCryptoLibPathName = "/system/vendor/lib/" + mCryptoLibName;
 #endif
 
 extern phNxpNciHal_WriterThread& g_writerThread;
@@ -166,17 +190,124 @@ void phNxpExtn_LibClose() {
   }
 }
 
+void phNxpCryptoExtn_LibSetup() {
+  NXPLOG_NCIHAL_D("%s Enter", __func__);
+  p_crypto_extn_handle = dlopen(mCryptoLibPathName.c_str(), RTLD_NOW);
+  if (p_crypto_extn_handle == NULL) {
+    NXPLOG_NCIHAL_E("%s Error : opening (%s) !!", __func__,
+                    mCryptoLibPathName.c_str());
+    return;
+  }
+
+  if ((fp_crypto_extn_init = (fp_crypto_extn_init_t)dlsym(
+           p_crypto_extn_handle, crypto_nfc_init_name.c_str())) == NULL) {
+    NXPLOG_NCIHAL_E("%s Failed to find %s !!", __func__,
+                    crypto_nfc_init_name.c_str());
+  }
+
+  if ((fp_crypto_extn_deinit = (fp_crypto_extn_deinit_t)dlsym(
+           p_crypto_extn_handle, crypto_nfc_de_init_name.c_str())) == NULL) {
+    NXPLOG_NCIHAL_E("%s Failed to find %s !!", __func__,
+                    crypto_nfc_de_init_name.c_str());
+  }
+
+  if ((fp_crypto_extn_handle_nfc_event =
+           (fp_crypto_extn_handle_nfc_event_t)dlsym(
+               p_crypto_extn_handle, crypto_nfc_handle_event_name.c_str())) ==
+      NULL) {
+    NXPLOG_NCIHAL_E("%s Failed to find %s !!", __func__,
+                    crypto_nfc_handle_event_name.c_str());
+  }
+
+  if ((fp_crypto_extn_check_vc_info_and_take_backup =
+           (fp_crypto_extn_check_vc_info_and_take_backup_t)dlsym(
+               p_crypto_extn_handle,
+               crypto_check_vc_info_and_take_backup_name.c_str())) == NULL) {
+    NXPLOG_NCIHAL_E("%s Failed to find %s !!", __func__,
+                    crypto_check_vc_info_and_take_backup_name.c_str());
+  }
+
+  // fp_crypto_extn_check_and_restore_vc
+  if ((fp_crypto_extn_check_and_restore_vc =
+           (fp_crypto_extn_check_and_restore_vc_t)dlsym(
+               p_crypto_extn_handle,
+               crypto_check_and_restore_vc_name.c_str())) == NULL) {
+    NXPLOG_NCIHAL_E("%s Failed to find %s !!", __func__,
+                    crypto_check_and_restore_vc_name.c_str());
+  }
+
+  phNxpCryptoExtn_Init();
+}
+
+/* Crypto Extension feature API's Start */
+void phNxpCryptoExtn_Init() {
+  NXPLOG_NCIHAL_D("%s Enter", __func__);
+  if (fp_crypto_extn_init != NULL) {
+    if (fp_crypto_extn_init()) {
+      NXPLOG_NCIHAL_D("%s : %s Success", __func__,
+                      vendor_nfc_init_name.c_str());
+    } else {
+      NXPLOG_NCIHAL_D("%s: %s Failed", __func__, vendor_nfc_init_name.c_str());
+    }
+  }
+}
+
+void phNxpCryptoExtn_LibClose() {
+  NXPLOG_NCIHAL_D("%s Enter", __func__);
+  if (fp_crypto_extn_deinit != NULL) {
+    if (!fp_crypto_extn_deinit()) {
+      NXPLOG_NCIHAL_D("%s : %s Failed ", __func__,
+                      crypto_nfc_de_init_name.c_str());
+    }
+  }
+  if (p_crypto_extn_handle != NULL) {
+    NXPLOG_NCIHAL_D("%s Closing libnfc_crypto_extn.so lib", __func__);
+    int32_t status = dlclose(p_crypto_extn_handle);
+    dlerror(); /* Clear any existing error */
+    if (status != 0) {
+      NXPLOG_NCIHAL_E("%s Free libnfc_crypto_extn.so failed", __func__);
+    }
+    fp_crypto_extn_init = NULL;
+    fp_crypto_extn_deinit = NULL;
+    fp_crypto_extn_handle_nfc_event = NULL;
+    p_crypto_extn_handle = NULL;
+  }
+}
+
 NFCSTATUS phNxpExtn_HandleNciMsg(uint16_t* dataLen, const uint8_t* pData) {
   NXPLOG_NCIHAL_D("%s Enter dataLen:%d", __func__, *dataLen);
+  NFCSTATUS status = NFCSTATUS_EXTN_FEATURE_FAILURE;
   NciData_t nci_data;
   nci_data.data_len = *dataLen;
   nci_data.p_data = const_cast<uint8_t*>(pData);
   nfc_ext_event_data.nci_msg = nci_data;
 
   if (fp_extn_handle_nfc_event != NULL)
-    return fp_extn_handle_nfc_event(HANDLE_VENDOR_NCI_MSG, nfc_ext_event_data);
-  else
-    return NFCSTATUS_EXTN_FEATURE_FAILURE;
+    status =
+        fp_extn_handle_nfc_event(HANDLE_VENDOR_NCI_MSG, nfc_ext_event_data);
+
+  if (status != NFCSTATUS_EXTN_FEATURE_SUCCESS &&
+      fp_crypto_extn_handle_nfc_event != NULL) {
+    status = fp_crypto_extn_handle_nfc_event(HANDLE_VENDOR_NCI_MSG,
+                                             &nfc_ext_event_data);
+
+  }
+
+  return status;
+}
+
+void phNxpCryptoExtn_checkVCInfoAndTakeBackup() {
+  NXPLOG_NCIHAL_D("%s", __func__);
+  if (fp_crypto_extn_check_vc_info_and_take_backup != NULL) {
+    fp_crypto_extn_check_vc_info_and_take_backup();
+  }
+}
+
+void phNxpCryptoExtn_checkAndRestoreVc() {
+  NXPLOG_NCIHAL_D("%s", __func__);
+  if (fp_crypto_extn_check_and_restore_vc != NULL) {
+    fp_crypto_extn_check_and_restore_vc();
+  }
 }
 
 NFCSTATUS phNxpExtn_HandleHalEvent(uint8_t handle_event) {
@@ -200,22 +331,22 @@ void phNxpExtn_WriteCompleteStatusUpdate(NFCSTATUS status) {
 
 NFCSTATUS phNxpExtn_HandleNciRspNtf(uint16_t* dataLen, const uint8_t* pData) {
   NXPLOG_NCIHAL_D("%s Enter dataLen:%d", __func__, *dataLen);
+  NFCSTATUS status = NFCSTATUS_EXTN_FEATURE_FAILURE;
   NciData_t nci_data;
   nci_data.data_len = *dataLen;
   nci_data.p_data = const_cast<uint8_t*>(pData);
-  ;
   nfc_ext_event_data.nci_rsp_ntf = nci_data;
 
   if (fp_extn_handle_nfc_event != NULL) {
-    if (NFCSTATUS_EXTN_FEATURE_SUCCESS !=
-        fp_extn_handle_nfc_event(HANDLE_VENDOR_NCI_RSP_NTF,
-                                 nfc_ext_event_data)) {
-      return NFCSTATUS_EXTN_FEATURE_FAILURE;
-    }
-  } else {
-    return NFCSTATUS_EXTN_FEATURE_FAILURE;
+    status = fp_extn_handle_nfc_event(HANDLE_VENDOR_NCI_RSP_NTF,
+                                 nfc_ext_event_data);
   }
-  return NFCSTATUS_EXTN_FEATURE_SUCCESS;
+
+  if (status != NFCSTATUS_EXTN_FEATURE_SUCCESS &&
+        fp_crypto_extn_handle_nfc_event != NULL)
+    status = fp_crypto_extn_handle_nfc_event(HANDLE_VENDOR_NCI_RSP_NTF,
+                                             &nfc_ext_event_data);                           
+  return status;
 }
 
 void phNxpExtn_FwDnldStatusUpdate(uint8_t status) {

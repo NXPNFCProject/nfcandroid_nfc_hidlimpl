@@ -258,7 +258,8 @@ NFCSTATUS phDnldNfc_CheckIntegrity(uint8_t bChipVer, pphDnldNfc_Buff_t pCRCData,
             ((PHDNLDNFC_HWVER_PN557_MRA1_0 == bChipVer)))) ||
           (IS_CHIP_TYPE_EQ(sn100u) &&
            (PHDNLDNFC_HWVER_VENUS_MRA1_0 & bChipVer)) ||
-          ((IS_CHIP_TYPE_EQ(sn220u) || IS_CHIP_TYPE_EQ(pn560)) &&
+          ((IS_CHIP_TYPE_EQ(sn220u) || IS_CHIP_TYPE_EQ(pn560) ||
+            IS_CHIP_TYPE_EQ(pn560_v2)) &&
            (PHDNLDNFC_HWVER_VULCAN_MRA1_0 & bChipVer)) ||
           (IS_CHIP_TYPE_EQ(sn300u) &&
            (PHDNLDNFC_HWVER_EOS_MRA2_0 & bChipVer))) {
@@ -832,7 +833,8 @@ NFCSTATUS phDnldNfc_InitImgInfo(bool bMinimalFw, bool degradedFwDnld) {
     if ((NULL != gpphDnldContext->nxp_nfc_fw) &&
         (0 != gpphDnldContext->nxp_nfc_fw_len)) {
       uint16_t offsetFwMajorNum, offsetFwMinorNum;
-      if (IS_CHIP_TYPE_GE(sn220u) || IS_CHIP_TYPE_EQ(pn560)) {
+      if (IS_CHIP_TYPE_GE(sn220u) || IS_CHIP_TYPE_EQ(pn560) ||
+            IS_CHIP_TYPE_EQ(pn560_v2)) {
         offsetFwMajorNum =
             (static_cast<uint16_t>(gpphDnldContext->nxp_nfc_fw[795]) << 8U);
         offsetFwMinorNum =

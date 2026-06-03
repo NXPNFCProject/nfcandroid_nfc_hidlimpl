@@ -230,6 +230,7 @@ typedef struct phNxpNciHal_Control {
   bool_t felica_filter_not_required;
   bool_t power_reset_triggered;
   bool_t isUlpdetModeEnabled;
+  bool_t isCrypto1Supported;
 } phNxpNciHal_Control_t;
 
 typedef struct {

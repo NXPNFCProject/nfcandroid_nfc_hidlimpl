@@ -449,7 +449,8 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
                         pRespBuff->pBuff[0]))))) ||
            (IS_CHIP_TYPE_EQ(sn100u) &&
             IS_EQUAL(PHDNLDNFC_HWVER_VENUS_MRA1_0, pRespBuff->pBuff[0])) ||
-           ((IS_CHIP_TYPE_EQ(sn220u) || IS_CHIP_TYPE_EQ(pn560)) &&
+           ((IS_CHIP_TYPE_EQ(sn220u) || IS_CHIP_TYPE_EQ(pn560) ||
+             IS_CHIP_TYPE_EQ(pn560_v2)) &&
             IS_EQUAL(PHDNLDNFC_HWVER_VULCAN_MRA1_0, pRespBuff->pBuff[0])) ||
            (IS_CHIP_TYPE_EQ(sn300u) &&
             IS_EQUAL(PHDNLDNFC_HWVER_EOS_MRA2_0, pRespBuff->pBuff[0])));
@@ -464,7 +465,8 @@ static void phNxpNciHal_fw_dnld_get_version_cb(void* pContext, NFCSTATUS status,
                    (PHDNLDNFC_HWVER_VENUS_MRA1_0 & pRespBuff->pBuff[0])) {
           (gphNxpNciHal_fw_IoctlCtx.bChipVer) = pRespBuff->pBuff[0];
           bExpectedLen = PHLIBNFC_IOCTL_DNLD_SN100U_GETVERLEN;
-        } else if ((IS_CHIP_TYPE_EQ(sn220u) || IS_CHIP_TYPE_EQ(pn560)) &&
+        } else if ((IS_CHIP_TYPE_EQ(sn220u) || IS_CHIP_TYPE_EQ(pn560) ||
+                    IS_CHIP_TYPE_EQ(pn560_v2)) &&
                    (PHDNLDNFC_HWVER_VULCAN_MRA1_0 & pRespBuff->pBuff[0])) {
           (gphNxpNciHal_fw_IoctlCtx.bChipVer) = pRespBuff->pBuff[0];
           bExpectedLen = PHLIBNFC_IOCTL_DNLD_SN220U_GETVERLEN;
@@ -817,7 +819,8 @@ static NFCSTATUS phNxpNciHal_fw_dnld_log_read(void* pContext, NFCSTATUS status,
        ((((gphNxpNciHal_fw_IoctlCtx.bPrevSessnOpen) == true)) &&
         ((gphNxpNciHal_fw_IoctlCtx.bRetryDnld) == true))) ||
       IS_CHIP_TYPE_EQ(sn100u) || IS_CHIP_TYPE_EQ(sn220u) ||
-      IS_CHIP_TYPE_EQ(pn560) || IS_CHIP_TYPE_EQ(sn300u))
+      IS_CHIP_TYPE_EQ(pn560) || IS_CHIP_TYPE_EQ(pn560_v2) ||
+      IS_CHIP_TYPE_EQ(sn300u))
 
   {
     return NFCSTATUS_SUCCESS;

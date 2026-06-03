@@ -85,6 +85,17 @@ tNFC_chipType capability::determineChipTypeFromNciRsp(uint8_t* msg,
     } else {
       chip_type = sn220u;
     }
+  }
+  // PN560_v2 Crypto FW
+  else if (GET_FW_ROM_VERSION_NCI_RESP(msg, msg_len) ==
+               FW_MOBILE_ROM_VERSION_SN220U &&
+           GET_FW_MAJOR_VERSION_NCI_RESP(msg, msg_len) ==
+               FW_MOBILE_MAJOR_NUMBER_PN560_CRYPTO) {
+    if ((msg_len >= 4) &&
+        (GET_HW_VERSION_NCI_RESP(msg, msg_len) == HW_PN560_V1 ||
+         GET_HW_VERSION_NCI_RESP(msg, msg_len) == HW_PN560_V2)) {
+      chip_type = pn560_v2;
+    }
   } else if (GET_FW_ROM_VERSION_NCI_RESP(msg, msg_len) ==
                  FW_MOBILE_ROM_VERSION_SN300U &&
              GET_FW_MAJOR_VERSION_NCI_RESP(msg, msg_len) ==
@@ -118,6 +129,12 @@ tNFC_chipType capability::determineChipTypeFromDLRsp(uint8_t* msg,
       chip_type = pn560;
     } else {
       chip_type = sn220u;
+    }
+  } else if (msg[offsetFwRomCodeVersion] == FW_MOBILE_ROM_VERSION_SN220U &&
+             msg[offsetFwMajorVersion] == FW_MOBILE_MAJOR_NUMBER_PN560_CRYPTO) {
+    if (msg[offsetDlRspChipType] == HW_PN560_V1 ||
+        msg[offsetDlRspChipType] == HW_PN560_V2) {
+      chip_type = pn560_v2;
     }
   } else if (msg[offsetFwRomCodeVersion] == FW_MOBILE_ROM_VERSION_SN100U &&
              msg[offsetFwMajorVersion] == FW_MOBILE_MAJOR_NUMBER_SN100U)

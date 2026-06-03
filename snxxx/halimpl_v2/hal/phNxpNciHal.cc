@@ -166,6 +166,7 @@ static void phNxpNciHal_enable_i2c_fragmentation();
 static NFCSTATUS phNxpNciHal_get_mw_eeprom(void);
 static NFCSTATUS phNxpNciHal_set_mw_eeprom(void);
 static void phNxpNciHal_configureLxDebugMode();
+static void phNxpNciHal_updateCryptoConfig();
 static void phNxpNciHal_gpio_restore(phNxpNciHal_GpioInfoState state);
 static void phNxpNciHal_initialize_debug_enabled_flag();
 static void phNxpNciHal_initialize_mifare_flag();
@@ -748,6 +749,27 @@ int phNxpNciHal_MinOpen() {
         phDnldNfc_ReSetHwDevHandle();
       }
     }
+
+    if (IS_CHIP_TYPE_EQ(pn560_v2)) {
+      long retlen = 0;
+      uint8_t* buffer = NULL;
+      long bufflen = 260;
+      buffer = (uint8_t*)malloc(bufflen * sizeof(uint8_t));
+      int isfound = GetNxpByteArrayValue(NAME_NXP_CRYPTO1_CARD_CONF,
+                                         (char*)buffer, bufflen, &retlen);
+      if (isfound > 0 && retlen > 0) {
+        nxpncihal_ctrl.isCrypto1Supported = true;
+        phNxpCryptoExtn_LibSetup();
+        phNxpCryptoExtn_checkVCInfoAndTakeBackup();
+      } else {
+        nxpncihal_ctrl.isCrypto1Supported = false;
+      }
+      if (buffer != NULL) {
+        free(buffer);
+        buffer = NULL;
+      }
+    }
+
   } else {
     NXPLOG_NCIHAL_E("Communication error, Need FW Recovery and Config Update");
     sIsHalOpenErrorRecovery = true;
@@ -1478,10 +1500,8 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
 
   if (IS_CHIP_TYPE_GE(sn100u)) {
     num = 0;
-    if ((GetNxpNumValue(NAME_NXP_CE_SUPPORT_IN_NFC_OFF_PHONE_OFF, &num,
-                        sizeof(num))) &&
-        (IS_CHIP_TYPE_EQ(sn220u) || IS_CHIP_TYPE_EQ(sn300u) ||
-         IS_CHIP_TYPE_EQ(pn560))) {
+    if (GetNxpNumValue(NAME_NXP_CE_SUPPORT_IN_NFC_OFF_PHONE_OFF, &num, sizeof(num)) &&
+        (IS_CHIP_TYPE_EQ(sn220u) || IS_CHIP_TYPE_EQ(sn300u) || IS_CHIP_TYPE_EQ(pn560) || IS_CHIP_TYPE_EQ(pn560_v2))) {
       if (num == ENABLE_T4T_CE) enable_ce_in_phone_off = num;
     }
     mEEPROM_info.buffer = &enable_ce_in_phone_off;
@@ -1983,6 +2003,11 @@ int phNxpNciHal_core_initialized(uint16_t core_init_rsp_params_len,
     }
   }
 
+  if (nxpncihal_ctrl.isCrypto1Supported) {
+    phNxpNciHal_updateCryptoConfig();
+    phNxpCryptoExtn_checkAndRestoreVc();
+  }
+
   if (buffer) {
     free(buffer);
     buffer = NULL;
@@ -2174,7 +2199,8 @@ int phNxpNciHal_close(bool bShutdown) {
   if (sem_val == 0) {
     sem_post(&(nxpncihal_ctrl.syncSpiNfc));
   }
-  if ((IS_CHIP_TYPE_GE(sn100u)) && (IS_CHIP_TYPE_NE(pn560))) {
+  if ((IS_CHIP_TYPE_GE(sn100u)) && (IS_CHIP_TYPE_NE(pn560)||
+            IS_CHIP_TYPE_EQ(pn560_v2))) {
     status = phNxpNciHal_send_ext_cmd(sizeof(cmd_ese_nfcee_power_on),
                                       cmd_ese_nfcee_power_on, &rsp_len, rsp);
     if (status != NFCSTATUS_SUCCESS) {
@@ -2195,9 +2221,11 @@ int phNxpNciHal_close(bool bShutdown) {
    */
   if (!bShutdown && phNxpNciHal_getULPDetFlag() == false) {
     if ((IS_CHIP_TYPE_GE(sn100u) && IS_CHIP_TYPE_L(sn300u) &&
-         !IS_CHIP_TYPE_EQ(sn220u) && !IS_CHIP_TYPE_EQ(pn560)) ||
+         !IS_CHIP_TYPE_EQ(sn220u) && !(IS_CHIP_TYPE_EQ(pn560) ||
+            IS_CHIP_TYPE_EQ(pn560_v2))) ||
         ((IS_CHIP_TYPE_EQ(sn220u) || IS_CHIP_TYPE_EQ(sn300u) ||
-          IS_CHIP_TYPE_EQ(pn560)) &&
+          IS_CHIP_TYPE_EQ(pn560) ||
+            IS_CHIP_TYPE_EQ(pn560_v2)) &&
          (GetNxpNumValue(NAME_NXP_CE_SUPPORT_IN_NFC_OFF_PHONE_OFF, &num,
                          sizeof(num))) &&
          ((num == NXP_PHONE_OFF_NFC_OFF_CE_NOT_SUPPORTED) ||
@@ -2357,6 +2385,11 @@ close_and_return:
     NXPLOG_NCIHAL_D("phNxpNciHal_close - phOsalNfc_DeInit completed");
   }
   NXPLOG_NCIHAL_D("phNxpNciHal_close Closing extension library");
+
+  if (nxpncihal_ctrl.isCrypto1Supported) {
+    phNxpCryptoExtn_LibClose();
+  }
+
   phNxpExtn_LibClose();
   nxpncihal_ctrl.p_nfc_stack_cback = NULL;
   nxpncihal_ctrl.p_nfc_stack_data_cback = NULL;
@@ -3983,6 +4016,82 @@ void phNxpNciHal_configureLxDebugMode() {
   if (status != NFCSTATUS_SUCCESS) {
     NXPLOG_NCIHAL_E("Set lxDebug config failed");
   }
+}
+
+void phNxpNciHal_updateCryptoConfig() {
+  unsigned long num = 0;
+  // uint8_t buffer[sizeof(num)];
+  uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
+  uint16_t rsp_len = 0;
+
+  long bufflen = 260;
+  uint8_t* buffer = NULL;
+
+  if (IS_CHIP_TYPE_NE(pn560_v2)) {
+    NXPLOG_NCIHAL_D("%s: feature is not supported", __func__);
+    return;
+  }
+  vector<uint8_t> cmd_get_transparent_timeout = {0x20, 0x03, 0x03,
+                                                 0x01, 0xA1, 0x17};
+  vector<uint8_t> cmd_set_transparent_timeout = {0x20, 0x02, 0x06, 0x01, 0xA1,
+                                                 0x17, 0x02, 0x00, 0x00};
+
+  if (NFCSTATUS_SUCCESS !=
+      phNxpNciHal_send_ext_cmd(cmd_get_transparent_timeout.size(),
+                               &cmd_get_transparent_timeout[0], &rsp_len,
+                               rsp)) {
+    NXPLOG_NCIHAL_E("%s: failed!! Line:%d", __func__, __LINE__);
+    return;
+  }
+
+  if ((rsp_len <= 9) || (NFCSTATUS_SUCCESS != rsp[3])) {
+    NXPLOG_NCIHAL_E("%s: failed!! Line:%d", __func__, __LINE__);
+    return;
+  }
+
+  if (!GetNxpNumValue(NAME_NXP_CRYPTO1_TRANSPARENT_TIMEOUT_VALUE, &num,
+                      sizeof(num)))
+    num = CRYPTO1_TRANSPARENT_DEFAULT_TIMEOUT_VALUE;
+
+  // Update last two bytes with num (little-endian)
+  cmd_set_transparent_timeout[7] = static_cast<uint8_t>(num & 0xFF);
+  cmd_set_transparent_timeout[8] = static_cast<uint8_t>((num >> 8) & 0xFF);
+
+  if ((rsp[8] != cmd_set_transparent_timeout[7]) ||
+      (rsp[9] != cmd_set_transparent_timeout[8])) {
+    if (NFCSTATUS_SUCCESS !=
+        phNxpNciHal_send_ext_cmd(cmd_set_transparent_timeout.size(),
+                                 &cmd_set_transparent_timeout[0], &rsp_len,
+                                 rsp)) {
+      NXPLOG_NCIHAL_E("%s: failed!! Line:%d", __func__, __LINE__);
+      return;
+    }
+  }
+
+  buffer = (uint8_t*)malloc(bufflen * sizeof(uint8_t));
+  if (NULL == buffer) {
+    return;
+  }
+
+  long retlen = 0;
+  bool isfound = GetNxpByteArrayValue(NAME_NXP_CRYPTO1_CARD_CONF, (char*)buffer,
+                                      bufflen, &retlen);
+  if (isfound > 0 && retlen > 0) {
+    NXPLOG_NCIHAL_D("Congigure NXP_CRYPTO1_CARD_CONF");
+    NFCSTATUS status = phNxpNciHal_send_ext_cmd(retlen, buffer, &rsp_len, rsp);
+    if (status != NFCSTATUS_SUCCESS) {
+      NXPLOG_NCIHAL_E("NXP_CRYPTO1_CARD_CONF failed");
+    }
+  } else {
+    NXPLOG_NCIHAL_D("Congigure NXP_CRYPTO1_CARD_CONF is not set");
+  }
+
+  if (buffer) {
+    free(buffer);
+    buffer = NULL;
+  }
+
+  return;
 }
 
 /*******************************************************************************

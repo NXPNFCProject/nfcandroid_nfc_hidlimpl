@@ -617,7 +617,8 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
           if (0 != (pDlContext->tRWInfo.wRWPldSize)) {
             if ((pDlContext->tRWInfo.bFramesSegmented) == true) {
               /* Turning ON the Fragmentation bit in FrameLen */
-              if (IS_CHIP_TYPE_GE(sn220u) || IS_CHIP_TYPE_EQ(pn560)) {
+              if (IS_CHIP_TYPE_GE(sn220u) || IS_CHIP_TYPE_EQ(pn560) ||
+                  IS_CHIP_TYPE_EQ(pn560_v2)) {
                 wFrameLen = PHDNLDNFC_SET_HDR_FRAGBIT_SN220(wFrameLen);
               } else {
                 wFrameLen = PHDNLDNFC_SET_HDR_FRAGBIT(wFrameLen);
@@ -632,7 +633,8 @@ static NFCSTATUS phDnldNfc_BuildFramePkt(pphDnldNfc_DlContext_t pDlContext) {
                 PH_DNLDNFC_UINT16_GET_LSB(wFrameLen);
 
             /* To ensure we have no frag bit set for crc calculation */
-            if (IS_CHIP_TYPE_GE(sn220u) || IS_CHIP_TYPE_EQ(pn560)) {
+            if (IS_CHIP_TYPE_GE(sn220u) || IS_CHIP_TYPE_EQ(pn560) ||
+                IS_CHIP_TYPE_EQ(pn560_v2)) {
               wFrameLen = PHDNLDNFC_CLR_HDR_FRAGBIT_SN220(wFrameLen);
             } else {
               wFrameLen = PHDNLDNFC_CLR_HDR_FRAGBIT(wFrameLen);

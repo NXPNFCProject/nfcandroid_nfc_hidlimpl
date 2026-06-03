@@ -110,6 +110,13 @@ typedef NFCSTATUS (*fp_extn_handle_nfc_event_t)(NfcExtEvent_t,
                                                 NfcExtEventData_t);
 typedef bool (*fp_extn_configure_vendor_feature_t)();
 
+typedef bool (*fp_crypto_extn_init_t)();
+typedef bool (*fp_crypto_extn_deinit_t)();
+typedef NFCSTATUS (*fp_crypto_extn_handle_nfc_event_t)(NfcExtEvent_t,
+                                                       NfcExtEventData_t*);
+typedef void (*fp_crypto_extn_check_vc_info_and_take_backup_t)();
+typedef void (*fp_crypto_extn_check_and_restore_vc_t)();
+
 /**
  * @brief This function sets up and initialize the extension feature
  * @return void
@@ -123,6 +130,32 @@ void phNxpExtn_LibSetup();
  *
  */
 void phNxpExtn_LibClose();
+
+/**
+ * @brief This function sets up and initialize the crypto extension feature
+ * @return void
+ *
+ */
+void phNxpCryptoExtn_LibSetup();
+
+/**
+ * @brief This function de-initializes the crypto extension feature
+ * @return void
+ *
+ */
+void phNxpCryptoExtn_LibClose();
+
+/**
+ * @brief This function check vc info and take backup
+ * @return void
+ */
+void phNxpCryptoExtn_checkVCInfoAndTakeBackup();
+
+/**
+ * @brief This function check and restore vc
+ * @return void
+ */
+void phNxpCryptoExtn_checkAndRestoreVc();
 
 /**
  * @brief update vendor specific configurations in NFC Init
