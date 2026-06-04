@@ -129,7 +129,7 @@ uint8_t write_unlocked_status = NFCSTATUS_SUCCESS;
 uint8_t wFwUpdateReq = false;
 bool wRfUpdateReq = false;
 uint32_t timeoutTimerId = 0;
-bool nfc_debug_enabled = true;
+bool nfc_debug_enabled = false;
 PowerTrackerHandle gPowerTrackerHandle;
 WiredSeHandle* gWiredSeHandle;
 sem_t sem_reset_ntf_received;
@@ -3935,6 +3935,10 @@ void phNxpNciHal_configureLxDebugMode() {
   config_found = GetNxpNumValue(NAME_NXP_CORE_PROP_SYSTEM_DEBUG, &config_val,
                                 sizeof(config_val));
 
+  // Enable L1 logs when nfc.debug_enabled property is enabled
+  if(nfc_debug_enabled)
+    lx_debug_cfg = 0x2017;
+
   if (prop_found) {
     lx_debug_cfg |= prop_val;
   }
@@ -4059,14 +4063,6 @@ void phNxpNciHal_deinitializeRegRfFwDnld() {
 
 void phNxpNciHal_setVerboseLogging(bool enable) {
   nfc_debug_enabled = enable;
-  unsigned long config_val = 0;
-  bool config_found = false;
-  config_found = GetNxpNumValue(NAME_NXP_CORE_PROP_SYSTEM_DEBUG, &config_val,
-                                sizeof(config_val));
-  if (config_found && config_val) {
-    property_set("persist.vendor.nfc.nxp.lx_debug_mask",
-                 enable ? "0x2017" : "0x0");
-  }
 }
 
 /******************************************************************************
