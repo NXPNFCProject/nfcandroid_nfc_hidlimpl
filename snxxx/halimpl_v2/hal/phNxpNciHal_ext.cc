@@ -626,8 +626,7 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
       phNxpNciHal_setVendorProp("nfc.fw.ver", result);
     } else {
       if ((p_ntf[3] == CORE_RESET_TRIGGER_TYPE_WATCHDOG_RESET ||
-           p_ntf[3] == CORE_RESET_TRIGGER_TYPE_FW_ASSERT ||
-           p_ntf[3] == CORE_RESET_TRIGGER_TYPE_POWERED_ON) ||
+           p_ntf[3] == CORE_RESET_TRIGGER_TYPE_FW_ASSERT) ||
           ((p_ntf[3] == CORE_RESET_TRIGGER_TYPE_UNRECOVERABLE_ERROR) &&
            (p_ntf[4] == CORE_RESET_TRIGGER_TYPE_WATCHDOG_RESET ||
             p_ntf[4] == CORE_RESET_TRIGGER_TYPE_FW_ASSERT))) {

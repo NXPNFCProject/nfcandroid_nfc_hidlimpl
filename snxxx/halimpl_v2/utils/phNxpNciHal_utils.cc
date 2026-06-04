@@ -636,6 +636,15 @@ void phNxpNciHal_emergency_recovery(uint8_t status) {
       NXPLOG_NCIHAL_E("abort()");
       abort();
     } break;
+    case CORE_RESET_TRIGGER_TYPE_POWERED_ON: {
+      if (nxpncihal_ctrl.halStatus != HAL_STATUS_CLOSE &&
+          nxpncihal_ctrl.power_reset_triggered == false) {
+        phNxpNciHal_decodeGpioStatus();
+        NXPLOG_NCIHAL_E("abort()");
+        phNxpExtn_HandleHalEvent(NFCC_HAL_FATAL_ERR_CODE);
+        abort();
+      }
+    } break;
     default:
       NXPLOG_NCIHAL_E("%s: Core reset with Invalid status : %d ", __func__,
                       status);
