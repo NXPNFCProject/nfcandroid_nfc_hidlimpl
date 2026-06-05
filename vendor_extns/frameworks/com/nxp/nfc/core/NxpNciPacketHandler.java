@@ -54,9 +54,6 @@ public class NxpNciPacketHandler {
     private boolean mIsSubGidCheckReq = true;
     private CountDownLatch mResCountDownLatch;
     private boolean isCallbackRegistered = false;
-    private static final int NCI_GID_MIN = 0;
-    private static final int NCI_GID_MAX = 15;
-    private static final int NCI_OID_MIN = 0;
 
     /**
      * @brief hold NTF callback executor.
@@ -135,17 +132,6 @@ public class NxpNciPacketHandler {
     }
 
     /**
-     * Validates gid and oid per NCI specification.
-     * @param gid Group ID - must be 0 to 15 (4 bits)
-     * @param oid Opcode ID - must be >= 0
-     * @return true if valid, false otherwise
-     */
-    private boolean isValidNciMessage(int gid, int oid) {
-        return ((oid >= NCI_OID_MIN) &&
-                (gid >= NCI_GID_MIN && gid <= NCI_GID_MAX));
-    }
-
-    /**
      * send vendor nci message with provided gid, oid & payload and wits until response
      * is received
      * @param gid
@@ -153,21 +139,20 @@ public class NxpNciPacketHandler {
      * @param payload
      * @return response byte array
      */
-    public synchronized byte[] sendVendorNciMessage(int gid, int oid, byte[] payload) {
+    public synchronized byte[] sendVendorNciMessage(int MsgTypePbfGid, int oid, byte[] payload) {
         if (payload == null) {
             NxpNfcLogger.e(TAG, "sendVendorNciMessage: payload is null");
             return new byte[] { (byte) NfcAdapter.SEND_VENDOR_NCI_STATUS_FAILED };
         }
-        if (!isValidNciMessage(gid, oid)) {
-            NxpNfcLogger.e(TAG, "Invalid NCI params gid: " + gid
-                            + " (must be 0-15) oid: " + oid
-                            + " (must be >= 0)");
+        if (!((MsgTypePbfGid >= 0) && (oid >= 0))) {
+            NxpNfcLogger.e(TAG, "Invalid NCI params MsgTypePbfGid: " + MsgTypePbfGid
+                            + ", oid: " + oid);
             return new byte[]{
                 (byte) NfcAdapter.SEND_VENDOR_NCI_STATUS_FAILED
             };
         }
         NxpNfcLogger.d(TAG,
-                    "sendVendorNciMessage API  gid: " + gid
+                    "sendVendorNciMessage API  gid: " + MsgTypePbfGid
                         + ", oid: " + oid + ", " + NxpNfcUtils.toHexString(payload));
         int status = NfcAdapter.SEND_VENDOR_NCI_STATUS_FAILED;
         try {
@@ -185,7 +170,7 @@ public class NxpNciPacketHandler {
                 }
                 mResCountDownLatch = new CountDownLatch(1);
                 status = mNfcAdapter.sendVendorNciMessage(NfcAdapter.MESSAGE_TYPE_COMMAND,
-                            gid, oid, payload);
+                            MsgTypePbfGid, oid, payload);
                 if (status != NfcAdapter.SEND_VENDOR_NCI_STATUS_SUCCESS) {
                     mVendorNciRsp = new byte[] { (byte) status };
                     NxpNfcLogger.e(TAG, "sendVendorNciMessage: error " + status);
