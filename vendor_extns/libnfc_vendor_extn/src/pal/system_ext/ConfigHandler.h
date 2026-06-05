@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2025 NXP
+ *  Copyright 2025-2026 NXP
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 #define CONFIG_HANDLER_H
 
 #include <PlatformExtension.h>
-#include <phNxpConfig.h>
+#include <phNxpConfigExt.h>
 #include <map>
 #include <string>
 

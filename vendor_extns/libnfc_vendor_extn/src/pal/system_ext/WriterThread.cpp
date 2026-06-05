@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NXP
+ * Copyright 2025-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 #include <android-base/stringprintf.h>
 #include <log/log.h>
 #include <phNfcNciConstants.h>
-#include <phNxpConfig.h>
+#include <phNxpConfigExt.h>
 #include <phNxpLog.h>
 #include <vector>
 

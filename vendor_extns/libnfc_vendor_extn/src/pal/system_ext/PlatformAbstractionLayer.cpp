@@ -24,7 +24,7 @@
 #include "NfcExtensionController.h"
 #include "WriterThread.h"
 #include <ProprietaryExtn.h>
-#include <phNxpConfig.h>
+#include <phNxpConfigExt.h>
 #include <phNxpLog.h>
 #include <thread>
 #include <memory>
