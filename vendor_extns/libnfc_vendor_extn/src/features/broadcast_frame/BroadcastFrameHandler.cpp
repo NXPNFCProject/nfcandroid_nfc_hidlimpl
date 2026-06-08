@@ -81,8 +81,7 @@ NFCSTATUS BroadcastFrameHandler::handleVendorNciRspNtf(uint16_t dataLen,
 
   std::vector<uint8_t> converted;
 
-  if (pData == nullptr || dataLen < MIN_HEADER_LEN ||
-      NCI_MSG_LEN_INDEX < MIN_HEADER_LEN)
+  if (pData == nullptr || dataLen < MIN_HEADER_LEN)
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
 
   if (pData[0] != BROADCAST_ACTION_NTF_GID ||
