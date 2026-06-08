@@ -71,16 +71,27 @@ enum class NTagState : uint8_t {
 };
 
 enum class NTagEvent : uint8_t {
+  /* Event set when NTag feature is enabled through application */
   ACTION_NTAG_ENABLE_REQUEST,
+  /* Event set when NTag feature is disabled through application */
   ACTION_NTAG_DISABLE_REQUEST,
+  /* Enable load change proprietary notifications */
   ACTION_NTAG_PROP_NTF_SET_STATUS,
+  /* RF interface activation event */
   ACTION_NTAG_RF_INTF_ACTIVATED,
+  /* RF deactivation event transitioning to IDLE state */
   ACTION_NTAG_RF_DEACTIVATE_IDLE,
+  /* RF state discovery event */
   ACTION_NTAG_RF_DISCOVERY,
+  /* Ntag load change notification event */
   ACTION_NTAG_RF_LOAD_CHANGE_NTF,
+  /* Ongoing presence check to verify if the NTag is still in the field */
   ACTION_NTAG_PRESENCE_CHECK,
+  /* Event indicating UID of detected tag matches previous tag */
   ACTION_NTAG_UID_MATCHED,
+  /* Event indicating NTag removal (triggered by RF field events or upper-layer RF Deactivate → Discovery request) */
   ACTION_NTAG_REMOVAL_DETECTED,
+  /* Event triggered when screen state changes to ON */
   ACTION_NTAG_SCREEN_STATE_ON
 };
 

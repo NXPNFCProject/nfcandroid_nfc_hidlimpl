@@ -424,8 +424,15 @@ NFCSTATUS NxpNTag::processNTagEvent(NTagEvent event) {
     }
     break;
   }
+  case NTagState::NTAG_STATE_SCREEN_OFF: {
+    if (event == NTagEvent::ACTION_NTAG_RF_DEACTIVATE_IDLE ||
+      event == NTagEvent::ACTION_NTAG_REMOVAL_DETECTED) {
+      status = sendRfDeactivate();
+      mState = NTagState::NTAG_STATE_RF_DEACTIVATE_IDLE;
+    }
+    break;
+  }
   case NTagState::NTAG_STATE_PRESENCE_CHECK:
-  case NTagState::NTAG_STATE_SCREEN_OFF:
   case NTagState::NTAG_STATE_CE_FINISHED: {
     if (event == NTagEvent::ACTION_NTAG_RF_DEACTIVATE_IDLE) {
       status = sendRfDeactivate();
