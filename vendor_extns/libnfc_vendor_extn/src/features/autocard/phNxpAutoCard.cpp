@@ -578,16 +578,17 @@ NFCSTATUS AutoCard::handleVendorNciMessage(uint16_t dataLen, uint8_t *pData) {
   uint8_t autocard_selection_mode = 0x00;
   uint8_t autocardStatus = NFCSTATUS_SUCCESS;
   AutoCard::getInstance()->autoCardCmdType = pData[AUTOCARD_SUB_OID_IDEX];
+  uint8_t chipType = PlatformAbstractionLayer::getInstance()->palGetChipType();
 
-  if (((PlatformAbstractionLayer::getInstance()->palGetChipType() != sn220u) &&
-       (PlatformAbstractionLayer::getInstance()->palGetChipType() != sn300u)) ||
-      ((PlatformAbstractionLayer::getInstance()->palGetChipType() == sn300u) &&
-       !mIsStrPhoneOffEnabled &&
+  bool isSupportedChip = (chipType == sn220u || chipType == sn300u);
+
+  if (!isSupportedChip ||
+      (isSupportedChip && !mIsStrPhoneOffEnabled &&
        pData[AUTOCARD_SUB_OID_IDEX] > AUTOCARD_GET_RF_PARAM)) {
     autocardStatus = AUTOCARD_STATUS_FEATURE_NOT_SUPPORTED;
     NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN,
                    "%s:AutoCard selection is not supported.", __func__);
-    if (PlatformAbstractionLayer::getInstance()->palGetChipType() == sn300u)
+    if (chipType == sn300u)
       NXPLOG_EXTNS_E(NXPLOG_ITEM_NXP_GEN_EXTN,
                      "%s: STR Reader profile will not support.", __func__);
   } else if (!PlatformAbstractionLayer::getInstance()->palGetNxpNumValue(
