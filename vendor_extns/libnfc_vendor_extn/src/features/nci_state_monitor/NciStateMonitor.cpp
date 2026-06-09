@@ -62,13 +62,19 @@ NFCSTATUS NciStateMonitor::processCoreGenericErrorNtf(
   vector<uint8_t> propNtf = {0x6F, 0x0C, 0x01, 0x07};
 
   if ((coreGenericErrorNtf.size() == propNtf.size()) &&
-      (coreGenericErrorNtf[3] == NCI_STATUS_PMU_TXLDO_OVERCURRENT ||
-       coreGenericErrorNtf[3] == NCI_STATUS_GPADC_ERROR)) {
+      (coreGenericErrorNtf[3] == NCI_STATUS_PMU_TXLDO_OVERCURRENT)) {
     coreGenericErrorNtf.assign(propNtf.begin(), propNtf.end());
     NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN,
                    "NciStateMonitor %s CORE_GENERIC_ERROR_NTF updated with "
                    "proprietary NTF",
                    __func__);
+  } else if ((coreGenericErrorNtf.size() == propNtf.size()) &&
+             (coreGenericErrorNtf[3] == NCI_STATUS_GPADC_ERROR)) {
+    NXPLOG_EXTNS_E(
+        NXPLOG_ITEM_NXP_GEN_EXTN,
+        "NciStateMonitor %s CORE_GENERIC_ERROR_NTF GPADC ERROR, Aborting HAL",
+        __func__);
+    exit(0);
   }
   return NFCSTATUS_EXTN_FEATURE_FAILURE;
 }
