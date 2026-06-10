@@ -593,10 +593,11 @@ NFCSTATUS NxpNTag::handleNTagNciRsp(uint8_t *pData, uint16_t dataLen) {
       if ((mNtagControl.mNtagDetectStatus & NTAG_REMOVAL_STATUS) ==
           NTAG_REMOVAL_STATUS)
         mNtagControl.mNtagDetectStatus = 0;
-
-      std::vector<uint8_t> rfDeact_Ntf = {0x61, 0x06, 0x02, 0x03, 0x00};
-      PlatformAbstractionLayer::getInstance()->palSendNfcDataCallback(
-          rfDeact_Ntf.size(), &rfDeact_Ntf[0]);
+      if(!mNtagControl.isScreenOff) {
+        std::vector<uint8_t> rfDeact_Ntf = {0x61, 0x06, 0x02, 0x03, 0x00};
+        PlatformAbstractionLayer::getInstance()->palSendNfcDataCallback(
+        rfDeact_Ntf.size(), &rfDeact_Ntf[0]);
+      }
     }
     return NFCSTATUS_EXTN_FEATURE_SUCCESS;
     break;
