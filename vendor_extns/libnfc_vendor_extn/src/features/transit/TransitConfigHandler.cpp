@@ -22,6 +22,8 @@
 #include "NfcExtensionWriter.h"
 #include "PlatformAbstractionLayer.h"
 #include "RfConfigManager.h"
+#include <phNxpConfigExt.h>
+#include <android-base/properties.h>
 #include <android-base/file.h>
 #include <fstream>
 #include <phNxpLog.h>
@@ -74,7 +76,11 @@ bool TransitConfigHandler::storeVendorConfig(vector<uint8_t> configPkt) {
 }
 
 bool TransitConfigHandler::updateVendorConfig(vector<uint8_t> configPkt) {
-  const std::string vendorNciConfigPath = "/data/vendor/nfc/libnfc-nci-update.conf";
+  int vendor_api_level = get_vsr_api_level();
+  const std::string vendorNciConfigPath =
+      (vendor_api_level == -1 || vendor_api_level > __ANDROID_API_V__)
+          ? "/data/vendor/nfc/libnfc-nci-update.conf"
+          : "/data/vendor/nfc/libnfc-nxpTransit.conf";
   bool status = false;
 
   if (configPkt.size() > 0) {

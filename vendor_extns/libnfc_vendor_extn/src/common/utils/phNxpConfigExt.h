@@ -54,6 +54,7 @@ int updateNxpConfigTimestamp();
 int updateNxpRfConfigTimestamp();
 void setNxpRfConfigPath(const char *name);
 void setNxpFwConfigPath();
+int get_vsr_api_level();
 
 #ifdef __cplusplus
 };

@@ -15,7 +15,7 @@
  */
 
 /*
- * Copyright 2025 NXP
+ * Copyright 2025-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,12 +37,11 @@
 #include <android-base/parseint.h>
 #include <android-base/properties.h>
 #include <android-base/strings.h>
+#include <phNxpConfigExt.h>
 #include <config.h>
 #include <mutex>
 using namespace ::std;
 using namespace ::android::base;
-
-#define PATH_NCI_UPDATE_CONF "/data/vendor/nfc/libnfc-nci-update.conf"
 
 static std::mutex config_mutex;
 
@@ -88,16 +87,20 @@ std::string findConfigPath() {
 
 void NfcConfig::loadConfig() {
   const string config_path = findConfigPath();
+  int vendor_api_level = get_vsr_api_level();
+  const std::string nci_update_config_path =
+      (vendor_api_level == -1 || vendor_api_level > __ANDROID_API_V__)
+          ? "/data/vendor/nfc/libnfc-nci-update.conf"
+          : "/data/vendor/nfc/libnfc-nxpTransit.conf";
   CHECK(config_path != "");
   config_.setValUpdateNciCfg(false);
   config_.parseFromFile(config_path);
   struct stat file_stat;
   // libnfc-nci config overwrite required.
-  if (stat(PATH_NCI_UPDATE_CONF, &file_stat) == 0) {
+  if (stat(nci_update_config_path.c_str(), &file_stat) == 0) {
     config_.setValUpdateNciCfg(true);
-    config_.parseFromFile(PATH_NCI_UPDATE_CONF);
+    config_.parseFromFile(nci_update_config_path);
   }
-
 }
 
 NfcConfig& NfcConfig::getInstance() {

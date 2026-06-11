@@ -32,7 +32,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *  Copyright 2013-2021, 2023, 2025 NXP
+ *  Copyright 2013-2021, 2023, 2025-2026 NXP
  *
  ******************************************************************************/
 
@@ -43,7 +43,6 @@
 #include <phNxpLog.h>
 #include <stdio.h>
 #include <sys/stat.h>
-
 #include <list>
 #include <string>
 #include <vector>
@@ -83,7 +82,12 @@ const char config_timestamp_path[] =
         "/vendor/etc/libnfc-nxp.conf";*/
 char nxp_rf_config_path[256] = "/system/vendor/libnfc-nxp_RF.conf";
 
-const char nci_update_config_path[] = "/data/vendor/nfc/libnfc-nci-update.conf";
+int vendor_api_level = get_vsr_api_level();
+const std::string nci_update_config_path =
+    (vendor_api_level == -1 || vendor_api_level > __ANDROID_API_V__)
+        ? "/data/vendor/nfc/libnfc-nci-update.conf"
+        : "/data/vendor/nfc/libnfc-nxpTransit.conf";
+
 void readOptionalConfig(const char *optional);
 
 size_t readConfigFile(const char *fileName, uint8_t **p_data) {
@@ -497,7 +501,7 @@ CNfcConfigExt &CNfcConfigExt::GetInstance() {
 
     theInstance.readConfig(strPath.c_str(), true);
     theInstance.readNxpRFConfig(nxp_rf_config_path);
-    theInstance.readNciUpdateConfig(nci_update_config_path);
+    theInstance.readNciUpdateConfig(nci_update_config_path.c_str());
   }
   return theInstance;
 }
@@ -1105,4 +1109,31 @@ extern "C" int updateNxpRfConfigTimestamp() {
   rConfig.resetModified(CONF_FILE_NXP_RF);
   rConfig.resetModified(CONF_FILE_NXP_TRANSIT);
   return 0;
+}
+
+extern "C" int get_vsr_api_level() {
+  int vendor_api_level = -1;
+  // TODO: Enable this once ro.vendor.api_level returns the correct API level
+  // vendor_api_level = ::android::base::GetIntProperty("ro.vendor.api_level", -1);
+  // if (vendor_api_level != -1) {
+  //   return vendor_api_level;
+  // }
+
+  vendor_api_level = ::android::base::GetIntProperty("ro.board.api_level", -1);
+  if (vendor_api_level == -1) {
+    vendor_api_level =
+        ::android::base::GetIntProperty("ro.board.first_api_level", -1);
+  }
+
+  int product_api_level =
+      ::android::base::GetIntProperty("ro.product.first_api_level", -1);
+  if (product_api_level == -1) {
+    product_api_level =
+        ::android::base::GetIntProperty("ro.build.version.sdk", -1);
+  }
+
+  if (vendor_api_level == -1 || vendor_api_level > product_api_level) {
+    return product_api_level;
+  }
+  return vendor_api_level;
 }
