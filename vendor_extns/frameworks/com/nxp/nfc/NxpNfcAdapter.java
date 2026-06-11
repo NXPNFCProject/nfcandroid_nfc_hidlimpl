@@ -95,7 +95,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
     private static final int NXP_EN_SN330U = 1;
 
     private static final int NFC_NXP_MW_ANDROID_VER = 17; // Android version used by NFC MW
-    private static final int NFC_NXP_MW_VERSION_MAJ = 0x06; // MW Major Version
+    private static final int NFC_NXP_MW_VERSION_MAJ = 0x07; // MW Major Version
     private static final int NFC_NXP_MW_VERSION_MIN = 0x00; // MW Minor Version
     private static final int NFC_NXP_MW_CUSTOMER_ID = 0x00; // MW Customer ID
     private static final int NFC_NXP_MW_RC_VERSION = 0x00; // MW RC Version
@@ -111,7 +111,7 @@ public final class NxpNfcAdapter implements INxpNfcAdapter {
         validation |= (NXP_EN_PN557 << 11);
 
         String logMessage = String.format(
-            "NxpNfcJar Version: NFC_AR_%02X_%05X_%02d.%02X.%02X",
+            "NxpNfcJar Version: NFC_AR_%02X_%05X_%02d.%02X.%02X_TC1",
             NFC_NXP_MW_CUSTOMER_ID, validation, NFC_NXP_MW_ANDROID_VER,
             NFC_NXP_MW_VERSION_MAJ, NFC_NXP_MW_VERSION_MIN);
         NxpNfcLogger.d(TAG, logMessage);
