@@ -116,6 +116,10 @@ public class QTagHandler implements INxpNfcNtfHandler {
     NxpNfcLogger.d(TAG, "enableQTag Enter mode: " + qMode + " pollTech:" +
                             pollTech + " delay_value:" + delay_value);
     final Bundle options = new Bundle();
+    if (delay_value < 0) {
+      NxpNfcLogger.e(TAG, "delay_value cannot be less than 0");
+      return QTagStatus.Failed.value;
+    }
     options.putInt(NfcAdapter.EXTRA_READER_PRESENCE_CHECK_DELAY, delay_value);
 
     return enableQTag(activity, qMode, mQTagCallback, pollTech, options);
