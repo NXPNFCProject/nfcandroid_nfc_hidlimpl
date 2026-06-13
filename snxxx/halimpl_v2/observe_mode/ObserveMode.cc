@@ -30,6 +30,7 @@ bool gWaitingForDiscRsp;
 bool gWaitingForRfDeActivateRsp;
 bool bIsObserveModeEnabled;
 bool bIsObserveChangeInProgress;
+bool bIsObserveModeSuspended;
 
 /*******************************************************************************
  *
@@ -62,6 +63,10 @@ void setObserveChangeInProgress(bool flag) {
 }
 
 bool isObserveChangeInProgress() { return bIsObserveChangeInProgress; }
+
+void setObserveModeSuspended(bool flag) { bIsObserveModeSuspended = flag; }
+
+bool isObserveModeSuspended() { return bIsObserveModeSuspended; }
 /*******************************************************************************
  *
  * Function         handleObserveMode()
@@ -229,6 +234,7 @@ int handleObserveModeTechCommand(uint16_t data_len, const uint8_t* p_data) {
   if (phNxpNciHal_isObserveModeSupported() &&
       (techValue & OBSERVE_MODE_TECH_COMMAND_SUPPORT_FLAG_FOR_ALL_TECH ||
        techValue == NCI_ANDROID_PASSIVE_OBSERVE_PARAM_DISABLE)) {
+    setObserveModeSuspended(false);
     const bool flag =
         (techValue & OBSERVE_MODE_TECH_COMMAND_SUPPORT_FLAG_FOR_ALL_TECH)
             ? true
@@ -305,7 +311,7 @@ int handleGetObserveModeStatus(uint16_t data_len, const uint8_t* p_data) {
   vector<uint8_t> response;
   response.push_back(0x00);
   response.push_back(
-      isObserveModeEnabled()
+      (isObserveModeEnabled() && !isObserveModeSuspended())
           ? NciDiscoveryCommandBuilderInstance.getCurrentObserveModeTechValue()
           : 0x00);
   phNxpNciHal_vendorSpecificCallback(p_data[NCI_OID_INDEX],

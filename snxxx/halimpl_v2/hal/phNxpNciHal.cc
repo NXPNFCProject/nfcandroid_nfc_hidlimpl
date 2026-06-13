@@ -553,6 +553,7 @@ int phNxpNciHal_MinOpen() {
   unsigned long value = 0;
   sIsHalOpenErrorRecovery = false;
   setObserveModeFlag(false);
+  setObserveModeSuspended(false);
   NciDiscoveryCommandBuilderInstance.setObserveModePerTech(
       NCI_ANDROID_PASSIVE_OBSERVE_PARAM_DISABLE);
   NciDiscoveryCommandBuilderInstance.setRfDiscoveryReceived(false);
@@ -1242,6 +1243,17 @@ void phNxpNciHal_client_data_callback(uint16_t rx_data_len,
     return;
   }
   NxpMfcReaderInstance.MfcNotifyOnAckReceived(p_rx_data);
+
+  if (rx_data_len >= 4 && p_rx_data[NCI_GID_INDEX] == NCI_PROP_NTF_GID &&
+      p_rx_data[NCI_OID_INDEX] == NCI_PROP_LX_NTF_OID) {
+    if (p_rx_data[NCI_MSG_INDEX_FOR_FEATURE] ==
+        NCI_ANDROID_OBSERVER_MODE_SUSPEND) {
+      setObserveModeSuspended(true);
+    } else if (p_rx_data[NCI_MSG_INDEX_FOR_FEATURE] ==
+               NCI_ANDROID_OBSERVER_MODE_RESUME) {
+      setObserveModeSuspended(false);
+    }
+  }
 
   if (isObserveModeEnabled() && p_rx_data[NCI_GID_INDEX] == NCI_PROP_NTF_GID &&
       p_rx_data[NCI_OID_INDEX] == NCI_PROP_LX_NTF_OID) {

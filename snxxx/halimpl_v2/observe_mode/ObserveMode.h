@@ -57,6 +57,32 @@ void setObserveChangeInProgress(bool flag);
 
 /*******************************************************************************
  *
+ * Function         setObserveModeSuspended()
+ *
+ * Description      It sets the flag to observe mode suspended from nfcc
+ *
+ * Parameters       bool - true to observe mode suspended
+ *                         false if not
+ *
+ * Returns          void
+ *
+ ******************************************************************************/
+void setObserveModeSuspended(bool flag);
+
+/*******************************************************************************
+ *
+ * Function         isObserveModeSuspended()
+ *
+ * Description      Returns Observe mode suspended or not
+ *
+ * Returns          bool true if the observed mode is suspended from nfcc
+ *                  otherwise false
+ *
+ ******************************************************************************/
+bool isObserveModeSuspended();
+
+/*******************************************************************************
+ *
  * Function         isObserveChangeInProgress()
  *
  * Description      returns true if observe mode status change in progress
