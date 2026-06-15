@@ -47,6 +47,7 @@ void NxpNTag::clearNTagFlags() {
   mNtagControl.isLpcdCmdSent = false;
   mNTagState = NTagState::NTAG_STATE_IDLE;
   mNTagSetSubState = NTagSetSubState::NTAG_SET_SUB_STATE_IDLE;
+  mNtagControl.nonNtagActivatedNtf = false;
 }
 
 NxpNTag::~NxpNTag() {
@@ -1056,7 +1057,9 @@ NFCSTATUS NxpNTag::processRfDiscCmd(std::vector<uint8_t> &rfDiscCmd) {
       mNtagControl.mQPOLLMode = NFC_RF_DISC_RESTART;
       if (!(mNtagControl.mNtagDetectStatus & NTAG_REMOVAL_STATUS))
         mNtagControl.mNtagDetectStatus |= NTAG_READ_COMPLETE;
-
+      if(mNtagControl.nonNtagActivatedNtf ) {
+        return NFCSTATUS_EXTN_FEATURE_FAILURE;
+      }
       NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN,
                      "NxpNTag::%s RF Deactivate Discovery to idle", __func__);
       processNTagEvent(NTagEvent::ACTION_NTAG_RF_DEACTIVATE_IDLE);
@@ -1275,7 +1278,7 @@ NFCSTATUS NxpNTag::handleRfIntfActivated(uint8_t *pData, uint16_t dataLen) {
                      "NxpNTag::%s CE Tx in screen off", __func__);
     }
     mNtagControl.mNtagDetectStatus &= ~NTAG_ACTIVATED_STATUS;
-
+    mNtagControl.nonNtagActivatedNtf = true;
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
   }
 
@@ -1304,6 +1307,7 @@ NFCSTATUS NxpNTag::handleRfIntfActivated(uint8_t *pData, uint16_t dataLen) {
   mNtagControl.mQPOLLMode = 0x00;
   stopNTagTimerInternal();
   mNtagControl.mNtagDetectStatus |= NTAG_ACTIVATED_STATUS;
+  mNtagControl.nonNtagActivatedNtf = false;
 
   // Check if UID has changed
   if (isNTagReadComplete(extractedUid))

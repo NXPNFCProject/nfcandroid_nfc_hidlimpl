@@ -139,6 +139,8 @@ struct NtagControl {
   bool isRfNtfSent;
   /*flag to indicate LPCD_WO_POLL_CMD is sent*/
   bool isLpcdCmdSent;
+  /* Flag indicating non-NTAG activation notification has been received */
+  bool nonNtagActivatedNtf;
 };
 
 class NxpNTag {
