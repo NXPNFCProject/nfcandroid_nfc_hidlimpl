@@ -693,6 +693,17 @@ NFCSTATUS NxpNTag::handleNTagNciNtf(uint8_t *pData, uint16_t dataLen) {
       mNtagControl.isRfNtfSent = false;
       return NFCSTATUS_EXTN_FEATURE_SUCCESS;
     }
+    // RF deactivate to discovery ntf should be allowed to pass through the HAL without
+    // blocking in all conditions.
+    if (dataLen == 5 &&
+        (pData[NCI_GID_INDEX] == (NCI_MT_NTF | NCI_GID_RF_MANAGE)) &&
+        (pData[NCI_OID_INDEX] == NCI_MSG_RF_DEACTIVATE) &&
+        (pData[NCI_MSG_LEN_INDEX] == PAYLOAD_TWO_LEN) &&
+        (pData[3] == NCI_DEACTIVATE_TYPE_DISCOVERY) &&
+        (pData[4] == NFCSTATUS_SUCCESS)) {
+      return NFCSTATUS_EXTN_FEATURE_FAILURE;
+    }
+
     if ((!(mNtagControl.mNtagDetectStatus & NTAG_ACTIVATED_STATUS) ||
          mNtagControl.mQPOLLMode != NFC_RF_DISC_RESTART) &&
         ((mNtagControl.mNtagDetectStatus & NTAG_REMOVAL_STATUS) !=
@@ -774,7 +785,8 @@ NFCSTATUS NxpNTag::handleVendorNciRspNtf(uint16_t dataLen, uint8_t *pData) {
                      "NxpNTag::%s RF discovery with Q-Poll in screen On",
                      __func__);
     } else {
-      mNtagControl.mQPOLLMode = NFC_RF_DISC_START;
+      if (!(mNtagControl.mNtagDetectStatus & NTAG_ACTIVATED_STATUS))
+        mNtagControl.mQPOLLMode = NFC_RF_DISC_START;
       NXPLOG_EXTNS_E(
           NXPLOG_ITEM_NXP_GEN_EXTN,
           "NxpNTag::%s RF Discovery with Full poll+Listen in screen on",
@@ -870,6 +882,9 @@ NFCSTATUS NxpNTag::handleVendorNciMessage(uint16_t dataLen, uint8_t *pData) {
             mNtagControl.mLpcdWoutPoll = false;
           }
           updateState(NTagState::NTAG_STATE_RF_DISCOVERY);
+          // updating the RF poll with Qpoll while ntag is activeted
+          if (mNtagControl.mNtagDetectStatus & NTAG_ACTIVATED_STATUS)
+            mNtagControl.mQPOLLMode = NFC_RF_DISC_REPLACE_QPOLL;
         }
       }
     }
@@ -1051,6 +1066,9 @@ NFCSTATUS NxpNTag::processRfDiscCmd(std::vector<uint8_t> &rfDiscCmd) {
       mNtagControl.mQPOLLMode = NFC_RF_DISC_RESTART;
       NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN,
                      "NxpNTag::%s RF Deactivate Sleep to Discovery", __func__);
+      if (mNtagControl.mNtagDetectStatus & NTAG_PRESENCE_CHK_STATUS)
+        return NFCSTATUS_EXTN_FEATURE_FAILURE;
+
       processNTagEvent(NTagEvent::ACTION_NTAG_RF_DEACTIVATE_IDLE);
       return NFCSTATUS_EXTN_FEATURE_SUCCESS;
     }
@@ -1256,6 +1274,7 @@ NFCSTATUS NxpNTag::handleRfIntfActivated(uint8_t *pData, uint16_t dataLen) {
       NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN,
                      "NxpNTag::%s CE Tx in screen off", __func__);
     }
+    mNtagControl.mNtagDetectStatus &= ~NTAG_ACTIVATED_STATUS;
 
     return NFCSTATUS_EXTN_FEATURE_FAILURE;
   }
