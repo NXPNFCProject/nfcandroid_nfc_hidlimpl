@@ -32,9 +32,10 @@ class capability {
   capability();
   tNFC_chipType determineChipTypeFromNciRsp(uint8_t* msg, uint16_t msg_len);
   tNFC_chipType determineChipTypeFromDLRsp(uint8_t* msg, uint16_t msg_len);
-  const char* product[15] = {"UNKNOWN", "PN547C2", "PN65T", "PN548C2", "PN66T",
-                             "PN551",   "PN67T",   "PN553", "PN80T",   "PN557",
-                             "PN81T",   "sn100",   "SN220", "pn560",   "SN300"};
+  const char* product[16] = {"UNKNOWN", "PN547C2", "PN65T",    "PN548C2",
+                             "PN66T",   "PN551",   "PN67T",    "PN553",
+                             "PN80T",   "PN557",   "PN81T",    "sn100",
+                             "SN220",   "pn560",   "pn560_v2", "SN300"};
 
  public:
   /*product[] will be used to print product version and
