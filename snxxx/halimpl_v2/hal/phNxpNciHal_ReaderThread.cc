@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,10 +132,18 @@ void phNxpNciHal_ReaderThread::Run() {
           ptransact_info->pBuff = msg.data;
           ptransact_info->wLength = msg.Size;
           ptransact_info->wStatus = msg.w_status;
-          deferCall->pCallback(ptransact_info);
+          if (deferCall && deferCall->pCallback) {
+            deferCall->pCallback(ptransact_info);
+          } else {
+            NXPLOG_NCIHAL_E("Invalid callback!");
+          }
         } else {
-          NXPLOG_NCIHAL_D("Processing the response timeout");
-          deferCall->pCallback(deferCall->pParameter);
+          if (deferCall && deferCall->pCallback) {
+            NXPLOG_NCIHAL_D("Processing the response timeout");
+            deferCall->pCallback(deferCall->pParameter);
+          } else {
+            NXPLOG_NCIHAL_E("Invalid callback!");
+          }
         }
         REENTRANCE_UNLOCK();
         break;
