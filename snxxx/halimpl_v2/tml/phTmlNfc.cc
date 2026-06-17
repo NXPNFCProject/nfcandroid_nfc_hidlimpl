@@ -954,8 +954,8 @@ bool phTmlNfc_isResponseForLastCommand(uint8_t* pBuffer, uint16_t wLength) {
       ((gpphTmlNfc_Context->lastCommand[0x01] & NCI_OID_MASK) ==
        (pBuffer[0x01] & NCI_OID_MASK))) {
     // Response matched for lastCommand. Check is ntf is expected
-    if (pBuffer[0] == 0x40 && pBuffer[1] == 0x00 && pBuffer[2] == 0x01 &&
-        pBuffer[3] == 0x00) {
+    if (wLength > 3 && pBuffer[0] == 0x40 && pBuffer[1] == 0x00 &&
+        pBuffer[2] == 0x01 && pBuffer[3] == 0x00) {
       if (gpphTmlNfc_Context->lastCmdLen > 3 &&
           gpphTmlNfc_Context->lastCommand[0x03] != 0x80) {
         NXPLOG_TML_I(
@@ -966,8 +966,8 @@ bool phTmlNfc_isResponseForLastCommand(uint8_t* pBuffer, uint16_t wLength) {
         // CORE_RESET for FW DOWNLOAD. No Ntf is expected
       }
     }
-    if (pBuffer[0] == 0x42 && pBuffer[1] == 0x01 && pBuffer[2] == 0x01 &&
-        pBuffer[3] == 0x00 && IS_CHIP_TYPE_GE(sn100u)) {
+    if (wLength > 3 && pBuffer[0] == 0x42 && pBuffer[1] == 0x01 &&
+        pBuffer[2] == 0x01 && pBuffer[3] == 0x00 && IS_CHIP_TYPE_GE(sn100u)) {
       NXPLOG_TML_I(
           "%s: Response received for last command, waiting for notification",
           __func__);
