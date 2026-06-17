@@ -1763,9 +1763,6 @@ static NFCSTATUS phLibNfc_VerifyCrcStatus(uint8_t bCrcStatus) {
           wStatus = NFCSTATUS_FAILED;
           break;
         }
-        default: {
-          break;
-        }
       }
     }
 
