@@ -25,7 +25,6 @@
 #include <phNxpLog.h>
 #include <pthread.h>
 #include <semaphore.h>
-#include <new>
 
 typedef struct phDal4Nfc_message_queue_item {
   phLibNfc_Message_t nMsg;
@@ -56,15 +55,16 @@ intptr_t phDal4Nfc_msgget(key_t key, int msgflg) {
   phDal4Nfc_message_queue_t* pQueue;
   UNUSED_PROP(key);
   UNUSED_PROP(msgflg);
-  pQueue = new (std::nothrow) phDal4Nfc_message_queue_t();
-  if (pQueue == nullptr) return -1;
+  pQueue = static_cast<phDal4Nfc_message_queue_t*>(
+      malloc(sizeof(phDal4Nfc_message_queue_t)));
+  if (pQueue == NULL) return -1;
   memset(pQueue, 0, sizeof(phDal4Nfc_message_queue_t));
   if (pthread_mutex_init(&pQueue->nCriticalSectionMutex, NULL) != 0) {
-    delete pQueue;
+    free(pQueue);
     return -1;
   }
   if (sem_init(&pQueue->nProcessSemaphore, 0, 0) == -1) {
-    delete pQueue;
+    free(pQueue);
     return -1;
   }
 
@@ -112,7 +112,7 @@ void phDal4Nfc_msgdestroy(intptr_t msqid) {
     }
     pthread_mutex_destroy(&pQueue->nCriticalSectionMutex);
 
-    delete pQueue;
+    free(pQueue);
   }
 
   return;
@@ -144,11 +144,11 @@ intptr_t phDal4Nfc_msgsnd(intptr_t msqid, phLibNfc_Message_t* msg, int msgflg) {
   pQueue = reinterpret_cast<phDal4Nfc_message_queue_t*>(msqid);
   pNew = static_cast<phDal4Nfc_message_queue_item_t*>(
       malloc(sizeof(phDal4Nfc_message_queue_item_t)));
-  pNew = new (std::nothrow) phDal4Nfc_message_queue_item_t();
-  if (pNew == nullptr) {
+  if (pNew == NULL) {
     NXPLOG_TML_E("Failed to malloc pNew errno = %d", errno);
     return -1;
   }
+  memset(pNew, 0, sizeof(phDal4Nfc_message_queue_item_t));
   memcpy(&pNew->nMsg, msg, sizeof(phLibNfc_Message_t));
   pthread_mutex_lock(&pQueue->nCriticalSectionMutex);
 
@@ -206,7 +206,7 @@ int phDal4Nfc_msgrcv(intptr_t msqid, phLibNfc_Message_t* msg, int64_t msgtyp,
   if (pQueue->pItems != NULL) {
     memcpy(msg, &(pQueue->pItems)->nMsg, sizeof(phLibNfc_Message_t));
     p = pQueue->pItems->pNext;
-    delete pQueue->pItems;
+    free(pQueue->pItems);
     pQueue->pItems = p;
   }
   pthread_mutex_unlock(&pQueue->nCriticalSectionMutex);
