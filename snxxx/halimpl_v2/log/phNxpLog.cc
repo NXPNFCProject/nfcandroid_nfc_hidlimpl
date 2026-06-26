@@ -20,8 +20,6 @@
 #define LOG_TAG "NxpNfcHal"
 #include <stdio.h>
 #include <string.h>
-#include <cerrno>
-#include <cstdlib>
 #if !defined(NXPLOG__H_INCLUDED)
 #include "phNxpConfig.h"
 #include "phNxpLog.h"
@@ -65,6 +63,7 @@ extern bool nfc_debug_enabled;
  ******************************************************************************/
 static uint8_t phNxpLog_SetGlobalLogLevel(void) {
   uint8_t level = NXPLOG_DEFAULT_LOGLEVEL;
+  unsigned long num = 0;
   char valueStr[PROPERTY_VALUE_MAX] = {0};
 
   const int len = property_get(PROP_NAME_NXPLOG_GLOBAL_LOGLEVEL, valueStr, "");
@@ -72,7 +71,7 @@ static uint8_t phNxpLog_SetGlobalLogLevel(void) {
     /* let Android property override .conf variable */
     char* endptr = nullptr;
     errno = 0;
-    uint64_t num = std::strtoull(valueStr, &endptr, 10);
+    num = std::strtoull(valueStr, &endptr, 10);
     if (errno == 0 && endptr != valueStr) {
         level = static_cast<unsigned char>(num);
     }
@@ -91,7 +90,7 @@ static uint8_t phNxpLog_SetGlobalLogLevel(void) {
  *
  ******************************************************************************/
 static void phNxpLog_SetHALLogLevel(uint8_t level) {
-  uint64_t num = 0;
+  unsigned long num = 0;
   int len;
   char valueStr[PROPERTY_VALUE_MAX] = {0};
 
@@ -123,7 +122,7 @@ static void phNxpLog_SetHALLogLevel(uint8_t level) {
  *
  ******************************************************************************/
 static void phNxpLog_SetAvcLogLevel(uint8_t level) {
-  uint64_t num = 0;
+  unsigned long num = 0;
   const char valueStr[PROPERTY_VALUE_MAX] = {0};
 
   if (GetNxpNumValue(NAME_NXPLOG_AVCNCI_LOGLEVEL, &num, sizeof(num))) {
@@ -143,7 +142,7 @@ static void phNxpLog_SetAvcLogLevel(uint8_t level) {
  *
  ******************************************************************************/
 static void phNxpLog_SetExtnsLogLevel(uint8_t level) {
-  uint64_t num = 0;
+  unsigned long num = 0;
   int len;
   char valueStr[PROPERTY_VALUE_MAX] = {0};
   if (GetNxpNumValue(NAME_NXPLOG_EXTNS_LOGLEVEL, &num, sizeof(num))) {
@@ -174,7 +173,7 @@ static void phNxpLog_SetExtnsLogLevel(uint8_t level) {
  *
  ******************************************************************************/
 static void phNxpLog_SetTmlLogLevel(uint8_t level) {
-  uint64_t num = 0;
+  unsigned long num = 0;
   int len;
   char valueStr[PROPERTY_VALUE_MAX] = {0};
   if (GetNxpNumValue(NAME_NXPLOG_TML_LOGLEVEL, &num, sizeof(num))) {
@@ -205,7 +204,7 @@ static void phNxpLog_SetTmlLogLevel(uint8_t level) {
  *
  ******************************************************************************/
 static void phNxpLog_SetDnldLogLevel(uint8_t level) {
-  uint64_t num = 0;
+  unsigned long num = 0;
   int len;
   char valueStr[PROPERTY_VALUE_MAX] = {0};
   if (GetNxpNumValue(NAME_NXPLOG_FWDNLD_LOGLEVEL, &num, sizeof(num))) {
@@ -236,7 +235,7 @@ static void phNxpLog_SetDnldLogLevel(uint8_t level) {
  *
  ******************************************************************************/
 static void phNxpLog_SetNciTxLogLevel(uint8_t level) {
-  uint64_t num = 0;
+  unsigned long num = 0;
   int len;
   char valueStr[PROPERTY_VALUE_MAX] = {0};
   if (GetNxpNumValue(NAME_NXPLOG_NCIX_LOGLEVEL, &num, sizeof(num))) {
@@ -273,9 +272,9 @@ static void phNxpLog_SetNciTxLogLevel(uint8_t level) {
  ******************************************************************************/
 static void phNxpLog_setLxLoggingEnabled() {
   gLog_level.is_lx_logging_enabled = false;
-  uint64_t lx_debug_cfg = 0;
-  uint64_t prop_val = 0;
-  uint64_t config_val = 0;
+  unsigned long lx_debug_cfg = 0;
+  unsigned long prop_val = 0;
+  unsigned long config_val = 0;
   bool prop_found = false;
   bool config_found = false;
 

@@ -176,8 +176,8 @@ NFCSTATUS phTmlNfc_Init(pphTmlNfc_Config_t pConfig) {
 **
 *******************************************************************************/
 NFCSTATUS phTmlNfc_ConfigTransport() {
-  uint64_t transportType = UNKNOWN;
-  uint64_t value = 0;
+  unsigned long transportType = UNKNOWN;
+  unsigned long value = 0;
   const int isfound = GetNxpNumValue(NAME_NXP_TRANSPORT, &value, sizeof(value));
   if (isfound > 0) {
     transportType = value;

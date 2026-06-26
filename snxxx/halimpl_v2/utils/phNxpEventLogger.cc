@@ -86,7 +86,7 @@ void PhNxpEventLogger::Initialize() {
     }
   }
 
-  uint64_t value = 0;
+  unsigned long value = 0;
   if (GetNxpNumValue(NAME_NXP_SMBLOG_ENABLED, &value, sizeof(value))) {
     logging_enabled_ = (value == 1) ? true : false;
   }

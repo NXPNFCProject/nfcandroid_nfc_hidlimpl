@@ -29,7 +29,6 @@ class DiscoveryConfiguration {
     mRfTechMode = rfTechMode;
     mDiscFrequency = discFrequency;
   };
-
   uint8_t getRfTechMode() const { return mRfTechMode; }
   uint8_t getDiscFrequency() const { return mDiscFrequency; }
 

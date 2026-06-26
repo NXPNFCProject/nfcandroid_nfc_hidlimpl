@@ -233,7 +233,7 @@ static void IoctlCallback(hidl_vec<uint8_t> outputData) {
 ** Returns:     -1 or 0.
 **
 *******************************************************************************/
-int EseAdaptation::HalIoctl(int64_t arg, void* p_data) {
+int EseAdaptation::HalIoctl(long arg, void* p_data) {
   const char* func = "EseAdaptation::HalIoctl";
   hidl_vec<uint8_t> data;
   const NfcHalAutoThreadMutex a(sIoctlLock);

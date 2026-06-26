@@ -436,6 +436,7 @@ bool phNxpNciHal_IsHciPipeRequireToCreate() {
   if (nxpncihal_ctrl.halStatus == HAL_STATUS_CLOSE || gWiredSeHandle != NULL) {
     return false;
   }
+
   return true;
 }
 NFCSTATUS phNxpHal_NfcSendExtCmd(uint16_t cmd_len, uint8_t* p_cmd,
@@ -449,12 +450,12 @@ std::vector<uint8_t> phNxpNciHal_GetDiscoveryCommand() {
 
 bool phNxpNciHal_GetObserveModeStatus() { return isObserveModeEnabled(); }
 uint8_t phNxpHal_GetNxpByteArrayValue(const char* name, char* pValue,
-                                      int64_t bufflen, int64_t* len) {
+                                      long bufflen, long* len) {
   return GetNxpByteArrayValue(name, pValue, bufflen, len);
 }
 
 uint8_t phNxpHal_GetNxpNumValue(const char* name, void* pValue,
-                                uint64_t len) {
+                                unsigned long len) {
   return GetNxpNumValue(name, pValue, len);
 }
 

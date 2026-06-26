@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2026 NXP
+ * Copyright 2019-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@
  **
  ** Returns          return 0 on success and -1 on fail,
  ******************************************************************************/
-int phNxpNciHal_ioctlIf(int64_t arg, void* p_data);
+int phNxpNciHal_ioctlIf(long arg, void* p_data);
 
 /*******************************************************************************
 **

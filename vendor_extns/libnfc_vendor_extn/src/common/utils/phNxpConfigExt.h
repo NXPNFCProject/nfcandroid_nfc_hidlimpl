@@ -43,10 +43,10 @@
 extern "C" {
 #endif
 
-int GetNxpStrValue(const char *name, char *p_value, uint64_t len);
-int GetNxpNumValue(const char *name, void *p_value, uint64_t len);
-int GetNxpByteArrayValue(const char *name, char *pValue, int64_t bufflen,
-                         int64_t *len);
+int GetNxpStrValue(const char *name, char *p_value, unsigned long len);
+int GetNxpNumValue(const char *name, void *p_value, unsigned long len);
+int GetNxpByteArrayValue(const char *name, char *pValue, long bufflen,
+                         long *len);
 void resetNxpConfig(void);
 int isNxpRFConfigModified();
 int isNxpConfigModified();

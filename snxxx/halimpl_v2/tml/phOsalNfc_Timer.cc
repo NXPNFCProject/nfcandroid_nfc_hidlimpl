@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2014, 2020,2023, 2025-2026 NXP
+ * Copyright 2010-2014, 2020,2023, 2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -323,7 +323,7 @@ void phOsalNfc_Timer_Cleanup(void) {
 *******************************************************************************/
 static void phOsalNfc_DeferredCall(void* pParams) {
   /* Retrieve the timer id from the parameter */
-  uint64_t dwIndex;
+  unsigned long dwIndex;
   phOsalNfc_TimerHandle_t* pTimerHandle;
   if (NULL != pParams) {
     /* Retrieve the index at which the timer handle structure is stored */

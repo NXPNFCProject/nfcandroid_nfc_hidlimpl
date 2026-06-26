@@ -30,7 +30,7 @@ class EseAdaptation {
   void InitializeHalDeviceContext();
   virtual ~EseAdaptation();
   static EseAdaptation& GetInstance();
-  static int HalIoctl(int64_t arg, void* p_data);
+  static int HalIoctl(long arg, void* p_data);
   tHAL_ESE_ENTRY* GetHalEntryFuncs();
   ese_nxp_IoctlInOutData_t* getCurrentIoctlData() const {
     return mCurrentIoctlData;

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- *  Copyright (C) 2012-2026 Broadcom Corporation
+ *  Copyright (C) 2012-2014 Broadcom Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -35,8 +35,6 @@
  *
  ******************************************************************************/
 
- #include <cstdint>
-
 /******************************************************************************
  *
  *  ESE Hardware Abstraction Layer API
@@ -66,7 +64,7 @@ typedef void(tHAL_SPIAPI_OPEN)(tHAL_ESE_CBACK* p_hal_cback,
 typedef void(tHAL_SPIAPI_CLOSE)(void);
 typedef void(tHAL_SPIAPI_WRITE)(uint16_t data_len, uint8_t* p_data);
 typedef void(tHAL_SPIAPI_READ)(uint16_t data_len, uint8_t* p_data);
-typedef int(tHAL_SPIAPI_IOCTL)(int64_t arg, void* p_data);
+typedef int(tHAL_SPIAPI_IOCTL)(long arg, void* p_data);
 
 #define ESE_HAL_DM_PRE_SET_MEM_LEN 5
 typedef struct {

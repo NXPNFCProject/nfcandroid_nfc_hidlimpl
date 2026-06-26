@@ -16,9 +16,7 @@
  *
  ******************************************************************************/
 #define LOG_TAG "NxpHal"
-#include <memory>
 #include "NxpNfcCapability.h"
-
 #include <phNxpLog.h>
 
 std::unique_ptr<capability> capability::instance = nullptr;

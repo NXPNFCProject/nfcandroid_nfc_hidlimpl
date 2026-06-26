@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2019, 2023-2026 NXP
+ * Copyright 2010-2019, 2023-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -187,7 +187,7 @@ intptr_t phDal4Nfc_msgsnd(intptr_t msqid, phLibNfc_Message_t* msg, int msgflg) {
 **                  -1, if invalid parameter passed
 **
 *******************************************************************************/
-int phDal4Nfc_msgrcv(intptr_t msqid, phLibNfc_Message_t* msg, int64_t msgtyp,
+int phDal4Nfc_msgrcv(intptr_t msqid, phLibNfc_Message_t* msg, long msgtyp,
                      int msgflg) {
   phDal4Nfc_message_queue_t* pQueue;
   phDal4Nfc_message_queue_item_t* p;

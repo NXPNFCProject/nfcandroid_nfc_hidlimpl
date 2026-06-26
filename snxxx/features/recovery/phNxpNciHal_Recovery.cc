@@ -223,7 +223,7 @@ static NFCSTATUS phNxpNciHal_ReadResponse(uint16_t* len, uint8_t* rsp_buffer,
  *
  ******************************************************************************/
 static void phNxpNciHal_readNFCCClockCfgValues(void) {
-  uint64_t num = 0;
+  unsigned long num = 0;
   int isfound = 0;
 
   isfound = GetNxpNumValue(NAME_NXP_SYS_CLK_SRC_SEL, &num, sizeof(num));

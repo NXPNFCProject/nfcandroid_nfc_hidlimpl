@@ -43,8 +43,8 @@ AutoObserveModeSuspendHandler* AutoObserveModeSuspendHandler::getInstance() {
 void AutoObserveModeSuspendHandler::
     phNxpNciHal_configureAutoObserveModeSuspendHandler() {
   uint8_t autoObserveModeConfig[AUTO_OBSERVE_MODE_CONFIG_SIZE];
-  const int64_t  bufflen = AUTO_OBSERVE_MODE_CONFIG_SIZE;
-  int64_t  retlen = 0;
+  const long bufflen = AUTO_OBSERVE_MODE_CONFIG_SIZE;
+  long retlen = 0;
   const bool isFound =
       PlatformAbstractionLayer::getInstance()->palGetNxpByteArrayValue(
           NAME_NXP_AUTO_OBSERVE_MODE_SUSPEND_CONFIG,

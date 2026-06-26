@@ -39,8 +39,7 @@ NfcHalThreadMutex::NfcHalThreadMutex() {
   pthread_mutexattr_init(&mutexAttr);
   if (!pthread_mutex_init(&mMutex, &mutexAttr)) {
     LOG(DEBUG) << StringPrintf("init mutex success");
-  }
-  else {
+  } else {
     LOG(ERROR) << StringPrintf("fail to init mutex");
   }
   pthread_mutexattr_destroy(&mutexAttr);

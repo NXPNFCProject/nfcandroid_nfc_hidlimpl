@@ -24,7 +24,6 @@
 #include <phNxpConfig.h>
 #include <phNxpLog.h>
 #include <phTmlNfc.h>
-
 #include <string>
 
 #include "NxpNfcCapability.h"
@@ -768,7 +767,7 @@ NFCSTATUS phDnldNfc_InitImgInfo(bool bMinimalFw, bool degradedFwDnld) {
   NFCSTATUS wStatus = NFCSTATUS_SUCCESS;
   uint8_t* pImageInfo = NULL;
   uint32_t ImageInfoLen = 0;
-  uint64_t fwType = FW_FORMAT_SO;
+  unsigned long fwType = FW_FORMAT_SO;
 
   /* if memory is not allocated then allocate memory for download context
    * structure */

@@ -87,14 +87,14 @@ void PlatformAbstractionLayer::palSendNfcDataCallback(uint16_t dataLen,
 
 uint8_t PlatformAbstractionLayer::palGetNxpByteArrayValue(const char *name,
                                                           char *pValue,
-                                                          int64_t  bufflen,
-                                                          int64_t  *len) {
+                                                          long bufflen,
+                                                          long *len) {
   return phNxpHal_GetNxpByteArrayValue(name, pValue, bufflen, len);
 }
 
 uint8_t PlatformAbstractionLayer::palGetNxpNumValue(const char *name,
                                                     void *pValue,
-                                                    uint64_t len) {
+                                                    unsigned long len) {
   return phNxpHal_GetNxpNumValue(name, pValue, len);
 }
 

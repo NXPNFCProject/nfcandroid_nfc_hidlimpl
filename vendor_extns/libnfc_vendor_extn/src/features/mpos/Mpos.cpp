@@ -113,8 +113,8 @@ static void switchToDefaultHandler() {
 
 static void sendSelectProfileCmd() {
   uint8_t selProfileConfig[SET_CONFIG_BUFF_MAX_SIZE];
-  const int64_t bufflen = SET_CONFIG_BUFF_MAX_SIZE;
-  int64_t retlen = 0;
+  const long bufflen = SET_CONFIG_BUFF_MAX_SIZE;
+  long retlen = 0;
   const bool isFound =
       PlatformAbstractionLayer::getInstance()->palGetNxpByteArrayValue(
           NAME_NXP_PROP_RESET_EMVCO_CMD, reinterpret_cast<char *>(selProfileConfig), bufflen,
@@ -171,8 +171,8 @@ static void notifyRfDiscoveryStopped() {
 
 static void sendDeselectProfileCmd() {
   uint8_t selProfileConfig[SET_CONFIG_BUFF_MAX_SIZE];
-  const int64_t bufflen = SET_CONFIG_BUFF_MAX_SIZE;
-  int64_t retlen = 0;
+  const long bufflen = SET_CONFIG_BUFF_MAX_SIZE;
+  long retlen = 0;
   const bool isFound =
       PlatformAbstractionLayer::getInstance()->palGetNxpByteArrayValue(
           NAME_NXP_PROP_RESET_EMVCO_CMD, reinterpret_cast<char *>(selProfileConfig), bufflen,

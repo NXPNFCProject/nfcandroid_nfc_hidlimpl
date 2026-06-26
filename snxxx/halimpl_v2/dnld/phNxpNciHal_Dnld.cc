@@ -1828,7 +1828,7 @@ static NFCSTATUS phNxpNciHal_releasePendingRead() {
   NFCSTATUS status = NFCSTATUS_FAILED;
   phTmlNfc_Config_t tTmlConfig;
   const uint16_t max_len = 260;
-  uint64_t value = 0;
+  unsigned long value = 0;
   char nfc_dev_node[max_len] = {};
   if (!GetNxpStrValue(NAME_NXP_NFC_DEV_NODE, nfc_dev_node,
                       sizeof(nfc_dev_node))) {

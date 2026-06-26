@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2026 NXP
+ * Copyright 2019-2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,7 +110,7 @@ NFCSTATUS phNxpNciHal_setGuardTimer();
  *
  *
  *****************************************************************************/
-NFCSTATUS phNxpNciHal_send_get_cfg(const uint8_t* cmd_get_cfg, int64_t cmd_len);
+NFCSTATUS phNxpNciHal_send_get_cfg(const uint8_t* cmd_get_cfg, long cmd_len);
 
 /*****************************************************************************
  * Function         phNxpNciHal_configure_merge_sak

@@ -121,12 +121,12 @@ size_t readConfigFile(const char* fileName, uint8_t** p_data) {
   }
 
   const size_t file_size = static_cast<size_t>(file_size_long);
-
   if (fseek(fd.get(), 0L, SEEK_SET) != 0) {
     ALOGE("%s Failed to seek to beginning of file", __func__);
     return 0;
   }
 
+  // Use smart pointer for automatic cleanup
   std::unique_ptr<uint8_t[]> buffer =
       std::make_unique<uint8_t[]>(file_size + 1);
   if (!buffer) {
@@ -137,7 +137,7 @@ size_t readConfigFile(const char* fileName, uint8_t** p_data) {
   size_t read = fread(buffer.get(), file_size, 1, fd.get());
   if (read == 1) {
     buffer[file_size] = '\n';
-    *p_data = buffer.release();
+    *p_data = buffer.release();  // Transfer ownership to caller
     return file_size + 1;
   }
 
@@ -267,8 +267,7 @@ static inline int getDigitValue(char c, int base) {
   if (base == 16) {
     if ('A' <= c && c <= 'F') {
       return c - 'A' + 10;
-    }
-    else if ('a' <= c && c <= 'f') {
+    } else if ('a' <= c && c <= 'f') {
       return c - 'a' + 10;
     }
   }
@@ -1217,7 +1216,7 @@ void readOptionalConfig(const char* extra) {
 **
 *******************************************************************************/
 extern "C" int GetNxpStrValue(const char* name, char* pValue,
-                              uint64_t len) {
+                              unsigned long len) {
   const CNfcConfig& rConfig = CNfcConfig::GetInstance();
   const bool result = rConfig.getValue(name, pValue, static_cast<size_t>(len));
   return result ? 1 : 0;
@@ -1241,7 +1240,7 @@ extern "C" int GetNxpStrValue(const char* name, char* pValue,
 **
 *******************************************************************************/
 extern "C" int GetNxpByteArrayValue(const char* name, char* pValue,
-                                    int64_t bufflen, int64_t* len) {
+                                    long bufflen, long* len) {
   const CNfcConfig& rConfig = CNfcConfig::GetInstance();
   const bool result = rConfig.getValue(name, pValue, bufflen, len);
   return result ? 1 : 0;
@@ -1257,7 +1256,7 @@ extern "C" int GetNxpByteArrayValue(const char* name, char* pValue,
 **
 *******************************************************************************/
 extern "C" int GetNxpNumValue(const char* name, void* pValue,
-                              uint64_t len) {
+                              unsigned long len) {
   if (!name || !pValue) {
     ALOGE("%s Invalid parameters: name=%p, pValue=%p", __func__, name, pValue);
     return 0;
@@ -1338,7 +1337,7 @@ extern "C" void setNxpRfConfigPath(const char* name) {
 **
 *******************************************************************************/
 extern "C" void setNxpFwConfigPath() {
-  uint64_t fwType = FW_FORMAT_SO;
+  unsigned long fwType = FW_FORMAT_SO;
   if (GetNxpNumValue(NAME_NXP_FW_TYPE, &fwType, sizeof(fwType))) {
     ALOGD("firmware type from conf file: %lu", fwType);
   }

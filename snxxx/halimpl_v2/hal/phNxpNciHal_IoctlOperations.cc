@@ -25,7 +25,6 @@
 
 #include <map>
 #include <set>
-#include <cinttypes>
 
 #include "EseAdaptation.h"
 #include "NfccTransport.h"
@@ -132,8 +131,8 @@ static std::set<string> gNciConfigs = {"NXP_SE_COLD_TEMP_ERROR_DELAY",
  **
  ** Returns          return 0 on success and -1 on fail,
  ******************************************************************************/
-int phNxpNciHal_ioctlIf(int64_t arg, void* p_data) {
-  NXPLOG_NCIHAL_D("%s : enter - arg = %" PRId64, __func__, arg);
+int phNxpNciHal_ioctlIf(long arg, void* p_data) {
+  NXPLOG_NCIHAL_D("%s : enter - arg = %ld", __func__, arg);
   ese_nxp_IoctlInOutData_t* pInpOutData =
       static_cast<ese_nxp_IoctlInOutData_t*>(p_data);
   int ret = -1;
@@ -161,7 +160,7 @@ int phNxpNciHal_ioctlIf(int64_t arg, void* p_data) {
       ret = 0;
       break;
     default:
-      NXPLOG_NCIHAL_E("%s : Wrong arg = %" PRId64, __func__, arg);
+      NXPLOG_NCIHAL_E("%s : Wrong arg = %ld", __func__, arg);
       break;
   }
   NXPLOG_NCIHAL_D("%s : exit - ret = %d", __func__, ret);
@@ -554,7 +553,7 @@ int phNxpNciHal_CheckFwRegFlashRequired(uint8_t* fw_update_req,
                                         uint8_t skipEEPROMRead) {
   NXPLOG_NCIHAL_D("phNxpNciHal_CheckFwRegFlashRequired() : enter");
   int status = NFCSTATUS_OK;
-  int64_t option;
+  long option;
   if (fpRegRfFwDndl != NULL) {
     status = fpRegRfFwDndl(fw_update_req, rf_update_req, skipEEPROMRead);
   } else {
@@ -563,7 +562,7 @@ int phNxpNciHal_CheckFwRegFlashRequired(uint8_t* fw_update_req,
     NXPLOG_NCIHAL_D("FW version found on the device = 0x%x", wFwVerRsp);
 
     if (!GetNxpNumValue(NAME_NXP_FLASH_CONFIG, &option,
-                        sizeof(uint64_t))) {
+                        sizeof(unsigned long))) {
       NXPLOG_NCIHAL_D("Flash option not found; giving default value");
       option = 1;
     }
@@ -616,8 +615,8 @@ void phNxpNciHal_txNfccClockSetCmd(void) {
 
   uint8_t set_clock_cmd[] = {0x20, 0x02, 0x05, 0x01, 0xA0, 0x03, 0x01, 0x08};
   const uint8_t setClkCmdLen = sizeof(set_clock_cmd);
-  uint64_t clockSource = 0;
-  uint64_t frequency = 0;
+  unsigned long clockSource = 0;
+  unsigned long frequency = 0;
   uint32_t pllSetRetryCount = 3, dpllSetRetryCount = 3,
            setClockCmdWriteRetryCnt = 0;
   uint8_t* pCmd4PllSetting = NULL;
@@ -633,9 +632,8 @@ void phNxpNciHal_txNfccClockSetCmd(void) {
   freqCfgFound = (GetNxpNumValue(NAME_NXP_SYS_CLK_FREQ_SEL, &frequency,
                                  sizeof(frequency)) > 0);
 
-  NXPLOG_NCIHAL_D("%s : clock source = %" PRIu64 ", frequency = %" PRIu64,
-                  __FUNCTION__, clockSource, frequency);
-
+  NXPLOG_NCIHAL_D("%s : clock source = %lu, frequency = %lu", __FUNCTION__,
+                  clockSource, frequency);
 
   if (srcCfgFound && freqCfgFound && (clockSource == CLK_SRC_PLL)) {
     phNxpNciClock.isClockSet = true;
@@ -727,6 +725,7 @@ void phNxpNciHal_txNfccClockSetCmd(void) {
         status =
             phNxpNciHal_send_ext_cmd(pllCmdLen, pCmd4PllSetting, &rsp_len, rsp);
       }
+
       status = NFCSTATUS_FAILED;
 
       while (status != NFCSTATUS_SUCCESS && dpllSetRetryCount-- > 0) {

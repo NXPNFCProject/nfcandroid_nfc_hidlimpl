@@ -59,9 +59,9 @@ void Srd::Initialize() {
   uint16_t isFeatureDisable = 0x0000;
   uint8_t isFound = 0;
   const int NXP_SRD_TIMEOUT_BUF_LEN = 2;
-  const int64_t bufflen = 260;
+  const long bufflen = 260;
   std::unique_ptr<uint8_t[]> srd_config = std::make_unique<uint8_t[]>(bufflen);
-  int64_t retlen = 0;
+  long retlen = 0;
 
   memset(srd_config.get(), 0x00, bufflen);
   isFound = GetNxpByteArrayValue(

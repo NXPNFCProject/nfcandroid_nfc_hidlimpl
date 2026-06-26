@@ -615,7 +615,7 @@ static NFCSTATUS phNxpNciHal_ext_process_nfc_init_rsp(uint8_t* p_ntf,
                   ((static_cast<uint32_t>(p_ntf[len - 1])) << 8U) | p_ntf[len];
       NXPLOG_NCIHAL_D("NxpNci> FW Version: %x.%x.%x", p_ntf[len - 2],
                       p_ntf[len - 1], p_ntf[len]);
-      int64_t retlen = 0;
+      long retlen = 0;
       const bool isfound = GetNxpByteArrayValue(NAME_NXP_RF_FILE_VERSION_INFO,
              reinterpret_cast<char*>(rfFileVer), sizeof(rfFileVer), &retlen);
       if ((!isfound) || (retlen != 0x02)) {
@@ -1600,8 +1600,8 @@ void phNxpNciHal_prop_conf_rssi() {
 void phNxpNciHal_conf_nfc_forum_mode() {
   uint8_t cmd_get_emvcocfg[] = {0x20, 0x03, 0x03, 0x01, 0xA0, 0x44};
   uint8_t cmd_reset_emvcocfg[8];
-  const int64_t cmdlen = 8;
-  int64_t retlen = 0;
+  const long cmdlen = 8;
+  long retlen = 0;
   uint8_t rsp[PHNCI_MAX_DATA_LEN] = {0};
   uint16_t rsp_len = 0;
 
@@ -1863,7 +1863,7 @@ static NFCSTATUS phNxpNciHal_ext_check_rf_queue_full_error(uint8_t* p_ntf,
       // Rf queue full error detected, update ntf with prop ntf and return
       // failure
       memcpy(p_ntf, propNtf, sizeof(propNtf));
-      *p_len = static_cast<uint16_t>(sizeof(propNtf));
+      *p_len = (uint16_t)sizeof(propNtf);
       return NFCSTATUS_FAILED;
     }
   }

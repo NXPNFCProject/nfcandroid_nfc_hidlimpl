@@ -38,6 +38,7 @@ class ReaderPollConfigParser {
   static uint8_t lastKnownGain;
   static uint8_t lastKnownModEvent;
   std::vector<uint8_t> extraBytes = std::vector<uint8_t>();
+
   /*****************************************************************************
    *
    * Function         getWellKnownModEventData

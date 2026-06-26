@@ -1,5 +1,5 @@
 /*
- * Copyright 2022, 2025-2026 NXP
+ * Copyright 2022, 2025 NXP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ enum RefreshNfccPowerState : uint8_t {
 **                  from NFCC.
 ** Returns          NFCSTATUS_FAILED or NFCSTATUS_SUCCESS
 *******************************************************************************/
-extern "C" NFCSTATUS phNxpNciHal_startPowerTracker(uint64_t pollDuration);
+extern "C" NFCSTATUS phNxpNciHal_startPowerTracker(unsigned long pollDuration);
 
 /*******************************************************************************
 **

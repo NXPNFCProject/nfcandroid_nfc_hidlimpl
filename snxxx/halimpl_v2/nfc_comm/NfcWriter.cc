@@ -131,7 +131,7 @@ int NfcWriter::write(uint16_t data_len, const uint8_t* p_data) {
     NXPLOG_NCIHAL_D("Vendor specific status: %d", status);
     if (status == NFCSTATUS_EXTN_FEATURE_SUCCESS) return data_len;
   }
-  int64_t value = 0;
+  long value = 0;
   /* NXP Removal Detection timeout Config */
   if (GetNxpNumValue(NAME_NXP_REMOVAL_DETECTION_TIMEOUT,
                      static_cast<void*>(&value), sizeof(value))) {

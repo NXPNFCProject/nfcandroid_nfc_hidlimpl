@@ -106,8 +106,8 @@ public:
    * @return 1 if config param name is found in the config file, else 0
    *
    */
-  uint8_t palGetNxpByteArrayValue(const char *name, char *pValue, int64_t bufflen,
-                                  int64_t *len);
+  uint8_t palGetNxpByteArrayValue(const char *name, char *pValue, long bufflen,
+                                  long *len);
 
   /**
    * @brief API function for getting a numerical value of a setting
@@ -116,7 +116,7 @@ public:
    * @param len - sizeof required pValue
    * @return 1 if config param name is found in the config file, else 0
    */
-  uint8_t palGetNxpNumValue(const char *name, void *pValue, uint64_t len);
+  uint8_t palGetNxpNumValue(const char *name, void *pValue, unsigned long len);
 
   /**
    * @brief This function can be called to enable/disable the log levels

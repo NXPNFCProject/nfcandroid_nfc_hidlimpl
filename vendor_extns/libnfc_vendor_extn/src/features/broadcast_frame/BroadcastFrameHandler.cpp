@@ -45,8 +45,8 @@ void BroadcastFrameHandler::phNxpNciHal_configureBroadcastFrameHandler() {
   NXPLOG_EXTNS_D(NXPLOG_ITEM_NXP_GEN_EXTN, "%s Enter ", __func__);
   uint8_t BroadcastFrameHandlerConfig[BROADCAST_FRAME_CONFIG_SIZE] = {0};
   ;
-  const int64_t bufflen = BROADCAST_FRAME_CONFIG_SIZE;
-  int64_t retlen = 0;
+  const long bufflen = BROADCAST_FRAME_CONFIG_SIZE;
+  long retlen = 0;
   const bool isFound =
       PlatformAbstractionLayer::getInstance()->palGetNxpByteArrayValue(
           NAME_NXP_BROADCAST_FRAME_CONFIG,

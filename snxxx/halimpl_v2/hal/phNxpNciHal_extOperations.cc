@@ -57,7 +57,7 @@ extern void setInterpolatedRssi8Am(uint16_t rssiAt8Am,
 **
 *******************************************************************************/
 void phNxpNciHal_getExtVendorConfig() {
-  uint64_t num = 0;
+  unsigned long num = 0;
   memset(&config_ext, 0x00, sizeof(nxp_nfc_config_ext_t));
 
   if ((GetNxpNumValue(NAME_NXP_AUTONOMOUS_ENABLE, &num, sizeof(num)))) {
@@ -548,7 +548,7 @@ phNxpNciHal_set_uicc_hci_params(std::vector<uint8_t>& ptr, uint8_t bufflen,
  *
  *
  *****************************************************************************/
-NFCSTATUS phNxpNciHal_send_get_cfg(const uint8_t* cmd_get_cfg, int64_t cmd_len) {
+NFCSTATUS phNxpNciHal_send_get_cfg(const uint8_t* cmd_get_cfg, long cmd_len) {
   NXPLOG_NCIHAL_D("%s Enter", __func__);
   NFCSTATUS status = NFCSTATUS_FAILED;
   uint8_t retry_cnt = 0;
@@ -617,7 +617,7 @@ NFCSTATUS phNxpNciHal_configure_merge_sak() {
  *
  ******************************************************************************/
 NFCSTATUS phNxpNciHal_setSrdtimeout() {
-  int64_t retlen = 0;
+  long retlen = 0;
   uint8_t* buffer = nullptr;
   const long bufflen = 260;
   const int NXP_SRD_TIMEOUT_BUF_LEN = 2;
